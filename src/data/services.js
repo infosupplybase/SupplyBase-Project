@@ -436,48 +436,6 @@ export const services = [
       { q: 'What is included in the final touch-up?', a: 'A joint snag inspection, correction of every listed item, and a full deep clean so the space is ready to use.' },
     ],
   },
-
-  /* ------------------------------------------------------------------ 11 */
-  {
-    slug: 'turnkey-projects',
-    number: '11',
-    name: 'Turnkey Projects',
-    shortName: 'Turnkey Projects',
-    icon: 'key',
-    megaMenuGroup: 'CONSTRUCTION',
-    tagline: 'One partner. Complete project.',
-    cardText: 'Design to handover — labour, material and project management under one contract.',
-    summary:
-      'This is what Supplybase Projects was built for. One contract, one point of contact and one team covering design, civil work, electrical, plumbing, ceiling, furniture, painting and finishing — with labour, material and project management included, delivered ready to occupy.',
-    heroImage: '/assets/services/turnkey-projects.svg',
-    gallery: ['/assets/hero-house.svg', '/assets/projects/luxury-bungalow.svg'],
-    subServices: [
-      { name: 'Residential Projects', text: 'Bungalows, villas, flats and row houses, design to handover.' },
-      { name: 'Commercial Projects', text: 'Shops, showrooms, restaurants and commercial buildings.' },
-      { name: 'Office Projects', text: 'Complete office fit-outs including services and furniture.' },
-      { name: 'Retail Projects', text: 'Retail interiors delivered to opening deadlines.' },
-      { name: 'Renovation Projects', text: 'Full property renovation from strip-out to finish.' },
-      { name: 'Labour + Material', text: 'Everything supplied by us under one agreed rate.' },
-      { name: 'Complete Execution', text: 'Single-contract project management from drawing to handover.' },
-    ],
-    highlights: [
-      'One contract and one accountable team instead of five separate contractors',
-      'One consolidated quotation covering labour, material and management',
-      'A single project manager as your point of contact throughout',
-      'Trades sequenced properly, so the schedule holds together',
-    ],
-    process: [
-      { title: 'Consultation', text: 'Requirements, site conditions, budget and timeline established.' },
-      { title: 'Planning & Design', text: 'Drawings, 3D views, specification and a stage-wise schedule.' },
-      { title: 'Execution', text: 'All trades executed in sequence under one project manager.' },
-      { title: 'Handover', text: 'Snag list closed, site cleaned and the project handed over ready to use.' },
-    ],
-    faqs: [
-      { q: 'What exactly does turnkey include?', a: 'Everything from design drawings through civil work, electrical, plumbing, ceiling, furniture, painting and finishing, delivered as one contract with labour and material included.' },
-      { q: 'Do I get one quotation or separate quotations per trade?', a: 'One consolidated, itemised quotation so you can see each head of cost while dealing with a single contract.' },
-      { q: 'Who do I contact during the project?', a: 'A single project manager is assigned to you and stays your point of contact from start to handover.' },
-    ],
-  },
 ];
 
 /* ---------------------------------------------------------------- helpers */

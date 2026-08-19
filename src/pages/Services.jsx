@@ -16,7 +16,7 @@ export default function Services() {
       <PageHero
         eyebrow="OUR SERVICES"
         title="EVERYTHING YOUR PROJECT NEEDS"
-        text="Eleven service categories covering design, construction, services, finishing and complete turnkey execution — delivered by one team under one contract."
+        text="Ten service categories covering design, construction, services and finishing — delivered by one team under one contract."
         image="/assets/services/architectural-design.svg"
         breadcrumbs={[{ label: 'Services' }]}
       />

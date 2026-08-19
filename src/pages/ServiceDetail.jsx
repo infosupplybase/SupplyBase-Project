@@ -14,7 +14,7 @@ import { contact } from '../data/siteConfig';
 import { telHref, whatsappHref } from '../lib/contact';
 
 /**
- * ServiceDetail — ONE reusable template that renders all 11 services
+ * ServiceDetail — ONE reusable template that renders all 10 services
  * from the data in src/data/services.js. Route: /services/:slug
  */
 export default function ServiceDetail() {

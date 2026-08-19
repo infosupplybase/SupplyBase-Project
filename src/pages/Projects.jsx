@@ -15,7 +15,7 @@ export default function Projects() {
       <PageHero
         eyebrow="OUR WORK"
         title="PROJECTS"
-        text="Residential, commercial, interior, civil and turnkey projects delivered by our team."
+        text="Residential, commercial, interior, civil and finishing projects delivered by our team."
         image="/assets/projects/luxury-bungalow.svg"
         breadcrumbs={[{ label: 'Projects' }]}
       />

@@ -20,7 +20,6 @@ export const projectCategories = [
   { id: 'interior', label: 'INTERIOR' },
   { id: 'civil', label: 'CIVIL' },
   { id: 'finishing', label: 'FINISHING' },
-  { id: 'turnkey', label: 'TURNKEY' },
 ];
 
 export const projects = [
@@ -47,7 +46,7 @@ export const projects = [
       'Modular kitchen, wardrobes and custom furniture',
       'Flooring, painting and final finishing',
     ],
-    servicesProvided: ['architectural-design', 'civil-construction', 'interior-design', 'turnkey-projects'],
+    servicesProvided: ['architectural-design', 'civil-construction', 'interior-design'],
     featured: true,
   },
   {
@@ -130,8 +129,8 @@ export const projects = [
   {
     slug: 'corporate-office-fitout',
     name: 'Corporate Office Fit-out',
-    category: 'turnkey',
-    categoryLabel: 'TURNKEY',
+    category: 'commercial',
+    categoryLabel: 'COMMERCIAL',
     location: 'Mumbai, Maharashtra',
     year: '2025',
     area: '4,800 sq.ft.',
@@ -150,7 +149,7 @@ export const projects = [
       'Workstations, storage and reception desk',
       'Vinyl flooring and painting',
     ],
-    servicesProvided: ['turnkey-projects', 'interior-design', 'pop-false-ceiling', 'electrical', 'furniture'],
+    servicesProvided: ['interior-design', 'pop-false-ceiling', 'electrical', 'furniture'],
     featured: false,
   },
   {
