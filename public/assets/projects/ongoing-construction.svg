@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#2a3038"/><stop offset="1" stop-color="#0e1116"/>
+  </linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#2b3038"/><stop offset="1" stop-color="#151920"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ecca7f"/><stop offset="1" stop-color="#a87c26"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.72" cy="0.22" r="0.5">
+    <stop offset="0" stop-color="#d6a544" stop-opacity="0.5"/><stop offset="1" stop-color="#d6a544" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="1200" height="900" fill="url(#sky)"/>
+<rect width="1200" height="900" fill="url(#glow)"/>
+<rect x="216" y="738" width="600" height="10" fill="#4c525c"/>
+<rect x="216" y="616" width="600" height="10" fill="#4c525c"/>
+<rect x="216" y="493" width="600" height="10" fill="#4c525c"/>
+<rect x="216" y="371" width="600" height="10" fill="#4c525c"/>
+<rect x="216" y="248" width="600" height="10" fill="#4c525c"/>
+<rect x="216" y="126" width="600" height="10" fill="#4c525c"/>
+<rect x="211" y="126" width="10" height="612" fill="#3f444d"/>
+<rect x="361" y="126" width="10" height="612" fill="#3f444d"/>
+<rect x="511" y="126" width="10" height="612" fill="#3f444d"/>
+<rect x="661" y="126" width="10" height="612" fill="#3f444d"/>
+<rect x="811" y="126" width="10" height="612" fill="#3f444d"/>
+<rect x="912" y="90" width="10" height="648" fill="#d6a544" opacity="0.85"/>
+<rect x="504" y="90" width="504" height="8" fill="#d6a544" opacity="0.85"/>
+<line x1="624" y1="99" x2="624" y2="306" stroke="#8b909a" stroke-width="2"/>
+<rect x="600" y="306" width="48" height="45" fill="#6b7079"/>
+<line x1="186" y1="738" x2="846" y2="738" stroke="#5a606a" stroke-width="1.5" opacity="0.5"/>
+<line x1="186" y1="628" x2="846" y2="628" stroke="#5a606a" stroke-width="1.5" opacity="0.5"/>
+<line x1="186" y1="518" x2="846" y2="518" stroke="#5a606a" stroke-width="1.5" opacity="0.5"/>
+<line x1="186" y1="408" x2="846" y2="408" stroke="#5a606a" stroke-width="1.5" opacity="0.5"/>
+<line x1="186" y1="297" x2="846" y2="297" stroke="#5a606a" stroke-width="1.5" opacity="0.5"/>
+<line x1="186" y1="187" x2="846" y2="187" stroke="#5a606a" stroke-width="1.5" opacity="0.5"/>
+<rect x="0" y="738" width="1200" height="162" fill="#0b0e12"/>
+<text x="1176" y="880" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="17" fill="#ffffff" opacity="0.34">Placeholder — project photo</text>
+</svg>

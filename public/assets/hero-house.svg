@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#232a35"/><stop offset="1" stop-color="#0d1015"/>
+  </linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#2b3038"/><stop offset="1" stop-color="#151920"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ecca7f"/><stop offset="1" stop-color="#a87c26"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.72" cy="0.22" r="0.5">
+    <stop offset="0" stop-color="#d6a544" stop-opacity="0.5"/><stop offset="1" stop-color="#d6a544" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#sky)"/>
+<rect width="1600" height="900" fill="url(#glow)"/>
+<rect x="-40" y="471.0" width="100" height="231" fill="#171b22" opacity="0.75"/>
+<rect x="87" y="528.0" width="86" height="174" fill="#171b22" opacity="0.75"/>
+<rect x="212" y="501.0" width="147" height="201" fill="#171b22" opacity="0.75"/>
+<rect x="389" y="606.0" width="144" height="96" fill="#171b22" opacity="0.75"/>
+<rect x="562" y="502.0" width="71" height="200" fill="#171b22" opacity="0.75"/>
+<rect x="651" y="563.0" width="140" height="139" fill="#171b22" opacity="0.75"/>
+<rect x="807" y="484.0" width="130" height="218" fill="#171b22" opacity="0.75"/>
+<rect x="973" y="501.0" width="140" height="201" fill="#171b22" opacity="0.75"/>
+<rect x="1135" y="563.0" width="89" height="139" fill="#171b22" opacity="0.75"/>
+<rect x="1254" y="489.0" width="89" height="213" fill="#171b22" opacity="0.75"/>
+<rect x="1365" y="606.0" width="71" height="96" fill="#171b22" opacity="0.75"/>
+<rect x="1451" y="612.0" width="145" height="90" fill="#171b22" opacity="0.75"/>
+<rect x="480" y="342" width="640" height="360" fill="#2a2f38"/>
+<rect x="490.0" y="352.0" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="490.0" y="468.7" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="490.0" y="585.3" width="116.0" height="106.7" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="616.0" y="352.0" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="616.0" y="468.7" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="616.0" y="585.3" width="116.0" height="106.7" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="742.0" y="352.0" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="742.0" y="468.7" width="116.0" height="106.7" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="742.0" y="585.3" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="868.0" y="352.0" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="868.0" y="468.7" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="868.0" y="585.3" width="116.0" height="106.7" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="994.0" y="352.0" width="116.0" height="106.7" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="994.0" y="468.7" width="116.0" height="106.7" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="994.0" y="585.3" width="116.0" height="106.7" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="880" y="90" width="480" height="252" fill="#343a44"/>
+<rect x="890.0" y="100.0" width="107.5" height="111.0" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="890.0" y="221.0" width="107.5" height="111.0" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="1007.5" y="100.0" width="107.5" height="111.0" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="1007.5" y="221.0" width="107.5" height="111.0" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="1125.0" y="100.0" width="107.5" height="111.0" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="1125.0" y="221.0" width="107.5" height="111.0" fill="#20252d" opacity="0.9" rx="1"/>
+<rect x="1242.5" y="100.0" width="107.5" height="111.0" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="1242.5" y="221.0" width="107.5" height="111.0" fill="#f2c877" opacity="0.85" rx="1"/>
+<rect x="192" y="486" width="320" height="216" fill="url(#gold)" opacity="0.55"/>
+<line x1="192" y1="486" x2="512" y2="486" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="510" x2="512" y2="510" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="534" x2="512" y2="534" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="558" x2="512" y2="558" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="582" x2="512" y2="582" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="606" x2="512" y2="606" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="630" x2="512" y2="630" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="654" x2="512" y2="654" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<line x1="192" y1="678" x2="512" y2="678" stroke="#0d1015" stroke-width="1.6" opacity="0.35"/>
+<rect x="0" y="702" width="1600" height="198" fill="#0a0c10"/>
+<rect x="0" y="702" width="1600" height="6" fill="#d6a544" opacity="0.35"/>
+<rect x="854" y="613.0" width="4" height="89" fill="#12161c"/>
+<circle cx="856" cy="613.0" r="28" fill="#141a20"/>
+<rect x="709" y="639.0" width="4" height="63" fill="#12161c"/>
+<circle cx="711" cy="639.0" r="20" fill="#141a20"/>
+<rect x="592" y="622.0" width="4" height="80" fill="#12161c"/>
+<circle cx="594" cy="622.0" r="26" fill="#141a20"/>
+<rect x="1450" y="601.0" width="4" height="101" fill="#12161c"/>
+<circle cx="1452" cy="601.0" r="32" fill="#141a20"/>
+<rect x="1129" y="629.0" width="4" height="73" fill="#12161c"/>
+<circle cx="1131" cy="629.0" r="23" fill="#141a20"/>
+<rect x="1481" y="615.0" width="4" height="87" fill="#12161c"/>
+<circle cx="1483" cy="615.0" r="28" fill="#141a20"/>
+<text x="1576" y="880" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="17" fill="#ffffff" opacity="0.34">Placeholder — replace with your 3D render</text>
+</svg>

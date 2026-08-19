@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#3a3128"/><stop offset="1" stop-color="#15120f"/>
+  </linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#2b3038"/><stop offset="1" stop-color="#151920"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ecca7f"/><stop offset="1" stop-color="#a87c26"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.72" cy="0.22" r="0.5">
+    <stop offset="0" stop-color="#d6a544" stop-opacity="0.5"/><stop offset="1" stop-color="#d6a544" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#sky)"/>
+<rect width="1600" height="900" fill="url(#glow)"/>
+<rect x="0" y="648" width="1600" height="252" fill="#241d17"/>
+<rect x="80" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="240" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="400" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="560" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="720" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="880" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="1040" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="1200" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="1360" y="108" width="150" height="540" fill="#2e251d" opacity="0.85"/>
+<rect x="80" y="90" width="1440" height="10" fill="#d6a544" opacity="0.75"/>
+<rect x="80" y="108" width="1440" height="70" fill="#d6a544" opacity="0.12"/>
+<rect x="352" y="468" width="640" height="117" rx="10" fill="#4a3d31"/>
+<rect x="352" y="567" width="640" height="81" rx="8" fill="#5b4b3c"/>
+<ellipse cx="704" cy="738" rx="416" ry="54" fill="#2b231c"/>
+<rect x="576" y="684" width="256" height="45" rx="6" fill="#1d1813"/>
+<rect x="1216" y="378" width="5" height="270" fill="#3c3128"/>
+<path d="M1152 378 h160 l-32 -72 h-96 Z" fill="#d6a544" opacity="0.8"/>
+<text x="1576" y="880" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="17" fill="#ffffff" opacity="0.34">Placeholder — interior design</text>
+</svg>

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#232a35"/><stop offset="1" stop-color="#0c0f14"/>
+  </linearGradient>
+  <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#2b3038"/><stop offset="1" stop-color="#151920"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ecca7f"/><stop offset="1" stop-color="#a87c26"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.72" cy="0.22" r="0.5">
+    <stop offset="0" stop-color="#d6a544" stop-opacity="0.5"/><stop offset="1" stop-color="#d6a544" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#sky)"/>
+<rect width="1600" height="900" fill="url(#glow)"/>
+<rect x="497" y="227" width="183" height="183" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.09" transform="rotate(11 497 227)"/>
+<rect x="718" y="154" width="185" height="185" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.09" transform="rotate(40 718 154)"/>
+<rect x="8" y="77" width="69" height="69" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.11" transform="rotate(42 8 77)"/>
+<rect x="853" y="651" width="55" height="55" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.15" transform="rotate(18 853 651)"/>
+<rect x="322" y="501" width="77" height="77" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.16" transform="rotate(9 322 501)"/>
+<rect x="101" y="284" width="185" height="185" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.13" transform="rotate(27 101 284)"/>
+<rect x="56" y="604" width="75" height="75" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.16" transform="rotate(4 56 604)"/>
+<rect x="114" y="438" width="181" height="181" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.15" transform="rotate(24 114 438)"/>
+<rect x="952" y="649" width="163" height="163" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.05" transform="rotate(12 952 649)"/>
+<rect x="1277" y="119" width="125" height="125" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.12" transform="rotate(27 1277 119)"/>
+<rect x="1566" y="239" width="32" height="32" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.11" transform="rotate(34 1566 239)"/>
+<rect x="497" y="752" width="115" height="115" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.14" transform="rotate(36 497 752)"/>
+<rect x="481" y="415" width="184" height="184" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.14" transform="rotate(17 481 415)"/>
+<rect x="1420" y="842" width="147" height="147" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.12" transform="rotate(42 1420 842)"/>
+<rect x="615" y="539" width="124" height="124" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.06" transform="rotate(3 615 539)"/>
+<rect x="868" y="267" width="77" height="77" fill="none" stroke="#d6a544" stroke-width="1.2" opacity="0.11" transform="rotate(11 868 267)"/>
+<g transform="translate(660 310) scale(11.6)" fill="none" stroke="url(#gold)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"><path d="m14 4 6 6-3 3-6-6z"/><path d="m11 7-7 7v6h6l7-7"/><path d="M4 20 2 22"/><path d="M18 3 20 1M21 6l2-2"/></g>
+<text x="1576" y="880" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="17" fill="#ffffff" opacity="0.34">Placeholder — fabrication</text>
+</svg>
