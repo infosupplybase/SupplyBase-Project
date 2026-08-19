@@ -672,6 +672,28 @@
   border-top: 1px solid var(--grey-200);
 }
 
+/* The whole card is clickable: the title's link is stretched across the card by
+   a transparent overlay. One real <a> still does the work, so ctrl/middle click
+   opens the service in a new tab and the status bar shows the destination.
+   Sub-service and VIEW DETAILS links sit above the overlay, keeping their own
+   targets. */
+.service-card {
+  cursor: pointer;
+}
+
+.service-card h3 a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.service-card-list a,
+.service-card-foot a {
+  position: relative;
+  z-index: 2;
+}
+
 /* ------------------------------------------------------------ process */
 
 .process {
