@@ -238,7 +238,11 @@ export default function Login() {
           )}
 
           <p style={{ marginTop: 26, fontSize: '0.9rem', color: 'var(--grey-600)' }}>
-            No account yet? Accounts are created by our team — call{' '}
+            No account yet?{' '}
+            <Link to="/register" style={{ color: 'var(--gold-dark)', fontWeight: 600 }}>
+              Create one
+            </Link>
+            . Prefer to talk to a person? Call{' '}
             <a href={telHref} style={{ color: 'var(--gold-dark)', fontWeight: 600 }}>
               {contact.phoneDisplay}
             </a>{' '}

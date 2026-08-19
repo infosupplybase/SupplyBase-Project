@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
   signOut,
   sendPasswordResetEmail,
 } from 'firebase/auth';
@@ -17,6 +19,7 @@ const AuthContext = createContext({
   loading: false,
   configured: false,
   login: async () => {},
+  register: async () => {},
   logout: async () => {},
   resetPassword: async () => {},
 });
@@ -39,6 +42,12 @@ export const friendlyError = (error) => {
       return 'No internet connection. Please check your network and try again.';
     case 'auth/missing-password':
       return 'Please enter your password.';
+    case 'auth/email-already-in-use':
+      return 'An account already exists with that email. Try signing in instead.';
+    case 'auth/weak-password':
+      return 'That password is too weak. Use at least six characters.';
+    case 'auth/operation-not-allowed':
+      return 'Email sign-up is switched off in Firebase. Enable Email/Password under Authentication → Sign-in method.';
     default:
       return (error && error.message) || 'Something went wrong. Please try again.';
   }
@@ -62,6 +71,18 @@ export function AuthProvider({ children }) {
       loading,
       configured: isConfigured,
       login: (email, password) => signInWithEmailAndPassword(auth, email.trim(), password),
+      register: async (name, email, password) => {
+        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const displayName = name.trim();
+        if (displayName) {
+          await updateProfile(credential.user, { displayName });
+          // onAuthStateChanged does not re-fire for a profile update, so push the
+          // fresh user object out ourselves — otherwise the dashboard greets the
+          // new client by the email prefix instead of their name.
+          setUser({ ...credential.user });
+        }
+        return credential;
+      },
       logout: () => signOut(auth),
       resetPassword: (email) => sendPasswordResetEmail(auth, email.trim()),
     }),
