@@ -12,7 +12,6 @@ import WhyUs from './pages/WhyUs';
 import Contact from './pages/Contact';
 import Quote from './pages/Quote';
 import Login from './pages/Login';
-import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
@@ -29,17 +28,18 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /why-us                 Why us
  * /contact                Contact
  * /quote                  Get a quote  (?service=<slug> pre-selects a service)
- * /login                  Login (no header/footer)
- * /register               Create an account (no header/footer)
+ * /login                  Sign in       (no header/footer)
+ * /register               Create account (same page, other tab)
  * /dashboard              Client account page — only visible once signed in
  * /privacy-policy, /terms Legal pages
  */
 export default function App() {
   return (
     <Routes>
-      {/* login and register sit outside the main layout — full-screen split pages */}
+      {/* the account page sits outside the main layout — full-screen split page.
+          both paths render it; the tab that opens is taken from the URL. */}
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route path="/register" element={<Login />} />
 
       <Route element={<Layout />}>
         <Route index element={<Home />} />

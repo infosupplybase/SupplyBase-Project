@@ -1,26 +1,38 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
-import { company, contact } from '../data/siteConfig';
-import { telHref } from '../lib/contact';
+import { company } from '../data/siteConfig';
 import { useAuth, friendlyError } from '../context/AuthContext';
 
 /**
- * Login page — real sign-in, handled by Firebase.
+ * Account page — sign in and create account, on one screen.
  *
- * Accounts are created by you in the Firebase console (Authentication -> Users -> Add user).
- * There is deliberately no public "sign up" here: this is a client portal, not an open website.
+ * Both /login and /register render this component; the tab that opens is taken
+ * from the URL, so each mode is still directly linkable and the back button
+ * behaves. Switching tabs is a normal navigation between those two paths.
  *
- * If the Firebase keys have not been added yet, the page says so instead of pretending to work.
- * See README.md -> "Setting up login".
+ * NOTE: creating an account is public — anyone who completes the form can reach
+ * /dashboard. To go back to invite-only (accounts made by hand in the Firebase
+ * console), drop the /register route in App.jsx and the CREATE ACCOUNT tab
+ * below; the sign-in half needs no other change.
+ *
+ * If the Firebase keys have not been added yet, the page says so instead of
+ * pretending to work. See README.md -> "Setting up login".
  */
+const emptyForm = { name: '', email: '', password: '', confirm: '' };
+
 export default function Login() {
-  const { user, login, resetPassword, configured } = useAuth();
+  const { user, login, register, resetPassword, configured } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [form, setForm] = useState({ email: '', password: '' });
+  const mode = location.pathname === '/register' ? 'register' : 'login';
+  const isRegister = mode === 'register';
+
+  const [form, setForm] = useState(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
@@ -32,10 +44,38 @@ export default function Login() {
     if (user) navigate(goTo, { replace: true });
   }, [user, goTo, navigate]);
 
-  const update = (field) => (e) => {
-    setForm((f) => ({ ...f, [field]: e.target.value }));
+  // messages from one tab must not linger on the other
+  useEffect(() => {
+    setErrors({});
     setError('');
     setNotice('');
+  }, [mode]);
+
+  const update = (field) => (e) => {
+    setForm((f) => ({ ...f, [field]: e.target.value }));
+    setErrors((err) => ({ ...err, [field]: undefined }));
+    setError('');
+    setNotice('');
+  };
+
+  /** Field-level checks for the create-account tab. */
+  const validate = () => {
+    const next = {};
+    if (!form.name.trim()) next.name = 'Please enter your name';
+    if (!form.email.trim()) next.email = 'Please enter your email address';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+      next.email = 'Please enter a valid email address';
+    if (!form.password) next.password = 'Please choose a password';
+    else if (form.password.length < 6) next.password = 'Use at least six characters';
+    if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const notConfigured = () => {
+    setError(
+      `${isRegister ? 'Sign-up' : 'Login'} has not been set up yet. See README.md, section "Setting up login".`
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -43,18 +83,27 @@ export default function Login() {
     setError('');
     setNotice('');
 
-    if (!configured) {
-      setError('Login has not been set up yet. See README.md, section "Setting up login".');
-      return;
-    }
-    if (!form.email.trim() || !form.password) {
+    if (!configured) return notConfigured();
+
+    if (isRegister) {
+      if (!validate()) {
+        const firstError = document.querySelector('.field.error input');
+        if (firstError) firstError.focus();
+        return;
+      }
+      if (!accepted) {
+        setError('Please accept the terms and privacy policy to continue.');
+        return;
+      }
+    } else if (!form.email.trim() || !form.password) {
       setError('Please enter your email and password.');
       return;
     }
 
     setBusy(true);
     try {
-      await login(form.email, form.password);
+      if (isRegister) await register(form.name, form.email, form.password);
+      else await login(form.email, form.password);
       navigate(goTo, { replace: true });
     } catch (err) {
       setError(friendlyError(err));
@@ -63,15 +112,32 @@ export default function Login() {
     }
   };
 
+  /**
+   * Closing the panel returns the visitor wherever they came from. On a direct
+   * hit (a bookmark, a pasted link) there is nothing to go back to, so the home
+   * page is used instead — React Router marks that first entry with key
+   * 'default'.
+   */
+  const handleClose = () => {
+    if (location.key !== 'default') navigate(-1);
+    else navigate('/');
+  };
+
+  // Escape closes it, the way any dialog is expected to behave
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   const handleReset = async (e) => {
     e.preventDefault();
     setError('');
     setNotice('');
 
-    if (!configured) {
-      setError('Login has not been set up yet. See README.md, section "Setting up login".');
-      return;
-    }
+    if (!configured) return notConfigured();
     if (!form.email.trim()) {
       setError('Type your email address first, then press "Forgot password?".');
       return;
@@ -86,173 +152,232 @@ export default function Login() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-visual">
-        <img src="/assets/hero-house.svg" alt="" />
-        <div className="login-visual-text">
-          <span className="eyebrow">{company.statement}</span>
-          <h2>
-            ONE PARTNER.
-            <br />
-            <span className="gold">COMPLETE PROJECT.</span>
-          </h2>
-          <p>Track your project, view drawings and approvals, and stay updated at every stage.</p>
-        </div>
-      </div>
+    <div className="auth-screen">
+      <img
+        src={isRegister ? '/assets/projects/luxury-bungalow.svg' : '/assets/hero-house.svg'}
+        alt=""
+      />
 
-      <div className="login-form-side">
-        <div className="login-box">
-          <Link to="/" className="login-logo">
-            <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
+      <div className="auth-modal" role="dialog" aria-modal="true" aria-label="Account">
+        <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
+          <Icon name="close" size={20} />
+        </button>
+
+        <Link to="/" className="auth-logo">
+          <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
+        </Link>
+
+        <div className="auth-tabs" role="tablist">
+          <Link
+            to="/login"
+            role="tab"
+            aria-selected={!isRegister}
+            className={`auth-tab ${!isRegister ? 'active' : ''}`}
+          >
+            Sign In
           </Link>
+          <Link
+            to="/register"
+            role="tab"
+            aria-selected={isRegister}
+            className={`auth-tab ${isRegister ? 'active' : ''}`}
+          >
+            Create Account
+          </Link>
+        </div>
 
-          <h2 style={{ fontSize: '1.9rem', marginBottom: 6 }}>Sign In</h2>
-          <p style={{ color: 'var(--grey-600)', marginBottom: 24 }}>
-            Access your project dashboard.
-          </p>
+        <h2>{isRegister ? 'Create Account' : 'Sign In'}</h2>
+        <p className="auth-intro">
+          {isRegister
+            ? 'It takes a minute. You will land straight on your project dashboard.'
+            : 'Access your project dashboard.'}
+        </p>
 
-          <form onSubmit={handleSubmit} noValidate>
-            <div className="field" style={{ marginBottom: 16 }}>
-              <label htmlFor="login-email">Email Address</label>
-              <input
-                id="login-email"
-                type="email"
-                value={form.email}
-                onChange={update('email')}
-                placeholder="you@example.com"
-                autoComplete="username"
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor="login-password">Password</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  id="login-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={update('password')}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  style={{ paddingRight: 46 }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  style={{
-                    position: 'absolute',
-                    right: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'none',
-                    border: 0,
-                    color: 'var(--grey-500)',
-                    padding: 6,
-                    display: 'flex',
-                  }}
-                >
-                  <Icon name="eye" size={19} />
-                </button>
-              </div>
-            </div>
-
-            <div className="login-meta">
-              <label className="checkbox-row">
-                <input type="checkbox" defaultChecked />
-                Keep me signed in
+        <form onSubmit={handleSubmit} noValidate>
+          {isRegister && (
+            <div className={`field ${errors.name ? 'error' : ''}`} style={{ marginBottom: 16 }}>
+              <label htmlFor="auth-name">
+                Full Name <span className="req">*</span>
               </label>
-              <button
-                type="button"
-                onClick={handleReset}
-                style={{
-                  background: 'none',
-                  border: 0,
-                  padding: 0,
-                  color: 'var(--gold-dark)',
-                  fontWeight: 600,
-                  fontSize: '0.88rem',
-                }}
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            {error && (
-              <div
-                role="alert"
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'flex-start',
-                  padding: '12px 14px',
-                  marginBottom: 16,
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(209,67,67,.08)',
-                  border: '1px solid rgba(209,67,67,.35)',
-                  color: '#a92f2f',
-                  fontSize: '0.9rem',
-                }}
-              >
-                <Icon name="info" size={18} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {notice && (
-              <div
-                role="status"
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'flex-start',
-                  padding: '12px 14px',
-                  marginBottom: 16,
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(37,211,102,.1)',
-                  border: '1px solid rgba(37,211,102,.4)',
-                  color: '#16794a',
-                  fontSize: '0.9rem',
-                }}
-              >
-                <Icon name="check-circle" size={18} />
-                <span>{notice}</span>
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-dark btn-block btn-lg" disabled={busy}>
-              <Icon name="lock" size={17} />
-              {busy ? 'SIGNING IN…' : 'SIGN IN'}
-            </button>
-          </form>
-
-          {!configured && (
-            <div className="form-note">
-              <Icon name="info" size={18} />
-              <span>
-                Login is not switched on yet. Add your Firebase keys to a <code>.env</code> file —
-                the steps are in <code>README.md</code> under &ldquo;Setting up login&rdquo;. It takes
-                about 20 minutes and costs nothing.
-              </span>
+              <input
+                id="auth-name"
+                type="text"
+                value={form.name}
+                onChange={update('name')}
+                placeholder="Your name"
+                autoComplete="name"
+              />
+              {errors.name && <span className="field-error">{errors.name}</span>}
             </div>
           )}
 
-          <p style={{ marginTop: 26, fontSize: '0.9rem', color: 'var(--grey-600)' }}>
-            No account yet?{' '}
-            <Link to="/register" style={{ color: 'var(--gold-dark)', fontWeight: 600 }}>
-              Create one
-            </Link>
-            . Prefer to talk to a person? Call{' '}
-            <a href={telHref} style={{ color: 'var(--gold-dark)', fontWeight: 600 }}>
-              {contact.phoneDisplay}
-            </a>{' '}
-            or{' '}
-            <Link to="/quote" style={{ color: 'var(--gold-dark)', fontWeight: 600 }}>
-              request a quote
-            </Link>
-            .
-          </p>
-        </div>
+          <div className={`field ${errors.email ? 'error' : ''}`} style={{ marginBottom: 16 }}>
+            <label htmlFor="auth-email">
+              Email Address {isRegister && <span className="req">*</span>}
+            </label>
+            <input
+              id="auth-email"
+              type="email"
+              value={form.email}
+              onChange={update('email')}
+              placeholder="you@example.com"
+              autoComplete={isRegister ? 'email' : 'username'}
+            />
+            {errors.email && <span className="field-error">{errors.email}</span>}
+          </div>
+
+          <div className={`field ${errors.password ? 'error' : ''}`}>
+            <label htmlFor="auth-password">
+              Password {isRegister && <span className="req">*</span>}
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="auth-password"
+                type={showPassword ? 'text' : 'password'}
+                value={form.password}
+                onChange={update('password')}
+                placeholder={isRegister ? 'At least six characters' : '••••••••'}
+                autoComplete={isRegister ? 'new-password' : 'current-password'}
+                style={{ paddingRight: 46 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                style={{
+                  position: 'absolute',
+                  right: 8,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 0,
+                  color: 'var(--grey-500)',
+                  padding: 6,
+                  display: 'flex',
+                }}
+              >
+                <Icon name="eye" size={19} />
+              </button>
+            </div>
+            {errors.password && <span className="field-error">{errors.password}</span>}
+          </div>
+
+          {isRegister && (
+            <div className={`field ${errors.confirm ? 'error' : ''}`} style={{ marginTop: 16 }}>
+              <label htmlFor="auth-confirm">
+                Confirm Password <span className="req">*</span>
+              </label>
+              <input
+                id="auth-confirm"
+                type={showPassword ? 'text' : 'password'}
+                value={form.confirm}
+                onChange={update('confirm')}
+                placeholder="Type it once more"
+                autoComplete="new-password"
+              />
+              {errors.confirm && <span className="field-error">{errors.confirm}</span>}
+            </div>
+          )}
+
+          <div className="login-meta">
+            {isRegister ? (
+              <label className="checkbox-row">
+                <input
+                  type="checkbox"
+                  checked={accepted}
+                  onChange={(e) => setAccepted(e.target.checked)}
+                />
+                <span>
+                  I accept the{' '}
+                  <Link to="/terms" style={{ color: 'var(--gold-dark)', fontWeight: 600 }}>
+                    terms
+                  </Link>{' '}
+                  and{' '}
+                  <Link
+                    to="/privacy-policy"
+                    style={{ color: 'var(--gold-dark)', fontWeight: 600 }}
+                  >
+                    privacy policy
+                  </Link>
+                </span>
+              </label>
+            ) : (
+              <>
+                <label className="checkbox-row">
+                  <input type="checkbox" defaultChecked />
+                  Keep me signed in
+                </label>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  style={{
+                    background: 'none',
+                    border: 0,
+                    padding: 0,
+                    color: 'var(--gold-dark)',
+                    fontWeight: 600,
+                    fontSize: '0.88rem',
+                  }}
+                >
+                  Forgot password?
+                </button>
+              </>
+            )}
+          </div>
+
+          {error && (
+            <div
+              role="alert"
+              style={{
+                display: 'flex',
+                gap: 10,
+                alignItems: 'flex-start',
+                padding: '12px 14px',
+                marginBottom: 16,
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(209,67,67,.08)',
+                border: '1px solid rgba(209,67,67,.35)',
+                color: '#a92f2f',
+                fontSize: '0.9rem',
+              }}
+            >
+              <Icon name="info" size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {notice && (
+            <div
+              role="status"
+              style={{
+                display: 'flex',
+                gap: 10,
+                alignItems: 'flex-start',
+                padding: '12px 14px',
+                marginBottom: 16,
+                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(37,211,102,.1)',
+                border: '1px solid rgba(37,211,102,.4)',
+                color: '#16794a',
+                fontSize: '0.9rem',
+              }}
+            >
+              <Icon name="check-circle" size={18} />
+              <span>{notice}</span>
+            </div>
+          )}
+
+          <button type="submit" className="btn btn-dark btn-block btn-lg" disabled={busy}>
+            <Icon name={isRegister ? 'user' : 'lock'} size={17} />
+            {busy
+              ? isRegister
+                ? 'CREATING ACCOUNT…'
+                : 'SIGNING IN…'
+              : isRegister
+                ? 'CREATE ACCOUNT'
+                : 'SIGN IN'}
+          </button>
+        </form>
       </div>
     </div>
   );

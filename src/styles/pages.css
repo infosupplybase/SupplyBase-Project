@@ -440,83 +440,114 @@
   color: var(--grey-600);
 }
 
-/* --------------------------------------------------------- login page */
+/* --------------------------------------------------- full-width home page */
 
-.login-page {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: var(--black);
+/* The home page runs edge to edge on every screen size instead of stopping at
+   the 1240px --container. The gutter is kept and grows with the viewport so
+   content never touches the screen edge on a phone or a large monitor. */
+.page-home .container {
+  max-width: 100%;
+  padding-left: clamp(16px, 3vw, 56px);
+  padding-right: clamp(16px, 3vw, 56px);
 }
 
-.login-visual {
+/* Text blocks stay readable even though their section is now full width. */
+.page-home .section-head,
+.page-home .hero-inner {
+  max-width: 900px;
+}
+
+/* ------------------------------------------------------- account page */
+
+/* Full-screen backdrop: the project artwork, darkened, behind a centred card. */
+.auth-screen {
   position: relative;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
-  align-items: flex-end;
-  padding: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: var(--black);
+  overflow: hidden;
 }
 
-.login-visual img {
+.auth-screen > img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.55;
+  opacity: 0.4;
 }
 
-.login-visual::after {
+.auth-screen::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(11, 11, 13, 0.95), rgba(11, 11, 13, 0.35));
+  background: linear-gradient(to top, rgba(11, 11, 13, 0.92), rgba(11, 11, 13, 0.62));
 }
 
-.login-visual-text {
+.auth-modal {
   position: relative;
   z-index: 2;
-  max-width: 420px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
-.login-visual-text h2 {
-  color: var(--white);
-}
-
-.login-visual-text p {
-  color: var(--grey-400);
-  margin: 0;
-}
-
-.login-form-side {
+.auth-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
-  background: var(--white);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--grey-500);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
 }
 
-.login-box {
-  width: 100%;
-  max-width: 420px;
+.auth-close:hover {
+  background: var(--grey-100);
+  color: var(--black);
 }
 
-.login-logo {
-  display: inline-block;
+.auth-logo {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 20px;
   background: var(--black);
   border-radius: var(--radius);
-  padding: 14px 20px;
-  margin-bottom: 26px;
+  padding: 12px 18px;
 }
 
-.login-box img {
-  height: 40px;
+.auth-logo img {
+  height: 34px;
   width: auto;
 }
 
-.role-tabs {
+.auth-modal h2 {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.auth-intro {
+  color: var(--grey-600);
+  font-size: 0.92rem;
+  margin-bottom: 20px;
+}
+
+/* sign in / create account switcher on the account page */
+.auth-tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   padding: 5px;
   background: var(--grey-100);
@@ -524,7 +555,7 @@
   margin-bottom: 22px;
 }
 
-.role-tab {
+.auth-tab {
   padding: 10px 8px;
   border: 0;
   border-radius: var(--radius-sm);
@@ -534,11 +565,16 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  text-align: center;
   color: var(--grey-600);
   transition: all 0.22s var(--ease);
 }
 
-.role-tab.active {
+.auth-tab:hover {
+  color: var(--black);
+}
+
+.auth-tab.active {
   background: var(--black);
   color: var(--white);
 }
@@ -628,16 +664,15 @@
   .media-frame::before {
     display: none;
   }
-  .login-page {
-    grid-template-columns: 1fr;
-  }
-  .login-visual {
-    min-height: 240px;
-    padding: 28px;
-  }
 }
 
 @media (max-width: 720px) {
+  .auth-screen {
+    padding: 20px 14px;
+  }
+  .auth-modal {
+    padding: 26px 20px;
+  }
   .project-meta {
     grid-template-columns: 1fr 1fr;
   }

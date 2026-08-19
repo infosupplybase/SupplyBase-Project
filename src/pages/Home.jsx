@@ -16,7 +16,9 @@ export default function Home() {
   const featured = getFeaturedProjects(4);
 
   return (
-    <>
+    /* page-home widens every .container on this page to the full viewport —
+       see "full-width home page" in pages.css. Other pages stay centred. */
+    <div className="page-home">
       <Hero />
       <TrustBar />
 
@@ -31,7 +33,7 @@ export default function Home() {
                 WHAT <span className="gold">WE DO</span>
               </h2>
               <p style={{ color: 'var(--grey-600)', margin: 0, maxWidth: '58ch' }}>
-                End-to-end solutions for all your construction and interior needs — eleven service categories,
+                End-to-end solutions for all your construction and interior needs — ten service categories,
                 one accountable team.
               </p>
             </div>
@@ -142,6 +144,6 @@ export default function Home() {
       <StatsSection />
 
       <CtaBand />
-    </>
+    </div>
   );
 }
