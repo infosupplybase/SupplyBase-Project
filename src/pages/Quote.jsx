@@ -44,7 +44,7 @@ export default function Quote() {
                           height: 30,
                           borderRadius: '50%',
                           background: 'rgba(214,165,68,.14)',
-                          color: 'var(--gold-dark)',
+                          color: 'var(--gold-deep)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',

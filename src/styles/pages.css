@@ -72,7 +72,7 @@
 }
 
 .section-dark .check-list li {
-  color: var(--grey-300);
+  color: var(--ink-soft);
 }
 
 /* ------------------------------------------------------- service page */
@@ -151,13 +151,13 @@
 
 .service-nav-strip a:hover {
   border-color: var(--gold);
-  color: var(--gold-dark);
+  color: var(--gold-deep);
 }
 
 .service-nav-strip a.active {
-  background: var(--black);
-  border-color: var(--black);
-  color: var(--white);
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
 }
 
 .service-layout {
@@ -207,24 +207,24 @@
 }
 
 .sidebar-list a:hover {
-  background: var(--grey-50);
-  color: var(--black);
+  background: var(--bg-soft);
+  color: var(--ink);
 }
 
 .sidebar-list a.active {
   background: rgba(214, 165, 68, 0.12);
-  color: var(--gold-dark);
+  color: var(--gold-deep);
   font-weight: 600;
 }
 
 .sidebar-cta {
-  background: var(--black);
-  color: var(--grey-400);
-  border-color: var(--black);
+  background: var(--bg-band);
+  color: var(--ink-soft);
+  border-color: var(--line-gold);
 }
 
 .sidebar-cta h4 {
-  color: var(--white);
+  color: var(--ink);
 }
 
 .sidebar-cta p {
@@ -354,17 +354,17 @@
 }
 
 .section-dark .value-card {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--white);
+  border-color: var(--line-gold);
 }
 
 .section-dark .value-card p {
-  color: var(--grey-400);
+  color: var(--ink-soft);
 }
 
 .section-dark .value-icon {
   background: rgba(214, 165, 68, 0.16);
-  color: var(--gold);
+  color: var(--gold-deep);
 }
 
 /* ------------------------------------------------------- contact page */
@@ -467,7 +467,7 @@
   align-items: center;
   justify-content: center;
   padding: 32px 20px;
-  background: var(--black);
+  background: var(--bg-soft);
   overflow: hidden;
 }
 
@@ -477,14 +477,14 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.4;
+  opacity: 0.18;
 }
 
 .auth-screen::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(11, 11, 13, 0.92), rgba(11, 11, 13, 0.62));
+  background: linear-gradient(to top, rgba(250, 248, 244, 0.94), rgba(250, 248, 244, 0.66));
 }
 
 .auth-modal {
@@ -539,7 +539,7 @@
 }
 
 .auth-intro {
-  color: var(--grey-600);
+  color: var(--ink-soft);
   font-size: 0.92rem;
   margin-bottom: 20px;
 }
@@ -571,12 +571,12 @@
 }
 
 .auth-tab:hover {
-  color: var(--black);
+  color: var(--ink);
 }
 
 .auth-tab.active {
-  background: var(--black);
-  color: var(--white);
+  background: var(--gold);
+  color: var(--on-gold);
 }
 
 .login-meta {
@@ -757,7 +757,7 @@
 .brand-card:hover {
   background: var(--white);
   border-color: var(--gold);
-  color: var(--black);
+  color: var(--ink);
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
@@ -794,20 +794,21 @@
 
 .brand-strip span {
   padding: 11px 22px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--line-gold);
   border-radius: 40px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--white);
   font-family: var(--font-display);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.06em;
-  color: var(--grey-300);
+  color: var(--ink);
   transition: all 0.25s var(--ease);
 }
 
 .brand-strip span:hover {
   border-color: var(--gold);
-  color: var(--gold);
+  color: var(--gold-deep);
+  box-shadow: var(--shadow-sm);
 }
 
 @media (max-width: 480px) {

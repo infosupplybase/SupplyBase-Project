@@ -25,16 +25,16 @@ export default function Home() {
       {/* ------------------------------------------------------- services */}
       <section className="section">
         <div className="container">
-          <div className="section-head-row" style={{ marginBottom: 'clamp(2rem,4vw,3rem)' }}>
+          <div className="section-head-row">
             <div>
               <span className="eyebrow">OUR SERVICES</span>
               <div className="rule" />
               <h2>
                 WHAT <span className="gold">WE DO</span>
               </h2>
-              <p style={{ color: 'var(--grey-600)', margin: 0, maxWidth: '58ch' }}>
-                End-to-end solutions for all your construction and interior needs — ten service categories,
-                one accountable team.
+              <p>
+                Ten trades under one contract — from the first architectural drawing to the final coat
+                of paint, with one team answerable for all of it.
               </p>
             </div>
             <Link to="/services" className="btn btn-ghost">
@@ -59,13 +59,13 @@ export default function Home() {
                 <br />
                 <span className="gold">COMPLETE PROJECT.</span>
               </h2>
-              <p style={{ color: 'var(--grey-600)' }}>{company.longIntro}</p>
+              <p style={{ color: 'var(--ink-soft)' }}>{company.longIntro}</p>
               <ul className="check-list">
                 {whyUsPoints.slice(0, 4).map((point) => (
                   <li key={point.title}>
                     <Icon name="check" size={19} strokeWidth={2.2} />
                     <span>
-                      <strong style={{ color: 'var(--black)' }}>{point.title}</strong> — {point.text}
+                      <strong>{point.title}</strong> — {point.text}
                     </span>
                   </li>
                 ))}
@@ -100,7 +100,10 @@ export default function Home() {
             <h2>
               WE SUPPLY THE <span className="gold">MATERIAL TOO</span>
             </h2>
-            <p>Branded materials, bought at project rates and written into your quotation.</p>
+            <p>
+              Branded materials bought at project rates and itemised in your quotation, so you can see
+              exactly what you are paying for.
+            </p>
             <div className="brand-strip">
               {featuredBrands.map((brand) => (
                 <span key={brand}>{brand}</span>
@@ -122,13 +125,17 @@ export default function Home() {
       {/* ------------------------------------------------------ projects */}
       <section className="section">
         <div className="container">
-          <div className="section-head-row" style={{ marginBottom: 'clamp(2rem,4vw,3rem)' }}>
+          <div className="section-head-row">
             <div>
               <span className="eyebrow">OUR WORK</span>
               <div className="rule" />
               <h2>
                 FEATURED <span className="gold">PROJECTS</span>
               </h2>
+              <p>
+                Residential, commercial and interior fit-out work — completed and ongoing. Every project
+                below was designed, built and handed over by the same team.
+              </p>
             </div>
             <Link to="/projects" className="btn btn-ghost">
               VIEW ALL PROJECTS

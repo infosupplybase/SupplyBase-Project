@@ -11,6 +11,7 @@
   --gold: #d6a544;
   --gold-light: #ecca7f;
   --gold-dark: #a87c26;
+  --gold-deep: #8a6318;  /* readable gold for small text - 5.4:1 on white */
   --white: #ffffff;
   --grey-50: #f8f8f9;
   --grey-100: #f0f0f2;
@@ -20,6 +21,22 @@
   --grey-500: #7f828b;
   --grey-600: #5c5f68;
   --grey-700: #3d4046;
+
+  /* -----------------------------------------------------------------
+     SEMANTIC TOKENS - the theme lives here.
+     White paper, black ink, gold for anything you can act on.
+     Components reference these, never the raw palette above, so the
+     whole site can be re-toned by editing these nine lines.
+     ----------------------------------------------------------------- */
+  --bg: var(--white);
+  --bg-soft: #faf8f4;                    /* alternating band - warm, not grey */
+  --bg-band: #fbf5e9;                    /* gold-tinted feature band */
+  --ink: var(--black);                   /* headings and body copy */
+  --ink-soft: #4a4d55;                   /* secondary copy */
+  --ink-muted: #6b6e77;                  /* captions, meta, labels */
+  --line: var(--grey-200);               /* hairline on white */
+  --line-gold: rgba(214, 165, 68, 0.38); /* hairline on a gold surface */
+  --on-gold: var(--black);               /* text sitting on a gold fill */
 
   /* Typography */
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -36,7 +53,7 @@
   /* Effects */
   --shadow-sm: 0 1px 2px rgba(11, 11, 13, 0.06), 0 1px 3px rgba(11, 11, 13, 0.04);
   --shadow: 0 4px 16px rgba(11, 11, 13, 0.08);
-  --shadow-lg: 0 18px 45px rgba(11, 11, 13, 0.14);
+  --shadow-lg: 0 18px 45px rgba(11, 11, 13, 0.12);
   --shadow-gold: 0 12px 28px rgba(214, 165, 68, 0.24);
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --header-h: 84px;
@@ -58,8 +75,8 @@ body {
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.65;
-  color: var(--grey-700);
-  background: var(--white);
+  color: var(--ink);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -77,7 +94,7 @@ h3,
 h4,
 h5 {
   margin: 0 0 0.5em;
-  color: var(--black);
+  color: var(--ink);
   line-height: 1.15;
   font-weight: 700;
 }
@@ -155,18 +172,22 @@ button {
 }
 
 .section-light {
-  background: var(--grey-50);
+  background: var(--bg-soft);
 }
 
+/* Kept the name so every call site stays put - but on a white site the
+   "dark" band is now a gold-tinted one. Same job: break up the rhythm. */
 .section-dark {
-  background: var(--black);
-  color: var(--grey-300);
+  background: var(--bg-band);
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line-gold);
+  border-bottom: 1px solid var(--line-gold);
 }
 
 .section-dark h2,
 .section-dark h3,
 .section-dark h4 {
-  color: var(--white);
+  color: var(--ink);
 }
 
 /* ------------------------------------------------------------- headings */
@@ -177,7 +198,7 @@ button {
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-deep);
   margin: 0 0 0.6rem;
   display: block;
 }
@@ -194,7 +215,7 @@ button {
 }
 
 .section-head p {
-  color: var(--grey-600);
+  color: var(--ink-soft);
   font-size: 1.03rem;
   margin: 0;
   max-width: 62ch;
@@ -206,11 +227,11 @@ button {
 }
 
 .section-dark .section-head p {
-  color: var(--grey-400);
+  color: var(--ink-soft);
 }
 
 .gold {
-  color: var(--gold);
+  color: var(--gold-dark);
 }
 
 .rule {
@@ -232,6 +253,13 @@ button {
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.section-head-row > div:first-child p {
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 58ch;
 }
 
 /* ------------------------------------------------------------- buttons */
@@ -276,39 +304,47 @@ button {
   transform: translateY(-2px);
 }
 
+/* Three weights of gold, so hierarchy survives a single-accent palette:
+   primary = solid gold, dark = deep gold, outline/ghost = gold on white. */
 .btn-outline {
   background: transparent;
-  color: var(--white);
-  border-color: rgba(255, 255, 255, 0.45);
+  color: var(--gold-deep);
+  border-color: var(--gold);
 }
 
 .btn-outline:hover {
+  background: var(--gold);
   border-color: var(--gold);
-  color: var(--gold);
+  color: var(--on-gold);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-gold);
 }
 
 .btn-dark {
-  background: var(--black);
+  background: var(--gold-deep);
   color: var(--white);
-  border-color: var(--black);
+  border-color: var(--gold-deep);
 }
 
 .btn-dark:hover {
-  background: var(--charcoal);
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
   transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-gold);
 }
 
 .btn-ghost {
-  background: transparent;
-  color: var(--black);
-  border-color: var(--grey-300);
+  background: var(--white);
+  color: var(--gold-deep);
+  border-color: var(--line-gold);
 }
 
 .btn-ghost:hover {
+  background: rgba(214, 165, 68, 0.1);
   border-color: var(--gold);
-  color: var(--gold-dark);
+  color: var(--gold-deep);
+  transform: translateY(-2px);
 }
 
 .btn-whatsapp {
@@ -353,17 +389,17 @@ button {
   font-weight: 600;
   letter-spacing: 0.13em;
   text-transform: uppercase;
-  color: var(--gold-dark);
+  color: var(--gold-deep);
   transition: gap 0.25s var(--ease), color 0.25s var(--ease);
 }
 
 .link-arrow:hover {
   gap: 13px;
-  color: var(--gold);
+  color: var(--gold-dark);
 }
 
 .section-dark .link-arrow {
-  color: var(--gold);
+  color: var(--gold-deep);
 }
 
 /* ------------------------------------------------------------- misc */
@@ -384,7 +420,7 @@ button {
 .badge-outline {
   background: transparent;
   border: 1px solid var(--gold);
-  color: var(--gold);
+  color: var(--gold-deep);
 }
 
 .sr-only {

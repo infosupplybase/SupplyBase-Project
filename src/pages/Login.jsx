@@ -289,13 +289,13 @@ export default function Login() {
                 />
                 <span>
                   I accept the{' '}
-                  <Link to="/terms" style={{ color: 'var(--gold-dark)', fontWeight: 600 }}>
+                  <Link to="/terms" style={{ color: 'var(--gold-deep)', fontWeight: 600 }}>
                     terms
                   </Link>{' '}
                   and{' '}
                   <Link
                     to="/privacy-policy"
-                    style={{ color: 'var(--gold-dark)', fontWeight: 600 }}
+                    style={{ color: 'var(--gold-deep)', fontWeight: 600 }}
                   >
                     privacy policy
                   </Link>
@@ -314,7 +314,7 @@ export default function Login() {
                     background: 'none',
                     border: 0,
                     padding: 0,
-                    color: 'var(--gold-dark)',
+                    color: 'var(--gold-deep)',
                     fontWeight: 600,
                     fontSize: '0.88rem',
                   }}
