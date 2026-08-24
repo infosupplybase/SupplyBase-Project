@@ -75,11 +75,9 @@ export default function Home() {
                 ))}
               </ul>
               <div className="btn-row">
-                <Link to="/why-us" className="btn btn-dark">
-                  WHY CHOOSE US
-                  <Icon name="arrow-right" size={17} />
-                </Link>
-                <Link to="/about" className="btn btn-ghost">
+                {/* promoted from ghost to solid — it is the only button in
+                    this row now that Why Us is gone. */}
+                <Link to="/about" className="btn btn-dark">
                   ABOUT US
                   <Icon name="arrow-right" size={17} />
                 </Link>

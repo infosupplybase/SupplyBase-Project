@@ -87,11 +87,11 @@ You should almost never need to touch a component to change content.
 |---|---|
 | `/` | Home |
 | `/services` | All services |
-| `/services/:slug` | Service detail — one template, all 11 services |
+| `/services/:slug` | Service detail — one template, all 10 services |
 | `/projects` | Projects with category filtering |
 | `/projects/:slug` | Project detail |
+| `/materials` | Materials and brands we use |
 | `/about` | About Us |
-| `/why-us` | Why Us |
 | `/contact` | Contact + enquiry form |
 | `/quote` | Get a Quote (`?service=<slug>` pre-selects a service) |
 | `/login` | Login |

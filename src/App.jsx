@@ -8,7 +8,6 @@ import Projects from './pages/Projects';
 import Materials from './pages/Materials';
 import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
-import WhyUs from './pages/WhyUs';
 import Contact from './pages/Contact';
 import Quote from './pages/Quote';
 import Login from './pages/Login';
@@ -25,7 +24,6 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /projects/:slug         Project detail
  * /materials              Materials and brands we use
  * /about                  About us
- * /why-us                 Why us
  * /contact                Contact
  * /quote                  Get a quote  (?service=<slug> pre-selects a service)
  * /login                  Sign in       (no header/footer)
@@ -49,7 +47,6 @@ export default function App() {
         <Route path="projects/:slug" element={<ProjectDetail />} />
         <Route path="materials" element={<Materials />} />
         <Route path="about" element={<About />} />
-        <Route path="why-us" element={<WhyUs />} />
         <Route path="contact" element={<Contact />} />
         <Route path="quote" element={<Quote />} />
         <Route

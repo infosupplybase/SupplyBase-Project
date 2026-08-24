@@ -8,3 +8,6 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 preview/out
+
+# local editor / agent config (machine-specific paths)
+.claude

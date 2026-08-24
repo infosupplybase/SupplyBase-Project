@@ -91,7 +91,8 @@ export const processSteps = [
 ];
 
 /**
- * WHY US — differentiators used on the home page and the Why Us page.
+ * DIFFERENTIATORS — the reasons to choose us, shown on the home page and the
+ * About page. (There is no longer a separate Why Us page.)
  */
 export const whyUsPoints = [
   {
@@ -135,7 +136,6 @@ export const mainNav = [
   { label: 'PROJECTS', path: '/projects' },
   { label: 'MATERIALS', path: '/materials' },
   { label: 'ABOUT US', path: '/about' },
-  { label: 'WHY US', path: '/why-us' },
   { label: 'CONTACT US', path: '/contact' },
 ];
 
@@ -148,7 +148,6 @@ export const quickLinks = [
   { label: 'Projects', path: '/projects' },
   { label: 'Materials', path: '/materials' },
   { label: 'About Us', path: '/about' },
-  { label: 'Why Us', path: '/why-us' },
   { label: 'Contact Us', path: '/contact' },
   { label: 'Get a Quote', path: '/quote' },
   { label: 'Login', path: '/login' },
