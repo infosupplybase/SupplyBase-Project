@@ -62,11 +62,11 @@
   gap: 11px;
   align-items: flex-start;
   font-size: 0.97rem;
-  color: var(--grey-600);
+  color: var(--ink-soft);
 }
 
 .check-list svg {
-  color: var(--gold);
+  color: var(--success);
   flex-shrink: 0;
   margin-top: 3px;
 }

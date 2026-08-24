@@ -326,42 +326,14 @@ export default function Login() {
           </div>
 
           {error && (
-            <div
-              role="alert"
-              style={{
-                display: 'flex',
-                gap: 10,
-                alignItems: 'flex-start',
-                padding: '12px 14px',
-                marginBottom: 16,
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(209,67,67,.08)',
-                border: '1px solid rgba(209,67,67,.35)',
-                color: '#a92f2f',
-                fontSize: '0.9rem',
-              }}
-            >
+            <div role="alert" className="alert alert-error">
               <Icon name="info" size={18} />
               <span>{error}</span>
             </div>
           )}
 
           {notice && (
-            <div
-              role="status"
-              style={{
-                display: 'flex',
-                gap: 10,
-                alignItems: 'flex-start',
-                padding: '12px 14px',
-                marginBottom: 16,
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(37,211,102,.1)',
-                border: '1px solid rgba(37,211,102,.4)',
-                color: '#16794a',
-                fontSize: '0.9rem',
-              }}
-            >
+            <div role="status" className="alert alert-success">
               <Icon name="check-circle" size={18} />
               <span>{notice}</span>
             </div>

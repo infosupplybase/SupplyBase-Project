@@ -11,7 +11,9 @@ export default function ServiceCard({ service, delay = 0, maxSubServices = 8 }) 
 
   return (
     <Reveal delay={delay}>
-      <article className="service-card">
+      {/* data-service picks this service's hue out of the identity map in
+          components.css — the card itself never names a colour. */}
+      <article className="service-card" data-service={service.slug}>
         <div className="service-card-icon">
           <Icon name={service.icon} size={28} strokeWidth={1.4} />
         </div>

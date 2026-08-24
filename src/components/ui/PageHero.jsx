@@ -1,11 +1,14 @@
 import Breadcrumbs from './Breadcrumbs';
 
 /**
- * PageHero — the dark banner used at the top of every inner page.
+ * PageHero — the banner at the top of every inner page.
+ *
+ * Pass `accent` a service slug and the header takes that service's colour on
+ * its top rule and eyebrow. Left off, the header stays neutral.
  */
-export default function PageHero({ eyebrow, title, text, image, breadcrumbs = [], children }) {
+export default function PageHero({ eyebrow, title, text, image, breadcrumbs = [], accent, children }) {
   return (
-    <section className="page-hero">
+    <section className="page-hero" data-service={accent}>
       {image && (
         <div className="page-hero-bg">
           <img src={image} alt="" />

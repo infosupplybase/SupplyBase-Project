@@ -9,6 +9,7 @@ export default function ProjectFilter({ active, onChange }) {
           type="button"
           role="tab"
           aria-selected={active === category.id}
+          data-category={category.id}
           className={`filter-btn ${active === category.id ? 'active' : ''}`}
           onClick={() => onChange(category.id)}
         >

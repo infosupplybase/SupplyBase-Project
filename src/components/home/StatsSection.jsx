@@ -6,7 +6,9 @@ import { stats, company } from '../../data/siteConfig';
  */
 export default function StatsSection({ showHeading = true }) {
   return (
-    <section className="section section-dark">
+    /* section-accent, not section-dark: the process band above this one is
+       already gold-tinted, and two identical bands in a row read as one. */
+    <section className="section section-accent">
       <div className="container">
         {showHeading && (
           <Reveal className="section-head center">

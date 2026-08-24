@@ -554,7 +554,11 @@
   gap: 22px;
 }
 
+/* --svc falls back to gold, so a service with no hue of its own still
+   looks deliberate rather than broken. */
 .service-card {
+  --svc: var(--gold-dark);
+  --svc-soft: rgba(214, 165, 68, 0.11);
   display: flex;
   flex-direction: column;
   background: var(--white);
@@ -573,7 +577,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--gold);
+  background: var(--svc);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.35s var(--ease);
@@ -596,15 +600,15 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: rgba(214, 165, 68, 0.11);
-  color: var(--gold-dark);
+  background: var(--svc-soft);
+  color: var(--svc);
   margin-bottom: 16px;
   transition: background 0.3s var(--ease), color 0.3s var(--ease);
 }
 
 .service-card:hover .service-card-icon {
-  background: var(--gold);
-  color: var(--black);
+  background: var(--svc);
+  color: var(--white);
 }
 
 .service-card-num {
@@ -727,9 +731,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 1px solid rgba(214, 165, 68, 0.4);
-  background: rgba(214, 165, 68, 0.08);
-  color: var(--gold);
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent);
   position: relative;
 }
 
@@ -776,7 +780,10 @@
   gap: 22px;
 }
 
+/* --cat falls back to gold for a project with no category hue. */
 .project-card {
+  --cat: var(--gold);
+  --on-cat: var(--on-gold);
   position: relative;
   display: block;
   border-radius: var(--radius);
@@ -815,6 +822,8 @@
 .project-card .badge {
   align-self: flex-start;
   margin-bottom: auto;
+  background: var(--cat);
+  color: var(--on-cat);
 }
 
 .project-card h3 {
@@ -883,10 +892,15 @@
   color: var(--gold-deep);
 }
 
+.filter-btn {
+  --cat: var(--gold);
+  --on-cat: var(--on-gold);
+}
+
 .filter-btn.active {
-  background: var(--gold);
-  border-color: var(--gold);
-  color: var(--on-gold);
+  background: var(--cat);
+  border-color: var(--cat);
+  color: var(--on-cat);
 }
 
 /* -------------------------------------------------------------- stats */
@@ -900,16 +914,16 @@
 .stat {
   text-align: center;
   padding: 30px 18px;
-  border: 1px solid var(--line-gold);
+  border: 1px solid var(--accent-line);
   border-radius: var(--radius);
   background: var(--white);
   transition: border-color 0.3s var(--ease), transform 0.3s var(--ease);
 }
 
 .stat:hover {
-  border-color: var(--gold);
+  border-color: var(--accent);
   transform: translateY(-4px);
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--shadow);
 }
 
 .stat-value {
@@ -1455,6 +1469,97 @@
   .mega-cta {
     grid-column: span 3;
   }
+}
+
+/* ============================================================ identity
+   The one place that says which colour belongs to which thing. Each rule
+   only sets a variable - the components above decide what to do with it,
+   so adding a service means adding two lines here and nothing else.
+   ==================================================================== */
+
+[data-service='architectural-design'] {
+  --svc: var(--svc-architectural-design);
+  --svc-soft: var(--svc-architectural-design-soft);
+}
+
+[data-service='civil-construction'] {
+  --svc: var(--svc-civil-construction);
+  --svc-soft: var(--svc-civil-construction-soft);
+}
+
+[data-service='interior-design'] {
+  --svc: var(--svc-interior-design);
+  --svc-soft: var(--svc-interior-design-soft);
+}
+
+[data-service='painting'] {
+  --svc: var(--svc-painting);
+  --svc-soft: var(--svc-painting-soft);
+}
+
+[data-service='pop-false-ceiling'] {
+  --svc: var(--svc-pop-false-ceiling);
+  --svc-soft: var(--svc-pop-false-ceiling-soft);
+}
+
+[data-service='electrical'] {
+  --svc: var(--svc-electrical);
+  --svc-soft: var(--svc-electrical-soft);
+}
+
+[data-service='plumbing'] {
+  --svc: var(--svc-plumbing);
+  --svc-soft: var(--svc-plumbing-soft);
+}
+
+[data-service='furniture'] {
+  --svc: var(--svc-furniture);
+  --svc-soft: var(--svc-furniture-soft);
+}
+
+[data-service='fabrication'] {
+  --svc: var(--svc-fabrication);
+  --svc-soft: var(--svc-fabrication-soft);
+}
+
+[data-service='finishing'] {
+  --svc: var(--svc-finishing);
+  --svc-soft: var(--svc-finishing-soft);
+}
+
+[data-category='residential'] {
+  --cat: var(--cat-residential);
+  --on-cat: var(--white);
+}
+
+[data-category='commercial'] {
+  --cat: var(--cat-commercial);
+  --on-cat: var(--white);
+}
+
+[data-category='interior'] {
+  --cat: var(--cat-interior);
+  --on-cat: var(--white);
+}
+
+[data-category='civil'] {
+  --cat: var(--cat-civil);
+  --on-cat: var(--white);
+}
+
+[data-category='finishing'] {
+  --cat: var(--cat-finishing);
+  --on-cat: var(--white);
+}
+
+/* The service page header wears its service's colour as a top rule and
+   on the eyebrow, so the page announces itself before you read it. */
+.page-hero[data-service] {
+  border-top: 3px solid var(--svc);
+}
+
+.page-hero[data-service] .eyebrow {
+  color: var(--svc);
 }
 
 @media (max-width: 1024px) {

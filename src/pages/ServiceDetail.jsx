@@ -28,6 +28,7 @@ export default function ServiceDetail() {
   return (
     <>
       <PageHero
+        accent={service.slug}
         eyebrow={`SERVICE ${service.number}`}
         title={service.name}
         text={service.tagline}
