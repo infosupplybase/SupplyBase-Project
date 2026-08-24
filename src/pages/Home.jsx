@@ -9,6 +9,7 @@ import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
 import { getFeaturedProjects } from '../data/projects';
+import { getFeaturedServices } from '../data/services';
 import { whyUsPoints, company } from '../data/siteConfig';
 import { featuredBrands } from '../data/materials';
 
@@ -33,8 +34,8 @@ export default function Home() {
                 WHAT <span className="gold">WE DO</span>
               </h2>
               <p>
-                Ten trades under one contract — from the first architectural drawing to the final coat
-                of paint, with one team answerable for all of it.
+                Our four most-requested trades below. Ten in total — from the first architectural
+                drawing to the final coat of paint, with one team answerable for all of it.
               </p>
             </div>
             <Link to="/services" className="btn btn-ghost">
@@ -43,7 +44,10 @@ export default function Home() {
             </Link>
           </div>
 
-          <ServiceGrid maxSubServices={7} />
+          {/* Four cards only. The other six live on /services — the button
+              above is the way through. Edit featuredServiceSlugs in
+              data/services.js to change which four lead. */}
+          <ServiceGrid list={getFeaturedServices()} columns={4} maxSubServices={7} />
         </div>
       </section>
 

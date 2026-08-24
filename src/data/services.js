@@ -11,6 +11,13 @@
 
 export const megaMenuGroups = ['DESIGN', 'CONSTRUCTION', 'FINISHING', 'MEP', 'SPECIALIZED'];
 
+/**
+ * The four services shown on the home page. Everything else stays one click
+ * away behind "View all services". Reorder or swap these slugs and the home
+ * page follows — no component needs editing.
+ */
+export const featuredServiceSlugs = ['painting', 'plumbing', 'pop-false-ceiling', 'furniture'];
+
 export const services = [
   /* ------------------------------------------------------------------ 01 */
   {
@@ -441,6 +448,12 @@ export const services = [
 /* ---------------------------------------------------------------- helpers */
 
 export const getServiceBySlug = (slug) => services.find((s) => s.slug === slug);
+
+/* Kept in featuredServiceSlugs order, not in services[] order, so the list
+   above controls which service leads. A slug that no longer exists is
+   dropped rather than rendering a hole. */
+export const getFeaturedServices = () =>
+  featuredServiceSlugs.map(getServiceBySlug).filter(Boolean);
 
 export const getServicesByGroup = () =>
   megaMenuGroups.map((group) => ({

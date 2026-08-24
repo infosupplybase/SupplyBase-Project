@@ -554,6 +554,13 @@
   gap: 22px;
 }
 
+/* A fixed four-across row for the home page. auto-fill would keep making
+   260px tracks on a wide screen and shove four cards into the left third,
+   so a short list needs to state its column count outright. */
+.service-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 /* --svc falls back to gold, so a service with no hue of its own still
    looks deliberate rather than broken. */
 .service-card {
@@ -1604,6 +1611,9 @@
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }
+  .service-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 720px) {
@@ -1678,6 +1688,12 @@
   .fab {
     width: 48px;
     height: 48px;
+  }
+}
+
+@media (max-width: 560px) {
+  .service-grid-4 {
+    grid-template-columns: 1fr;
   }
 }
 
