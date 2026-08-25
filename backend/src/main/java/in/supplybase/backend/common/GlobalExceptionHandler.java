@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -44,6 +45,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
                 .body(ApiError.withFields(400, "Bad Request", "Some fields need attention.",
                         request.getRequestURI(), fields));
+    }
+
+    /**
+     * Malformed JSON, a bad enum value, a string where a number belongs.
+     * All of these are the caller's mistake, so they must not fall through to
+     * the catch-all and come back as 500 — a 500 tells a client to retry
+     * something that will never succeed.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException ex,
+                                                         HttpServletRequest request) {
+        log.warn("Unreadable request body on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.badRequest()
+                .body(ApiError.of(400, "Bad Request",
+                        "We could not read that request. Please check the values and try again.",
+                        request.getRequestURI()));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

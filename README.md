@@ -71,6 +71,7 @@ You should almost never need to touch a component to change content.
 | Social media links (empty = hidden) | `src/data/siteConfig.js` → `social` |
 | Trust bar, why-us points, how-it-works steps | `src/data/siteConfig.js` |
 | Quote form dropdowns (project types, budgets) | `src/data/siteConfig.js` |
+| Booking services, property types, time slots | `src/data/booking.js` |
 | Services, sub-services, FAQs, process | `src/data/services.js` |
 | Projects | `src/data/projects.js` |
 | Colours, fonts, spacing | `src/styles/base.css` (CSS variables at the top) |
@@ -91,6 +92,7 @@ You should almost never need to touch a component to change content.
 | `/projects` | Projects with category filtering |
 | `/projects/:slug` | Project detail |
 | `/materials` | Materials and brands we use |
+| `/book` | Book a site visit (`?type=service` or `?type=project`) |
 | `/about` | About Us |
 | `/contact` | Contact + enquiry form |
 | `/quote` | Get a Quote (`?service=<slug>` pre-selects a service) |

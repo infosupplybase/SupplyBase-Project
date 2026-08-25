@@ -157,6 +157,14 @@ export const api = {
 
   createEnquiry: (payload) =>
     request('/api/enquiries', { method: 'POST', auth: false, body: payload }),
+
+  /**
+   * auth is left ON deliberately. The endpoint is public, but sending the
+   * token when there is one lets the API attach the booking to that account.
+   */
+  createBooking: (payload) => request('/api/bookings', { method: 'POST', body: payload }),
+
+  myBookings: () => request('/api/bookings/mine'),
 };
 
 export default api;

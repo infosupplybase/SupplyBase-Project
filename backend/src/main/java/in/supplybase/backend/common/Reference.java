@@ -32,6 +32,10 @@ public final class Reference {
         return build("PRJ");
     }
 
+    public static String forBooking() {
+        return build("BK");
+    }
+
     private static String build(String prefix) {
         StringBuilder suffix = new StringBuilder(4);
         for (int i = 0; i < 4; i++) {

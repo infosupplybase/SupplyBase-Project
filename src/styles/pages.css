@@ -861,3 +861,258 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ========================================================= booking wizard */
+
+.booking {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* The two lanes promise different things, so the choice stays visible while
+   the form is filled rather than being buried on the page before. */
+.booking-lanes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.booking-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 20px;
+  text-align: left;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: all 0.22s var(--ease);
+}
+
+.booking-lane strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+}
+
+.booking-lane span {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+.booking-lane:hover {
+  border-color: var(--gold);
+}
+
+.booking-lane.active {
+  border-color: var(--gold);
+  background: rgba(214, 165, 68, 0.08);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ------------------------------------------------------------- progress */
+
+.booking-steps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.booking-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.booking-step-num {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--white);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  transition: all 0.25s var(--ease);
+}
+
+.booking-step-label {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Done steps go teal, the current one gold — finished work and the thing
+   asking for attention should not look the same. */
+.booking-step.done .booking-step-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white);
+}
+
+.booking-step.current .booking-step-num {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
+
+.booking-step.current .booking-step-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------- panel */
+
+.booking-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px 24px;
+  margin: 0;
+  background: var(--white);
+}
+
+.booking-panel legend {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 0 10px;
+  margin-left: -10px;
+}
+
+/* Big tap targets — most of this will be filled in on a phone, on site. */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.choice-grid.slots {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.choice {
+  padding: 14px 16px;
+  min-height: 52px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.94rem;
+  color: var(--ink);
+  text-align: left;
+  transition: all 0.2s var(--ease);
+}
+
+.choice:hover {
+  border-color: var(--gold);
+  background: rgba(214, 165, 68, 0.06);
+}
+
+.choice.active {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--on-gold);
+  font-weight: 600;
+}
+
+.booking-slot-label {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 22px 0 10px;
+}
+
+.booking-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+/* ---------------------------------------------------------- confirmation */
+
+.booking-done {
+  max-width: 620px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 40px 24px;
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.booking-done-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.booking-done h2 {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  margin-bottom: 10px;
+}
+
+/* The reference is the thing they will read down the phone, so it is set in
+   a monospaced face where 0 and O cannot be confused. */
+.booking-ref {
+  display: inline-block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: var(--gold-deep);
+  background: rgba(214, 165, 68, 0.1);
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 720px) {
+  .booking-lanes {
+    grid-template-columns: 1fr;
+  }
+  .booking-step-label {
+    display: none;
+  }
+  .booking-step {
+    flex: 0 0 auto;
+  }
+  .booking-steps {
+    justify-content: center;
+    gap: 10px;
+  }
+  .booking-panel {
+    padding: 20px 16px;
+  }
+  .booking-nav .btn {
+    flex: 1 1 auto;
+  }
+}
