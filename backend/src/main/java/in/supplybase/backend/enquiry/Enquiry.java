@@ -2,6 +2,9 @@ package in.supplybase.backend.enquiry;
 
 import java.time.Instant;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,7 +12,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,7 +56,7 @@ public class Enquiry {
     @Column(name = "budget_range", length = 60)
     private String budgetRange;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -67,13 +69,14 @@ public class Enquiry {
     @Builder.Default
     private EnquiryStatus status = EnquiryStatus.NEW;
 
-    @Lob
-    @Column(name = "admin_notes")
+    @Column(name = "admin_notes", columnDefinition = "TEXT")
     private String adminNotes;
 
+    @Generated(event = EventType.INSERT)
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 
+    @Generated(event = { EventType.INSERT, EventType.UPDATE })
     @Column(name = "updated_at", insertable = false, updatable = false)
     private Instant updatedAt;
 }

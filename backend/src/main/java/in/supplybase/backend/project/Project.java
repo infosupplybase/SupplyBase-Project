@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import in.supplybase.backend.auth.User;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +19,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
@@ -59,7 +61,7 @@ public class Project {
     @Column(length = 60)
     private String area;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -83,9 +85,11 @@ public class Project {
     @Builder.Default
     private List<ProjectStage> stages = new ArrayList<>();
 
+    @Generated(event = EventType.INSERT)
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 
+    @Generated(event = { EventType.INSERT, EventType.UPDATE })
     @Column(name = "updated_at", insertable = false, updatable = false)
     private Instant updatedAt;
 

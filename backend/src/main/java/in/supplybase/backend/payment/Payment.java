@@ -6,6 +6,9 @@ import java.time.LocalDate;
 import in.supplybase.backend.auth.User;
 import in.supplybase.backend.project.Project;
 import in.supplybase.backend.project.ProjectStage;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -95,9 +98,11 @@ public class Payment {
     @Column(name = "paid_at")
     private Instant paidAt;
 
+    @Generated(event = EventType.INSERT)
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 
+    @Generated(event = { EventType.INSERT, EventType.UPDATE })
     @Column(name = "updated_at", insertable = false, updatable = false)
     private Instant updatedAt;
 

@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import in.supplybase.backend.auth.JwtAuthenticationFilter;
+import in.supplybase.backend.common.RestAccessDeniedHandler;
 import in.supplybase.backend.common.RestAuthenticationEntryPoint;
 
 @Configuration
@@ -27,13 +28,16 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
     private final RestAuthenticationEntryPoint entryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
     private final AppProperties props;
 
     public SecurityConfig(JwtAuthenticationFilter jwtFilter,
                           RestAuthenticationEntryPoint entryPoint,
+                          RestAccessDeniedHandler accessDeniedHandler,
                           AppProperties props) {
         this.jwtFilter = jwtFilter;
         this.entryPoint = entryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
         this.props = props;
     }
 
@@ -53,7 +57,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(ex -> ex.authenticationEntryPoint(entryPoint))
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(entryPoint)
+                .accessDeniedHandler(accessDeniedHandler))
             .authorizeHttpRequests(auth -> auth
                 // --- public
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",

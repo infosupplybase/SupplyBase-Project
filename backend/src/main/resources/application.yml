@@ -9,6 +9,13 @@ spring:
   application:
     name: supplybase-api
 
+  config:
+    # Reads backend/.env as a property source, so `./mvnw spring-boot:run` works
+    # with no shell exports and no extra dependency. `optional:` means a missing
+    # .env is not an error — in production the same names come from real
+    # environment variables, which take precedence over anything in the file.
+    import: optional:file:./.env[.properties]
+
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:supplybase}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8
     username: ${DB_USER:root}

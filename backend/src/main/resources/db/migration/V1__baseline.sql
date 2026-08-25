@@ -180,7 +180,7 @@ CREATE TABLE payment_events (
     event_type        VARCHAR(60)  NOT NULL,
     payment_id        BIGINT                DEFAULT NULL,
     signature_valid   BOOLEAN      NOT NULL,
-    payload           JSON                  DEFAULT NULL,
+    payload           LONGTEXT              DEFAULT NULL,
     processed         BOOLEAN      NOT NULL DEFAULT FALSE,
     process_error     VARCHAR(500)          DEFAULT NULL,
     created_at        DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6),

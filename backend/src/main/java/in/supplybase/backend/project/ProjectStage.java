@@ -3,6 +3,9 @@ package in.supplybase.backend.project;
 import java.time.Instant;
 import java.time.LocalDate;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,7 +15,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -44,7 +46,7 @@ public class ProjectStage {
     @Column(nullable = false, length = 120)
     private String title;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -58,9 +60,11 @@ public class ProjectStage {
     @Column(name = "completed_on")
     private LocalDate completedOn;
 
+    @Generated(event = EventType.INSERT)
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 
+    @Generated(event = { EventType.INSERT, EventType.UPDATE })
     @Column(name = "updated_at", insertable = false, updatable = false)
     private Instant updatedAt;
 }
