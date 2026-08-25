@@ -10,6 +10,8 @@ import in.supplybase.backend.auth.dto.AuthResponse;
 import in.supplybase.backend.auth.dto.LoginRequest;
 import in.supplybase.backend.auth.dto.RegisterRequest;
 import in.supplybase.backend.auth.dto.UserResponse;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+
 import in.supplybase.backend.common.ApiException;
 
 @Service
@@ -19,15 +21,18 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokens;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final GoogleTokenVerifier googleVerifier;
 
     public AuthService(UserRepository users,
                        RefreshTokenRepository refreshTokens,
                        PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+                       JwtService jwtService,
+                       GoogleTokenVerifier googleVerifier) {
         this.users = users;
         this.refreshTokens = refreshTokens;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.googleVerifier = googleVerifier;
     }
 
     @Transactional
@@ -54,6 +59,9 @@ public class AuthService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = users.findByEmailIgnoreCase(normalise(request.email()))
+                // hasPassword() first: a Google-only account has a null hash, and
+                // BCrypt.matches would throw on it rather than simply say no.
+                .filter(User::hasPassword)
                 .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPasswordHash()))
                 // One message for "no such email" and for "wrong password", so
                 // the endpoint cannot be used to discover who has an account.
@@ -63,6 +71,61 @@ public class AuthService {
             throw ApiException.forbidden("This account has been switched off. Please contact us.");
         }
         return issueTokens(user);
+    }
+
+    /**
+     * Signs in with a verified Google token, creating the account if needed.
+     *
+     * Three cases, in this order:
+     *   1. we already know this google_sub    -> sign in
+     *   2. we know the email but not the sub  -> link Google to that account
+     *   3. neither                            -> create a new CLIENT
+     *
+     * Case 2 is the one worth care. Linking on a verified Google email is safe
+     * because Google has proven ownership of the address; without it, a client
+     * who registered with a password and later clicks the Google button would
+     * silently get a second, empty account and wonder where their project went.
+     */
+    @Transactional
+    public AuthResponse loginWithGoogle(String credential) {
+        GoogleIdToken.Payload payload = googleVerifier.verify(credential);
+
+        String googleSub = payload.getSubject();
+        String email = normalise(payload.getEmail());
+        String name = (String) payload.get("name");
+        String picture = (String) payload.get("picture");
+
+        User user = users.findByGoogleSub(googleSub)
+                .or(() -> users.findByEmailIgnoreCase(email))
+                .orElse(null);
+
+        if (user == null) {
+            user = User.builder()
+                    .email(email)
+                    .passwordHash(null)
+                    .googleSub(googleSub)
+                    .fullName(name == null || name.isBlank() ? email.split("@")[0] : name.trim())
+                    .emailVerified(true)
+                    .pictureUrl(picture)
+                    .role(Role.CLIENT)
+                    .enabled(true)
+                    .build();
+        } else {
+            if (user.getGoogleSub() == null) {
+                user.setGoogleSub(googleSub);
+            }
+            user.setEmailVerified(true);
+            // Refresh the picture, but never overwrite a name the client has
+            // set on their own account with whatever Google currently holds.
+            if (picture != null) {
+                user.setPictureUrl(picture);
+            }
+        }
+
+        if (!user.isEnabled()) {
+            throw ApiException.forbidden("This account has been switched off. Please contact us.");
+        }
+        return issueTokens(users.save(user));
     }
 
     @Transactional

@@ -1,97 +1,99 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  signOut,
-  sendPasswordResetEmail,
-} from 'firebase/auth';
-import { auth, isConfigured } from '../lib/firebase';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import api, { clearTokens, getAccessToken, getRefreshToken, storeTokens } from '../lib/api';
 
 /**
  * Keeps track of who is signed in, everywhere on the site.
- * Wrap the app in <AuthProvider> (already done in main.jsx) and then use
- * `const { user, login, logout } = useAuth();` inside any component.
+ *
+ * Identity is owned by the Supplybase API, not by the browser. On load we ask
+ * /api/auth/me rather than decoding the stored token: the token says what was
+ * true when it was issued, and the server says what is true now — which is
+ * what matters if an account has been disabled or a role changed since.
  */
 const AuthContext = createContext({
   user: null,
-  loading: false,
-  configured: false,
+  loading: true,
+  configured: true,
+  googleEnabled: false,
   login: async () => {},
+  loginWithGoogle: async () => {},
   register: async () => {},
   logout: async () => {},
-  resetPassword: async () => {},
 });
-
-/** Turns Firebase's error codes into sentences a normal person can understand. */
-export const friendlyError = (error) => {
-  const code = (error && error.code) || '';
-  switch (code) {
-    case 'auth/invalid-email':
-      return 'That email address does not look right.';
-    case 'auth/user-disabled':
-      return 'This account has been switched off. Please contact us.';
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return 'Wrong email or password. Please try again.';
-    case 'auth/too-many-requests':
-      return 'Too many attempts. Please wait a few minutes and try again.';
-    case 'auth/network-request-failed':
-      return 'No internet connection. Please check your network and try again.';
-    case 'auth/missing-password':
-      return 'Please enter your password.';
-    case 'auth/email-already-in-use':
-      return 'An account already exists with that email. Try signing in instead.';
-    case 'auth/weak-password':
-      return 'That password is too weak. Use at least six characters.';
-    case 'auth/operation-not-allowed':
-      return 'Email sign-up is switched off in Firebase. Enable Email/Password under Authentication → Sign-in method.';
-    default:
-      return (error && error.message) || 'Something went wrong. Please try again.';
-  }
-};
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(isConfigured);
+  const [loading, setLoading] = useState(Boolean(getAccessToken()));
 
   useEffect(() => {
-    if (!isConfigured) return undefined;
-    return onAuthStateChanged(auth, (current) => {
-      setUser(current);
+    if (!getAccessToken()) {
       setLoading(false);
-    });
+      return;
+    }
+    let cancelled = false;
+    api
+      .me()
+      .then((me) => {
+        if (!cancelled) setUser(me);
+      })
+      .catch(() => {
+        // The token is gone or rejected — including after a failed refresh.
+        // Drop it rather than leaving the app in a half-signed-in state.
+        clearTokens();
+        if (!cancelled) setUser(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const adopt = useCallback((auth) => {
+    storeTokens(auth);
+    setUser(auth.user);
+    return auth.user;
+  }, []);
+
+  const logout = useCallback(async () => {
+    const refreshToken = getRefreshToken();
+    // Clear locally first. If the network call fails the person is still
+    // signed out here, which is the half that matters to them; the server
+    // token expires on its own.
+    clearTokens();
+    setUser(null);
+    if (refreshToken) {
+      try {
+        await api.logout(refreshToken);
+      } catch {
+        /* already signed out locally */
+      }
+    }
   }, []);
 
   const value = useMemo(
     () => ({
       user,
       loading,
-      configured: isConfigured,
-      login: (email, password) => signInWithEmailAndPassword(auth, email.trim(), password),
-      register: async (name, email, password) => {
-        const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-        const displayName = name.trim();
-        if (displayName) {
-          await updateProfile(credential.user, { displayName });
-          // onAuthStateChanged does not re-fire for a profile update, so push the
-          // fresh user object out ourselves — otherwise the dashboard greets the
-          // new client by the email prefix instead of their name.
-          setUser({ ...credential.user });
-        }
-        return credential;
-      },
-      logout: () => signOut(auth),
-      resetPassword: (email) => sendPasswordResetEmail(auth, email.trim()),
+      // The API needs no client-side keys, so unlike the old Firebase setup
+      // there is no "not configured yet" state for password sign-in.
+      configured: true,
+      googleEnabled: Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID),
+      login: async (email, password) => adopt(await api.login(email.trim(), password)),
+      loginWithGoogle: async (credential) => adopt(await api.loginWithGoogle(credential)),
+      register: async (name, email, password, phone) =>
+        adopt(await api.register(name.trim(), email.trim(), password, phone)),
+      logout,
     }),
-    [user, loading]
+    [user, loading, adopt, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+/** Re-exported so pages keep importing their error formatter from one place. */
+export { friendlyError } from '../lib/api';
 
 export default AuthContext;

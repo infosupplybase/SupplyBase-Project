@@ -35,9 +35,26 @@ public class User {
     @Column(nullable = false, unique = true, length = 190)
     private String email;
 
-    /** BCrypt hash. Never leaves the server — no DTO exposes this field. */
-    @Column(name = "password_hash", nullable = false, length = 100)
+    /**
+     * BCrypt hash. Never leaves the server — no DTO exposes this field.
+     * Null for an account that has only ever signed in with Google.
+     */
+    @Column(name = "password_hash", length = 100)
     private String passwordHash;
+
+    /**
+     * Google's `sub` claim — stable for the life of the Google account, unlike
+     * the email address, which can be changed by its owner.
+     */
+    @Column(name = "google_sub", unique = true, length = 64)
+    private String googleSub;
+
+    @Column(name = "email_verified", nullable = false)
+    @Builder.Default
+    private boolean emailVerified = false;
+
+    @Column(name = "picture_url", length = 500)
+    private String pictureUrl;
 
     @Column(name = "full_name", nullable = false, length = 120)
     private String fullName;
@@ -64,5 +81,10 @@ public class User {
 
     public boolean isStaff() {
         return role == Role.ADMIN || role == Role.MANAGER;
+    }
+
+    /** A Google-only account cannot sign in with a password it does not have. */
+    public boolean hasPassword() {
+        return passwordHash != null && !passwordHash.isBlank();
     }
 }

@@ -15,7 +15,8 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const name = (user && (user.displayName || (user.email || '').split('@')[0])) || 'there';
+  // fullName, not displayName — the API's user shape, not Firebase's.
+  const name = (user && (user.fullName || (user.email || '').split('@')[0])) || 'there';
 
   const handleLogout = async () => {
     await logout();

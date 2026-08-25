@@ -63,7 +63,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // --- public
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
-                                 "/api/auth/refresh", "/api/auth/logout").permitAll()
+                                 "/api/auth/google", "/api/auth/refresh",
+                                 "/api/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/enquiries").permitAll()
                 // Razorpay authenticates itself with an HMAC signature in the
                 // request body, not with our JWT, so this must stay open.

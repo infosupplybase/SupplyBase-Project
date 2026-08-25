@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import in.supplybase.backend.auth.dto.AuthResponse;
+import in.supplybase.backend.auth.dto.GoogleLoginRequest;
 import in.supplybase.backend.auth.dto.LoginRequest;
 import in.supplybase.backend.auth.dto.RefreshRequest;
 import in.supplybase.backend.auth.dto.RegisterRequest;
@@ -35,6 +36,11 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/google")
+    public AuthResponse google(@Valid @RequestBody GoogleLoginRequest request) {
+        return authService.loginWithGoogle(request.credential());
     }
 
     @PostMapping("/refresh")

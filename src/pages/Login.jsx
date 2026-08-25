@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
-import { company } from '../data/siteConfig';
+import GoogleButton from '../components/auth/GoogleButton';
+import { company, contact } from '../data/siteConfig';
 import { useAuth, friendlyError } from '../context/AuthContext';
 
 /**
@@ -11,18 +12,21 @@ import { useAuth, friendlyError } from '../context/AuthContext';
  * from the URL, so each mode is still directly linkable and the back button
  * behaves. Switching tabs is a normal navigation between those two paths.
  *
- * NOTE: creating an account is public — anyone who completes the form can reach
- * /dashboard. To go back to invite-only (accounts made by hand in the Firebase
- * console), drop the /register route in App.jsx and the CREATE ACCOUNT tab
- * below; the sign-in half needs no other change.
+ * Sign-in runs against the Supplybase API. Two routes in:
+ *   - email and password, checked by the backend against a BCrypt hash
+ *   - Google, which returns an ID token the backend verifies before trusting
  *
- * If the Firebase keys have not been added yet, the page says so instead of
- * pretending to work. See README.md -> "Setting up login".
+ * Both end the same way: the API issues our own access and refresh tokens, so
+ * everything downstream sees one kind of session regardless of how it started.
+ *
+ * NOTE: creating an account is public — anyone who completes the form can reach
+ * /dashboard. To go back to invite-only, drop the /register route in App.jsx
+ * and the CREATE ACCOUNT tab below; the sign-in half needs no other change.
  */
 const emptyForm = { name: '', email: '', password: '', confirm: '' };
 
 export default function Login() {
-  const { user, login, register, resetPassword, configured } = useAuth();
+  const { user, login, register, loginWithGoogle, googleEnabled } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -66,24 +70,18 @@ export default function Login() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
       next.email = 'Please enter a valid email address';
     if (!form.password) next.password = 'Please choose a password';
-    else if (form.password.length < 6) next.password = 'Use at least six characters';
+    // 8 because the API enforces 8 — a laxer rule here would only produce a
+    // server-side rejection after the person had already pressed the button.
+    else if (form.password.length < 8) next.password = 'Use at least eight characters';
     if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
     setErrors(next);
     return Object.keys(next).length === 0;
-  };
-
-  const notConfigured = () => {
-    setError(
-      `${isRegister ? 'Sign-up' : 'Login'} has not been set up yet. See README.md, section "Setting up login".`
-    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setNotice('');
-
-    if (!configured) return notConfigured();
 
     if (isRegister) {
       if (!validate()) {
@@ -104,6 +102,25 @@ export default function Login() {
     try {
       if (isRegister) await register(form.name, form.email, form.password);
       else await login(form.email, form.password);
+      navigate(goTo, { replace: true });
+    } catch (err) {
+      // The API validates the same fields again and can reject things the
+      // browser cannot know about — an email already taken, for one. Put those
+      // back on the fields they belong to instead of in one banner.
+      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      setError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** Google hands back an ID token; the backend decides whether to trust it. */
+  const handleGoogle = async (credential) => {
+    setError('');
+    setNotice('');
+    setBusy(true);
+    try {
+      await loginWithGoogle(credential);
       navigate(goTo, { replace: true });
     } catch (err) {
       setError(friendlyError(err));
@@ -132,23 +149,18 @@ export default function Login() {
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  const handleReset = async (e) => {
+  /**
+   * There is no self-service reset yet — the API has no endpoint for it, and
+   * saying "check your inbox" when no email is sent would be worse than
+   * saying nothing. Point at a person instead until that flow is built.
+   */
+  const handleReset = (e) => {
     e.preventDefault();
     setError('');
-    setNotice('');
-
-    if (!configured) return notConfigured();
-    if (!form.email.trim()) {
-      setError('Type your email address first, then press "Forgot password?".');
-      return;
-    }
-
-    try {
-      await resetPassword(form.email);
-      setNotice(`We have sent a password reset link to ${form.email.trim()}. Check your inbox.`);
-    } catch (err) {
-      setError(friendlyError(err));
-    }
+    setNotice(
+      `Call us on ${contact.phoneDisplay} and we will reset it for you. ` +
+        'Self-service password reset is coming.'
+    );
   };
 
   return (
@@ -193,6 +205,19 @@ export default function Login() {
             : 'Access your project dashboard.'}
         </p>
 
+        {googleEnabled && (
+          <>
+            <GoogleButton
+              onCredential={handleGoogle}
+              text={isRegister ? 'signup_with' : 'signin_with'}
+              onError={() => setError('Google sign-in did not complete. Please try again.')}
+            />
+            <div className="auth-divider">
+              <span>or {isRegister ? 'sign up' : 'sign in'} with email</span>
+            </div>
+          </>
+        )}
+
         <form onSubmit={handleSubmit} noValidate>
           {isRegister && (
             <div className={`field ${errors.name ? 'error' : ''}`} style={{ marginBottom: 16 }}>
@@ -236,7 +261,7 @@ export default function Login() {
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={update('password')}
-                placeholder={isRegister ? 'At least six characters' : '••••••••'}
+                placeholder={isRegister ? 'At least eight characters' : '••••••••'}
                 autoComplete={isRegister ? 'new-password' : 'current-password'}
                 style={{ paddingRight: 46 }}
               />
@@ -310,6 +335,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={handleReset}
+                  title={`Call ${contact.phoneDisplay}`}
                   style={{
                     background: 'none',
                     border: 0,

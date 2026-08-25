@@ -2,7 +2,7 @@
   "name": "supplybase-projects",
   "private": true,
   "version": "1.0.0",
-  "description": "Supplybase Projects — One Partner. Complete Project. Construction, architectural design, interior design and turnkey project execution.",
+  "description": "Supplybase Projects \u2014 One Partner. Complete Project. Construction, architectural design, interior design and turnkey project execution.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,8 +12,7 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2",
-    "firebase": "^12.17.1"
+    "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",

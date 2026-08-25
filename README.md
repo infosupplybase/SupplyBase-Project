@@ -115,67 +115,83 @@ Selected files stay on the user's device — the form lists their names in the m
 
 ## 7. Setting up login
 
-Login is real and secure. It is handled by **Firebase**, a free Google service. Nobody can sign in until you do this, and until then the login page politely says so. Takes about 20 minutes, once.
+Login is real and secure, and it is handled by **our own backend** in
+`backend/` — not by any third party. Start that first: see
+[backend/README.md](backend/README.md).
 
-### Step 1 — Make a Firebase project (5 min)
+### Step 1 — Point the website at the API (1 min)
 
-1. Go to [firebase.google.com](https://firebase.google.com) and sign in with your Google account
-2. Click **Go to console** → **Create a project**
-3. Name it `supplybase-projects` → Continue
-4. Turn **off** Google Analytics (you don't need it) → Create project
-
-### Step 2 — Switch on email login (2 min)
-
-1. In the left menu click **Build → Authentication → Get started**
-2. Choose **Email/Password**
-3. Turn on the first switch (leave "Email link" off) → **Save**
-
-### Step 3 — Get your keys (3 min)
-
-1. Click the **gear icon → Project settings**
-2. Scroll down to **Your apps** → click the **web icon** `</>`
-3. Nickname it `website` → **Register app**
-4. You'll see a block of code with `apiKey`, `authDomain` and so on. Keep this page open.
-
-### Step 4 — Put the keys in the project (2 min)
-
-In your project folder, make a copy of the file `.env.example` and rename the copy to `.env`. Then paste each value from Firebase into it:
+Copy `.env.example` to `.env`. For local work the defaults are already right:
 
 ```
-VITE_FIREBASE_API_KEY=AIza...
-VITE_FIREBASE_AUTH_DOMAIN=supplybase-projects.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=supplybase-projects
-VITE_FIREBASE_STORAGE_BUCKET=supplybase-projects.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
-VITE_FIREBASE_APP_ID=1:123456789:web:abc123
+VITE_API_URL=http://localhost:8080
 ```
 
-Restart `npm run dev` after saving, so it picks up the new file.
+Everything prefixed `VITE_` is compiled into the JavaScript a browser
+downloads, so treat it as public. Nothing secret belongs in this file —
+secrets live in `backend/.env`, which never reaches a browser.
 
-### Step 5 — Create your first user (2 min)
+### Step 2 — Adding "Continue with Google" (10 min, optional)
 
-Back in Firebase: **Authentication → Users → Add user**. Type an email and a password, click Add. That's it — sign in on your website with those details.
+Skip this and the site still works; the Google button simply does not appear
+and people sign in with email and password.
 
-There is no public "sign up" button on purpose. This is a client portal, so **you** create the accounts and give people their details. To add a client later, repeat this step.
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) and
+   create a project (or pick an existing one).
+2. **APIs & Services → OAuth consent screen.** Choose **External**, fill in the
+   app name, your support email and a logo, then save.
+3. **APIs & Services → Credentials → Create credentials → OAuth client ID.**
+   - Application type: **Web application**
+   - **Authorised JavaScript origins:** `http://localhost:5173` for local work,
+     plus your live address (e.g. `https://supplybase.co.in`) when you deploy
+   - Leave "Authorised redirect URIs" empty — this sign-in method does not use one
+4. Copy the **Client ID**. It ends in `.apps.googleusercontent.com`.
+5. Put the *same* value in **both** files:
 
-### Step 6 — When the site is live (3 min)
+   ```
+   .env             VITE_GOOGLE_CLIENT_ID=<your client id>
+   backend/.env     GOOGLE_CLIENT_ID=<your client id>
+   ```
 
-Two things to do after deploying:
+   They must match. The backend refuses any Google token that was not issued
+   for exactly this client id, so a mismatch rejects every sign-in.
 
-1. **Vercel → your project → Settings → Environment Variables** — add the same six `VITE_FIREBASE_...` values there, then redeploy. (The `.env` file stays on your computer and is never uploaded, which is correct.)
-2. **Firebase → Authentication → Settings → Authorised domains → Add domain** — add your website address (e.g. `supplybaseprojects.com`). Without this, Firebase blocks sign-in from your live site.
+6. Restart both `npm run dev` and the backend.
 
-### What it costs
+There is no client *secret* anywhere in this flow. Google signs a token, the
+browser passes it on, and the backend verifies the signature against Google's
+public keys — nothing on our side needs to prove who it is.
 
-Nothing. Firebase's free plan covers far more sign-ins than a business your size will ever use.
+### Step 3 — Create your first admin (2 min)
 
-### What happens after signing in
+Anyone can register, and everyone who registers is a **client**. A person can
+never make themselves staff. Promote your own account by hand, once:
 
-The person lands on `/dashboard`, a welcome page that greets them by name. When you're ready for it to show real project information — current stage, site photos, drawings, payment stages — that all goes in `src/pages/Dashboard.jsx`.
+```sql
+UPDATE users SET role = 'ADMIN' WHERE email = 'you@example.com';
+```
 
-**A note on roles:** the old Customer / Admin / Project Manager tabs have been removed. Telling those three apart needs a small database alongside login, which is a separate job — worth doing when there is actually something different for each of them to see.
+### What happens when someone signs in
 
----
+Whether they used a password or Google, the API issues the same pair of
+tokens, so the rest of the site never has to care which route they took. They
+land on `/dashboard`.
+
+### Signing in with Google when you already have an account
+
+If the email on the Google account matches an existing account, Google is
+linked to it and they keep their projects and payments. It does not create a
+second, empty account.
+
+### One thing that is missing
+
+There is **no self-service password reset yet.** The old Firebase setup had
+one; the new backend does not, and the "Forgot password?" link honestly says
+to call you instead of pretending an email was sent. Building it needs a
+reset-token table and an email template — ask when you want it.
+
+Someone who only ever signs in with Google has no password at all, so there is
+nothing for them to reset.
 
 ## 8. Project structure
 
@@ -187,7 +203,7 @@ src/
     services.js
     projects.js
   context/AuthContext.jsx   who is signed in
-  lib/firebase.js           login keys (read from .env)
+  lib/api.js                every call to the backend, plus token handling
   components/
     layout/            Navbar, ServiceMegaMenu, MobileMenu, Footer, Layout,
                        FloatingActions, ScrollToTop, ProtectedRoute
@@ -214,6 +230,8 @@ Icons are inline SVG in `src/components/ui/Icon.jsx` — no icon library, nothin
 - [ ] Confirm the statistics in `src/data/siteConfig.js` are accurate
 - [ ] Update the address in `siteConfig.js` if you want the full office address shown
 - [ ] Set up login (section 7) if you want the client portal working
+- [ ] Add a Google OAuth client id if you want "Continue with Google" (section 7)
+- [ ] Point `VITE_API_URL` at your deployed API, not localhost
 - [ ] Have a professional review `src/pages/Legal.jsx` — the privacy policy and terms are starting drafts, not legal advice
 
 Contact details already in place everywhere: **+91 77095 88422** and **info.supplybase@gmail.com**.

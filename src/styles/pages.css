@@ -544,6 +544,51 @@
   margin-bottom: 20px;
 }
 
+/* ------------------------------------------------- google sign-in */
+
+/* Google's script draws its own button inside this box; we only give it a
+   width to fill and room to breathe. Styling the button itself would break
+   Google's branding requirements. */
+.google-btn {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+  color-scheme: light;
+}
+
+.google-btn > div {
+  width: 100% !important;
+}
+
+.google-btn-note {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* "or sign in with email" — a rule with the text sitting in a gap, rather
+   than text laid over a line. */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 20px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  text-transform: lowercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
 /* sign in / create account switcher on the account page */
 .auth-tabs {
   display: grid;

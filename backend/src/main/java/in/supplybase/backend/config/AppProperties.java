@@ -15,6 +15,7 @@ public record AppProperties(
         List<String> corsAllowedOrigins,
         Jwt jwt,
         Razorpay razorpay,
+        Google google,
         Notifications notifications) {
 
     public record Jwt(String secret, long accessTokenMinutes, long refreshTokenDays, String issuer) {
@@ -24,6 +25,13 @@ public record AppProperties(
         /** False when the keys are absent, which keeps the app bootable without them. */
         public boolean configured() {
             return keyId != null && !keyId.isBlank() && keySecret != null && !keySecret.isBlank();
+        }
+    }
+
+    public record Google(String clientId) {
+        /** False when no client id is set, which keeps the app bootable without one. */
+        public boolean configured() {
+            return clientId != null && !clientId.isBlank();
         }
     }
 
