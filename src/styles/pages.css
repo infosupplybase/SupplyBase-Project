@@ -87,7 +87,7 @@
   scroll-margin-top: calc(var(--header-h) + 24px);
   background: var(--white);
   border: 1px solid var(--grey-200);
-  border-left: 3px solid var(--gold);
+  border-left: 3px solid var(--accent);
   border-radius: var(--radius-sm);
   padding: 20px 22px;
   transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease);
@@ -261,7 +261,7 @@
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--grey-500);
+  color: var(--accent);
   margin-bottom: 5px;
 }
 
@@ -337,8 +337,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: rgba(214, 165, 68, 0.12);
-  color: var(--gold-dark);
+  background: var(--accent-soft);
+  color: var(--accent);
   margin-bottom: 15px;
 }
 
@@ -363,8 +363,8 @@
 }
 
 .section-dark .value-icon {
-  background: rgba(214, 165, 68, 0.16);
-  color: var(--gold-deep);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 /* ------------------------------------------------------- contact page */
