@@ -171,6 +171,17 @@ never make themselves staff. Promote your own account by hand, once:
 UPDATE users SET role = 'ADMIN' WHERE email = 'you@example.com';
 ```
 
+### Signing in with a phone number
+
+The sign-in box takes an email address **or** a ten-digit mobile number in the
+same field — which one it is comes from what was typed, not from a toggle
+someone has to set first. `+91 98765 43210`, `098765 43210` and `9876543210`
+are all the same number as far as the API is concerned.
+
+A phone number is required to register and must be unique, because it
+identifies an account. Someone who signs up with Google has no number (Google
+does not give us one), so they sign in with Google or with their email.
+
 ### What happens when someone signs in
 
 Whether they used a password or Google, the API issues the same pair of

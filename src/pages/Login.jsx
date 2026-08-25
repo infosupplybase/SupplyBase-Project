@@ -23,7 +23,10 @@ import { useAuth, friendlyError } from '../context/AuthContext';
  * /dashboard. To go back to invite-only, drop the /register route in App.jsx
  * and the CREATE ACCOUNT tab below; the sign-in half needs no other change.
  */
-const emptyForm = { name: '', email: '', password: '', confirm: '' };
+const emptyForm = { name: '', email: '', phone: '', identifier: '', password: '', confirm: '' };
+
+/** Ten digits after the +91 and the spaces are taken out. */
+const isValidPhone = (value) => /^[6-9]\d{9}$/.test(String(value).replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
 
 export default function Login() {
   const { user, login, register, loginWithGoogle, googleEnabled } = useAuth();
@@ -69,6 +72,8 @@ export default function Login() {
     if (!form.email.trim()) next.email = 'Please enter your email address';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
       next.email = 'Please enter a valid email address';
+    if (!form.phone.trim()) next.phone = 'Please enter your phone number';
+    else if (!isValidPhone(form.phone)) next.phone = 'Enter a 10-digit mobile number';
     if (!form.password) next.password = 'Please choose a password';
     // 8 because the API enforces 8 — a laxer rule here would only produce a
     // server-side rejection after the person had already pressed the button.
@@ -93,15 +98,15 @@ export default function Login() {
         setError('Please accept the terms and privacy policy to continue.');
         return;
       }
-    } else if (!form.email.trim() || !form.password) {
-      setError('Please enter your email and password.');
+    } else if (!form.identifier.trim() || !form.password) {
+      setError('Please enter your email or phone number, and your password.');
       return;
     }
 
     setBusy(true);
     try {
-      if (isRegister) await register(form.name, form.email, form.password);
-      else await login(form.email, form.password);
+      if (isRegister) await register(form.name, form.email, form.password, form.phone);
+      else await login(form.identifier, form.password);
       navigate(goTo, { replace: true });
     } catch (err) {
       // The API validates the same fields again and can reject things the
@@ -236,20 +241,59 @@ export default function Login() {
             </div>
           )}
 
-          <div className={`field ${errors.email ? 'error' : ''}`} style={{ marginBottom: 16 }}>
-            <label htmlFor="auth-email">
-              Email Address {isRegister && <span className="req">*</span>}
-            </label>
-            <input
-              id="auth-email"
-              type="email"
-              value={form.email}
-              onChange={update('email')}
-              placeholder="you@example.com"
-              autoComplete={isRegister ? 'email' : 'username'}
-            />
-            {errors.email && <span className="field-error">{errors.email}</span>}
-          </div>
+          {isRegister ? (
+            <>
+              <div className={`field ${errors.email ? 'error' : ''}`} style={{ marginBottom: 16 }}>
+                <label htmlFor="auth-email">
+                  Email Address <span className="req">*</span>
+                </label>
+                <input
+                  id="auth-email"
+                  type="email"
+                  value={form.email}
+                  onChange={update('email')}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                />
+                {errors.email && <span className="field-error">{errors.email}</span>}
+              </div>
+
+              <div className={`field ${errors.phone ? 'error' : ''}`} style={{ marginBottom: 16 }}>
+                <label htmlFor="auth-phone">
+                  Phone Number <span className="req">*</span>
+                </label>
+                <input
+                  id="auth-phone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={update('phone')}
+                  placeholder="98765 43210"
+                  autoComplete="tel"
+                  inputMode="numeric"
+                />
+                {errors.phone ? (
+                  <span className="field-error">{errors.phone}</span>
+                ) : (
+                  <span className="field-hint">You can sign in with this number too.</span>
+                )}
+              </div>
+            </>
+          ) : (
+            /* One field for both. Which it is comes from what was typed, not
+               from a toggle someone has to set correctly first. */
+            <div className={`field ${errors.identifier ? 'error' : ''}`} style={{ marginBottom: 16 }}>
+              <label htmlFor="auth-identifier">Email or Phone Number</label>
+              <input
+                id="auth-identifier"
+                type="text"
+                value={form.identifier}
+                onChange={update('identifier')}
+                placeholder="you@example.com or 98765 43210"
+                autoComplete="username"
+              />
+              {errors.identifier && <span className="field-error">{errors.identifier}</span>}
+            </div>
+          )}
 
           <div className={`field ${errors.password ? 'error' : ''}`}>
             <label htmlFor="auth-password">

@@ -137,11 +137,12 @@ export const api = {
     request('/api/auth/register', {
       method: 'POST',
       auth: false,
-      body: { fullName, email, password, phone: phone || '' },
+      body: { fullName, email, password, phone },
     }),
 
-  login: (email, password) =>
-    request('/api/auth/login', { method: 'POST', auth: false, body: { email, password } }),
+  /** `identifier` is an email address or a phone number — the API works out which. */
+  login: (identifier, password) =>
+    request('/api/auth/login', { method: 'POST', auth: false, body: { identifier, password } }),
 
   loginWithGoogle: (credential) =>
     request('/api/auth/google', { method: 'POST', auth: false, body: { credential } }),

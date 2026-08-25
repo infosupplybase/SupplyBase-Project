@@ -15,7 +15,10 @@ public record RegisterRequest(
         @Size(max = 190, message = "That email address is too long")
         String email,
 
-        @Pattern(regexp = "^$|^[0-9+\\-\\s()]{7,20}$", message = "That phone number does not look right")
+        // Required now: it is how most clients of a construction business will
+        // sign in, and it is the number the site team actually rings.
+        @NotBlank(message = "Please enter your phone number")
+        @Pattern(regexp = "^[0-9+\\-\\s()]{7,20}$", message = "That phone number does not look right")
         String phone,
 
         @NotBlank(message = "Please choose a password")

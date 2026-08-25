@@ -79,7 +79,7 @@ export function AuthProvider({ children }) {
       // there is no "not configured yet" state for password sign-in.
       configured: true,
       googleEnabled: Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID),
-      login: async (email, password) => adopt(await api.login(email.trim(), password)),
+      login: async (identifier, password) => adopt(await api.login(identifier.trim(), password)),
       loginWithGoogle: async (credential) => adopt(await api.loginWithGoogle(credential)),
       register: async (name, email, password, phone) =>
         adopt(await api.register(name.trim(), email.trim(), password, phone)),

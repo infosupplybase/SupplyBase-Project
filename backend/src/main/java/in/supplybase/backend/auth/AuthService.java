@@ -13,6 +13,7 @@ import in.supplybase.backend.auth.dto.UserResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.PhoneNumbers;
 
 @Service
 public class AuthService {
@@ -42,11 +43,17 @@ public class AuthService {
             throw ApiException.conflict("An account already exists with that email. Try signing in instead.");
         }
 
+        String phone = PhoneNumbers.normalise(request.phone());
+        if (phone != null && users.existsByPhone(phone)) {
+            throw ApiException.conflict(
+                    "An account already exists with that phone number. Try signing in instead.");
+        }
+
         User user = User.builder()
                 .email(email)
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .fullName(request.fullName().trim())
-                .phone(blankToNull(request.phone()))
+                .phone(phone)
                 // Self-registration always produces a CLIENT. Staff roles are
                 // granted by an admin, never claimed by the person signing up.
                 .role(Role.CLIENT)
@@ -56,16 +63,24 @@ public class AuthService {
         return issueTokens(users.save(user));
     }
 
+    /**
+     * Signs in with an email address or a ten-digit mobile number.
+     *
+     * Which one it is comes from the value itself, not from a toggle the
+     * person has to set correctly before typing: an email has an @ and a phone
+     * number does not.
+     */
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        User user = users.findByEmailIgnoreCase(normalise(request.email()))
+        User user = findByIdentifier(request.identifier())
                 // hasPassword() first: a Google-only account has a null hash, and
                 // BCrypt.matches would throw on it rather than simply say no.
                 .filter(User::hasPassword)
                 .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPasswordHash()))
                 // One message for "no such email" and for "wrong password", so
                 // the endpoint cannot be used to discover who has an account.
-                .orElseThrow(() -> ApiException.unauthorized("Wrong email or password. Please try again."));
+                .orElseThrow(() -> ApiException.unauthorized(
+                        "Wrong details. Please check and try again."));
 
         if (!user.isEnabled()) {
             throw ApiException.forbidden("This account has been switched off. Please contact us.");
@@ -182,6 +197,19 @@ public class AuthService {
                 UserResponse.from(user));
     }
 
+    /** Resolves whichever of the two identifiers was typed. */
+    private java.util.Optional<User> findByIdentifier(String identifier) {
+        String trimmed = identifier == null ? "" : identifier.trim();
+        if (PhoneNumbers.looksLikeEmail(trimmed)) {
+            return users.findByEmailIgnoreCase(trimmed.toLowerCase());
+        }
+        // normaliseOrNull, not normalise: a malformed number here is simply a
+        // failed sign-in, not a 400. The generic "wrong details" message keeps
+        // this endpoint from confirming which accounts exist.
+        String phone = PhoneNumbers.normaliseOrNull(trimmed);
+        return phone == null ? java.util.Optional.empty() : users.findByPhone(phone);
+    }
+
     private static String normalise(String email) {
         return email == null ? "" : email.trim().toLowerCase();
     }
@@ -189,4 +217,8 @@ public class AuthService {
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
     }
+
+    // NOTE: Google sign-up leaves phone null — Google does not give us one, and
+    // asking for it mid-flow would break the one-click promise of that button.
+    // The dashboard can collect it later.
 }
