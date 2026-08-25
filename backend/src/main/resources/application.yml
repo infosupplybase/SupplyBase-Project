@@ -1,0 +1,78 @@
+# ---------------------------------------------------------------------------
+# SUPPLYBASE PROJECTS API
+#
+# Nothing secret is written in this file. Every credential is read from an
+# environment variable, with a development-only fallback after the ':'.
+# Copy .env.example to .env and fill it in — see backend/README.md.
+# ---------------------------------------------------------------------------
+spring:
+  application:
+    name: supplybase-api
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:supplybase}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      pool-name: supplybase-pool
+
+  jpa:
+    # never `update` or `create`: Flyway owns the schema, and letting Hibernate
+    # also mutate it means two tools fighting over the same tables. `validate`
+    # makes the app refuse to start if the entities and the migrations disagree.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Kolkata
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 60MB
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-stacktrace: never
+
+app:
+  # Where the React site runs. Anything not listed here is refused by CORS.
+  cors-allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+  jwt:
+    # MUST be overridden in production. Minimum 32 bytes for HS256.
+    secret: ${JWT_SECRET:dev-only-secret-change-me-in-production-please-32b}
+    access-token-minutes: ${JWT_ACCESS_MINUTES:15}
+    refresh-token-days: ${JWT_REFRESH_DAYS:30}
+    issuer: supplybase-projects
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+    currency: INR
+  notifications:
+    # Where new enquiries are emailed. Blank disables the email entirely.
+    enquiry-recipient: ${ENQUIRY_EMAIL:}
+
+logging:
+  level:
+    in.supplybase.backend: ${LOG_LEVEL:INFO}

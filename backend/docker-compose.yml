@@ -1,0 +1,36 @@
+# MySQL for local development.
+#
+#   docker compose up -d      start it
+#   docker compose down       stop it (data survives)
+#   docker compose down -v    stop it and delete the data
+#
+# If you would rather install MySQL directly, see README.md — the schema is
+# created by Flyway either way, so nothing here is required.
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: supplybase-mysql
+    restart: unless-stopped
+    environment:
+      # Development credentials only. Production reads from real secrets.
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: supplybase
+      MYSQL_USER: supplybase
+      MYSQL_PASSWORD: supplybase
+    ports:
+      - "3306:3306"
+    volumes:
+      - supplybase-mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      # Without this, the API can start before MySQL is accepting connections
+      # and fail its first migration.
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  supplybase-mysql-data:
