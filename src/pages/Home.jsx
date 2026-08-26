@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import HeroSlider from '../components/HeroSlider/HeroSlider';
-import ServiceGrid from '../components/home/ServiceGrid';
-import HowItWorks from '../components/home/HowItWorks';
+import ServiceSection from '../components/services/ServiceSection';
 import StatsSection from '../components/home/StatsSection';
 import ProjectGrid from '../components/projects/ProjectGrid';
 import Reveal from '../components/ui/Reveal';
@@ -20,33 +19,7 @@ export default function Home() {
     <div className="page-home">
       <HeroSlider />
 
-      {/* ------------------------------------------------------- services */}
-      <section className="section">
-        <div className="container">
-          <div className="section-head-row">
-            <div>
-              <span className="eyebrow">OUR SERVICES</span>
-              <div className="rule" />
-              <h2>
-                WHAT <span className="gold">WE DO</span>
-              </h2>
-              <p>
-                Four services, one accountable team. Book a site visit for ₹25 and we assess the
-                work and send you a written quotation — material and labour, itemised.
-              </p>
-            </div>
-            <Link to="/services" className="btn btn-ghost">
-              VIEW ALL SERVICES
-              <Icon name="arrow-right" size={17} />
-            </Link>
-          </div>
-
-          {/* Four cards only. The other six live on /services — the button
-              above is the way through. Edit featuredServiceSlugs in
-              data/services.js to change which four lead. */}
-          <ServiceGrid />
-        </div>
-      </section>
+      <ServiceSection />
 
       {/* --------------------------------------------------------- why us */}
       <section className="section section-light">
@@ -117,9 +90,6 @@ export default function Home() {
           </Reveal>
         </div>
       </section>
-
-      {/* ------------------------------------------------------- process */}
-      <HowItWorks />
 
       {/* ------------------------------------------------------ projects */}
       <section className="section">

@@ -1,0 +1,231 @@
+/* =========================================================================
+   SUPPLYBASE — SERVICE CARD
+   Photo left, copy right, black BOOK NOW across the foot.
+   ========================================================================= */
+
+.sc-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 12px;
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+.sc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+/* The whole card is clickable, but a real link does the work — the title's
+   anchor is stretched across the card by a transparent overlay, so
+   middle-click and "open in new tab" still behave and the status bar shows
+   the destination. The BOOK NOW button sits above it with its own target. */
+.sc-card {
+  position: relative;
+}
+
+.sc-title a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.sc-book {
+  position: relative;
+  z-index: 2;
+}
+
+.sc-card:focus-within {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ----------------------------------------------------------------- top */
+
+.sc-top {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+/*
+ * Fixed height, aligned to the top — not stretched to the text.
+ *
+ * Stretching turned a 16:9 photograph into a 1:2 portrait slice whenever a
+ * description wrapped to a fourth line, cropping away most of the subject.
+ * A fixed block keeps the crop gentle and the four cards visually level even
+ * when their descriptions differ in length.
+ */
+.sc-media {
+  position: relative;
+  flex: 0 0 132px;
+  align-self: flex-start;
+  height: 158px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--light-bg);
+}
+
+.sc-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--t-slow) var(--ease);
+}
+
+.sc-card:hover .sc-media img {
+  transform: scale(1.04);
+}
+
+/* The badge straddles the photo's right edge, tying the image to the copy
+   without needing a divider. */
+.sc-badge {
+  position: absolute;
+  right: -18px;
+  top: 34px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 3px solid var(--white);
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+}
+
+.sc-badge[data-badge='gold']   { background: var(--gold); color: var(--on-gold); }
+.sc-badge[data-badge='blue']   { background: #3b82f6; }
+.sc-badge[data-badge='purple'] { background: #8b5cf6; }
+
+.sc-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-left: 12px;
+}
+
+.sc-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-dark);
+  margin: 0 0 6px;
+  /* the display face is condensed and would fight the reference */
+  font-family: var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.sc-title a {
+  color: inherit;
+}
+
+.sc-desc {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #555555;
+  margin: 0 0 auto;
+}
+
+.sc-price {
+  margin-top: 12px;
+}
+
+.sc-price-label {
+  display: block;
+  font-size: 12px;
+  color: #555555;
+  line-height: 1.3;
+}
+
+.sc-price-value {
+  display: block;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1.2;
+}
+
+/* -------------------------------------------------------------- button */
+
+.sc-book {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--black);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease),
+              transform var(--t) var(--ease);
+}
+
+.sc-book svg {
+  transition: transform var(--t) var(--ease);
+}
+
+.sc-book:hover {
+  background: var(--gold);
+  color: var(--on-gold);
+  transform: translateY(-1px);
+}
+
+.sc-book:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---------------------------------------------------------- responsive */
+
+@media (max-width: 600px) {
+  .sc-media {
+    flex-basis: 112px;
+    height: 142px;
+  }
+  .sc-title {
+    font-size: 15.5px;
+  }
+  .sc-desc {
+    font-size: 12.5px;
+  }
+}
+
+/*
+ * Only the narrowest phones stack. 380px would have split the common sizes
+ * down the middle — a 375px iPhone SE stacking while a 390px iPhone 14 kept
+ * the side-by-side layout — so the threshold sits below both and the
+ * reference layout survives on the phones people actually carry.
+ */
+@media (max-width: 340px) {
+  .sc-top {
+    flex-direction: column;
+  }
+  .sc-media {
+    flex-basis: auto;
+    width: 100%;
+    height: 150px;
+    min-height: 0;
+  }
+  .sc-badge {
+    right: 14px;
+    top: auto;
+    bottom: -18px;
+  }
+  .sc-body {
+    padding-left: 0;
+    padding-top: 14px;
+  }
+}

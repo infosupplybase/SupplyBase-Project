@@ -1,0 +1,64 @@
+/* =========================================================================
+   SUPPLYBASE — "WHAT DO YOU NEED HELP WITH?"
+   Light section, centred heading, four cards.
+   ========================================================================= */
+
+.sc-section {
+  background: var(--white);
+  padding: clamp(48px, 6vw, 80px) 0;
+}
+
+.sc-section-inner {
+  width: 100%;
+  max-width: 1340px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.sc-head {
+  text-align: center;
+  margin-bottom: clamp(26px, 3.5vw, 40px);
+}
+
+.sc-eyebrow {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.sc-heading {
+  font-family: var(--font-body);
+  font-size: clamp(24px, 3.2vw, 34px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+/* Four equal tracks on desktop, two on tablet, one on a phone. minmax(0,1fr)
+   rather than 1fr so a long word cannot push a track past its share and
+   widen the whole grid. */
+.sc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 1100px) {
+  .sc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .sc-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
