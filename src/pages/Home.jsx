@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import Hero from '../components/home/Hero';
-import TrustBar from '../components/home/TrustBar';
+import HeroSlider from '../components/HeroSlider/HeroSlider';
 import ServiceGrid from '../components/home/ServiceGrid';
 import HowItWorks from '../components/home/HowItWorks';
 import StatsSection from '../components/home/StatsSection';
@@ -19,8 +18,7 @@ export default function Home() {
     /* page-home widens every .container on this page to the full viewport —
        see "full-width home page" in pages.css. Other pages stay centred. */
     <div className="page-home">
-      <Hero />
-      <TrustBar />
+      <HeroSlider />
 
       {/* ------------------------------------------------------- services */}
       <section className="section">

@@ -21,6 +21,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /                       Home
  * /services               All services
  * /services/:slug         Book a site visit for one of the four services
+ * /booking/:slug          Same booking page, reached from the hero banners
  * /projects               Projects with category filter
  * /projects/:slug         Project detail
  * /materials              Materials and brands we use
@@ -45,6 +46,8 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
         <Route path="services/:slug" element={<ServiceBooking />} />
+        {/* The hero banners link to /booking/<slug>; same page, second door. */}
+        <Route path="booking/:slug" element={<ServiceBooking />} />
         <Route path="projects" element={<Projects />} />
         <Route path="projects/:slug" element={<ProjectDetail />} />
         <Route path="materials" element={<Materials />} />

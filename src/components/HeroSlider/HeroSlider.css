@@ -1,0 +1,198 @@
+/* =========================================================================
+   SUPPLYBASE HERO SLIDER
+
+   The four banners are finished artwork. This file positions and cross-fades
+   them and nothing else — no gradient, no scrim, no text. Anything painted
+   over these images would be competing with a design that is already done.
+   ========================================================================= */
+
+.hero-slider {
+  position: relative;
+  width: 100%;
+  margin-top: var(--header-h);
+  background: var(--black);
+  overflow: hidden;
+  /* the keyboard focus ring belongs on the controls, not the whole banner */
+  outline: none;
+}
+
+/*
+ * aspect-ratio locked to the source files (1672 x 941).
+ *
+ * This is what guarantees the promise: the image is never cropped and never
+ * stretched at any width, because the box always has exactly the shape of
+ * the artwork. The hero simply gets shorter as the viewport narrows.
+ */
+.hero-slider-track {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1672 / 941;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 700ms var(--ease), visibility 700ms;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  /* `fill` is safe only because the box already has the image's own ratio —
+     with any other box shape this would distort, which is why the ratio is
+     locked above rather than left to the layout. */
+  object-fit: fill;
+  user-select: none;
+}
+
+/* ------------------------------------------------------------- hotspot */
+
+/*
+ * Transparent overlay on the BOOK NOW button that is part of the artwork.
+ * It has no background and no border by design: the button people can see is
+ * the painted one, and drawing a second would be exactly what the brief
+ * rules out.
+ *
+ * It is still a real <button>, so it is keyboard reachable and announced,
+ * and it takes a visible focus ring when tabbed to — an invisible control
+ * that cannot be found by keyboard would not be accessible at all.
+ */
+.hero-hotspot {
+  position: absolute;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  /* generous minimum so the tap target is comfortable even when the banner
+     is scaled down and the painted button is only a few pixels tall */
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+}
+
+.hero-hotspot:focus-visible {
+  outline: 3px solid var(--white);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(5, 5, 5, 0.45);
+}
+
+/* ------------------------------------------------------------ controls */
+
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  /* A dark disc rather than a bare glyph: these sit over four different
+     artworks, one of which is nearly white, and a plain arrow would vanish
+     on it. */
+  background: rgba(5, 5, 5, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--white);
+  backdrop-filter: blur(4px);
+  transition: background var(--t) var(--ease), border-color var(--t) var(--ease),
+              color var(--t) var(--ease);
+}
+
+.hero-arrow:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
+
+.hero-arrow.prev { left: 18px; }
+.hero-arrow.next { right: 18px; }
+
+.hero-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hero-dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 1px rgba(5, 5, 5, 0.25);
+  transition: all var(--t) var(--ease);
+}
+
+/* The active dot stretches into a bar as well as changing colour, so the
+   current slide is readable without relying on colour alone. */
+.hero-dot.active {
+  width: 30px;
+  border-radius: 5px;
+  background: var(--gold);
+}
+
+.hero-dot:hover {
+  background: var(--gold-light);
+}
+
+/* ---------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  .hero-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  .hero-arrow.prev { left: 10px; }
+  .hero-arrow.next { right: 10px; }
+  .hero-dots {
+    bottom: 10px;
+  }
+}
+
+/*
+ * NOTE ON PHONES
+ *
+ * These are landscape 16:9 compositions. Shown whole on a 375px screen the
+ * banner is about 211px tall, which keeps every word intact — nothing is
+ * cropped — but renders the body copy at roughly five pixels.
+ *
+ * Cropping to fill the screen would hide the ₹25 card or the BOOK NOW button
+ * on three of the four slides, which the brief rules out, so the artwork is
+ * kept whole and the arrows and dots are pulled in tight.
+ *
+ * The real fix is a portrait export of the same approved artwork.
+ * heroSlides.js already carries a `mobileImage` field for exactly that: add
+ * the file and switch the <picture> source, and no other change is needed.
+ */
+@media (max-width: 600px) {
+  .hero-slider {
+    background: var(--light-bg);
+  }
+  .hero-dot {
+    width: 8px;
+    height: 8px;
+  }
+  .hero-dot.active {
+    width: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide {
+    transition: none;
+  }
+}
