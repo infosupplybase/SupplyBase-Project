@@ -1,0 +1,225 @@
+/* =========================================================================
+   SUPPLYBASE — WE SUPPLY THE MATERIAL TOO
+   Light section, centred heading, a wall of brand cards.
+   ========================================================================= */
+
+.mb {
+  background: var(--light-bg);
+  padding: clamp(52px, 6.5vw, 92px) 0;
+}
+
+.mb-inner {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 64px);
+}
+
+/* ------------------------------------------------------------- heading */
+
+.mb-head {
+  text-align: center;
+  margin-bottom: clamp(28px, 4vw, 46px);
+}
+
+.mb-eyebrow {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.1vw, 16px);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  /* --gold is 2.0:1 on this background — fine as a fill, not as small text. */
+  color: var(--gold-dark);
+}
+
+.mb-rule {
+  display: block;
+  width: 62px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--gold);
+  margin: 12px auto 20px;
+}
+
+.mb-heading {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4.4vw, 62px);
+  font-weight: 700;
+  line-height: 1.06;
+  text-transform: uppercase;
+  color: #111111;
+  margin: 0 0 18px;
+}
+
+.mb-heading-gold {
+  color: var(--gold);
+}
+
+.mb-lead {
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: clamp(15px, 0.45vw + 12.2px, 17.5px);
+  line-height: 1.65;
+  color: #555555;
+}
+
+/* ---------------------------------------------------------------- grid */
+
+/*
+ * Six across, then the last two centred. Placing item 7 in column 3 lets item
+ * 8 flow into column 4 on its own, which centres the pair without a second
+ * grid or a spacer element.
+ */
+.mb-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(16px, 1.6vw, 26px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mb-grid > :nth-child(7) {
+  grid-column: 3;
+}
+
+.mb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.mb-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  /* Fixed, not derived from the logo — the eight logos range from 1.3:1 to
+     3.3:1 and a height that followed the artwork would leave the row ragged. */
+  height: 132px;
+  padding: 20px;
+  background: var(--white);
+  border: 1px solid #e5e5e5;
+  border-radius: 18px;
+  box-shadow: 0 1px 3px rgba(5, 5, 5, 0.05);
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+.mb-item:hover .mb-card {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(5, 5, 5, 0.1);
+}
+
+/* contain, and capped in both directions: a wide wordmark is limited by the
+   width, a squarer mark by the height, and neither is ever stretched. */
+.mb-card img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.mb-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  color: var(--text-dark);
+}
+
+/* -------------------------------------------------------------- button */
+
+.mb-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: clamp(28px, 3.5vw, 44px);
+}
+
+.mb-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 54px;
+  padding: 0 32px;
+  border: 2px solid var(--gold);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--gold-dark);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease),
+              transform var(--t) var(--ease);
+}
+
+.mb-cta svg {
+  transition: transform var(--t) var(--ease);
+}
+
+.mb-cta:hover {
+  background: var(--gold);
+  color: var(--black);
+  transform: translateY(-2px);
+}
+
+.mb-cta:hover svg {
+  transform: translateX(4px);
+}
+
+.mb-cta:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------- responsive */
+
+/* Three across. The centring rule has to go with it — column 3 is the last
+   column here, which would strand the pair at the right-hand edge. */
+@media (max-width: 1100px) {
+  .mb-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .mb-grid > :nth-child(7) {
+    grid-column: auto;
+  }
+  .mb-card {
+    height: 124px;
+  }
+}
+
+/* Two across — eight brands fill four even rows, so nothing needs centring. */
+@media (max-width: 680px) {
+  .mb-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mb-card {
+    height: 108px;
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .mb-cta {
+    height: 50px;
+    padding: 0 24px;
+    font-size: 14px;
+  }
+}
+
+/*
+ * One across below 340px, not 380px. 380 splits the common phones down the
+ * middle — a 375px iPhone SE would drop to one column while a 390px iPhone 14
+ * kept two. Two cards still leave ~128px of logo at 375px, which is legible
+ * even for the widest wordmark. Matches the threshold ServiceCard uses.
+ */
+@media (max-width: 340px) {
+  .mb-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mb-card {
+    height: 120px;
+  }
+}

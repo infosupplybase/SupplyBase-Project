@@ -2,13 +2,13 @@ import { Link } from 'react-router-dom';
 import HeroSlider from '../components/HeroSlider/HeroSlider';
 import ServiceSection from '../components/services/ServiceSection';
 import WhySupplybase from '../components/why/WhySupplybase';
+import MaterialsSection from '../components/materials/MaterialsSection';
 import StatsSection from '../components/home/StatsSection';
 import ProjectGrid from '../components/projects/ProjectGrid';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
 import { getFeaturedProjects } from '../data/projects';
-import { featuredBrands } from '../data/materials';
 
 export default function Home() {
   const featured = getFeaturedProjects(4);
@@ -23,33 +23,7 @@ export default function Home() {
 
       <WhySupplybase />
 
-      {/* ------------------------------------------------------ materials */}
-      <section className="section-tight section-dark">
-        <div className="container">
-          <Reveal className="section-head center" style={{ marginBottom: 0 }}>
-            <span className="eyebrow">LABOUR + MATERIAL</span>
-            <div className="rule" />
-            <h2>
-              WE SUPPLY THE <span className="gold">MATERIAL TOO</span>
-            </h2>
-            <p>
-              Branded materials bought at project rates and itemised in your quotation, so you can see
-              exactly what you are paying for.
-            </p>
-            <div className="brand-strip">
-              {featuredBrands.map((brand) => (
-                <span key={brand}>{brand}</span>
-              ))}
-            </div>
-            <div className="btn-row" style={{ justifyContent: 'center', marginTop: 26 }}>
-              <Link to="/materials" className="btn btn-outline">
-                SEE ALL MATERIALS
-                <Icon name="arrow-right" size={17} />
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      <MaterialsSection />
 
       {/* ------------------------------------------------------ projects */}
       <section className="section">
