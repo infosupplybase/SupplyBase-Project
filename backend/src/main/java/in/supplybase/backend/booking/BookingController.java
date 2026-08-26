@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.CurrentUser;
+import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
@@ -44,7 +45,7 @@ public class BookingController {
      * throw for the visitors who make up most of this traffic.
      */
     @PostMapping("/api/bookings")
-    public ResponseEntity<BookingResponse.Receipt> create(
+    public ResponseEntity<BookingReceipt> create(
             @Valid @RequestBody CreateBookingRequest request) {
         Long userId = null;
         var authentication = SecurityContextHolder.getContext().getAuthentication();

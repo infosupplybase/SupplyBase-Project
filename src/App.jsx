@@ -3,7 +3,7 @@ import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Home from './pages/Home';
 import Services from './pages/Services';
-import ServiceDetail from './pages/ServiceDetail';
+import ServiceBooking from './pages/ServiceBooking';
 import Projects from './pages/Projects';
 import Materials from './pages/Materials';
 import Book from './pages/Book';
@@ -20,7 +20,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * ROUTES
  * /                       Home
  * /services               All services
- * /services/:slug         Service detail (one template, 11 services)
+ * /services/:slug         Book a site visit for one of the four services
  * /projects               Projects with category filter
  * /projects/:slug         Project detail
  * /materials              Materials and brands we use
@@ -44,7 +44,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
-        <Route path="services/:slug" element={<ServiceDetail />} />
+        <Route path="services/:slug" element={<ServiceBooking />} />
         <Route path="projects" element={<Projects />} />
         <Route path="projects/:slug" element={<ProjectDetail />} />
         <Route path="materials" element={<Materials />} />

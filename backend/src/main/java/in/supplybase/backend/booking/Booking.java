@@ -3,7 +3,9 @@ package in.supplybase.backend.booking;
 import java.time.Instant;
 import java.time.LocalDate;
 
+import in.supplybase.backend.appointment.AppointmentSlot;
 import in.supplybase.backend.auth.User;
+import in.supplybase.backend.catalogue.ServiceCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -44,6 +46,14 @@ public class Booking {
 
     @Column(nullable = false, unique = true, length = 20)
     private String reference;
+
+    /** SB-2026-000001 — what the customer reads out on the phone. */
+    @Column(name = "booking_number", unique = true, length = 20)
+    private String bookingNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private ServiceCategory category;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_type", nullable = false, length = 20)
@@ -93,6 +103,11 @@ public class Booking {
     @Column(name = "preferred_slot", length = 20)
     private TimeSlot preferredSlot;
 
+    /** The seat actually taken. Null on the legacy two-lane bookings. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment_slot_id")
+    private AppointmentSlot appointmentSlot;
+
     @Column(nullable = false, length = 120)
     private String name;
 
@@ -108,13 +123,42 @@ public class Booking {
     @Column(length = 400)
     private String address;
 
+    @Column(length = 80)
+    private String city;
+
+    @Column(length = 10)
+    private String pincode;
+
     @Column(length = 160)
     private String location;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private BookingStatus status = BookingStatus.NEW;
+    private BookingStatus status = BookingStatus.PAYMENT_PENDING;
+
+    @Column(name = "visit_fee_paise", nullable = false)
+    @Builder.Default
+    private long visitFeePaise = 2500L;
+
+    @Column(name = "paid_at")
+    private java.time.Instant paidAt;
+
+    @Column(name = "cancelled_reason", length = 300)
+    private String cancelledReason;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_professional_id")
+    private in.supplybase.backend.auth.User assignedProfessional;
+
+    /**
+     * Guards the status transition. Two admins moving one booking at once, or
+     * a webhook landing while someone edits, must not both win.
+     */
+    @jakarta.persistence.Version
+    @Column(nullable = false)
+    @Builder.Default
+    private long version = 0L;
 
     @Column(name = "attachments_pending", nullable = false)
     @Builder.Default

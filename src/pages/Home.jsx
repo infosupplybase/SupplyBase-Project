@@ -2,14 +2,13 @@ import { Link } from 'react-router-dom';
 import Hero from '../components/home/Hero';
 import TrustBar from '../components/home/TrustBar';
 import ServiceGrid from '../components/home/ServiceGrid';
-import ProcessSection from '../components/home/ProcessSection';
+import HowItWorks from '../components/home/HowItWorks';
 import StatsSection from '../components/home/StatsSection';
 import ProjectGrid from '../components/projects/ProjectGrid';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
 import { getFeaturedProjects } from '../data/projects';
-import { getFeaturedServices } from '../data/services';
 import { whyUsPoints, company } from '../data/siteConfig';
 import { featuredBrands } from '../data/materials';
 
@@ -34,8 +33,8 @@ export default function Home() {
                 WHAT <span className="gold">WE DO</span>
               </h2>
               <p>
-                Our four most-requested trades below. Ten in total — from the first architectural
-                drawing to the final coat of paint, with one team answerable for all of it.
+                Four services, one accountable team. Book a site visit for ₹25 and we assess the
+                work and send you a written quotation — material and labour, itemised.
               </p>
             </div>
             <Link to="/services" className="btn btn-ghost">
@@ -47,7 +46,7 @@ export default function Home() {
           {/* Four cards only. The other six live on /services — the button
               above is the way through. Edit featuredServiceSlugs in
               data/services.js to change which four lead. */}
-          <ServiceGrid list={getFeaturedServices()} columns={4} maxSubServices={7} />
+          <ServiceGrid />
         </div>
       </section>
 
@@ -122,7 +121,7 @@ export default function Home() {
       </section>
 
       {/* ------------------------------------------------------- process */}
-      <ProcessSection />
+      <HowItWorks />
 
       {/* ------------------------------------------------------ projects */}
       <section className="section">

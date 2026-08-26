@@ -68,12 +68,12 @@ export default function Hero() {
           {/* Two lanes, not one CTA: a defined job and a full project promise
               different things, and one button cannot say both honestly. */}
           <div className="btn-row">
-            <Link to="/book?type=service" className="btn btn-primary btn-lg">
+            <Link to="/services" className="btn btn-primary btn-lg">
               <Icon name="calendar" size={18} />
               BOOK A SERVICE
             </Link>
-            <Link to="/book?type=project" className="btn btn-dark btn-lg">
-              START A PROJECT
+            <Link to="/projects" className="btn btn-outline btn-lg">
+              VIEW PROJECTS
               <Icon name="arrow-right" size={18} />
             </Link>
           </div>

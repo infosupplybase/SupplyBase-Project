@@ -1,63 +1,86 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
-import ServiceGrid from '../components/home/ServiceGrid';
-import ProcessSection from '../components/home/ProcessSection';
-import SectionHeading from '../components/ui/SectionHeading';
+import Icon from '../components/ui/Icon';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
-import Icon from '../components/ui/Icon';
-import { getServicesByGroup } from '../data/services';
+import api, { friendlyError } from '../lib/api';
 
+/**
+ * The four services (RULE 1).
+ *
+ * Fetched, not hard-coded: this and the booking form read the same catalogue,
+ * so they cannot drift apart.
+ */
 export default function Services() {
-  const groups = getServicesByGroup();
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .services()
+      .then((result) => {
+        if (!cancelled) setServices(result);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(friendlyError(err));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
       <PageHero
         eyebrow="OUR SERVICES"
-        title="EVERYTHING YOUR PROJECT NEEDS"
-        text="Ten service categories covering design, construction, services and finishing — delivered by one team under one contract."
-        image="/assets/services/architectural-design.svg"
+        title="WHAT WE DO"
+        text="Four services, one accountable team. Book a site visit and we will assess the work and send you a written quotation."
+        image="/assets/hero-house.svg"
         breadcrumbs={[{ label: 'Services' }]}
       />
 
-      {/* grouped quick index */}
-      <section className="section-tight section-light">
+      <section className="section">
         <div className="container">
-          <div className="service-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-            {groups.map((group) => (
-              <Reveal key={group.group}>
-                <div className="sidebar-card" style={{ height: '100%' }}>
-                  <h4 style={{ color: 'var(--gold-dark)' }}>{group.group}</h4>
-                  <div className="sidebar-list">
-                    {group.items.map((service) => (
-                      <Link key={service.slug} to={`/services/${service.slug}`}>
-                        {service.name}
-                        <Icon name="chevron-right" size={15} />
-                      </Link>
-                    ))}
+          {loading && <p className="question-hint">Loading services…</p>}
+
+          {error && (
+            <div role="alert" className="alert alert-error">
+              <Icon name="info" size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="svc-grid">
+            {services.map((service, i) => (
+              <Reveal key={service.slug} delay={i * 70}>
+                <article className="svc-card" data-service={service.slug}>
+                  <div className="svc-card-icon">
+                    <Icon name={service.icon || 'tools'} size={30} strokeWidth={1.4} />
                   </div>
-                </div>
+                  <h2>{service.name}</h2>
+                  <p>{service.description}</p>
+                  <div className="svc-card-foot">
+                    <span className="svc-fee">
+                      {service.visitFeeDisplay.replace('.00', '')} site visit
+                    </span>
+                    <Link to={`/services/${service.slug}`} className="btn btn-primary btn-sm">
+                      BOOK NOW
+                      <Icon name="arrow-right" size={15} />
+                    </Link>
+                  </div>
+                </article>
               </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* all services */}
-      <section className="section">
-        <div className="container">
-          <SectionHeading
-            center
-            eyebrow="ALL SERVICES"
-            title="WHAT WE DO"
-            text="Click any service to see the full scope, our process and related projects."
-          />
-          <ServiceGrid />
-        </div>
-      </section>
-
-      <ProcessSection />
       <CtaBand />
     </>
   );

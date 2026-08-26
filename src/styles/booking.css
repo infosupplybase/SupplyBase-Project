@@ -1,0 +1,665 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — SERVICE BOOKING
+   The four service pages, their ₹25 fee card, and the booking wizard.
+   ========================================================================= */
+
+.svc-hero {
+  background: var(--bg-soft);
+  border-top: 3px solid var(--gold);
+  padding: calc(var(--header-h) + clamp(2.5rem, 5vw, 4rem)) 0 clamp(3.5rem, 6vw, 5rem);
+  text-align: center;
+}
+
+.svc-hero h1 {
+  font-size: clamp(1.9rem, 4.6vw, 3.2rem);
+  margin-bottom: 0.5rem;
+}
+
+.svc-hero-tagline {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  max-width: 52ch;
+  margin: 0 auto;
+}
+
+/* Each service keeps its own identity colour on the top rule. */
+.svc-hero[data-service="painting-waterproofing"] { border-top-color: var(--svc-painting); }
+.svc-hero[data-service="plumbing"]               { border-top-color: var(--svc-plumbing); }
+.svc-hero[data-service="electrician"]            { border-top-color: var(--svc-fabrication); }
+.svc-hero[data-service="interior-work"]          { border-top-color: var(--svc-interior-design); }
+
+/* --------------------------------------------------------------- fee card */
+
+.fee-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: start;
+  background: var(--white);
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 26px 28px;
+}
+
+.fee-amount {
+  text-align: center;
+  padding: 16px 22px;
+  border-radius: var(--radius);
+  background: var(--bg-band);
+  border: 1px solid var(--line-gold);
+}
+
+.fee-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--gold-dark);
+  line-height: 1;
+}
+
+.fee-only {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.fee-body h2 {
+  font-size: 1.25rem;
+  margin-bottom: 6px;
+}
+
+.fee-body p {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.fee-list {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.fee-list li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.fee-list svg {
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+/* The "₹25 is not an advance" note. Teal, not gold — it informs, it does not
+   ask to be clicked. */
+.fee-note {
+  font-size: 0.87rem;
+  color: var(--ink-muted);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------- stage progress */
+
+.stage-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+}
+
+.stage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stage-num {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--white);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  transition: all 0.25s var(--ease);
+}
+
+.stage-label {
+  font-size: 0.84rem;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Finished stages go teal, the current one gold — done work and the thing
+   asking for attention should not look the same. */
+.stage.done .stage-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--white);
+}
+
+.stage.current .stage-num {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
+
+.stage.current .stage-label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------- questions */
+
+.wizard-panel {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 26px 24px;
+}
+
+.wizard-substep {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 18px;
+}
+
+.question + .question {
+  margin-top: 30px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+
+.question-text {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+.question-hint {
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+  margin: 0 0 12px;
+}
+
+.option-group + .option-group {
+  margin-top: 18px;
+}
+
+.option-group-title {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin: 14px 0 8px;
+}
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Large tap targets. Most of this is answered on a phone, standing on site,
+   which is also why almost nothing here is a text box. */
+.option-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-height: 54px;
+  padding: 13px 15px;
+  text-align: left;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: all 0.18s var(--ease);
+}
+
+.option-card:hover {
+  border-color: var(--gold);
+  background: rgba(214, 165, 68, 0.05);
+}
+
+.option-mark {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--grey-300);
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--on-gold);
+}
+
+.option-card.chosen {
+  border-color: var(--gold);
+  background: rgba(214, 165, 68, 0.12);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.option-card.chosen .option-mark {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.option-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.option-label {
+  font-size: 0.94rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.option-hint {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+.question-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.96rem;
+  color: var(--ink);
+  background: var(--white);
+  margin-top: 10px;
+}
+
+.question-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(214, 165, 68, 0.18);
+}
+
+/* ------------------------------------------------------------ slot picker */
+
+.day-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 2px 6px;
+  scrollbar-width: thin;
+}
+
+.day-chip {
+  flex: 0 0 auto;
+  width: 64px;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: all 0.18s var(--ease);
+}
+
+.day-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.day-chip:not(:disabled):hover {
+  border-color: var(--gold);
+}
+
+.day-chip.chosen {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
+
+.day-name {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.day-num {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.day-month {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.slot-chip {
+  padding: 14px 10px;
+  min-height: 50px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 0.94rem;
+  color: var(--ink);
+  transition: all 0.18s var(--ease);
+}
+
+/* Struck through rather than hidden: a customer who sees 2 PM disabled knows
+   the slot exists and is taken, instead of wondering why it vanished. */
+.slot-chip:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.slot-chip:not(:disabled):hover {
+  border-color: var(--gold);
+}
+
+.slot-chip.chosen {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+  font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- summary */
+
+.summary-list {
+  display: grid;
+  gap: 0;
+  margin: 16px 0 0;
+}
+
+.summary-list > div {
+  display: grid;
+  grid-template-columns: 40% 1fr;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.summary-list dt {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+}
+
+.summary-list dd {
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.summary-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 16px 18px;
+  background: var(--bg-band);
+  border: 1px solid var(--line-gold);
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.summary-total strong {
+  font-size: 1.5rem;
+  color: var(--gold-dark);
+}
+
+.wizard-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+/* ----------------------------------------------------------- service cards */
+
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.svc-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 24px 22px 20px;
+  transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease);
+}
+
+.svc-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.svc-card[data-service="painting-waterproofing"] { border-top-color: var(--svc-painting); }
+.svc-card[data-service="plumbing"]               { border-top-color: var(--svc-plumbing); }
+.svc-card[data-service="electrician"]            { border-top-color: var(--svc-fabrication); }
+.svc-card[data-service="interior-work"]          { border-top-color: var(--svc-interior-design); }
+
+.svc-card-icon {
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.svc-card h2,
+.svc-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.svc-card p {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  flex: 1;
+}
+
+.svc-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.svc-fee {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+
+/* ------------------------------------------------------------ how it works */
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.how-step {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+}
+
+.how-num {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--line-gold);
+}
+
+.how-icon {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.how-step h3 {
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+.how-step p {
+  font-size: 0.87rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* -------------------------------------------- sticky mobile book button */
+
+.book-bar {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .fee-card {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+  .stage-label {
+    display: none;
+  }
+  .stage {
+    flex: 0 0 auto;
+  }
+  .stage-bar {
+    justify-content: center;
+    gap: 10px;
+  }
+  .option-grid {
+    grid-template-columns: 1fr;
+  }
+  .wizard-panel {
+    padding: 18px 15px;
+  }
+  .wizard-nav .btn {
+    flex: 1 1 auto;
+  }
+  .summary-list > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  /* Spec §27 — the booking action follows the customer down the page. */
+  .book-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 95;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--white);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -6px 22px rgba(11, 11, 13, 0.1);
+    /* clears the iOS home indicator */
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .book-bar-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  .book-bar-text strong {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .book-bar-text span {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  /* the floating call / WhatsApp buttons must not sit under the bar */
+  .floating-actions {
+    bottom: 82px;
+  }
+}

@@ -158,6 +158,28 @@ export const api = {
   createEnquiry: (payload) =>
     request('/api/enquiries', { method: 'POST', auth: false, body: payload }),
 
+  /* ------------------------------------------------------- catalogue */
+
+  /** The four services. Public — the home page needs it before anyone signs in. */
+  services: () => request('/api/catalogue/services', { auth: false }),
+
+  /**
+   * One service's questions, in order. The form is drawn from this, so adding
+   * an option in the admin screen changes the form with no deploy.
+   */
+  serviceForm: (slug) => request(`/api/catalogue/services/${slug}/form`, { auth: false }),
+
+  /* ----------------------------------------------------- appointments */
+
+  /** Availability comes from the backend, never from the browser. */
+  availableSlots: (slug, from, days = 14) => {
+    const query = new URLSearchParams({ service: slug, days: String(days) });
+    if (from) query.set('from', from);
+    return request(`/api/appointments/available-slots?${query}`, { auth: false });
+  },
+
+  /* --------------------------------------------------------- bookings */
+
   /**
    * auth is left ON deliberately. The endpoint is public, but sending the
    * token when there is one lets the API attach the booking to that account.
