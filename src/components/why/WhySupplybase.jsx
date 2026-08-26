@@ -14,10 +14,16 @@ import './WhySupplybase.css';
  */
 
 /*
- * The approved photograph — a modern residence at dusk — is baked into the
- * flat mockup and does not exist as a file in the repo. Drop it in as
- * public/assets/why/modern-home.jpg and it appears; until then the existing
- * house artwork stands in, so the section is never broken.
+ * The approved photograph: the modern residence at dusk.
+ *
+ * The supplied PNG carried a rounded-corner mask painted into the pixels — a
+ * 12px white margin down the left edge and arcs up to 15px deep in the top
+ * corners — which would have shown as a pale double-edge inside our own 20px
+ * radius. It is cropped 15px on every side to a clean rectangle and saved as
+ * JPEG: 791 KB down to 96 KB with no visible loss on a photograph.
+ *
+ * The fallback stays as a safety net for a bad deploy — a missing file would
+ * otherwise leave the frame empty rather than merely off-brand.
  */
 const PHOTO = '/assets/why/modern-home.jpg';
 const PHOTO_FALLBACK = '/assets/hero-house.svg';
