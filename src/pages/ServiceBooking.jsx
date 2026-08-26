@@ -10,15 +10,19 @@ import { contact } from '../data/siteConfig';
 /**
  * One booking page, four services.
  *
- * Nothing about the questions lives here — the page asks the API what to ask
- * (GET /api/catalogue/services/{slug}/form) and renders whatever comes back.
- * Adding an option is a database row, not a release.
+ * Nothing about the questions lives here. The page asks the API what to ask
+ * (GET /api/catalogue/services/{slug}/form) and renders whatever comes back,
+ * so adding an option is a database row rather than a release.
  *
- * The five stages are the ones in spec §11. The service questions are
- * paginated inside stage 1 by the step number the catalogue gives them, so a
- * phone shows a handful of choices at a time rather than a six-screen scroll.
+ * Five stages, matching the approved reference: Service, Property, Details,
+ * Schedule, Confirm. The catalogue tags each question with a step number;
+ * step 1 becomes Service, step 2 Property, and everything after folds into
+ * Details — so a service with nine questions and one with four both end up
+ * as the same five-stage journey.
  */
-const STAGES = ['Select Service', 'Your Details', 'Date & Time', 'Confirm & Pay'];
+const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
+const SCHEDULE = 3;
+const CONFIRM = 4;
 
 const emptyDetails = {
   name: '',
@@ -42,7 +46,6 @@ export default function ServiceBooking() {
   const [loadError, setLoadError] = useState('');
 
   const [stage, setStage] = useState(0);
-  const [questionStep, setQuestionStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [details, setDetails] = useState(emptyDetails);
   const [date, setDate] = useState('');
@@ -61,13 +64,13 @@ export default function ServiceBooking() {
       .then((result) => {
         if (cancelled) return;
         setForm(result);
-        // Reset everything: switching service mid-flow must not carry answers
-        // to questions the new service never asked.
+        // Switching service mid-flow must not carry answers to questions the
+        // new service never asked.
         setStage(0);
-        setQuestionStep(0);
         setAnswers({});
         setDate('');
         setTime('');
+        setErrors({});
       })
       .catch((err) => {
         if (!cancelled) setLoadError(friendlyError(err));
@@ -92,24 +95,32 @@ export default function ServiceBooking() {
     }
   }, [user]);
 
-  /** Catalogue questions grouped into the steps the catalogue assigned them. */
-  const questionSteps = useMemo(() => {
-    if (!form) return [];
-    const byStep = new Map();
-    form.questions
-      // FILE questions are dropped for now: uploads are collected on WhatsApp
-      // until the storage backend exists. Rendering a dead upload button would
-      // be worse than not showing one.
-      .filter((q) => q.inputType !== 'FILE')
-      .forEach((q) => {
-        if (!byStep.has(q.stepNo)) byStep.set(q.stepNo, []);
-        byStep.get(q.stepNo).push(q);
-      });
-    return [...byStep.entries()].sort((a, b) => a[0] - b[0]).map(([, qs]) => qs);
+  /**
+   * Questions for each of the three question stages.
+   *
+   * Split by MEANING, not by the catalogue's step number. Plumbing puts
+   * property_type at step 3 while painting puts it at step 2, so a positional
+   * split labelled the "Where is the service required?" question as
+   * "Property". The Property stage is whichever question asks for the
+   * property type, wherever the catalogue happens to place it.
+   *
+   * FILE questions are dropped for now — uploads are collected on WhatsApp
+   * until the storage backend exists, and a dead upload button would be worse
+   * than none.
+   */
+  const stageQuestions = useMemo(() => {
+    if (!form) return [[], [], []];
+    const usable = form.questions.filter((q) => q.inputType !== 'FILE');
+    const service = usable.filter((q) => q.key === 'service_needed');
+    const property = usable.filter((q) => q.key === 'property_type');
+    const details = usable.filter(
+      (q) => q.key !== 'service_needed' && q.key !== 'property_type'
+    );
+    return [service, property, details];
   }, [form]);
 
   // `next` may be a value or an updater — QuestionField sends an updater so
-  // two taps in one batch cannot overwrite each other.
+  // two taps in one React batch cannot overwrite each other.
   const setAnswer = (key) => (next) => {
     setAnswers((a) => ({ ...a, [key]: typeof next === 'function' ? next(a[key]) : next }));
     setErrors((e) => ({ ...e, [key]: undefined }));
@@ -122,9 +133,9 @@ export default function ServiceBooking() {
     setError('');
   };
 
-  const validateQuestionStep = (index) => {
+  const validateQuestions = (list) => {
     const next = {};
-    (questionSteps[index] || []).forEach((q) => {
+    list.forEach((q) => {
       if (!q.required) return;
       const value = answers[q.key];
       const empty = Array.isArray(value) ? value.length === 0 : !value;
@@ -154,45 +165,39 @@ export default function ServiceBooking() {
     return Object.keys(next).length === 0;
   };
 
-  const goNext = () => {
-    setError('');
-    if (stage === 0) {
-      if (!validateQuestionStep(questionStep)) return;
-      if (questionStep < questionSteps.length - 1) {
-        setQuestionStep((s) => s + 1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      setStage(1);
-    } else if (stage === 1) {
-      if (!validateDetails()) return;
-      setStage(2);
-    } else if (stage === 2) {
+  const canLeaveStage = () => {
+    if (stage < SCHEDULE) return validateQuestions(stageQuestions[stage]);
+    if (stage === SCHEDULE) {
       if (!date || !time) {
         setErrors({ slot: 'Please choose a date and a time' });
-        return;
+        return false;
       }
-      setStage(3);
+      return true;
     }
+    return validateDetails();
+  };
+
+  const goNext = () => {
+    setError('');
+    if (!canLeaveStage()) return;
+    setStage((s) => Math.min(s + 1, CONFIRM));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goBack = () => {
     setError('');
-    if (stage === 0 && questionStep > 0) setQuestionStep((s) => s - 1);
-    else if (stage > 0) {
-      setStage((s) => s - 1);
-      if (stage - 1 === 0) setQuestionStep(questionSteps.length - 1);
-    }
+    setStage((s) => Math.max(s - 1, 0));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateDetails()) return;
+
     setBusy(true);
     setError('');
     try {
-      // Flatten the answers. A MULTI question becomes one row per choice, so
+      // Flatten the answers: a MULTI question becomes one row per choice, so
       // the office can filter on "everyone who asked for terrace work".
       const flat = [];
       Object.entries(answers).forEach(([key, value]) => {
@@ -206,7 +211,6 @@ export default function ServiceBooking() {
           });
       });
 
-      const areaAnswer = answers.area_sqft;
       const result = await api.createBooking({
         serviceSlug: slug,
         answers: flat,
@@ -219,7 +223,7 @@ export default function ServiceBooking() {
         address: details.address,
         city: details.city,
         pincode: details.pincode || null,
-        areaSqft: areaAnswer ? Number(areaAnswer) : null,
+        areaSqft: answers.area_sqft ? Number(answers.area_sqft) : null,
       });
       setReceipt(result);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -235,163 +239,105 @@ export default function ServiceBooking() {
 
   if (loading) {
     return (
-      <section className="section">
-        <div className="container container-narrow">
-          <p className="question-hint">Loading…</p>
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <p style={{ color: 'rgba(255,255,255,.6)' }}>Loading…</p>
         </div>
-      </section>
+      </div>
     );
   }
 
   if (loadError || !form) {
     return (
-      <section className="section">
-        <div className="container container-narrow">
-          <div role="alert" className="alert alert-error">
-            <Icon name="info" size={18} />
-            <span>{loadError || 'That service could not be found.'}</span>
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <div className="wizard-card">
+            <div role="alert" className="alert alert-error">
+              <Icon name="info" size={18} />
+              <span>{loadError || 'That service could not be found.'}</span>
+            </div>
+            <Link to="/services" className="btn btn-primary btn-block">
+              SEE ALL SERVICES
+            </Link>
           </div>
-          <Link to="/services" className="btn btn-ghost" style={{ marginTop: 18 }}>
-            SEE ALL SERVICES
-          </Link>
         </div>
-      </section>
+      </div>
     );
   }
 
   const { category } = form;
+  const feeLabel = category.visitFeeDisplay.replace('.00', '');
 
   if (receipt) {
-    return <Confirmation receipt={receipt} details={details} />;
+    return <Confirmation receipt={receipt} details={details} feeLabel={feeLabel} />;
   }
 
-  const currentQuestions = questionSteps[questionStep] || [];
-  const isLastStage = stage === STAGES.length - 1;
-
   return (
-    <>
-      {/* ------------------------------------------------------- hero */}
-      <section className="svc-hero" data-service={slug}>
-        <div className="container">
-          <p className="eyebrow">BOOK A SITE VISIT</p>
-          <h1>{category.name.toUpperCase()}</h1>
-          <p className="svc-hero-tagline">{category.tagline}</p>
+    <div className="wizard-shell">
+      <div className="wizard-container">
+        {/* ------------------------------------------------------ top bar */}
+        <div className="wizard-top">
+          {stage > 0 ? (
+            <button type="button" className="wizard-back" onClick={goBack} aria-label="Go back">
+              <Icon name="arrow-left" size={20} />
+            </button>
+          ) : (
+            <Link to="/services" className="wizard-back" aria-label="Back to services">
+              <Icon name="arrow-left" size={20} />
+            </Link>
+          )}
+
+          <h1 className="wizard-title">Book a Service</h1>
+
+          <a
+            href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+              `Hello Supplybase, I need help booking ${category.name}.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="wizard-help"
+          >
+            Need help?
+          </a>
         </div>
-      </section>
 
-      {/* ---------------------------------------------------- fee card */}
-      <section className="container container-narrow" style={{ marginTop: -34, zIndex: 3, position: 'relative' }}>
-        <div className="fee-card">
-          <div className="fee-amount">
-            <span className="fee-value">{category.visitFeeDisplay.replace('.00', '')}</span>
-            <span className="fee-only">Only</span>
-          </div>
-          <div className="fee-body">
-            <h2>Site Visit + Quotation Fee</h2>
-            <p>
-              The fee includes the site visit, basic measurement and assessment, and your
-              quotation.
-            </p>
-            <ul className="fee-list">
-              <li>
-                <Icon name="check" size={15} strokeWidth={3} /> Expert visits your property
-              </li>
-              <li>
-                <Icon name="check" size={15} strokeWidth={3} /> Measurement where needed
-              </li>
-              <li>
-                <Icon name="check" size={15} strokeWidth={3} /> Written quotation
-              </li>
-            </ul>
-            <p className="fee-note">
-              This is a one-time site visit and quotation fee. <strong>No advance payment is
-              required for the actual work.</strong> The final project cost is given after the
-              inspection.
-            </p>
-          </div>
-        </div>
-      </section>
+        {/* ----------------------------------------------------- progress */}
+        <ol className="wizard-steps">
+          {STAGES.map((label, i) => (
+            <li
+              key={label}
+              className={`wstep ${i === stage ? 'current' : ''} ${i < stage ? 'done' : ''}`}
+              aria-current={i === stage ? 'step' : undefined}
+            >
+              <span className="wstep-num">
+                {i < stage ? <Icon name="check" size={14} strokeWidth={3} /> : i + 1}
+              </span>
+              <span className="wstep-label">{label}</span>
+            </li>
+          ))}
+        </ol>
 
-      {/* ------------------------------------------------------ wizard */}
-      <section className="section">
-        <div className="container container-narrow">
-          <ol className="stage-bar">
-            {STAGES.map((label, i) => (
-              <li
-                key={label}
-                className={`stage ${i === stage ? 'current' : ''} ${i < stage ? 'done' : ''}`}
-              >
-                <span className="stage-num">
-                  {i < stage ? <Icon name="check" size={13} strokeWidth={3} /> : i + 1}
-                </span>
-                <span className="stage-label">{label}</span>
-              </li>
-            ))}
-          </ol>
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="wizard-card">
+            {/* ------------------------- 1-3. catalogue questions */}
+            {stage < SCHEDULE &&
+              stageQuestions[stage].map((question) => (
+                <QuestionField
+                  key={question.key}
+                  question={question}
+                  value={answers[question.key]}
+                  onChange={setAnswer(question.key)}
+                  error={errors[question.key]}
+                />
+              ))}
 
-          <form onSubmit={handleSubmit} noValidate>
-            {/* ------------------------------------ 1. service questions */}
-            {stage === 0 && (
-              <div className="wizard-panel">
-                {questionSteps.length > 1 && (
-                  <p className="wizard-substep">
-                    Question set {questionStep + 1} of {questionSteps.length}
-                  </p>
-                )}
-                {currentQuestions.map((question) => (
-                  <QuestionField
-                    key={question.key}
-                    question={question}
-                    value={answers[question.key]}
-                    onChange={setAnswer(question.key)}
-                    error={errors[question.key]}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* ------------------------------------------- 2. details */}
-            {stage === 1 && (
-              <div className="wizard-panel">
-                <h3 className="question-text">Where should we visit?</h3>
-                <div className="form-grid">
-                  <Field id="bk-name" label="Full name" required value={details.name}
-                         onChange={setDetail('name')} error={errors.name} />
-                  <Field id="bk-phone" label="Mobile number" required type="tel"
-                         value={details.phone} onChange={setDetail('phone')}
-                         error={errors.phone} placeholder="98765 43210" />
-                  <Field id="bk-whatsapp" label="WhatsApp number" type="tel"
-                         value={details.whatsapp} onChange={setDetail('whatsapp')}
-                         error={errors.whatsapp} placeholder="Same as mobile"
-                         hint="Leave blank if it is the same number." />
-                  <Field id="bk-email" label="Email" type="email" value={details.email}
-                         onChange={setDetail('email')} error={errors.email}
-                         placeholder="you@example.com" hint="Optional." />
+            {/* --------------------------------------- 4. schedule */}
+            {stage === SCHEDULE && (
+              <>
+                <div className="wizard-card-head">
+                  <h2>Choose Date &amp; Time for Site Visit</h2>
+                  <p>Our team will visit your site.</p>
                 </div>
-
-                <div className="field" style={{ marginTop: 16 }}>
-                  <label htmlFor="bk-address">
-                    Complete address <span className="req">*</span>
-                  </label>
-                  <textarea id="bk-address" rows={3} value={details.address}
-                            onChange={setDetail('address')}
-                            placeholder="Flat / building, street, landmark" />
-                  {errors.address && <span className="field-error">{errors.address}</span>}
-                </div>
-
-                <div className="form-grid" style={{ marginTop: 16 }}>
-                  <Field id="bk-city" label="City" required value={details.city}
-                         onChange={setDetail('city')} error={errors.city} placeholder="Mumbai" />
-                  <Field id="bk-pincode" label="Pincode" value={details.pincode}
-                         onChange={setDetail('pincode')} error={errors.pincode}
-                         placeholder="400001" />
-                </div>
-              </div>
-            )}
-
-            {/* ---------------------------------------- 3. date & time */}
-            {stage === 2 && (
-              <div className="wizard-panel">
                 <SlotPicker
                   serviceSlug={slug}
                   date={date}
@@ -403,22 +349,63 @@ export default function ServiceBooking() {
                   }}
                   error={errors.slot}
                 />
-              </div>
+              </>
             )}
 
-            {/* ------------------------------------- 4. confirm & pay */}
-            {stage === 3 && (
-              <div className="wizard-panel">
-                <h3 className="question-text">Check your booking</h3>
+            {/* ---------------------------- 5. details + summary */}
+            {stage === CONFIRM && (
+              <>
+                <div className="wizard-card-head">
+                  <h2>Enter Your Details</h2>
+                  <p>We will contact you to confirm the appointment.</p>
+                </div>
+
+                <div className="form-grid">
+                  <Field id="bk-name" label="Full Name" required value={details.name}
+                         onChange={setDetail('name')} error={errors.name}
+                         placeholder="Enter your name" />
+                  <Field id="bk-phone" label="Mobile Number" required type="tel"
+                         inputMode="numeric" value={details.phone}
+                         onChange={setDetail('phone')} error={errors.phone}
+                         placeholder="Enter mobile number" />
+                  <Field id="bk-whatsapp" label="WhatsApp Number (Optional)" type="tel"
+                         inputMode="numeric" value={details.whatsapp}
+                         onChange={setDetail('whatsapp')} error={errors.whatsapp}
+                         placeholder="Enter WhatsApp number"
+                         hint="Leave blank if it is the same as your mobile." />
+                  <Field id="bk-email" label="Email Address (Optional)" type="email"
+                         value={details.email} onChange={setDetail('email')}
+                         error={errors.email} placeholder="Enter email address" />
+                </div>
+
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label htmlFor="bk-address">
+                    Project Address <span className="req">*</span>
+                  </label>
+                  <textarea id="bk-address" rows={3} value={details.address}
+                            onChange={setDetail('address')}
+                            placeholder="Enter complete address" />
+                  {errors.address && <span className="field-error">{errors.address}</span>}
+                </div>
+
+                <div className="form-grid" style={{ marginTop: 16 }}>
+                  <Field id="bk-city" label="City" required value={details.city}
+                         onChange={setDetail('city')} error={errors.city}
+                         placeholder="Mumbai" />
+                  <Field id="bk-pincode" label="Pincode" value={details.pincode}
+                         onChange={setDetail('pincode')} error={errors.pincode}
+                         placeholder="400001" />
+                </div>
+
                 <Summary
                   category={category}
                   form={form}
                   answers={answers}
-                  details={details}
                   date={date}
                   time={time}
+                  feeLabel={feeLabel}
                 />
-              </div>
+              </>
             )}
 
             {error && (
@@ -428,19 +415,18 @@ export default function ServiceBooking() {
               </div>
             )}
 
-            <div className="wizard-nav">
-              {stage > 0 || questionStep > 0 ? (
-                <button type="button" className="btn btn-ghost" onClick={goBack}>
+            {/* ---------------------------------------------- footer */}
+            <div className={`wizard-foot ${stage === 0 ? 'single' : ''}`}>
+              {stage > 0 && (
+                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>
                   BACK
                 </button>
-              ) : (
-                <span />
               )}
 
-              {isLastStage ? (
-                <button type="submit" className="btn btn-primary btn-lg" disabled={busy}>
-                  {busy ? 'BOOKING…' : `PAY ${category.visitFeeDisplay.replace('.00', '')} & BOOK SITE VISIT`}
-                  <Icon name="arrow-right" size={18} />
+              {stage === CONFIRM ? (
+                <button type="submit" className="btn btn-primary" disabled={busy}>
+                  {busy ? 'BOOKING…' : `PAY ${feeLabel} & CONFIRM BOOKING`}
+                  <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
                 <button type="button" className="btn btn-primary" onClick={goNext}>
@@ -449,10 +435,10 @@ export default function ServiceBooking() {
                 </button>
               )}
             </div>
-          </form>
-        </div>
-      </section>
-    </>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -475,7 +461,7 @@ function Field({ id, label, required, hint, error, ...rest }) {
 }
 
 /** A last look before paying — nobody should pay for a booking they misread. */
-function Summary({ category, form, answers, details, date, time }) {
+function Summary({ category, form, answers, date, time, feeLabel }) {
   const rows = form.questions
     .map((q) => {
       const value = answers[q.key];
@@ -490,14 +476,19 @@ function Summary({ category, form, answers, details, date, time }) {
     .filter(Boolean);
 
   return (
-    <div className="summary">
-      <dl className="summary-list">
+    <div style={{ marginTop: 26 }}>
+      <div className="wizard-card-head">
+        <h2>Booking Summary</h2>
+        <p>Please check everything before you pay.</p>
+      </div>
+
+      <dl className="review-list">
         <div>
           <dt>Service</dt>
           <dd>{category.name}</dd>
         </div>
         <div>
-          <dt>Visit</dt>
+          <dt>Site visit</dt>
           <dd>
             {date} at {time}
           </dd>
@@ -508,89 +499,101 @@ function Summary({ category, form, answers, details, date, time }) {
             <dd>{row.answer}</dd>
           </div>
         ))}
-        <div>
-          <dt>Name</dt>
-          <dd>{details.name}</dd>
-        </div>
-        <div>
-          <dt>Mobile</dt>
-          <dd>{details.phone}</dd>
-        </div>
-        <div>
-          <dt>Address</dt>
-          <dd>
-            {details.address}, {details.city} {details.pincode}
-          </dd>
-        </div>
       </dl>
 
-      <div className="summary-total">
-        <span>Site Visit &amp; Quotation Fee</span>
-        <strong>{category.visitFeeDisplay.replace('.00', '')}</strong>
-      </div>
+      <div className="fee-panel">
+        <div className="fee-panel-top">
+          <strong>Site Visit &amp; Quotation Fee</strong>
+          <span className="fee-panel-amount">{feeLabel}</span>
+        </div>
 
-      <p className="fee-note" style={{ marginTop: 12 }}>
-        Supplybase will provide the required material according to the approved quotation.
-      </p>
+        <ul className="fee-includes">
+          {['Site visit', 'Assessment', 'Measurement where required', 'Quotation'].map((item) => (
+            <li key={item}>
+              <Icon name="check" size={13} strokeWidth={3} />
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        <p className="fee-small">
+          This is a one-time fee.{' '}
+          <strong>No advance payment is required for the actual work.</strong> The final project
+          cost will be provided after site inspection. Supplybase will provide the required
+          material according to the approved quotation.
+        </p>
+      </div>
     </div>
   );
 }
 
-/** Spec §37. */
-function Confirmation({ receipt, details }) {
+/** The confirmation screen from the approved reference. */
+function Confirmation({ receipt, details, feeLabel }) {
   const message = encodeURIComponent(
     `Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`
   );
+
   return (
-    <section className="section">
-      <div className="container container-narrow">
-        <div className="booking-done">
-          <div className="booking-done-icon">
-            <Icon name="check-circle" size={40} strokeWidth={1.5} />
-          </div>
-          <h2>BOOKING CONFIRMED</h2>
-          <p className="booking-ref">{receipt.bookingNumber}</p>
+    <div className="wizard-shell">
+      <div className="wizard-container">
+        <div className="wizard-card">
+          <div className="confirmed">
+            <div className="confirmed-tick">
+              <Icon name="check" size={38} strokeWidth={3} />
+            </div>
 
-          <dl className="summary-list" style={{ textAlign: 'left', marginTop: 22 }}>
-            <div>
-              <dt>Service</dt>
-              <dd>{receipt.serviceName}</dd>
-            </div>
-            <div>
-              <dt>Date</dt>
-              <dd>{receipt.date}</dd>
-            </div>
-            <div>
-              <dt>Time</dt>
-              <dd>{receipt.time}</dd>
-            </div>
-            <div>
-              <dt>Site Visit &amp; Quotation Fee</dt>
-              <dd>{receipt.visitFeeDisplay.replace('.00', '')}</dd>
-            </div>
-          </dl>
+            <h2>Your Site Visit is Booked!</h2>
+            <p>
+              We have received your request. Our team will contact you on WhatsApp or phone to
+              confirm the appointment.
+            </p>
 
-          <p style={{ marginTop: 18 }}>
-            Thank you for booking with Supplybase. Our team will contact you to confirm your site
-            visit{details.name ? `, ${details.name.split(' ')[0]}` : ''}.
-          </p>
+            <dl className="confirmed-panel">
+              <div>
+                <dt>Booking ID</dt>
+                <dd className="booking-id">{receipt.bookingNumber}</dd>
+              </div>
+              <div>
+                <dt>Date &amp; Time</dt>
+                <dd>
+                  {receipt.date}, {receipt.time}
+                </dd>
+              </div>
+              <div>
+                <dt>Service</dt>
+                <dd>{receipt.serviceName}</dd>
+              </div>
+              <div>
+                <dt>Location</dt>
+                <dd>{details.city}</dd>
+              </div>
+              <div>
+                <dt>Site Visit Fee</dt>
+                <dd>{feeLabel}</dd>
+              </div>
+            </dl>
 
-          <div className="btn-row" style={{ justifyContent: 'center', marginTop: 24 }}>
-            <Link to="/dashboard" className="btn btn-primary">
+            <Link to="/dashboard" className="btn btn-primary btn-block">
               GO TO DASHBOARD
             </Link>
-            <a
-              href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-whatsapp"
-            >
-              <Icon name="whatsapp" size={17} />
-              CHAT ON WHATSAPP
-            </a>
+
+            <div className="btn-row" style={{ marginTop: 12 }}>
+              <a
+                href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-whatsapp"
+              >
+                <Icon name="whatsapp" size={17} />
+                CHAT ON WHATSAPP
+              </a>
+              <Link to="/" className="btn btn-ghost btn-back">
+                BACK TO HOME
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

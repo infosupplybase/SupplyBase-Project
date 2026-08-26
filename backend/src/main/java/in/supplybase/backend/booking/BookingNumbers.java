@@ -50,6 +50,10 @@ public class BookingNumbers {
                 .setParameter(2, year)
                 .executeUpdate();
 
-        return String.format("SB-%d-%06d", year, current.longValue());
+        // SB-20260826-000001 — the date makes a number readable over the
+        // phone ("the twenty-sixth one") and keeps the counter per year.
+        return String.format("SB-%s-%06d",
+                LocalDate.now().format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE),
+                current.longValue());
     }
 }
