@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import HeroSlider from '../components/HeroSlider/HeroSlider';
 import ServiceSection from '../components/services/ServiceSection';
+import WhySupplybase from '../components/why/WhySupplybase';
 import StatsSection from '../components/home/StatsSection';
 import ProjectGrid from '../components/projects/ProjectGrid';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
 import { getFeaturedProjects } from '../data/projects';
-import { whyUsPoints, company } from '../data/siteConfig';
 import { featuredBrands } from '../data/materials';
 
 export default function Home() {
@@ -21,47 +21,7 @@ export default function Home() {
 
       <ServiceSection />
 
-      {/* --------------------------------------------------------- why us */}
-      <section className="section section-light">
-        <div className="container">
-          <div className="split">
-            <Reveal>
-              <span className="eyebrow">WHY SUPPLYBASE PROJECTS</span>
-              <div className="rule" />
-              <h2>
-                ONE PARTNER.
-                <br />
-                <span className="gold">COMPLETE PROJECT.</span>
-              </h2>
-              <p style={{ color: 'var(--ink-soft)' }}>{company.longIntro}</p>
-              <ul className="check-list">
-                {whyUsPoints.slice(0, 4).map((point) => (
-                  <li key={point.title}>
-                    <Icon name="check" size={19} strokeWidth={2.2} />
-                    <span>
-                      <strong>{point.title}</strong> — {point.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <div className="btn-row">
-                {/* promoted from ghost to solid — it is the only button in
-                    this row now that Why Us is gone. */}
-                <Link to="/about" className="btn btn-dark">
-                  ABOUT US
-                  <Icon name="arrow-right" size={17} />
-                </Link>
-              </div>
-            </Reveal>
-
-            <Reveal className="media-frame" delay={120}>
-              <div className="split-media">
-                <img src="/assets/hero-house.svg" alt="Architectural project by Supplybase Projects" />
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </section>
+      <WhySupplybase />
 
       {/* ------------------------------------------------------ materials */}
       <section className="section-tight section-dark">

@@ -1,0 +1,223 @@
+/* =========================================================================
+   SUPPLYBASE — WHY SUPPLYBASE PROJECTS
+   White section, pitch left, framed photograph right.
+   ========================================================================= */
+
+.why {
+  background: var(--white);
+  padding: clamp(56px, 7vw, 100px) 0;
+}
+
+.why-inner {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 64px);
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  gap: clamp(40px, 5vw, 76px);
+  align-items: center;
+}
+
+/* --------------------------------------------------------------- eyebrow */
+
+.why-eyebrow {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(13px, 1.1vw, 16px);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  /* --gold is 2.0:1 on white and unreadable at this size; --gold-dark keeps
+     the colour and clears the contrast floor. */
+  color: var(--gold-dark);
+}
+
+.why-rule {
+  display: block;
+  width: 62px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--gold);
+  margin: 12px 0 22px;
+}
+
+/* --------------------------------------------------------------- heading */
+
+.why-heading {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 4.6vw, 66px);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: #111111;
+  margin: 0 0 22px;
+}
+
+.why-heading-gold {
+  color: var(--gold);
+}
+
+/* ------------------------------------------------------------------ lead */
+
+.why-lead {
+  max-width: 750px;
+  /* vw + px, not vw alone: a plain 1.15vw resolved to 14.7px on a 1280
+     laptop, under the 16px floor this paragraph is meant to hold. */
+  font-size: clamp(15.5px, 0.45vw + 12.2px, 17.5px);
+  line-height: 1.7;
+  color: #555555;
+  margin: 0 0 26px;
+}
+
+/* -------------------------------------------------------------- benefits */
+
+.why-list {
+  list-style: none;
+  margin: 0 0 30px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.why-item {
+  display: flex;
+  gap: 12px;
+  font-size: clamp(14.5px, 0.4vw + 11.4px, 16.5px);
+  line-height: 1.6;
+  color: #444444;
+}
+
+/* Nudged down so the tick sits on the first line's baseline rather than its
+   box top, which reads a couple of pixels high next to 1.6 line-height. */
+.why-check {
+  flex-shrink: 0;
+  color: #18a558;
+  margin-top: 3px;
+}
+
+.why-item-text strong {
+  font-weight: 700;
+  color: #222222;
+}
+
+/* ------------------------------------------------------------------- cta */
+
+.why-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  padding: 0 30px;
+  border-radius: var(--radius);
+  background: var(--black);
+  color: var(--gold);
+  box-shadow: var(--shadow);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease),
+              background var(--t) var(--ease), color var(--t) var(--ease);
+}
+
+.why-cta svg {
+  transition: transform var(--t) var(--ease);
+}
+
+.why-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(5, 5, 5, 0.18);
+}
+
+.why-cta:hover svg {
+  transform: translateX(4px);
+}
+
+.why-cta:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ----------------------------------------------------------- photograph */
+
+/*
+ * The gold frame is the ::after, inset from the top-left by --why-offset and
+ * flush with the padding box on the right and bottom. The photograph sits in
+ * normal flow inside that same padding, so it ends --why-offset short of both
+ * edges and the frame reads as sitting behind and below it.
+ *
+ * Built from padding rather than negative offsets on purpose: `right: -18px`
+ * would push the frame past the container and give the whole page a
+ * horizontal scrollbar at exactly the widths where the gutter runs out.
+ */
+.why-frame {
+  --why-offset: 22px;
+  position: relative;
+  padding-right: var(--why-offset);
+  padding-bottom: var(--why-offset);
+}
+
+.why-frame::after {
+  content: '';
+  position: absolute;
+  left: var(--why-offset);
+  top: var(--why-offset);
+  right: 0;
+  bottom: 0;
+  border: 2px solid var(--gold);
+  border-radius: 20px;
+  z-index: 0;
+}
+
+.why-shot {
+  position: relative;
+  z-index: 1;
+  height: clamp(360px, 36vw, 520px);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--light-bg);
+  box-shadow: var(--shadow);
+}
+
+.why-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------------------------------------------------------- responsive */
+
+/* One column below the point where the heading would start breaking mid-word
+   against a shrinking column. The photograph is last in the source order, so
+   stacking already puts it under the text — no `order` needed. */
+@media (max-width: 900px) {
+  .why-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+
+  .why-lead {
+    max-width: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .why-frame {
+    --why-offset: 8px;
+  }
+
+  .why-shot {
+    height: clamp(300px, 62vw, 400px);
+  }
+
+  .why-cta {
+    height: 50px;
+    padding: 0 24px;
+    font-size: 14px;
+  }
+}
