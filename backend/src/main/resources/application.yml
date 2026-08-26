@@ -63,8 +63,10 @@ server:
     include-stacktrace: never
 
 app:
-  # Where the React site runs. Anything not listed here is refused by CORS.
-  cors-allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+  # Where the React site runs. Anything not matching is refused by CORS.
+  # These are PATTERNS: [*] covers whichever port Vite ends up on in
+  # development. Set CORS_ORIGINS to exact origins in production.
+  cors-allowed-origins: ${CORS_ORIGINS:http://localhost:[*],http://127.0.0.1:[*]}
   jwt:
     # MUST be overridden in production. Minimum 32 bytes for HS256.
     secret: ${JWT_SECRET:dev-only-secret-change-me-in-production-please-32b}

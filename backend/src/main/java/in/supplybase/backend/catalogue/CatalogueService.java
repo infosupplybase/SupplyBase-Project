@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +33,30 @@ public class CatalogueService {
                 .toList();
     }
 
+    /**
+     * Short and historical names that people type or bookmark.
+     *
+     * "painting" is the obvious guess for a service actually called
+     * painting-waterproofing, and a 404 for a guess that close is a bad
+     * answer when we know exactly what they meant.
+     */
+    private static final Map<String, String> SLUG_ALIASES = Map.of(
+            "painting", "painting-waterproofing",
+            "waterproofing", "painting-waterproofing",
+            "paint", "painting-waterproofing",
+            "electrical", "electrician",
+            "electric", "electrician",
+            "interior", "interior-work",
+            "interior-design", "interior-work",
+            "interiors", "interior-work",
+            "plumber", "plumbing");
+
     @Transactional(readOnly = true)
     public ServiceCategory requireCategory(String slug) {
-        return categories.findBySlugAndActiveTrue(slug)
+        String key = slug == null ? "" : slug.trim().toLowerCase();
+        return categories.findBySlugAndActiveTrue(key)
+                .or(() -> Optional.ofNullable(SLUG_ALIASES.get(key))
+                        .flatMap(categories::findBySlugAndActiveTrue))
                 .orElseThrow(() -> ApiException.notFound("That service"));
     }
 

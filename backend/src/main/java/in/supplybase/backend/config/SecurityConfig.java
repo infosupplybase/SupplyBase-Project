@@ -95,7 +95,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(props.corsAllowedOrigins());
+        /*
+         * setAllowedOriginPatterns, not setAllowedOrigins.
+         *
+         * Two reasons. Vite moves to 5174, 5175 and so on whenever the
+         * previous port is still held by an old dev server, and a hard-coded
+         * 5173 then rejects the browser with a 403 that surfaces to the user
+         * as "could not reach the server" — a confusing way to say "wrong
+         * port". Patterns let one entry cover them all.
+         *
+         * The second reason is that allowCredentials(true) makes a literal
+         * "*" illegal, while patterns remain legal. Production still lists
+         * exact origins through CORS_ORIGINS; only the development default
+         * is a pattern, and it is still restricted to localhost.
+         */
+        config.setAllowedOriginPatterns(props.corsAllowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With"));
         config.setExposedHeaders(List.of("Location"));

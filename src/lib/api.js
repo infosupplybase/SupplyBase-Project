@@ -49,11 +49,23 @@ export class ApiError extends Error {
   }
 }
 
-/** The message to show a person. Network failures need their own wording. */
+/**
+ * The message to show a person. Network failures need their own wording.
+ *
+ * A blocked CORS preflight reaches fetch() as an ordinary TypeError, exactly
+ * like an offline connection, so in development the API address is appended.
+ * "Could not reach the server" while the server is plainly running sends you
+ * hunting the wrong problem; naming the URL it tried points straight at a
+ * wrong port or a wrong origin. Never shown in production.
+ */
 export const friendlyError = (error) => {
   if (error instanceof ApiError) return error.message;
   if (error && error.name === 'TypeError') {
-    return 'We could not reach the server. Check your connection and try again.';
+    const base = 'We could not reach the server. Check your connection and try again.';
+    return import.meta.env.DEV
+      ? `${base} (Tried ${BASE_URL} from ${window.location.origin} — if the server is running, ` +
+        `check the port and the CORS origins on the API.)`
+      : base;
   }
   return (error && error.message) || 'Something went wrong. Please try again.';
 };
