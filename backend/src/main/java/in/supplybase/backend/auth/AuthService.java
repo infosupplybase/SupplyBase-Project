@@ -56,7 +56,9 @@ public class AuthService {
                 .phone(phone)
                 // Self-registration always produces a CLIENT. Staff roles are
                 // granted by an admin, never claimed by the person signing up.
-                .role(Role.CLIENT)
+                // Self-registration always produces a CUSTOMER. Staff and
+                // professional roles are granted by an admin, never claimed.
+                .role(Role.CUSTOMER)
                 .enabled(true)
                 .build();
 
@@ -122,7 +124,7 @@ public class AuthService {
                     .fullName(name == null || name.isBlank() ? email.split("@")[0] : name.trim())
                     .emailVerified(true)
                     .pictureUrl(picture)
-                    .role(Role.CLIENT)
+                    .role(Role.CUSTOMER)
                     .enabled(true)
                     .build();
         } else {

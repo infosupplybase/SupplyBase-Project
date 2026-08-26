@@ -65,7 +65,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private Role role = Role.CLIENT;
+    private Role role = Role.CUSTOMER;
 
     @Column(nullable = false)
     @Builder.Default
@@ -79,8 +79,13 @@ public class User {
     @Column(name = "updated_at", insertable = false, updatable = false)
     private Instant updatedAt;
 
+    /**
+     * Staff for the purposes of seeing other people's commercial records.
+     * A PROFESSIONAL is deliberately NOT included: they see the jobs assigned
+     * to them through the assignment, never the whole book of business.
+     */
     public boolean isStaff() {
-        return role == Role.ADMIN || role == Role.MANAGER;
+        return role == Role.ADMIN;
     }
 
     /** A Google-only account cannot sign in with a password it does not have. */

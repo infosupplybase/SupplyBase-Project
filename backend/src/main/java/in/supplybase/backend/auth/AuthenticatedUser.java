@@ -13,7 +13,12 @@ public record AuthenticatedUser(Long id, String email, Role role) implements Pri
         return email;
     }
 
+    /** See User.isStaff — PROFESSIONAL is intentionally excluded. */
     public boolean isStaff() {
-        return role == Role.ADMIN || role == Role.MANAGER;
+        return role == Role.ADMIN;
+    }
+
+    public boolean isProfessional() {
+        return role == Role.PROFESSIONAL;
     }
 }

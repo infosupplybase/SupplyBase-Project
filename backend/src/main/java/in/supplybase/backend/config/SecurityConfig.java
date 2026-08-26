@@ -76,7 +76,14 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // --- staff only
-                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/professional/**").hasAnyRole("PROFESSIONAL", "ADMIN")
+                .requestMatchers("/api/customer/**").hasAnyRole("CUSTOMER", "ADMIN")
+
+                // The service catalogue is what the booking form is built from,
+                // so it has to be readable before anyone signs in.
+                .requestMatchers(HttpMethod.GET, "/api/catalogue/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/appointments/available-slots").permitAll()
 
                 // --- everything else needs a token
                 .anyRequest().authenticated())
