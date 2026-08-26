@@ -1,4 +1,29 @@
-@import './base.css';
+/* =========================================================================
+   SUPPLYBASE PROJECTS — STYLESHEET ENTRY POINT
+
+   Order matters: tokens first, then the reset and primitives, then the
+   reusable controls, then the page sections, then the responsive rules that
+   cut across all of them.
+   ========================================================================= */
+
+/* --- foundation ------------------------------------------------------- */
+@import './variables.css';
+@import './global.css';
+
+/* --- reusable controls ------------------------------------------------ */
+@import './buttons.css';
+@import './forms.css';
+
+/* --- page sections ---------------------------------------------------- */
+@import './header.css';
+@import './hero.css';
+@import './services.css';
+@import './booking.css';
+@import './footer.css';
+
+/* --- still being migrated off the old token names --------------------- */
 @import './components.css';
 @import './pages.css';
-@import './booking.css';
+
+/* --- cross-cutting, must stay last so it can override ----------------- */
+@import './responsive.css';

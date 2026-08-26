@@ -37,14 +37,20 @@
   top: 18px;
 }
 
+/* The gold frame sits down-and-right of the image. The offset now comes from
+   padding on the wrapper rather than negative insets on the pseudo-element:
+   a negative inset reaches outside the border box and widened the whole page
+   by 16px, which is invisible on a desktop and a horizontal scrollbar on a
+   phone. */
 .media-frame {
   position: relative;
+  padding: 0 18px 18px 0;
 }
 
 .media-frame::before {
   content: '';
   position: absolute;
-  inset: 16px -16px -16px 16px;
+  inset: 16px 0 0 16px;
   border: 2px solid var(--gold);
   border-radius: var(--radius-lg);
   z-index: -1;
@@ -452,10 +458,12 @@
 }
 
 /* Text blocks stay readable even though their section is now full width. */
-.page-home .section-head,
-.page-home .hero-inner {
+.page-home .section-head {
   max-width: 900px;
 }
+
+/* .hero-inner is a two-column grid now and sizes itself; capping it here
+   squeezed the headline into a 355px column and made the h1 overflow. */
 
 /* ------------------------------------------------------- account page */
 

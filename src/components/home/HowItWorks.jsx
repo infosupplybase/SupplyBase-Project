@@ -1,43 +1,44 @@
 import Icon from '../ui/Icon';
 import Reveal from '../ui/Reveal';
-import SectionHeading from '../ui/SectionHeading';
 
 /**
- * The eight steps from spec §5.
+ * "How Booking Works" — five steps, on the dark band.
  *
- * Worth showing in full: the ₹25 is step four of eight, which makes it read
- * as one small step in a long process rather than a charge for nothing.
+ * Five, matching the grid: the connector between steps is drawn from each
+ * item to the next, which only reads correctly along a single row. Adding a
+ * sixth step would wrap the grid and leave a connector pointing at nothing,
+ * so the count and the layout have to agree.
  */
 const STEPS = [
-  { icon: 'tools', title: 'Select Service', text: 'Painting, plumbing, electrical or interior.' },
-  { icon: 'chat', title: 'Tell Us Your Requirement', text: 'A few simple questions about the work.' },
-  { icon: 'calendar', title: 'Book Site Visit', text: 'Pick a date and time that suits you.' },
-  { icon: 'rupee', title: 'Pay ₹25', text: 'The site visit and quotation fee. Nothing more.' },
-  { icon: 'team', title: 'Expert Visit', text: 'Our expert visits, measures and assesses.' },
-  { icon: 'blueprint', title: 'Get Quotation', text: 'A written, itemised price — material and labour.' },
-  { icon: 'check-circle', title: 'Approve Work', text: 'Happy with it? Approve and we schedule.' },
-  { icon: 'home-check', title: 'Project Execution', text: 'We do the work and keep you updated.' },
+  { icon: 'tools', title: 'Choose Service', text: 'Pick from painting, plumbing, electrical or interior work.' },
+  { icon: 'calendar', title: 'Select Date & Time', text: 'Choose a visit slot that suits you.' },
+  { icon: 'chat', title: 'Share Details', text: 'Answer a few simple questions about the work.' },
+  { icon: 'team', title: 'Get Expert', text: 'Our expert visits, measures and quotes.' },
+  { icon: 'check-circle', title: 'Work Completed', text: 'Approve the quotation and we get started.' },
 ];
 
 export default function HowItWorks() {
   return (
-    <section className="section section-light">
+    <section className="section section-dark how">
       <div className="container">
-        <SectionHeading
-          center
-          eyebrow="HOW IT WORKS"
-          title="HOW SUPPLYBASE WORKS"
-          text="Eight simple steps from your first click to a finished project."
-        />
+        <div className="section-head center">
+          <span className="eyebrow">SIMPLE PROCESS</span>
+          <div className="rule" />
+          <h2>HOW BOOKING WORKS</h2>
+          <p>From choosing a service to finished work — five steps, no surprises.</p>
+        </div>
+
         <ol className="how-grid">
           {STEPS.map((step, i) => (
-            <Reveal key={step.title} className="how-step" delay={(i % 4) * 70}>
-              <span className="how-num">{String(i + 1).padStart(2, '0')}</span>
+            <Reveal key={step.title} className="how-step" delay={i * 80}>
               <div className="how-icon">
-                <Icon name={step.icon} size={24} strokeWidth={1.5} />
+                <Icon name={step.icon} size={26} strokeWidth={1.5} />
+                <span className="how-num">{i + 1}</span>
               </div>
-              <h3>{step.title}</h3>
-              <p>{step.text}</p>
+              <div className="how-body">
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
             </Reveal>
           ))}
         </ol>

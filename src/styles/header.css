@@ -1,0 +1,426 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — HEADER
+   Dark bar, logo left, nav right, phone and login on the far right.
+   ========================================================================= */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  background: var(--black);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition: box-shadow var(--t) var(--ease), background var(--t) var(--ease);
+}
+
+/* Solid, not translucent. A blurred header over a photographic hero turns
+   the logo into mush at exactly the moment it matters most. */
+.header.scrolled {
+  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.45);
+}
+
+.header-inner {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+/* min-height so the logo is a full-size tap target even though the image
+   itself is shorter than 44px. */
+.brand {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  flex-shrink: 0;
+}
+
+.brand img {
+  height: 46px;
+  width: auto;
+}
+
+/* ------------------------------------------------------------------ nav */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--tap-min);
+  padding: 0 14px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 245, 245, 0.86);
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--gold);
+}
+
+/* The underline grows from the left rather than fading in — it reads as the
+   indicator moving to the new page, not two indicators briefly existing. */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 8px;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--t) var(--ease);
+}
+
+.nav-link.active::after,
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-caret {
+  transition: transform var(--t) var(--ease);
+}
+
+.has-mega:hover .nav-caret,
+.nav-link.open .nav-caret {
+  transform: rotate(180deg);
+}
+
+/* -------------------------------------------------------------- actions */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.header-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--tap-min);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-light);
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.header-phone svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.header-phone:hover {
+  color: var(--gold);
+}
+
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background var(--t) var(--ease), color var(--t) var(--ease);
+}
+
+.login-btn:hover {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.burger {
+  display: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.burger:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ----------------------------------------------------------- mega menu */
+
+.has-mega {
+  position: static;
+}
+
+.mega {
+  position: absolute;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  background: var(--dark);
+  border-top: 2px solid var(--gold);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity var(--t) var(--ease), transform var(--t) var(--ease), visibility var(--t);
+}
+
+.mega.open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.mega-inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) 260px;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--gutter);
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+.mega-group-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mega-item {
+  display: block;
+  padding: 9px 0;
+  font-size: 15px;
+  color: rgba(245, 245, 245, 0.75);
+  transition: color var(--t-fast) var(--ease), padding-left var(--t-fast) var(--ease);
+}
+
+.mega-item:hover {
+  color: var(--gold);
+  padding-left: 6px;
+}
+
+.mega-cta {
+  background: linear-gradient(160deg, var(--gold-a24), var(--gold-a08));
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mega-cta h4 {
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.mega-cta p {
+  color: var(--on-dark-muted);
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+/* --------------------------------------------------------- mobile menu */
+
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  display: none;
+}
+
+.mobile-menu.open {
+  display: block;
+}
+
+.mobile-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  animation: sbFade var(--t) var(--ease);
+}
+
+.mobile-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(380px, 88vw);
+  background: var(--dark);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-y: auto;
+  animation: sbSlideIn var(--t-slow) var(--ease);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes sbFade {
+  from { opacity: 0; }
+}
+
+@keyframes sbSlideIn {
+  from { transform: translateX(100%); }
+}
+
+.mobile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-head img {
+  height: 36px;
+  width: auto;
+}
+
+.mobile-close {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+}
+
+.mobile-nav {
+  padding: var(--space-3) var(--space-5) var(--space-6);
+  flex: 1;
+}
+
+.mobile-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  text-align: left;
+}
+
+.mobile-link.active {
+  color: var(--gold);
+}
+
+.mobile-sub {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height var(--t-slow) var(--ease);
+}
+
+.mobile-sub.open {
+  max-height: 700px;
+}
+
+.mobile-sub a {
+  display: block;
+  min-height: var(--tap-min);
+  padding: 12px 0 12px 14px;
+  font-size: 15px;
+  color: rgba(245, 245, 245, 0.62);
+  border-left: 2px solid var(--gold-a40);
+  margin-left: 2px;
+}
+
+.mobile-sub a:hover,
+.mobile-sub a.active {
+  color: var(--gold);
+}
+
+.mobile-foot {
+  padding: var(--space-5);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.mobile-foot .contact-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap-min);
+  font-size: 15px;
+  color: var(--on-dark-muted);
+}
+
+.mobile-foot .contact-line svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------- responsive */
+
+/* 900px, per the brief: below this the nav is hidden and the burger appears. */
+@media (max-width: 900px) {
+  :root {
+    --header-h: var(--header-h-mobile);
+  }
+  .nav,
+  .mega,
+  .login-btn {
+    display: none;
+  }
+  .burger {
+    display: flex;
+    margin-left: auto;
+  }
+  .brand img {
+    height: 38px;
+  }
+  /* The number stays: on a phone, tapping it is the fastest path to a sale. */
+  .header-phone span {
+    display: none;
+  }
+  .header-phone {
+    width: var(--tap-min);
+    justify-content: center;
+  }
+}

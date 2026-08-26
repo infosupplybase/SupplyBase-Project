@@ -1,0 +1,410 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — SERVICE CARDS, HOW IT WORKS, STATS, WHATSAPP
+   ========================================================================= */
+
+/* ---------------------------------------------------------- service grid */
+
+/*
+ * auto-fit with a 260px floor gives 4 / 2 / 1 columns across the breakpoints
+ * without three separate media queries — the track count follows the space
+ * available rather than a number someone guessed.
+ */
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-5);
+}
+
+.svc-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease),
+              border-color var(--t) var(--ease);
+}
+
+.svc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--gold);
+}
+
+.svc-card-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--light-bg);
+  overflow: hidden;
+}
+
+.svc-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--t-slow) var(--ease);
+}
+
+.svc-card:hover .svc-card-media img {
+  transform: scale(1.05);
+}
+
+/* The icon straddles the image and the body, which ties the two halves of
+   the card together without a divider line. */
+.svc-card-icon {
+  position: absolute;
+  left: 18px;
+  bottom: -22px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  background: var(--gold);
+  color: var(--on-gold);
+  box-shadow: var(--shadow);
+}
+
+.svc-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+}
+
+.svc-card-body h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.svc-card-body p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  flex: 1;
+  margin-bottom: var(--space-4);
+}
+
+.svc-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.svc-price {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.svc-price-label {
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.svc-price-value {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--gold-deep);
+}
+
+/* ------------------------------------------------------ how it works */
+
+.how {
+  position: relative;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-4);
+  position: relative;
+}
+
+.how-step {
+  position: relative;
+  text-align: center;
+  padding: 0 var(--space-2);
+}
+
+/*
+ * The connector runs from one circle to the next, which means it necessarily
+ * leaves the item's own box to cross the grid gap. `overflow: clip` on the
+ * grid keeps that from widening the page — clip rather than hidden, so no
+ * scroll container is created.
+ *
+ * It is suppressed below 1200px, where the grid wraps and a connector would
+ * point at empty space.
+ */
+.how-grid {
+  overflow: clip;
+}
+
+.how-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 34px;
+  left: calc(50% + 42px);
+  right: calc(-50% + 42px);
+  height: 1px;
+  background: var(--gold-a40);
+}
+
+.how-icon {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  margin: 0 auto var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--gold-a40);
+  background: var(--gold-a12);
+  color: var(--gold);
+}
+
+.how-num {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.how-body {
+  min-width: 0;
+}
+
+.how-step h3 {
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.how-step p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--on-dark-muted);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------- stats */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-5);
+}
+
+.stat {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease),
+              border-color var(--t) var(--ease);
+}
+
+.stat:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold);
+  box-shadow: var(--shadow);
+}
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* ---------------------------------------------------------- whatsapp */
+
+.whatsapp-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: #fdfaf1;
+  border: 1px solid var(--gold-a24);
+  border-radius: var(--radius-lg);
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+.whatsapp-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+}
+
+.whatsapp-icon {
+  flex-shrink: 0;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--whatsapp);
+  color: var(--white);
+}
+
+.whatsapp-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.whatsapp-body strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
+.whatsapp-body span {
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+
+.whatsapp-arrow {
+  flex-shrink: 0;
+  color: var(--gold-deep);
+  transition: transform var(--t-fast) var(--ease);
+}
+
+.whatsapp-card:hover .whatsapp-arrow {
+  transform: translateX(4px);
+}
+
+/* --------------------------------------------------- floating actions */
+
+.floating-actions {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: var(--z-float);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fab {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  color: var(--white);
+  transition: transform var(--t-fast) var(--ease);
+}
+
+.fab:hover {
+  transform: scale(1.06);
+}
+
+.fab-whatsapp { background: var(--whatsapp); }
+.fab-call     { background: var(--gold); color: var(--on-gold); }
+.fab-top      { background: var(--dark-card); }
+
+/* ---------------------------------------------------------- responsive */
+
+@media (max-width: 1199px) {
+  .how-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6) var(--space-4);
+  }
+  /* Connectors only make sense along a row; with a wrapped grid they would
+     point at nothing. */
+  .how-step::after {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Vertical timeline on a phone: circle on the left, text beside it, one
+     continuous line down the side. */
+  .how-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .how-step {
+    display: grid;
+    grid-template-columns: 68px 1fr;
+    gap: var(--space-4);
+    text-align: left;
+    padding: 0 0 var(--space-6);
+    position: relative;
+  }
+  .how-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 34px;
+    top: 68px;
+    bottom: 0;
+    width: 1px;
+    background: var(--gold-a40);
+  }
+  .how-icon {
+    margin: 0;
+  }
+  .how-step h3 {
+    margin-top: 6px;
+  }
+
+  .whatsapp-card {
+    padding: var(--space-4);
+  }
+  .fab {
+    width: 48px;
+    height: 48px;
+  }
+}

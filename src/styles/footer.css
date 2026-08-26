@@ -1,0 +1,188 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — FOOTER
+   ========================================================================= */
+
+.footer {
+  background: var(--black);
+  color: var(--on-dark-muted);
+  border-top: 3px solid var(--gold);
+  padding-top: clamp(48px, 6vw, 72px);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1.2fr 1.3fr;
+  gap: var(--space-7);
+  padding-bottom: var(--space-7);
+}
+
+.footer-brand img {
+  height: 100px;
+  width: auto;
+  margin-bottom: var(--space-4);
+}
+
+.footer-brand p {
+  font-size: 14.5px;
+  line-height: 1.7;
+  max-width: 34ch;
+}
+
+.footer-tagline {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: var(--space-3);
+}
+
+.footer h4 {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: var(--space-4);
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.footer h4::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 34px;
+  height: 2px;
+  background: var(--gold);
+}
+
+.footer-links {
+  display: grid;
+  gap: 2px;
+}
+
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  font-size: 14.5px;
+  color: var(--on-dark-muted);
+  transition: color var(--t-fast) var(--ease), padding-left var(--t-fast) var(--ease);
+}
+
+.footer-links a:hover {
+  color: var(--gold);
+  padding-left: 5px;
+}
+
+.footer-contact {
+  display: grid;
+  gap: 2px;
+}
+
+.footer-contact a,
+.footer-contact div {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-height: var(--tap-min);
+  padding: 8px 0;
+  font-size: 14.5px;
+  color: var(--on-dark-muted);
+  transition: color var(--t-fast) var(--ease);
+}
+
+.footer-contact a:hover {
+  color: var(--gold);
+}
+
+.footer-contact svg {
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--space-4);
+}
+
+.footer-social a {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius-sm);
+  color: var(--on-dark-muted);
+  transition: all var(--t) var(--ease);
+}
+
+.footer-social a:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
+
+.footer-cta-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--gold-a24);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+}
+
+.footer-cta-box p {
+  font-size: 14.5px;
+  margin-bottom: var(--space-3);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  padding: var(--space-5) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: 13.5px;
+}
+
+.footer-bottom nav {
+  display: flex;
+  gap: var(--space-5);
+}
+
+.footer-bottom a:hover {
+  color: var(--gold);
+}
+
+@media (max-width: 1199px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+}
+
+@media (max-width: 767px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  .footer-brand img {
+    height: 84px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  /* The sticky booking bar sits over the bottom of the page. */
+  .footer-bottom {
+    padding-bottom: calc(var(--space-5) + 72px);
+  }
+}

@@ -1,95 +1,129 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
+import api from '../../lib/api';
 import { company } from '../../data/siteConfig';
 
 /**
- * Hero — full-width architectural hero with a slow auto-rotating slider.
- * Replace the `image` values with your own photography / renders.
+ * Home hero — headline on the left, booking card on the right.
+ *
+ * The card is the point of the page: a customer who already knows they want a
+ * plumber should be one tap from the plumbing form, without scrolling or
+ * reading anything first.
+ *
+ * Services come from the catalogue API, the same source the booking form and
+ * the services page read, so the three can never disagree about what is on
+ * offer. The trust points are static: they are brand copy, not data.
  */
-const slides = [
-  {
-    eyebrow: company.statement,
-    titleLead: 'ONE PARTNER.',
-    titleTail: 'COMPLETE PROJECT.',
-    text: company.shortIntro,
-    image: '/assets/hero-house.svg',
-  },
-  {
-    eyebrow: 'ARCHITECTURE & 3D DESIGN',
-    titleLead: 'SEE IT BEFORE',
-    titleTail: 'YOU BUILD IT.',
-    text: '2D plans, 3D exterior and 3D interior views prepared before construction starts — so there are no surprises on site.',
-    image: '/assets/services/architectural-design.svg',
-  },
-  {
-    eyebrow: 'TURNKEY EXECUTION',
-    titleLead: 'LABOUR. MATERIAL.',
-    titleTail: 'MANAGEMENT.',
-    text: 'Civil work, interiors, electrical, plumbing, ceiling and finishing delivered by one team under one contract.',
-    image: '/assets/projects/luxury-bungalow.svg',
-  },
+const TRUST = [
+  { icon: 'shield', label: 'Verified Professionals' },
+  { icon: 'clock', label: 'On-Time Service' },
+  { icon: 'check-circle', label: 'Quality Assurance' },
 ];
 
+/** Fallback order and blurbs, used only until the API answers. */
+const BLURB = {
+  'painting-waterproofing': 'Interior, exterior & leak repair',
+  plumbing: 'Leaks, fittings, tanks & drainage',
+  electrician: 'Wiring, fittings & fault repair',
+  'interior-work': 'Kitchens, wardrobes & full interiors',
+};
+
 export default function Hero() {
-  const [index, setIndex] = useState(0);
+  const [services, setServices] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setInterval(() => setIndex((i) => (i + 1) % slides.length), 7000);
-    return () => clearInterval(timer);
+    let cancelled = false;
+    api
+      .services()
+      .then((r) => {
+        if (!cancelled) setServices(r);
+      })
+      // The hero must still render its headline if the API is down — the
+      // card simply shows nothing rather than the whole page failing.
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const go = (dir) => setIndex((i) => (i + dir + slides.length) % slides.length);
-  const slide = slides[index];
 
   return (
     <section className="hero">
       <div className="hero-bg">
-        <img key={slide.image} src={slide.image} alt="" />
+        {/* The hero image is the largest thing on the page and is above the
+            fold, so it is eager and high priority — lazy-loading it would
+            delay the very first thing a visitor sees. */}
+        <img
+          src="/assets/hero-house.svg"
+          alt=""
+          fetchPriority="high"
+          decoding="async"
+        />
       </div>
       <div className="hero-overlay" />
 
-      <button type="button" className="hero-arrow prev" onClick={() => go(-1)} aria-label="Previous slide">
-        <Icon name="arrow-left" size={20} />
-      </button>
-      <button type="button" className="hero-arrow next" onClick={() => go(1)} aria-label="Next slide">
-        <Icon name="arrow-right" size={20} />
-      </button>
-
       <div className="container">
-        <div className="hero-inner" key={index}>
-          <span className="eyebrow">{slide.eyebrow}</span>
-          <h1>
-            {slide.titleLead}
-            <br />
-            <span className="gold">{slide.titleTail}</span>
-          </h1>
-          <p>{slide.text}</p>
-          {/* Two lanes, not one CTA: a defined job and a full project promise
-              different things, and one button cannot say both honestly. */}
-          <div className="btn-row">
-            <Link to="/services" className="btn btn-primary btn-lg">
-              <Icon name="calendar" size={18} />
-              BOOK A SERVICE
-            </Link>
-            <Link to="/projects" className="btn btn-outline btn-lg">
-              VIEW PROJECTS
+        <div className="hero-inner">
+          {/* ------------------------------------------------ left */}
+          <div className="hero-copy">
+            <span className="eyebrow">{company.statement}</span>
+            <h1>
+              ONE PARTNER.
+              <br />
+              <span className="gold">COMPLETE PROJECT.</span>
+            </h1>
+            <p>
+              From design to execution, we provide skilled professionals and quality service for
+              your home and workspace.
+            </p>
+
+            <ul className="hero-trust">
+              {TRUST.map((item) => (
+                <li key={item.label}>
+                  <Icon name={item.icon} size={20} strokeWidth={1.8} />
+                  {item.label}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* ----------------------------------------------- right */}
+          <div className="hero-card">
+            <div className="hero-card-head">
+              <h2>BOOK A SERVICE</h2>
+              <p>Choose a service to get started</p>
+            </div>
+
+            <div className="hero-services">
+              {services.map((service, i) => (
+                <button
+                  key={service.slug}
+                  type="button"
+                  className="hero-service"
+                  onClick={() => navigate(`/services/${service.slug}`)}
+                >
+                  <span className="hero-service-icon">
+                    <Icon name={service.icon || 'tools'} size={20} strokeWidth={1.6} />
+                  </span>
+                  <span className="hero-service-body">
+                    <span className="hero-service-title">{service.name}</span>
+                    <span className="hero-service-desc">
+                      {BLURB[service.slug] || service.tagline}
+                    </span>
+                  </span>
+                  <span className="hero-service-num">{String(i + 1).padStart(2, '0')}</span>
+                  <Icon name="arrow-right" size={17} className="hero-service-arrow" />
+                </button>
+              ))}
+            </div>
+
+            <Link to="/services" className="btn btn-primary btn-block btn-lg">
+              BOOK NOW
               <Icon name="arrow-right" size={18} />
             </Link>
           </div>
         </div>
-      </div>
-
-      <div className="hero-dots">
-        {slides.map((s, i) => (
-          <button
-            key={s.titleLead}
-            type="button"
-            className={`hero-dot ${i === index ? 'active' : ''}`}
-            onClick={() => setIndex(i)}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
       </div>
     </section>
   );
