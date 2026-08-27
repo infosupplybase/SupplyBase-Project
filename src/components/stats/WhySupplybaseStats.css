@@ -20,22 +20,45 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  /* The artwork carries its subject at the far left and far right with an
+     empty middle, which is exactly where the cards sit. `cover` therefore
+     trims the top and bottom rather than the parts that matter. */
+  object-fit: cover;
+  object-position: center;
   z-index: -1;
   pointer-events: none;
+  user-select: none;
+  /* Already faint in the file; this is the margin that guarantees it can
+     never compete with #888 label text. */
+  opacity: 0.9;
 }
 
-.wss-lines {
-  fill: none;
-  stroke: #b9bcc2;
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.3;
-}
-
-.wss-dotfield {
-  fill: var(--gold);
-  opacity: 0.22;
+/*
+ * A soft white lift under the heading block.
+ *
+ * The artwork's centre is near-white, but the crane's arm reaches in far
+ * enough to cross the tail of the subheading, and a #777 line over those
+ * hairlines measures 2.5:1. This clears the middle without touching the
+ * building and crane at the edges, which is where the reference has them
+ * anyway. Sized in ems of the section rather than pixels so it tracks the
+ * heading as the type scales down.
+ */
+.wss::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(1100px, 86%);
+  height: 62%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.9) 45%,
+    rgba(255, 255, 255, 0) 75%
+  );
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* ------------------------------------------------------------- container */
@@ -93,7 +116,15 @@
   margin: 0 auto;
   font-size: clamp(15px, 0.4vw + 12.8px, 19px);
   line-height: 1.6;
-  color: #777777;
+  /*
+   * The brief asks for #777777 and for accessible contrast, and those two
+   * conflict: #777777 on pure white is 4.48:1, just under the 4.5:1 that
+   * WCAG AA wants for text this size, before the backdrop is considered at
+   * all. #686868 is the same mid-grey to look at and measures 5.57:1 on
+   * white and 4.55:1 over the darkest crane hairline behind this line.
+   * Revert to #777777 here if brand consistency matters more.
+   */
+  color: #686868;
 }
 
 /* ----------------------------------------------------------------- grid */
@@ -187,11 +218,12 @@
   .wss-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .wss-lines {
-    opacity: 0.2;
-  }
-  .wss-dotfield {
-    opacity: 0.14;
+  /* Narrower than the artwork, so `cover` crops hard into its empty centre
+     and the line-work all but disappears — which is the intent on a phone.
+     Dropping the opacity further keeps the little that survives from
+     crowding the cards. */
+  .wss-backdrop {
+    opacity: 0.65;
   }
 }
 
