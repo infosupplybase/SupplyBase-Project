@@ -1,34 +1,13 @@
-import Reveal from '../ui/Reveal';
-import { stats, company } from '../../data/siteConfig';
+import WhySupplybaseStats from '../stats/WhySupplybaseStats';
 
 /**
- * StatsSection — company numbers. Edit the values in src/data/siteConfig.js.
+ * StatsSection — kept as the name the pages already import.
+ *
+ * The design now lives in WhySupplybaseStats. Home, About and Projects all
+ * render this same section, so pointing the old name at the new component
+ * updates every one of them without editing three page files. `showHeading`
+ * still works: /about passes false because it has its own headline.
  */
 export default function StatsSection({ showHeading = true }) {
-  return (
-    /* section-accent, not section-dark: the process band above this one is
-       already gold-tinted, and two identical bands in a row read as one. */
-    <section className="section section-accent">
-      <div className="container">
-        {showHeading && (
-          <Reveal className="section-head center">
-            <span className="eyebrow">WHY SUPPLYBASE PROJECTS?</span>
-            <div className="rule" />
-            <h2>
-              ONE PARTNER — <span className="gold">COMPLETE PROJECT</span>
-            </h2>
-            <p>{company.model} — everything under one roof.</p>
-          </Reveal>
-        )}
-        <div className="stats">
-          {stats.map((stat, i) => (
-            <Reveal key={stat.label} className="stat" delay={i * 80}>
-              <div className="stat-value">{stat.value}</div>
-              <div className="stat-label">{stat.label}</div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+  return <WhySupplybaseStats showHeading={showHeading} />;
 }

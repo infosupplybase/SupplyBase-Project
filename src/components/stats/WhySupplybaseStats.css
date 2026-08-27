@@ -1,0 +1,209 @@
+/* =========================================================================
+   SUPPLYBASE — WHY SUPPLYBASE PROJECTS? (statistics)
+   Off-white section, faint architectural line-work, four number cards.
+   ========================================================================= */
+
+.wss {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 55%, #f6f6f6 100%);
+  padding: clamp(48px, 6vw, 84px) 0;
+  /* The backdrop is deliberately drawn wider than the text column; clipping it
+     here is what keeps it from ever reaching the document scroll width. */
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------- backdrop */
+
+.wss-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.wss-lines {
+  fill: none;
+  stroke: #b9bcc2;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.3;
+}
+
+.wss-dotfield {
+  fill: var(--gold);
+  opacity: 0.22;
+}
+
+/* ------------------------------------------------------------- container */
+
+.wss-inner {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 64px);
+}
+
+/* -------------------------------------------------------------- heading */
+
+.wss-head {
+  text-align: center;
+  margin-bottom: clamp(28px, 3.6vw, 46px);
+}
+
+.wss-eyebrow {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(12px, 1vw, 15px);
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  /* --gold is 2.0:1 on this background — a fill colour, not a text colour. */
+  color: var(--gold-dark);
+}
+
+.wss-rule {
+  display: block;
+  width: 64px;
+  height: 3px;
+  border-radius: 10px;
+  background: var(--gold);
+  margin: 12px auto 18px;
+}
+
+.wss-heading {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4.4vw, 62px);
+  font-weight: 700;
+  line-height: 1.06;
+  text-transform: uppercase;
+  color: #111111;
+  margin: 0 0 14px;
+}
+
+.wss-heading-gold {
+  color: var(--gold);
+}
+
+.wss-lead {
+  max-width: 680px;
+  margin: 0 auto;
+  font-size: clamp(15px, 0.4vw + 12.8px, 19px);
+  line-height: 1.6;
+  color: #777777;
+}
+
+/* ----------------------------------------------------------------- grid */
+
+.wss-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2.2vw, 32px);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wss-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(24px, 2.3vw, 34px) clamp(16px, 1.6vw, 26px);
+  background: var(--white);
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(5, 5, 5, 0.05);
+  text-align: center;
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease),
+              border-color var(--t) var(--ease);
+}
+
+/* One card carries the gold border. Which one is data, not markup — see
+   `featured` in siteConfig. */
+.wss-card.is-featured {
+  border-color: var(--gold);
+}
+
+.wss-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(5, 5, 5, 0.1);
+  border-color: var(--gold);
+}
+
+/* Reveal sets its own transform to slide the card in. Overriding it on hover
+   before it has landed would snap the card into place, so the lift only
+   applies once the reveal has finished. */
+.wss-card:not(.is-visible):hover {
+  transform: translateY(22px);
+}
+
+.wss-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  color: var(--gold);
+  margin-bottom: clamp(14px, 1.6vw, 24px);
+}
+
+.wss-value {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 4.4vw, 66px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #111111;
+  /* Tabular figures: without them the counter's width jumps on every frame
+     and the whole card jitters as the number runs up. */
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+}
+
+.wss-label {
+  font-size: clamp(12px, 0.9vw, 15px);
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: #888888;
+}
+
+.wss-underline {
+  display: block;
+  width: 64px;
+  height: 3px;
+  border-radius: 10px;
+  background: var(--gold);
+  margin-top: clamp(16px, 1.8vw, 26px);
+}
+
+/* ---------------------------------------------------------- responsive */
+
+/* Two by two. Four cards divide evenly, so nothing is left stranded. */
+@media (max-width: 900px) {
+  .wss-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .wss-lines {
+    opacity: 0.2;
+  }
+  .wss-dotfield {
+    opacity: 0.14;
+  }
+}
+
+/*
+ * One column below 340px, not 380px. 380 cut across the common phones — a
+ * 360px Android and a 375px iPhone SE would each drop to one column while a
+ * 390px iPhone 14 kept two. At 340 the pair are still ~141px wide, which is
+ * the point where "SKILLED PROFESSIONALS" stops fitting on two lines. Same
+ * threshold as ServiceCard and the materials grid.
+ */
+@media (max-width: 340px) {
+  .wss-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -102,6 +102,31 @@ const paths = {
       <path d="M15 20a5 5 0 0 1 7-4.6" />
     </>
   ),
+  /* Three heads rather than two — the stats card reference shows a group,
+     and `partners` reads as a pair. */
+  users: (
+    <>
+      <circle cx="12" cy="7.5" r="3" />
+      <circle cx="4.75" cy="9" r="2.25" />
+      <circle cx="19.25" cy="9" r="2.25" />
+      <path d="M6.5 19a5.5 5.5 0 0 1 11 0" />
+      <path d="M1.5 17.5a4 4 0 0 1 4.2-3.4" />
+      <path d="M22.5 17.5a4 4 0 0 0-4.2-3.4" />
+    </>
+  ),
+  award: (
+    <>
+      <circle cx="12" cy="9.5" r="5.5" />
+      <path d="m12 6.6 1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2L8.8 9l2.2-.3z" />
+      <path d="m8.4 14.3-1.6 6.2 5.2-2.6 5.2 2.6-1.6-6.2" />
+    </>
+  ),
+  'thumbs-up': (
+    <>
+      <path d="M7 21V10l4.5-7a2 2 0 0 1 3 2.2L13.5 9H19a2 2 0 0 1 2 2.4l-1.5 7A2.5 2.5 0 0 1 17 21z" />
+      <rect x="2.5" y="10" width="4.5" height="11" rx="1.2" />
+    </>
+  ),
   shield: (
     <>
       <path d="M12 3 5 6v6c0 4.5 3 7.8 7 9 4-1.2 7-4.5 7-9V6z" />

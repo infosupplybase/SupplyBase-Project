@@ -42,11 +42,21 @@ export const social = [
 /**
  * COMPANY STATISTICS — edit these numbers as the business grows.
  */
+/*
+ * The four company numbers. `icon` names an entry in components/ui/Icon.jsx
+ * and `featured` picks the one card that carries the gold border.
+ *
+ * These are the values an admin screen would eventually own — the shape here
+ * is already the shape the API should return, so switching source later is a
+ * change of import, not a change of markup. Labels are stored in sentence
+ * case and uppercased in CSS, so they stay readable anywhere else they are
+ * used.
+ */
 export const stats = [
-  { value: '100+', label: 'Projects Completed' },
-  { value: '30+', label: 'Skilled Professionals' },
-  { value: '10+', label: 'Years of Experience' },
-  { value: '100%', label: 'Client Satisfaction' },
+  { id: 'projects',      value: '100+', label: 'Projects Completed',   icon: 'building' },
+  { id: 'professionals', value: '30+',  label: 'Skilled Professionals', icon: 'users', featured: true },
+  { id: 'experience',    value: '10+',  label: 'Years of Experience',  icon: 'award' },
+  { id: 'satisfaction',  value: '100%', label: 'Client Satisfaction',  icon: 'thumbs-up' },
 ];
 
 /**
