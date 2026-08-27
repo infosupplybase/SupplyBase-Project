@@ -1,188 +1,399 @@
 /* =========================================================================
-   SUPPLYBASE PROJECTS — FOOTER
+   SUPPLYBASE — FOOTER
+   Four columns on black, gold accents, compact CTA card, thin bottom bar.
    ========================================================================= */
 
-.footer {
-  background: var(--black);
-  color: var(--on-dark-muted);
-  border-top: 3px solid var(--gold);
-  padding-top: clamp(48px, 6vw, 72px);
+.ft {
+  background: #050505;
+  color: #b5b5b5;
+  font-size: 15px;
 }
 
-.footer-grid {
+.ft-inner {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(34px, 3.4vw, 46px) clamp(20px, 4vw, 60px) 0;
+}
+
+.ft-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1.2fr 1.3fr;
-  gap: var(--space-7);
-  padding-bottom: var(--space-7);
+  grid-template-columns: 1.2fr 0.8fr 1fr 1.1fr;
+  gap: clamp(32px, 3.6vw, 64px);
+  /* Columns size to their own content instead of stretching to the tallest,
+     which is what stops the short ones growing tall empty tails. */
+  align-items: start;
+  padding-bottom: clamp(26px, 2.6vw, 34px);
 }
 
-.footer-brand img {
-  height: 100px;
-  width: auto;
-  margin-bottom: var(--space-4);
-}
+/* -------------------------------------------------------------- headings */
 
-.footer-brand p {
-  font-size: 14.5px;
-  line-height: 1.7;
-  max-width: 34ch;
-}
-
-.footer-tagline {
+.ft-heading {
+  position: relative;
   font-family: var(--font-display);
-  font-size: 14px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: var(--space-3);
-}
-
-.footer h4 {
-  font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--white);
-  margin-bottom: var(--space-4);
-  position: relative;
-  padding-bottom: 10px;
+  margin: 0 0 20px;
+  padding-bottom: 11px;
 }
 
-.footer h4::after {
+.ft-heading::after {
   content: '';
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 34px;
-  height: 2px;
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
   background: var(--gold);
 }
 
-.footer-links {
-  display: grid;
-  gap: 2px;
+/* ----------------------------------------------------------------- brand */
+
+.ft-logo {
+  display: block;
+  width: auto;
+  max-width: 220px;
+  height: auto;
+  margin-bottom: 16px;
 }
 
-.footer-links a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--tap-min);
-  font-size: 14.5px;
-  color: var(--on-dark-muted);
-  transition: color var(--t-fast) var(--ease), padding-left var(--t-fast) var(--ease);
+.ft-intro {
+  max-width: 340px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #b5b5b5;
+  margin: 0 0 20px;
 }
 
-.footer-links a:hover {
-  color: var(--gold);
-  padding-left: 5px;
-}
-
-.footer-contact {
-  display: grid;
-  gap: 2px;
-}
-
-.footer-contact a,
-.footer-contact div {
+.ft-social {
   display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  min-height: var(--tap-min);
-  padding: 8px 0;
-  font-size: 14.5px;
-  color: var(--on-dark-muted);
-  transition: color var(--t-fast) var(--ease);
+  flex-wrap: wrap;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.footer-contact a:hover {
-  color: var(--gold);
-}
-
-.footer-contact svg {
-  color: var(--gold);
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-.footer-social {
-  display: flex;
-  gap: 10px;
-  margin-top: var(--space-4);
-}
-
-.footer-social a {
-  width: var(--tap-min);
-  height: var(--tap-min);
+.ft-social a {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: var(--radius-sm);
-  color: var(--on-dark-muted);
-  transition: all var(--t) var(--ease);
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gold);
+  transition: background var(--t) var(--ease), color var(--t) var(--ease);
 }
 
-.footer-social a:hover {
+.ft-social a:hover {
   background: var(--gold);
-  border-color: var(--gold);
-  color: var(--on-gold);
+  color: #050505;
 }
 
-.footer-cta-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--gold-a24);
-  border-radius: var(--radius);
-  padding: var(--space-5);
+/* ----------------------------------------------------- link + service lists */
+
+.ft-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.footer-cta-box p {
-  font-size: 14.5px;
-  margin-bottom: var(--space-3);
-}
-
-.footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.09);
-  padding: var(--space-5) 0;
+.ft-list a {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-  font-size: 13.5px;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #2a2a2a;
+  color: #b5b5b5;
+  transition: color var(--t) var(--ease);
 }
 
-.footer-bottom nav {
-  display: flex;
-  gap: var(--space-5);
+/* The row's own text takes the slack so the arrow stays pinned right. */
+.ft-list a > span {
+  flex: 1;
+  min-width: 0;
 }
 
-.footer-bottom a:hover {
+.ft-list li:last-child a {
+  border-bottom: 0;
+}
+
+.ft-list a:hover {
   color: var(--gold);
 }
 
-@media (max-width: 1199px) {
-  .footer-grid {
+.ft-arrow {
+  flex-shrink: 0;
+  color: var(--gold);
+  transition: transform var(--t) var(--ease);
+}
+
+.ft-list a:hover .ft-arrow {
+  transform: translateX(4px);
+}
+
+.ft-service-icon {
+  flex-shrink: 0;
+  color: var(--gold);
+}
+
+/* --------------------------------------------------------------- contact */
+
+.ft-contact {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ft-contact li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid #2a2a2a;
+  line-height: 1.5;
+}
+
+.ft-contact li:last-child {
+  border-bottom: 0;
+}
+
+.ft-contact svg {
+  flex-shrink: 0;
+  color: var(--gold);
+}
+
+.ft-contact a,
+.ft-contact span {
+  color: #e6e6e6;
+  /* Long addresses and emails wrap instead of widening the column. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ft-contact a {
+  transition: color var(--t) var(--ease);
+}
+
+.ft-contact a:hover {
+  color: var(--gold);
+}
+
+/* ------------------------------------------------------------- CTA card */
+
+.ft-cta {
+  margin-top: 16px;
+  padding: 22px;
+  background: #0d0d0d;
+  border: 1px solid var(--gold);
+  border-radius: 15px;
+}
+
+.ft-cta p {
+  font-size: 16px;
+  color: var(--white);
+  margin: 0 0 14px;
+}
+
+.ft-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 46px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  transition: filter var(--t) var(--ease), transform var(--t) var(--ease);
+}
+
+.ft-btn + .ft-btn {
+  margin-top: 12px;
+}
+
+.ft-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.ft-btn-gold {
+  background: var(--gold);
+  color: #050505;
+}
+
+.ft-btn-whatsapp {
+  background: #25d366;
+  color: #05300f;
+}
+
+/* -------------------------------------------------------------- bottom */
+
+.ft-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 28px;
+  padding: 17px 0 20px;
+  border-top: 1px solid #2a2a2a;
+  font-size: 14.5px;
+}
+
+.ft-bottom p {
+  margin: 0;
+}
+
+.ft-gold {
+  color: var(--gold);
+}
+
+.ft-legal {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.ft-legal a {
+  color: #b5b5b5;
+  transition: color var(--t) var(--ease);
+}
+
+.ft-legal a:hover {
+  color: var(--gold);
+}
+
+.ft-legal span {
+  color: #2a2a2a;
+}
+
+/* -------------------------------------------------------------- focus */
+
+.ft a:focus-visible,
+.ft summary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------- responsive */
+
+/* Two columns: brand beside quick links, services beside contact. */
+@media (max-width: 1040px) {
+  .ft-grid {
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-6);
+    gap: 36px 44px;
+  }
+  .ft-intro {
+    max-width: none;
   }
 }
 
+/* One column, with the two long lists collapsed into accordions. */
 @media (max-width: 767px) {
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
+  .ft-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
   }
-  .footer-brand img {
-    height: 84px;
+
+  /* Each stacked block gets its own rule, so the single column reads as a
+     list of sections rather than one long run of text. */
+  .ft-col {
+    padding: 22px 0;
+    border-bottom: 1px solid #2a2a2a;
   }
-  .footer-bottom {
+
+  .ft-brand {
+    padding-top: 0;
+  }
+
+  /* The logo is the single biggest block in the stacked footer; a phone does
+     not need it at full size. */
+  .ft-logo {
+    max-width: 176px;
+    margin-bottom: 14px;
+  }
+
+  .ft-intro {
+    font-size: 14.5px;
+    margin-bottom: 18px;
+  }
+
+  .ft-col:last-child {
+    border-bottom: 0;
+  }
+
+  .ft-heading {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .ft-heading::after {
+    display: none;
+  }
+
+  /* The accordion's summary is the heading — a full-width row with the
+     chevron at the far end, tall enough to be a comfortable tap target. */
+  .ft-accordion > .ft-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .ft-accordion > .ft-heading::-webkit-details-marker {
+    display: none;
+  }
+
+  .ft-accordion-chevron {
+    flex-shrink: 0;
+    color: var(--gold);
+    transition: transform var(--t) var(--ease);
+  }
+
+  .ft-accordion[open] .ft-accordion-chevron {
+    transform: rotate(180deg);
+  }
+
+  .ft-accordion[open] > .ft-heading {
+    margin-bottom: 6px;
+  }
+
+  /* CONTACT US stays a plain heading and keeps its gold rule, because it is
+     the one block that is never collapsed. */
+  .ft-col:not(.ft-accordion) > .ft-heading {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+
+  .ft-col:not(.ft-accordion) > .ft-heading::after {
+    display: block;
+  }
+
+  .ft-bottom {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-3);
+    gap: 10px;
+    text-align: left;
   }
-  /* The sticky booking bar sits over the bottom of the page. */
-  .footer-bottom {
-    padding-bottom: calc(var(--space-5) + 72px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ft-arrow,
+  .ft-accordion-chevron,
+  .ft-btn {
+    transition: none;
   }
 }
