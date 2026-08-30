@@ -63,6 +63,23 @@ table; on later runs it only applies migrations that have not run yet.
 
 ## 2. How the pieces fit
 
+## Deploy on Render or Railway
+
+This API includes a production [`Dockerfile`](Dockerfile). Render reads the
+repository's `render.yaml`; Railway uses the same Dockerfile when the service
+root directory is set to `backend`. Both platforms provide `PORT` automatically
+and the application honours it.
+
+Set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`
+and exact production `CORS_ORIGINS` in the platform dashboard. Do not upload a
+`.env` file or commit it. See the repository-level
+[`DEPLOYMENT.md`](../DEPLOYMENT.md) for the complete Vercel + API workflow.
+
+After deployment, `GET /actuator/health` is the health check endpoint. It only
+exposes health/status information; it does not expose customer or booking data.
+
+---
+
 ### Money is stored in paise
 
 Every amount — `amount_paise`, `contract_value_paise` — is a `BIGINT` in the

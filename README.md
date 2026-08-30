@@ -19,6 +19,10 @@ npm run preview   # preview the production build locally
 
 ## 2. Deploy it
 
+For the production website/API split, follow [`DEPLOYMENT.md`](DEPLOYMENT.md).
+It covers Vercel for React and Render/Railway for Spring Boot, including the
+environment variables that must be set on each platform.
+
 The build output is a static site, so it works on Vercel, Netlify, Render or any static host.
 
 - **Vercel:** import the repo → framework preset *Vite* → deploy. Nothing else to configure.
