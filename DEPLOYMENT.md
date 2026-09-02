@@ -1,8 +1,14 @@
 # Deploy Supplybase Projects
 
-The React website is deployed to **Vercel**. The Java/Spring Boot API is
-deployed separately to **Render** or **Railway**. They share one MySQL database
-but are intentionally separate services.
+Three independent deployments, all pointed at the same API:
+
+- `frontend/` (the public website) → **Vercel**
+- `admin/` (the staff back-office) → **Vercel**, as a second, separate project
+- `backend/` (Java/Spring Boot API) → **Render** or **Railway**
+
+They share one MySQL database but are intentionally separate services — each
+frontend app can be redeployed, scaled or taken down without touching the
+other two.
 
 ## 1. Prepare MySQL
 
@@ -54,42 +60,69 @@ Optional variables are documented in [`backend/.env.example`](backend/.env.examp
 Google sign-in, Razorpay, and email. Keep `RAZORPAY_KEY_SECRET`, webhook secret,
 database password and mail password on the API host only.
 
-Set production CORS to the exact origins, for example:
+Set production CORS to the exact origins **of both frontend apps**, for example:
 
 ```text
-CORS_ORIGINS=https://supplybase-projects.vercel.app,https://www.supplybase.co.in,https://supplybase.co.in
+CORS_ORIGINS=https://supplybase-projects.vercel.app,https://admin.supplybase.co.in,https://www.supplybase.co.in,https://supplybase.co.in
 ```
 
 Do not include `localhost` or wildcard origins in production.
 
-## 3. Deploy the React website to Vercel
+## 3. Deploy the website (`frontend/`) to Vercel
 
-1. In Vercel, import the same GitHub repository.
-2. Select the **Vite** framework preset.
-3. Set build command to `npm run build` and output directory to `dist`.
-4. Add these Vercel environment variables:
+1. In Vercel, import the same GitHub repository as a **new project**.
+2. Set the project's **Root Directory** to `frontend`. Vercel auto-detects the
+   **Next.js** framework preset from there — no build command or output
+   directory to set by hand.
+3. Add these Vercel environment variables:
 
 | Name | Value |
 | --- | --- |
-| `VITE_API_URL` | `https://YOUR-API-HOST` — no trailing slash |
-| `VITE_GOOGLE_CLIENT_ID` | Optional public Google client ID |
+| `NEXT_PUBLIC_API_URL` | `https://YOUR-API-HOST` — no trailing slash |
+| `NEXT_PUBLIC_ADMIN_URL` | `https://YOUR-ADMIN-HOST` — where step 4 below deploys |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Optional public Google client ID |
 
-5. Deploy the site. The included `vercel.json` keeps React routes such as
-   `/booking/plumbing` working on direct visits.
-6. Add the final Vercel URL to the API's `CORS_ORIGINS` value and redeploy the
+4. Deploy. Next.js handles routing (including dynamic paths like
+   `/booking/plumbing`) natively — no `vercel.json` rewrite rule is needed.
+5. Add the final Vercel URL to the API's `CORS_ORIGINS` value and redeploy the
    API once.
 
-`VITE_` values are bundled into public browser JavaScript. Never add database,
-JWT, Razorpay secret, webhook, or mail credentials to Vercel.
+## 4. Deploy the admin panel (`admin/`) to Vercel
 
-## 4. Before going live
+A **second, separate** Vercel project — do not put this on the same project
+as the website; they're different apps with different builds.
 
-- Add Vercel and custom domains to `CORS_ORIGINS`.
-- Add the Vercel/custom domains to the Google OAuth authorised JavaScript
-  origins if Google sign-in is enabled.
+1. In Vercel, import the same GitHub repository again as another new project.
+2. Set the project's **Root Directory** to `admin`. Framework preset
+   auto-detects as Next.js the same way.
+3. Add the one environment variable this app needs:
+
+| Name | Value |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | `https://YOUR-API-HOST` — same value as the website's |
+
+4. Deploy, then add this app's final Vercel URL to the API's `CORS_ORIGINS`
+   value (alongside the website's) and to the website's own
+   `NEXT_PUBLIC_ADMIN_URL`, redeploying both the API and the website once.
+5. Consider restricting who can even load this URL — a custom subdomain like
+   `admin.supplybase.co.in` kept out of search engines (the app already sets
+   `robots: noindex` in its metadata) is enough for most teams; add IP
+   allow-listing or Vercel's password protection if you want more.
+
+`NEXT_PUBLIC_` values (in either app) are bundled into public browser
+JavaScript. Never add database, JWT, Razorpay secret, webhook, or mail
+credentials to either Vercel project — those stay in the API's environment
+only.
+
+## 5. Before going live
+
+- Add both Vercel (or custom) domains to `CORS_ORIGINS`.
+- Add the website's domain to the Google OAuth authorised JavaScript origins
+  if Google sign-in is enabled (the admin app never shows a Google button, so
+  it needs no entry there).
 - Point Razorpay's production webhook to
   `https://YOUR-API-HOST/api/payments/webhook` after payment verification is
   enabled.
 - Confirm the health endpoint returns `UP` and test registration/login from
-  the deployed Vercel site.
+  the deployed website, and staff sign-in from the deployed admin app.
 - Use HTTPS-only production URLs.

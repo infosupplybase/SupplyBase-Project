@@ -1,6 +1,7 @@
 node_modules
 dist
 dist-ssr
+.next
 .DS_Store
 *.local
 .env

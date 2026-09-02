@@ -1,0 +1,21 @@
+{
+  "name": "supplybase-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Supplybase Projects — One Partner. Complete Project. The public website and client dashboard.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.2.15",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.15"
+  }
+}
