@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo, useState } from 'react';
 import Icon from '../ui/Icon';
 import api, { friendlyError } from '../../lib/api';

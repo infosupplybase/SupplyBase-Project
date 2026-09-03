@@ -1,7 +1,4 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation } from 'react-router-dom';
 import Icon from '../ui/Icon';
 
 /**
@@ -17,7 +14,7 @@ import Icon from '../ui/Icon';
 const HIDE_ON = ['/login', '/register', '/dashboard'];
 
 export default function BookBar() {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
 
   const onBookingPage = pathname.startsWith('/services/');
   const hidden = HIDE_ON.some((p) => pathname.startsWith(p));
@@ -30,7 +27,7 @@ export default function BookBar() {
         <strong>Site visit + quotation</strong>
         <span>₹25 only — no advance for the work</span>
       </span>
-      <Link href="/services" className="btn btn-primary btn-sm">
+      <Link to="/services" className="btn btn-primary btn-sm">
         <Icon name="calendar" size={15} />
         BOOK NOW
       </Link>

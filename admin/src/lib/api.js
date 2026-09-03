@@ -5,32 +5,24 @@
  * endpoints staff actually use (sign in, who-am-i, one project by id, and
  * everything under /api/admin/*). The public catalogue/booking/enquiry
  * endpoints and Google/registration flows live in the main site, not here.
- *
- * localStorage reads/writes are guarded for `window` — Next.js renders
- * "use client" components once on the server too, where localStorage does
- * not exist. Guarding here means every caller gets a safe no-op for free.
  */
 
-const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080').replace(/\/$/, '');
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
 
 const ACCESS_KEY = 'sb.admin.accessToken';
 const REFRESH_KEY = 'sb.admin.refreshToken';
 
 /* ------------------------------------------------------------ token store */
 
-export const getAccessToken = () =>
-  typeof window === 'undefined' ? null : localStorage.getItem(ACCESS_KEY);
-export const getRefreshToken = () =>
-  typeof window === 'undefined' ? null : localStorage.getItem(REFRESH_KEY);
+export const getAccessToken = () => localStorage.getItem(ACCESS_KEY);
+export const getRefreshToken = () => localStorage.getItem(REFRESH_KEY);
 
 export function storeTokens({ accessToken, refreshToken }) {
-  if (typeof window === 'undefined') return;
   if (accessToken) localStorage.setItem(ACCESS_KEY, accessToken);
   if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
 }
 
 export function clearTokens() {
-  if (typeof window === 'undefined') return;
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
 }
@@ -50,8 +42,8 @@ export const friendlyError = (error) => {
   if (error instanceof ApiError) return error.message;
   if (error && error.name === 'TypeError') {
     const base = 'We could not reach the server. Check your connection and try again.';
-    return process.env.NODE_ENV !== 'production'
-      ? `${base} (Tried ${BASE_URL} from ${typeof window === 'undefined' ? '' : window.location.origin} — ` +
+    return import.meta.env.DEV
+      ? `${base} (Tried ${BASE_URL} from ${window.location.origin} — ` +
         `if the server is running, check the port and the CORS origins on the API.)`
       : base;
   }

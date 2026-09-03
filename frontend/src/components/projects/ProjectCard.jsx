@@ -1,11 +1,11 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import Reveal from '../ui/Reveal';
 
 export default function ProjectCard({ project, delay = 0 }) {
   return (
     <Reveal delay={delay}>
-      <Link href={`/projects/${project.slug}`} className="project-card" data-category={project.category}>
+      <Link to={`/projects/${project.slug}`} className="project-card" data-category={project.category}>
         <img src={project.image} alt={project.name} loading="lazy" />
         <div className="project-card-overlay">
           <span className="badge">{project.categoryLabel}</span>

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import './ServiceCard.css';
 
@@ -34,7 +34,7 @@ export default function ServiceCard({ service }) {
 
         <div className="sc-body">
           <h3 className="sc-title">
-            <Link href={route}>
+            <Link to={route}>
               {number}. {title}
             </Link>
           </h3>
@@ -47,7 +47,7 @@ export default function ServiceCard({ service }) {
         </div>
       </div>
 
-      <Link href={route} className="sc-book" aria-label={`Book ${title}`}>
+      <Link to={route} className="sc-book" aria-label={`Book ${title}`}>
         BOOK NOW
         <Icon name="arrow-right" size={15} />
       </Link>

@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon';
 import { telHref, whatsappHref } from '../../lib/contact';

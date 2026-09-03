@@ -1,5 +1,3 @@
-'use client';
-
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api, { clearTokens, getAccessToken, getRefreshToken, storeTokens } from '../lib/api';
 
@@ -20,11 +18,7 @@ const AuthContext = createContext({
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  // Always starts true, not `Boolean(getAccessToken())` — see the frontend
-  // app's AuthContext for why: reading localStorage in a lazy initializer
-  // disagrees with Next's server pre-render pass and triggers a hydration
-  // mismatch whenever a token already exists in the browser.
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(getAccessToken()));
 
   useEffect(() => {
     if (!getAccessToken()) {

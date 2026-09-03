@@ -1,7 +1,5 @@
-'use client';
-
 import { useState } from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Reveal from '../ui/Reveal';
 import Icon from '../ui/Icon';
 import { company, whyUsPoints } from '../../data/siteConfig';
@@ -74,7 +72,7 @@ export default function WhySupplybase() {
             ))}
           </ul>
 
-          <Link href={ABOUT_ROUTE} className="why-cta" aria-label="About Supplybase Projects">
+          <Link to={ABOUT_ROUTE} className="why-cta" aria-label="About Supplybase Projects">
             ABOUT US
             <Icon name="arrow-right" size={18} />
           </Link>
@@ -91,10 +89,12 @@ export default function WhySupplybase() {
                 alt="Modern residential project by Supplybase Projects"
                 /* Not lazy: the fallback below only runs once the browser has
                    actually tried the file, and a deferred load would leave an
-                   empty frame if the swap were ever needed.
-                   No fetchPriority hint: React 18.3's server and client
-                   renderers disagree on this attribute's casing, so any
-                   single spelling warns in one of the two. */
+                   empty frame if the swap were ever needed. Low priority keeps
+                   it from competing with the hero banners for bandwidth.
+                   Spelled lowercase because React 18 does not know the
+                   camelCase `fetchPriority` prop — it drops the attribute and
+                   warns, which is what HeroSlider currently does. */
+                fetchpriority="low"
                 decoding="async"
                 onError={() => setPhoto(PHOTO_FALLBACK)}
               />

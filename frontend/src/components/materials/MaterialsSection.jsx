@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Reveal from '../ui/Reveal';
 import Icon from '../ui/Icon';
 import { visibleBrands } from '../../data/materialBrands';
@@ -49,7 +49,7 @@ export default function MaterialsSection() {
         </Reveal>
 
         <div className="mb-actions">
-          <Link href="/materials" className="mb-cta">
+          <Link to="/materials" className="mb-cta">
             SEE ALL MATERIALS
             <Icon name="arrow-right" size={18} />
           </Link>

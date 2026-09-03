@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef, useState } from 'react';
 
 /**
@@ -16,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
  * the audience before it will trust a single claim inside it.
  */
 const SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
-const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 /** Load the GSI script once, however many buttons ask for it. */
 let scriptPromise = null;

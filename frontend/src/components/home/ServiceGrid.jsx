@@ -1,7 +1,5 @@
-'use client';
-
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import Reveal from '../ui/Reveal';
 import api from '../../lib/api';
@@ -42,7 +40,7 @@ export default function ServiceGrid() {
             <p>{service.description}</p>
             <div className="svc-card-foot">
               <span className="svc-fee">{service.visitFeeDisplay.replace('.00', '')} site visit</span>
-              <Link href={`/services/${service.slug}`} className="btn btn-primary btn-sm">
+              <Link to={`/services/${service.slug}`} className="btn btn-primary btn-sm">
                 BOOK NOW
                 <Icon name="arrow-right" size={15} />
               </Link>

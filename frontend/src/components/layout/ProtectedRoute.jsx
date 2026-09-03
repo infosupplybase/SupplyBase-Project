@@ -1,7 +1,4 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 /**
@@ -10,21 +7,18 @@ import { useAuth } from '../../context/AuthContext';
  */
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
+  const location = useLocation();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace(`/login?from=${encodeURIComponent(pathname)}`);
-    }
-  }, [loading, user, pathname, router]);
-
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="notfound">
         <p style={{ color: 'var(--grey-500)' }}>Checking your sign-in…</p>
       </div>
     );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   return children;

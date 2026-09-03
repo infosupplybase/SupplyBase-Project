@@ -18,9 +18,9 @@ export default function StatsBackdrop() {
       src="/assets/stats/construction-backdrop.jpg"
       alt=""
       aria-hidden="true"
-      /* No fetchPriority hint: React 18.3's server and client renderers
-         disagree on this attribute's casing, so any single spelling warns
-         in one of the two. */
+      /* lowercase: React 18 does not know the camelCase `fetchPriority` prop
+         and silently drops it. */
+      fetchpriority="low"
       decoding="async"
       draggable="false"
     />

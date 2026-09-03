@@ -1,7 +1,5 @@
-'use client';
-
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { heroSlides, AUTOPLAY_MS } from './heroSlides';
 import './HeroSlider.css';
@@ -22,7 +20,7 @@ import './HeroSlider.css';
 export default function HeroSlider() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const rootRef = useRef(null);
   const touchStartX = useRef(null);
@@ -130,15 +128,11 @@ export default function HeroSlider() {
                 width={1672}
                 height={941}
                 /* The first banner is the largest thing above the fold, so it
-                   loads eagerly. The rest follow one slide ahead — four 2MB
-                   PNGs racing on a phone would delay the one actually being
-                   looked at.
-                   No fetchPriority hint here: React 18.3's server and client
-                   renderers disagree on this attribute's casing (one wants
-                   fetchPriority, the other fetchpriority), so any single
-                   spelling logs a DOM-property warning in one of the two —
-                   not worth chasing for a hint most browsers still ignore. */
+                   loads eagerly at high priority. The rest follow one slide
+                   ahead — four 2MB PNGs racing on a phone would delay the one
+                   actually being looked at. */
                 loading={preload ? 'eager' : 'lazy'}
+                fetchPriority={i === 0 ? 'high' : 'low'}
                 decoding="async"
                 draggable={false}
               />
@@ -157,7 +151,7 @@ export default function HeroSlider() {
                 }}
                 aria-label={slide.bookLabel}
                 tabIndex={active ? 0 : -1}
-                onClick={() => router.push(slide.route)}
+                onClick={() => navigate(slide.route)}
               />
             </div>
           );

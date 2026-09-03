@@ -1,5 +1,3 @@
-'use client';
-
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api, { clearTokens, getAccessToken, getRefreshToken, storeTokens } from '../lib/api';
 
@@ -24,15 +22,7 @@ const AuthContext = createContext({
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  // Always starts true, not `Boolean(getAccessToken())`. getAccessToken()
-  // returns null during Next's server pre-render (no window there) but can
-  // return a real value on the browser's very first render if a token is
-  // already in localStorage — that mismatch between what the server sent
-  // and what the client's first render produces is exactly what triggers a
-  // hydration error. Starting fixed at `true` matches the server every time;
-  // the effect below still resolves it to `false` on the very next tick for
-  // a signed-out visitor, so nothing waits noticeably longer than before.
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(getAccessToken()));
 
   useEffect(() => {
     if (!getAccessToken()) {
@@ -88,7 +78,7 @@ export function AuthProvider({ children }) {
       // The API needs no client-side keys, so unlike the old Firebase setup
       // there is no "not configured yet" state for password sign-in.
       configured: true,
-      googleEnabled: Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
+      googleEnabled: Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID),
       login: async (identifier, password) => adopt(await api.login(identifier.trim(), password)),
       loginWithGoogle: async (credential) => adopt(await api.loginWithGoogle(credential)),
       register: async (name, email, password, phone) =>

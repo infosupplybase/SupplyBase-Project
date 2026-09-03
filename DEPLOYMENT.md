@@ -71,19 +71,20 @@ Do not include `localhost` or wildcard origins in production.
 ## 3. Deploy the website (`frontend/`) to Vercel
 
 1. In Vercel, import the same GitHub repository as a **new project**.
-2. Set the project's **Root Directory** to `frontend`. Vercel auto-detects the
-   **Next.js** framework preset from there — no build command or output
-   directory to set by hand.
+2. Set the project's **Root Directory** to `frontend`. Select the **Vite**
+   framework preset — nothing else to configure, Vercel already knows the
+   build command (`npm run build`) and output directory (`dist`).
 3. Add these Vercel environment variables:
 
 | Name | Value |
 | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `https://YOUR-API-HOST` — no trailing slash |
-| `NEXT_PUBLIC_ADMIN_URL` | `https://YOUR-ADMIN-HOST` — where step 4 below deploys |
-| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Optional public Google client ID |
+| `VITE_API_URL` | `https://YOUR-API-HOST` — no trailing slash |
+| `VITE_GOOGLE_CLIENT_ID` | Optional public Google client ID |
 
-4. Deploy. Next.js handles routing (including dynamic paths like
-   `/booking/plumbing`) natively — no `vercel.json` rewrite rule is needed.
+4. Deploy. The included `frontend/vercel.json` keeps client-side routes such
+   as `/services/plumbing` working on a direct visit or refresh — Vite builds
+   a static site, so without that rewrite rule Vercel would 404 anything that
+   isn't `/`.
 5. Add the final Vercel URL to the API's `CORS_ORIGINS` value and redeploy the
    API once.
 
@@ -93,26 +94,26 @@ A **second, separate** Vercel project — do not put this on the same project
 as the website; they're different apps with different builds.
 
 1. In Vercel, import the same GitHub repository again as another new project.
-2. Set the project's **Root Directory** to `admin`. Framework preset
-   auto-detects as Next.js the same way.
+2. Set the project's **Root Directory** to `admin`. Framework preset: **Vite**,
+   same as the website.
 3. Add the one environment variable this app needs:
 
 | Name | Value |
 | --- | --- |
-| `NEXT_PUBLIC_API_URL` | `https://YOUR-API-HOST` — same value as the website's |
+| `VITE_API_URL` | `https://YOUR-API-HOST` — same value as the website's |
 
-4. Deploy, then add this app's final Vercel URL to the API's `CORS_ORIGINS`
-   value (alongside the website's) and to the website's own
-   `NEXT_PUBLIC_ADMIN_URL`, redeploying both the API and the website once.
-5. Consider restricting who can even load this URL — a custom subdomain like
-   `admin.supplybase.co.in` kept out of search engines (the app already sets
-   `robots: noindex` in its metadata) is enough for most teams; add IP
+4. Deploy — it needs its own `vercel.json` rewrite rule too, same reason as
+   the website's (a static build, client-side routes need the fallback).
+5. Add this app's final Vercel URL to the API's `CORS_ORIGINS` value
+   (alongside the website's) and redeploy the API once.
+6. Consider restricting who can even load this URL — a custom subdomain like
+   `admin.supplybase.co.in` kept out of search engines (`admin/index.html`
+   already sets `robots: noindex, nofollow`) is enough for most teams; add IP
    allow-listing or Vercel's password protection if you want more.
 
-`NEXT_PUBLIC_` values (in either app) are bundled into public browser
-JavaScript. Never add database, JWT, Razorpay secret, webhook, or mail
-credentials to either Vercel project — those stay in the API's environment
-only.
+`VITE_` values (in either app) are bundled into public browser JavaScript.
+Never add database, JWT, Razorpay secret, webhook, or mail credentials to
+either Vercel project — those stay in the API's environment only.
 
 ## 5. Before going live
 

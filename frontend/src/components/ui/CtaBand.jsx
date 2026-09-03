@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Icon from './Icon';
 import { whatsappHref } from '../../lib/contact';
 
@@ -21,7 +21,7 @@ export default function CtaBand({
             <p>{text}</p>
           </div>
           <div className="btn-row">
-            <Link href={primaryTo} className="btn btn-primary btn-lg">
+            <Link to={primaryTo} className="btn btn-primary btn-lg">
               {primaryLabel}
               <Icon name="arrow-right" size={18} />
             </Link>

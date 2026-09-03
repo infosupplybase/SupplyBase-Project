@@ -1,9 +1,5 @@
-'use client';
-
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import NavLink from './NavLink';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
@@ -17,7 +13,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
+  const location = useLocation();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -31,7 +27,7 @@ export default function Navbar() {
   useEffect(() => {
     setMegaOpen(false);
     setMobileOpen(false);
-  }, [pathname]);
+  }, [location.pathname]);
 
   // lock body scroll while the mobile drawer is open
   useEffect(() => {
@@ -58,7 +54,7 @@ export default function Navbar() {
       <header className={`header ${scrolled ? 'scrolled' : ''}`} onMouseLeave={() => setMegaOpen(false)}>
         <div className="container">
           <div className="header-inner">
-            <Link href="/" className="brand" aria-label={`${company.name} — home`}>
+            <Link to="/" className="brand" aria-label={`${company.name} — home`}>
               <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
             </Link>
 
@@ -72,7 +68,7 @@ export default function Navbar() {
                     style={{ display: 'inline-flex' }}
                   >
                     <NavLink
-                      href={item.path}
+                      to={item.path}
                       className={({ isActive }) =>
                         `nav-link ${isActive ? 'active' : ''} ${megaOpen ? 'open' : ''}`
                       }
@@ -86,7 +82,7 @@ export default function Navbar() {
                 ) : (
                   <NavLink
                     key={item.path}
-                    href={item.path}
+                    to={item.path}
                     end={item.path === '/'}
                     className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                     onMouseEnter={() => setMegaOpen(false)}
@@ -98,22 +94,10 @@ export default function Navbar() {
             </nav>
 
             <div className="header-actions">
-              {/* The admin panel is a separate app (different origin), not an
-                  in-app route — a plain href, not next/link's client-side
-                  transition, is what actually navigates there. */}
-              <a
-                href={
-                  user
-                    ? user.role === 'ADMIN'
-                      ? process.env.NEXT_PUBLIC_ADMIN_URL || 'http://localhost:3001'
-                      : '/dashboard'
-                    : '/login'
-                }
-                className="login-btn"
-              >
+              <Link to={user ? '/dashboard' : '/login'} className="login-btn">
                 <Icon name="user" size={17} />
-                {user ? (user.role === 'ADMIN' ? 'ADMIN PANEL' : 'MY ACCOUNT') : 'LOGIN'}
-              </a>
+                {user ? 'MY ACCOUNT' : 'LOGIN'}
+              </Link>
               <button
                 type="button"
                 className="burger"

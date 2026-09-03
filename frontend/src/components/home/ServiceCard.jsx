@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import Reveal from '../ui/Reveal';
 
@@ -19,19 +19,19 @@ export default function ServiceCard({ service, delay = 0, maxSubServices = 8 }) 
         </div>
         <span className="service-card-num">{service.number}</span>
         <h3>
-          <Link href={to}>{service.name}</Link>
+          <Link to={to}>{service.name}</Link>
         </h3>
 
         <ul className="service-card-list">
           {service.subServices.slice(0, maxSubServices).map((sub) => (
             <li key={sub.name}>
-              <Link href={`${to}#${slugify(sub.name)}`}>{sub.name}</Link>
+              <Link to={`${to}#${slugify(sub.name)}`}>{sub.name}</Link>
             </li>
           ))}
         </ul>
 
         <div className="service-card-foot">
-          <Link href={to} className="link-arrow">
+          <Link to={to} className="link-arrow">
             VIEW DETAILS
             <Icon name="arrow-right" size={16} />
           </Link>

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { getServicesByGroup } from '../../data/services';
 
@@ -19,7 +19,7 @@ export default function ServiceMegaMenu({ open, onNavigate }) {
               {items.map((service) => (
                 <Link
                   key={service.slug}
-                  href={`/services/${service.slug}`}
+                  to={`/services/${service.slug}`}
                   className="mega-item"
                   onClick={onNavigate}
                   tabIndex={open ? 0 : -1}
@@ -34,7 +34,7 @@ export default function ServiceMegaMenu({ open, onNavigate }) {
             <h4>All Services</h4>
             <p>See all 10 categories and everything we deliver under one contract.</p>
             <Link
-              href="/services"
+              to="/services"
               className="btn btn-primary btn-sm"
               onClick={onNavigate}
               tabIndex={open ? 0 : -1}

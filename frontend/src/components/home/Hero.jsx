@@ -1,8 +1,5 @@
-'use client';
-
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import api from '../../lib/api';
 import { company } from '../../data/siteConfig';
@@ -34,7 +31,7 @@ const BLURB = {
 
 export default function Hero() {
   const [services, setServices] = useState([]);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -60,6 +57,7 @@ export default function Hero() {
         <img
           src="/assets/hero-house.svg"
           alt=""
+          fetchPriority="high"
           decoding="async"
         />
       </div>
@@ -103,7 +101,7 @@ export default function Hero() {
                   key={service.slug}
                   type="button"
                   className="hero-service"
-                  onClick={() => router.push(`/services/${service.slug}`)}
+                  onClick={() => navigate(`/services/${service.slug}`)}
                 >
                   <span className="hero-service-icon">
                     <Icon name={service.icon || 'tools'} size={20} strokeWidth={1.6} />
@@ -120,7 +118,7 @@ export default function Hero() {
               ))}
             </div>
 
-            <Link href="/services" className="btn btn-primary btn-block btn-lg">
+            <Link to="/services" className="btn btn-primary btn-block btn-lg">
               BOOK NOW
               <Icon name="arrow-right" size={18} />
             </Link>

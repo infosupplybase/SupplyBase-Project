@@ -1,7 +1,5 @@
-'use client';
-
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { company, contact, quickLinks, social } from '../../data/siteConfig';
 import { homeServices } from '../../data/homeServices';
@@ -24,13 +22,9 @@ const WHATSAPP_MESSAGE = 'Hello Supplybase, I would like to discuss my project.'
 /** Collapses the long link lists on a phone and leaves them open above it. */
 function useIsPhone() {
   const query = '(max-width: 767px)';
-  // Always starts false, corrected in the effect below. Next.js server-renders
-  // this "use client" component once with no `window`, so the very first
-  // client render has to match that (false) exactly or React throws a
-  // hydration mismatch — reading matchMedia in the initializer, which only
-  // ever runs in the browser, would make that first client render disagree
-  // with what the server sent down.
-  const [isPhone, setIsPhone] = useState(false);
+  const [isPhone, setIsPhone] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia(query).matches
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return undefined;
@@ -145,7 +139,7 @@ export default function Footer() {
               <ul className="ft-list">
                 {quickLinks.map((link) => (
                   <li key={link.path}>
-                    <Link href={link.path}>
+                    <Link to={link.path}>
                       <span>{link.label}</span>
                       <Icon name="chevron-right" size={16} className="ft-arrow" />
                     </Link>
@@ -160,7 +154,7 @@ export default function Footer() {
             <ul className="ft-list ft-list-services">
               {footerServices.map((service) => (
                 <li key={service.id}>
-                  <Link href={service.route}>
+                  <Link to={service.route}>
                     <Icon name={service.icon} size={20} className="ft-service-icon" />
                     <span>{service.name}</span>
                     <Icon name="chevron-right" size={16} className="ft-arrow" />
@@ -197,7 +191,7 @@ export default function Footer() {
 
             <div className="ft-cta">
               <p>Let&rsquo;s discuss your project.</p>
-              <Link href="/quote" className="ft-btn ft-btn-gold">
+              <Link to="/quote" className="ft-btn ft-btn-gold">
                 REQUEST A QUOTE
                 <Icon name="arrow-right" size={17} />
               </Link>
@@ -220,9 +214,9 @@ export default function Footer() {
             © {year} <span className="ft-gold">{company.name}</span>. All rights reserved.
           </p>
           <nav className="ft-legal" aria-label="Legal">
-            <Link href="/privacy-policy">Privacy Policy</Link>
+            <Link to="/privacy-policy">Privacy Policy</Link>
             <span aria-hidden="true">|</span>
-            <Link href="/terms">Terms &amp; Conditions</Link>
+            <Link to="/terms">Terms &amp; Conditions</Link>
           </nav>
         </div>
       </div>
