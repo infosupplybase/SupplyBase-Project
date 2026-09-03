@@ -72,6 +72,13 @@ management:
     health:
       probes:
         enabled: true
+  health:
+    # ENQUIRY_EMAIL/MAIL_USER are optional (see .env.example) — without real
+    # credentials this indicator's SMTP connection test fails and would
+    # otherwise take the whole /actuator/health status DOWN even though the
+    # app itself is healthy.
+    mail:
+      enabled: false
 
 app:
   # Where the React site runs. Anything not matching is refused by CORS.
