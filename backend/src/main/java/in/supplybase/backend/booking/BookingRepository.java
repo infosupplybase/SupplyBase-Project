@@ -26,6 +26,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+    /** A professional's own job list. Naturally small, so a plain list is fine. */
+    List<Booking> findByAssignedProfessionalIdOrderByCreatedAtDesc(Long professionalId);
+
+    /** Backs BookingExpiryJob: unpaid or unconfirmed bookings nobody followed up on. */
+    List<Booking> findByStatusInAndCreatedAtBefore(List<BookingStatus> statuses, Instant cutoff);
+
     /** Backs the flood check in BookingService. */
     long countByPhoneAndCreatedAtAfter(String phone, Instant since);
 }

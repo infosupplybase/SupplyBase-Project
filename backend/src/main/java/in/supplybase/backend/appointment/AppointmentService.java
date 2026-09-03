@@ -14,8 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import in.supplybase.backend.appointment.dto.BlackoutResponse;
+import in.supplybase.backend.appointment.dto.CreateBlackoutRequest;
+import in.supplybase.backend.appointment.dto.CreateSlotRuleRequest;
 import in.supplybase.backend.appointment.dto.DayAvailabilityResponse;
 import in.supplybase.backend.appointment.dto.SlotResponse;
+import in.supplybase.backend.appointment.dto.SlotRuleResponse;
+import in.supplybase.backend.appointment.dto.UpdateSlotRuleRequest;
 import in.supplybase.backend.common.ApiException;
 
 /**
@@ -156,6 +161,85 @@ public class AppointmentService {
         }
         slot.setBookedCount(slot.getBookedCount() - 1);
         slots.save(slot);
+    }
+
+    /* ----------------------------------------------------------- staff */
+
+    @Transactional(readOnly = true)
+    public List<SlotRuleResponse> listRules() {
+        return rules.findAll().stream().map(SlotRuleResponse::from).toList();
+    }
+
+    @Transactional
+    public SlotRuleResponse createRule(CreateSlotRuleRequest request) {
+        if (!request.endTime().isAfter(request.startTime())) {
+            throw ApiException.badRequest("The end time must be after the start time.");
+        }
+        AppointmentSlotRule rule = AppointmentSlotRule.builder()
+                .categoryId(request.categoryId())
+                .dayOfWeek(request.dayOfWeek())
+                .startTime(request.startTime())
+                .endTime(request.endTime())
+                .slotMinutes(request.slotMinutes())
+                .maxBookings(request.maxBookings())
+                .active(true)
+                .build();
+        return SlotRuleResponse.from(rules.save(rule));
+    }
+
+    @Transactional
+    public SlotRuleResponse updateRule(Long id, UpdateSlotRuleRequest request) {
+        if (!request.endTime().isAfter(request.startTime())) {
+            throw ApiException.badRequest("The end time must be after the start time.");
+        }
+        AppointmentSlotRule rule = rules.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That rule"));
+        rule.setCategoryId(request.categoryId());
+        rule.setDayOfWeek(request.dayOfWeek());
+        rule.setStartTime(request.startTime());
+        rule.setEndTime(request.endTime());
+        rule.setSlotMinutes(request.slotMinutes());
+        rule.setMaxBookings(request.maxBookings());
+        return SlotRuleResponse.from(rules.save(rule));
+    }
+
+    /**
+     * Soft delete: a rule isn't referenced by FK from anything, but flipping
+     * active off rather than removing the row keeps it reversible, matching
+     * how the rest of this system treats deletes on rows others may depend on.
+     */
+    @Transactional
+    public void deleteRule(Long id) {
+        AppointmentSlotRule rule = rules.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That rule"));
+        rule.setActive(false);
+        rules.save(rule);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BlackoutResponse> listBlackouts() {
+        return blackouts.findAll().stream().map(BlackoutResponse::from).toList();
+    }
+
+    @Transactional
+    public BlackoutResponse createBlackout(CreateBlackoutRequest request) {
+        if (blackouts.existsByDay(request.day())) {
+            throw ApiException.conflict("That day already has a blackout.");
+        }
+        AppointmentBlackout blackout = AppointmentBlackout.builder()
+                .day(request.day())
+                .reason(request.reason())
+                .build();
+        return BlackoutResponse.from(blackouts.save(blackout));
+    }
+
+    /** Hard delete: a blackout is just "is the office open", nothing references it historically. */
+    @Transactional
+    public void deleteBlackout(Long id) {
+        if (!blackouts.existsById(id)) {
+            throw ApiException.notFound("That blackout");
+        }
+        blackouts.deleteById(id);
     }
 
     private int capacityFor(Long categoryId, LocalDate date) {

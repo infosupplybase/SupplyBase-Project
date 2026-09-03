@@ -64,7 +64,8 @@ public class SecurityConfig {
                 // --- public
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
                                  "/api/auth/google", "/api/auth/refresh",
-                                 "/api/auth/logout").permitAll()
+                                 "/api/auth/logout", "/api/auth/forgot-password",
+                                 "/api/auth/reset-password", "/api/auth/verify-email").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/enquiries").permitAll()
                 // Public, but the JWT filter still runs first — so a signed-in
                 // visitor's booking gets attached to their account.
@@ -74,6 +75,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // API docs. Dev convenience — see backend/README.md's
+                // before-going-live checklist for gating this in production.
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                 // --- staff only
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

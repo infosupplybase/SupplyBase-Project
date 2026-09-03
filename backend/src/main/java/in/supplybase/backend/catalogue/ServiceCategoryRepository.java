@@ -9,7 +9,11 @@ public interface ServiceCategoryRepository extends JpaRepository<ServiceCategory
 
     List<ServiceCategory> findByActiveTrueOrderBySortOrderAsc();
 
+    List<ServiceCategory> findAllByOrderBySortOrderAsc();
+
     Optional<ServiceCategory> findBySlugAndActiveTrue(String slug);
 
     Optional<ServiceCategory> findBySlug(String slug);
+
+    boolean existsBySlug(String slug);
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,9 +15,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import in.supplybase.backend.auth.CurrentUser;
 import in.supplybase.backend.project.dto.CreateProjectRequest;
+import in.supplybase.backend.project.dto.ProjectDocumentResponse;
 import in.supplybase.backend.project.dto.ProjectResponse;
 import in.supplybase.backend.project.dto.UpsertStageRequest;
 import jakarta.validation.Valid;
@@ -43,6 +46,21 @@ public class ProjectController {
         return service.get(id, currentUser.require());
     }
 
+    @GetMapping("/api/projects/{id}/documents")
+    public List<ProjectDocumentResponse> documents(@PathVariable Long id) {
+        return service.listDocuments(id, currentUser.require());
+    }
+
+    @GetMapping("/api/projects/{id}/documents/{docId}/download")
+    public ResponseEntity<byte[]> download(@PathVariable Long id, @PathVariable Long docId) {
+        var file = service.downloadDocument(id, docId, currentUser.require());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        file.contentType() != null ? file.contentType() : "application/octet-stream"))
+                .header("Content-Disposition", "attachment; filename=\"" + file.filename() + "\"")
+                .body(file.content());
+    }
+
     /* ----------------------------------------------------------- staff */
 
     @GetMapping("/api/admin/projects")
@@ -65,5 +83,13 @@ public class ProjectController {
     @PatchMapping("/api/admin/projects/{id}/status")
     public ProjectResponse setStatus(@PathVariable Long id, @RequestParam ProjectStatus status) {
         return service.setStatus(id, status);
+    }
+
+    @PostMapping(value = "/api/admin/projects/{id}/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProjectDocumentResponse> uploadDocument(@PathVariable Long id,
+            @RequestParam String title, @RequestParam DocumentType docType,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.uploadDocument(id, title, docType, file));
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,12 +17,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.CurrentUser;
+import in.supplybase.backend.booking.dto.AdvanceBookingStatusRequest;
+import in.supplybase.backend.booking.dto.AssignProfessionalRequest;
+import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
+import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
 import jakarta.validation.Valid;
 
@@ -61,6 +67,21 @@ public class BookingController {
         return service.myBookings(currentUser.require().id());
     }
 
+    @GetMapping("/api/bookings/{id}/files")
+    public List<BookingFileResponse> files(@PathVariable Long id) {
+        return service.listFiles(id, currentUser.require());
+    }
+
+    @GetMapping("/api/bookings/{id}/files/{fileId}/download")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id, @PathVariable Long fileId) {
+        var file = service.downloadFile(id, fileId, currentUser.require());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        file.contentType() != null ? file.contentType() : "application/octet-stream"))
+                .header("Content-Disposition", "attachment; filename=\"" + file.filename() + "\"")
+                .body(file.content());
+    }
+
     /* ----------------------------------------------------------- staff */
 
     @GetMapping("/api/admin/bookings")
@@ -82,5 +103,32 @@ public class BookingController {
     public BookingResponse update(@PathVariable Long id,
                                   @Valid @RequestBody UpdateBookingRequest request) {
         return service.update(id, request);
+    }
+
+    @PatchMapping("/api/admin/bookings/{id}/assign")
+    public BookingResponse assign(@PathVariable Long id,
+                                  @Valid @RequestBody AssignProfessionalRequest request) {
+        return service.assignProfessional(id, request.professionalId());
+    }
+
+    @PostMapping(value = "/api/admin/bookings/{id}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookingFileResponse> uploadFile(@PathVariable Long id,
+            @RequestParam(defaultValue = "PHOTO") String kind,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.uploadFile(id, kind, file, currentUser.require().id()));
+    }
+
+    /* ------------------------------------------------------- professional */
+
+    @GetMapping("/api/professional/bookings/mine")
+    public List<ProfessionalBookingResponse> myAssignedBookings() {
+        return service.myAssignedBookings(currentUser.require().id());
+    }
+
+    @PatchMapping("/api/professional/bookings/{id}/status")
+    public ProfessionalBookingResponse advanceStatus(@PathVariable Long id,
+                                  @Valid @RequestBody AdvanceBookingStatusRequest request) {
+        return service.advanceOwnBookingStatus(id, request.status(), currentUser.require().id());
     }
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -60,6 +61,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest()
                 .body(ApiError.of(400, "Bad Request",
                         "We could not read that request. Please check the values and try again.",
+                        request.getRequestURI()));
+    }
+
+    /**
+     * Two writers touched the same @Version-ed row (Booking, Payment,
+     * AppointmentSlot) at once. This is a real conflict, not a bug — the loser
+     * needs to re-read and retry, which is what 409 tells a client to do,
+     * rather than falling through to the generic 500 handler and looking like
+     * our fault.
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleOptimisticLock(ObjectOptimisticLockingFailureException ex,
+                                                          HttpServletRequest request) {
+        log.info("Optimistic lock conflict on {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiError.of(409, "Conflict",
+                        "This was just updated by someone else. Please refresh and try again.",
                         request.getRequestURI()));
     }
 

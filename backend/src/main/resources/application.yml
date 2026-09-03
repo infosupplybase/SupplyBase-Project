@@ -78,6 +78,9 @@ app:
   # These are PATTERNS: [*] covers whichever port Vite ends up on in
   # development. Set CORS_ORIGINS to exact origins in production.
   cors-allowed-origins: ${CORS_ORIGINS:http://localhost:[*],http://127.0.0.1:[*]}
+  # The single frontend origin used to build links emailed out (password
+  # reset, email verification). Not a CORS list, just one URL.
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
   jwt:
     # MUST be overridden in production. Minimum 32 bytes for HS256.
     secret: ${JWT_SECRET:dev-only-secret-change-me-in-production-please-32b}
@@ -97,6 +100,21 @@ app:
   notifications:
     # Where new enquiries are emailed. Blank disables the email entirely.
     enquiry-recipient: ${ENQUIRY_EMAIL:}
+  bootstrap:
+    # Set both to create (or promote) the first ADMIN account on startup.
+    # Leave blank in production once an admin exists — this only ever acts
+    # while zero admins are in the database.
+    admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+  booking:
+    # How long a PAYMENT_PENDING or BOOKING_REQUESTED booking is held before
+    # BookingExpiryJob auto-cancels it and releases its appointment seat.
+    expiry-hours: ${BOOKING_EXPIRY_HOURS:24}
+  # Local-disk root for uploaded project documents and booking files. Fine for
+  # local/current use, but this does NOT survive a redeploy on Render/Railway's
+  # ephemeral filesystem — swap FileStorageService for S3-compatible storage
+  # before relying on uploads persisting across deploys.
+  storage-root-dir: ${STORAGE_ROOT_DIR:./uploads}
 
 logging:
   level:

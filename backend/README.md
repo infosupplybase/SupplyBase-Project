@@ -239,4 +239,16 @@ only class that imports the SDK, so changing or adding a gateway is one file.
 - [ ] Give the app's MySQL user only the privileges it needs, not `ALL`
 - [ ] Serve over HTTPS — Bearer tokens over plain HTTP are readable in transit
 - [ ] Set `ENQUIRY_EMAIL` so enquiries reach a person, not just the database
-- [ ] Add a rate limit in front of `/api/auth/login`; the app does not have one
+- [ ] Set `FRONTEND_URL` to the real deployed site — password-reset and
+      email-verification links are built from this
+- [ ] Set `BOOTSTRAP_ADMIN_EMAIL`/`BOOTSTRAP_ADMIN_PASSWORD` once, to create the
+      first admin account, then unset them — they only ever act while zero
+      admins exist, but there's no reason to leave real credentials in the
+      environment longer than needed
+- [ ] Set `STORAGE_ROOT_DIR` to a persistent volume, or move to S3-compatible
+      storage — project documents and booking files are stored on local disk
+      today, which does not survive a redeploy on Render/Railway's ephemeral
+      filesystem
+- [ ] Set `springdoc.api-docs.enabled=false` (or otherwise gate it) — API docs
+      at `/swagger-ui.html` and `/v3/api-docs` are open by default for local
+      development convenience
