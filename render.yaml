@@ -22,6 +22,12 @@ services:
         sync: false
       - key: CORS_ORIGINS
         sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: RAZORPAY_KEY_ID
