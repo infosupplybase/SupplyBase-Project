@@ -3,34 +3,36 @@ import Icon from '../ui/Icon';
 import { services } from '../../data/services';
 import { projectTypes, budgetRanges, contact } from '../../data/siteConfig';
 import { buildEnquiryMessage, whatsappHref, mailtoWith, telHref } from '../../lib/contact';
+import api from '../../lib/api';
 
 /**
  * QuoteForm — enquiry form.
  *
- * HOW SUBMISSION WORKS TODAY (no backend required):
- * the form validates the input, then hands the completed enquiry to WhatsApp or email
- * with every field pre-filled. Nothing is stored on a server and no email is sent
- * automatically — the user's own WhatsApp/mail app sends it.
+ * Every submission does two independent things: it saves to the backend
+ * (so the office can see it in the admin panel even if the customer never
+ * presses send in WhatsApp/email), and it still hands the completed enquiry
+ * to WhatsApp or email with every field pre-filled, exactly as before.
  *
- * TO ADD A REAL BACKEND LATER:
- * replace the body of `submitToBackend` below with your API call, e.g.
- *
- *   const submitToBackend = async (payload) => {
- *     const res = await fetch('/api/enquiries', {
- *       method: 'POST',
- *       headers: { 'Content-Type': 'application/json' },
- *       body: JSON.stringify(payload),
- *     });
- *     if (!res.ok) throw new Error('Request failed');
- *   };
- *
- * and set USE_BACKEND to true.
+ * The backend save must never block the WhatsApp/email hand-off — that is
+ * the part the customer actually sees succeed, so a failed save here is
+ * logged and swallowed rather than shown as an error.
  */
-const USE_BACKEND = false;
-
-// eslint-disable-next-line no-unused-vars
-const submitToBackend = async (payload) => {
-  throw new Error('No backend is connected yet.');
+const submitToBackend = async (payload, source) => {
+  try {
+    await api.createEnquiry({
+      name: payload.name,
+      phone: payload.phone,
+      email: payload.email || null,
+      projectType: payload.projectType || null,
+      service: payload.service || null,
+      location: payload.location || null,
+      budget: payload.budget || null,
+      description: payload.description,
+      source,
+    });
+  } catch (err) {
+    console.error('Failed to save enquiry to the backend', err);
+  }
 };
 
 const emptyForm = {
@@ -44,7 +46,7 @@ const emptyForm = {
   description: '',
 };
 
-export default function QuoteForm({ defaultService = '', compact = false }) {
+export default function QuoteForm({ defaultService = '', compact = false, source = 'QUOTE_FORM' }) {
   const [form, setForm] = useState({ ...emptyForm, service: defaultService });
   const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
@@ -80,11 +82,7 @@ export default function QuoteForm({ defaultService = '', compact = false }) {
     const payload = { ...form, fileNames: files.map((f) => f.name) };
     const message = buildEnquiryMessage(payload);
 
-    if (USE_BACKEND) {
-      await submitToBackend(payload);
-      setSent(channel);
-      return;
-    }
+    await submitToBackend(form, source);
 
     if (channel === 'email') {
       window.location.href = mailtoWith(`Project enquiry — ${form.name}`, message);
@@ -267,7 +265,7 @@ export default function QuoteForm({ defaultService = '', compact = false }) {
       <div className="form-note">
         <Icon name="info" size={18} />
         <span>
-          This form opens your own WhatsApp or email app with the enquiry filled in — nothing is stored on a server.
+          This form opens your own WhatsApp or email app with the enquiry filled in, and also sends it to our team.
           You can also call us directly on <a href={telHref}>{contact.phoneDisplay}</a>.
         </span>
       </div>

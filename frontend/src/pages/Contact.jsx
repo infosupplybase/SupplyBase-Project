@@ -26,7 +26,7 @@ export default function Contact() {
                 title="TELL US WHAT YOU NEED"
                 text="Fill in the details below and send it straight to our team on WhatsApp or by email."
               />
-              <QuoteForm />
+              <QuoteForm source="CONTACT_FORM" />
             </div>
 
             <Reveal>
