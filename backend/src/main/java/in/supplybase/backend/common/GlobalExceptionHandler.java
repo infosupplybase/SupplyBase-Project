@@ -14,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -89,6 +90,19 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(409, "Conflict",
                         "That record conflicts with one that already exists.",
                         request.getRequestURI()));
+    }
+
+    /**
+     * Spring throws this for any request matching no controller and no static
+     * resource — a typo'd or removed endpoint. Without this handler it falls
+     * through to the catch-all below and reports a client's bad URL as our
+     * server failing, which is both wrong and confusing to debug.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(NoResourceFoundException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiError.of(404, "Not Found",
+                        "Nothing here.", request.getRequestURI()));
     }
 
     @ExceptionHandler(Exception.class)
