@@ -11,26 +11,40 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  width: 100%;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
+  min-width: 0;
+  width: 100%;
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.65;
   color: var(--ink);
   background: var(--surface);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
-
 img,
 svg,
 video {
-  max-width: 100%;
   display: block;
+  max-width: 100%;
+  height: auto;
 }
 
+img {
+  max-inline-size: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
 /* ------------------------------------------------------------ typography */
 
 h1, h2, h3, h4, h5 {
@@ -113,10 +127,10 @@ button {
 .container {
   width: 100%;
   max-width: var(--container);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  min-width: 0;
 }
-
 .container-narrow {
   max-width: var(--container-narrow);
 }
@@ -299,9 +313,12 @@ button {
 /* Someone who has asked their operating system to reduce motion means it.
    Animation is switched off rather than merely shortened. */
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
+ html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  width: 100%;
+  overflow-x: clip;
+}
   .reveal {
     opacity: 1;
     transform: none;
@@ -315,4 +332,25 @@ button {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+.container,
+.container-narrow,
+.section,
+main,
+section,
+header,
+footer {
+  min-width: 0;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+p,
+a,
+span,
+button,
+label {
+  overflow-wrap: anywhere;
 }

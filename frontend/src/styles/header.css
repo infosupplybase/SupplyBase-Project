@@ -25,6 +25,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-5);
+  min-width: 0;
 }
 
 /* min-height so the logo is a full-size tap target even though the image
@@ -37,8 +38,9 @@
 }
 
 .brand img {
-  height: 46px;
   width: auto;
+  height: clamp(32px, 9vw, 38px);
+  max-width: 160px;
 }
 
 /* ------------------------------------------------------------------ nav */
@@ -159,6 +161,7 @@
   display: none;
   width: var(--tap-min);
   height: var(--tap-min);
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -398,29 +401,42 @@
 
 /* ---------------------------------------------------------- responsive */
 
-/* 900px, per the brief: below this the nav is hidden and the burger appears. */
-@media (max-width: 900px) {
+/* 1024px, per the brief: below this the nav is hidden and the burger appears. */
+@media (max-width: 1024px) {
   :root {
     --header-h: var(--header-h-mobile);
   }
+
+  .header-inner {
+    gap: 12px;
+  }
+
   .nav,
   .mega,
   .login-btn {
     display: none;
   }
+
+  .brand {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .brand img {
+    width: auto;
+    height: clamp(32px, 9vw, 38px);
+    max-width: 160px;
+  }
+
+  .header-actions {
+    margin-left: auto;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
   .burger {
     display: flex;
-    margin-left: auto;
-  }
-  .brand img {
-    height: 38px;
-  }
-  /* The number stays: on a phone, tapping it is the fastest path to a sale. */
-  .header-phone span {
-    display: none;
-  }
-  .header-phone {
-    width: var(--tap-min);
-    justify-content: center;
+    margin-left: 0;
+    flex-shrink: 0;
   }
 }

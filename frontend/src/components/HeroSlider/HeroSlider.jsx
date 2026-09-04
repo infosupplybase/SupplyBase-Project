@@ -136,7 +136,7 @@ export default function HeroSlider() {
                 decoding="async"
                 draggable={false}
               />
-
+           
               {/* Transparent, sitting exactly over the BOOK NOW painted into
                   the artwork. No visible button is added — the one in the
                   image is the button. */}

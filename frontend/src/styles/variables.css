@@ -71,7 +71,7 @@
 
   --section-y: clamp(56px, 8vw, 104px);
   --header-h: 88px;
-  --header-h-mobile: 68px;
+  --header-h-mobile: 64px;
 
   /* ------------------------------------------------------------ radius */
   --radius-sm: 8px;

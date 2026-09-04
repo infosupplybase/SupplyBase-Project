@@ -1,69 +1,90 @@
 /* =========================================================================
    SUPPLYBASE PROJECTS — CROSS-CUTTING RESPONSIVE RULES
+
    Breakpoint-specific behaviour that is not owned by any single component.
    Component files handle their own layout; this file handles the rest.
+
    ========================================================================= */
 
 /* -------------------------------------------------- tablet: 768–1199px */
 
 @media (max-width: 1199px) {
+
   .split {
     grid-template-columns: 1fr;
   }
+
   .service-layout {
     grid-template-columns: 1fr;
   }
+
   .sidebar {
     position: static;
   }
+
 }
 
 /* ------------------------------------------------------ mobile: <768px */
 
 @media (max-width: 767px) {
+
   .section-head-row {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-4);
   }
+
   .section-head-row .btn {
     align-self: flex-start;
   }
 
-  /* Any table wide enough to need it scrolls inside its own box rather than
-     pushing the whole page sideways. */
+  /*
+   * Any table wide enough to need it scrolls inside its own box rather than
+   * pushing the whole page sideways.
+   */
+
   .table-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* The sticky CTA sits over the foot of the page, so every page needs room
-     underneath it or the last element is unreachable. */
+  /*
+   * The sticky CTA sits over the foot of the page, so every page needs room
+   * underneath it or the last element is unreachable.
+   */
+
   body.has-sticky-cta main {
     padding-bottom: 80px;
   }
+
 }
 
 /* ------------------------------------------------ small mobile: <480px */
 
 @media (max-width: 479px) {
+
   :root {
     --gutter: 16px;
   }
+
   .svc-card-body {
     padding: var(--space-6) var(--space-4) var(--space-4);
   }
+
   .svc-card-foot {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-3);
   }
+
   .svc-card-foot .btn {
     width: 100%;
   }
+
   .stat {
     padding: var(--space-5) var(--space-4);
   }
+
 }
 
 /* --------------------------------------------------- sticky booking bar */
@@ -73,22 +94,30 @@
 }
 
 @media (max-width: 900px) {
+
   .book-bar {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: var(--z-sticky-cta);
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: var(--space-3);
+
     padding: 10px var(--space-4);
+
     background: var(--white);
     border-top: 1px solid var(--border);
     box-shadow: var(--shadow-up);
+
     /* clears the iOS home indicator */
-    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(
+      10px + env(safe-area-inset-bottom, 0px)
+    );
   }
 
   .book-bar-text {
@@ -113,16 +142,57 @@
     flex-shrink: 0;
   }
 
-  /* The floating buttons must clear the bar, or the WhatsApp button sits
-     underneath it and cannot be tapped. */
+  /*
+   * The floating buttons must clear the bar, or the WhatsApp button sits
+   * underneath it and cannot be tapped.
+   */
+
   .floating-actions {
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    right: 12px;
+    bottom: calc(
+      82px + env(safe-area-inset-bottom, 0px)
+    );
+    gap: 8px;
   }
+
+}
+
+/* ------------------------------------------------ small mobile: <420px */
+
+@media (max-width: 420px) {
+
+  .book-bar {
+    gap: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .book-bar-text {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .book-bar-text strong {
+    font-size: 13px;
+  }
+
+  .book-bar-text span {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .book-bar .btn {
+    flex: 0 0 auto;
+    padding: 11px 14px;
+    font-size: 11px;
+  }
+
 }
 
 /* ------------------------------------------------------------- print */
 
 @media print {
+
   .header,
   .footer,
   .floating-actions,
@@ -130,7 +200,9 @@
   .mobile-menu {
     display: none !important;
   }
+
   body {
     background: var(--white);
   }
+
 }
