@@ -12,7 +12,7 @@ import './ServiceCard.css';
  */
 export default function ServiceCard({ service }) {
   const {
-    number, title, description, route,
+    number, title, description, startingPrice, route,
     image, focus, alt, icon, badge,
   } = service;
 
@@ -39,6 +39,11 @@ export default function ServiceCard({ service }) {
             </Link>
           </h3>
           <p className="sc-desc">{description}</p>
+
+          <p className="sc-price">
+            <span className="sc-price-label">Starting from</span>
+            <span className="sc-price-value">{startingPrice}</span>
+          </p>
         </div>
       </div>
 

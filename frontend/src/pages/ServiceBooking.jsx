@@ -266,9 +266,10 @@ export default function ServiceBooking() {
   }
 
   const { category } = form;
+  const feeLabel = category.visitFeeDisplay.replace('.00', '');
 
   if (receipt) {
-    return <Confirmation receipt={receipt} details={details} />;
+    return <Confirmation receipt={receipt} details={details} feeLabel={feeLabel} />;
   }
 
   return (
@@ -402,6 +403,7 @@ export default function ServiceBooking() {
                   answers={answers}
                   date={date}
                   time={time}
+                  feeLabel={feeLabel}
                 />
               </>
             )}
@@ -423,7 +425,7 @@ export default function ServiceBooking() {
 
               {stage === CONFIRM ? (
                 <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'BOOKING…' : 'PAY & CONFIRM BOOKING'}
+                  {busy ? 'BOOKING…' : `PAY ${feeLabel} & CONFIRM BOOKING`}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
@@ -459,7 +461,7 @@ function Field({ id, label, required, hint, error, ...rest }) {
 }
 
 /** A last look before paying — nobody should pay for a booking they misread. */
-function Summary({ category, form, answers, date, time }) {
+function Summary({ category, form, answers, date, time, feeLabel }) {
   const rows = form.questions
     .map((q) => {
       const value = answers[q.key];
@@ -502,6 +504,7 @@ function Summary({ category, form, answers, date, time }) {
       <div className="fee-panel">
         <div className="fee-panel-top">
           <strong>Site Visit &amp; Quotation Fee</strong>
+          <span className="fee-panel-amount">{feeLabel}</span>
         </div>
 
         <ul className="fee-includes">
@@ -525,7 +528,7 @@ function Summary({ category, form, answers, date, time }) {
 }
 
 /** The confirmation screen from the approved reference. */
-function Confirmation({ receipt, details }) {
+function Confirmation({ receipt, details, feeLabel }) {
   const message = encodeURIComponent(
     `Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`
   );
@@ -563,6 +566,10 @@ function Confirmation({ receipt, details }) {
               <div>
                 <dt>Location</dt>
                 <dd>{details.city}</dd>
+              </div>
+              <div>
+                <dt>Site Visit Fee</dt>
+                <dd>{feeLabel}</dd>
               </div>
             </dl>
 

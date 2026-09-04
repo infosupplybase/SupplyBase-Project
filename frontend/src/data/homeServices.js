@@ -28,6 +28,7 @@ export const homeServices = [
     number: '1',
     title: 'Painting & Waterproofing',
     description: 'Interior & exterior painting, wall putty, texture, waterproofing & more.',
+    startingPrice: '₹499',
     route: '/booking/painting',
     image: '/assets/hero/painting.png',
     // the painter stands right of centre in the banner
@@ -41,6 +42,7 @@ export const homeServices = [
     number: '2',
     title: 'Plumbing',
     description: 'Pipe fitting, leakage repair, tap fitting, drainage cleaning & more.',
+    startingPrice: '₹299',
     route: '/booking/plumbing',
     image: '/assets/hero/plumbing.png',
     focus: '70% center',
@@ -53,6 +55,7 @@ export const homeServices = [
     number: '3',
     title: 'Electrician',
     description: 'Wiring, light installation, fan, switchboard repair, short circuit & more.',
+    startingPrice: '₹249',
     route: '/booking/electrical',
     image: '/assets/hero/electrical.png',
     // the electrician sits nearer the middle than the other three
@@ -66,6 +69,7 @@ export const homeServices = [
     number: '4',
     title: 'Interior Work',
     description: 'Modular kitchen, wardrobe, TV unit, false ceiling, carpentry & more.',
+    startingPrice: '₹999',
     route: '/booking/interior-design',
     image: '/assets/hero/interior-design.png',
     focus: '75% center',
