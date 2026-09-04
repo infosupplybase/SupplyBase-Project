@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import Icon from '../ui/Icon';
 
 /**
- * The sticky "Book Now – ₹25" bar on mobile (spec §27).
+ * The sticky "Book Now" bar on mobile (spec §27).
  *
  * Most customers are on a phone, and the booking action should not be
  * something they have to scroll back up to find.
@@ -25,7 +25,7 @@ export default function BookBar() {
     <div className="book-bar">
       <span className="book-bar-text">
         <strong>Site visit + quotation</strong>
-        <span>₹25 only — no advance for the work</span>
+        <span>No advance for the work</span>
       </span>
       <Link to="/services" className="btn btn-primary btn-sm">
         <Icon name="calendar" size={15} />
