@@ -4,10 +4,12 @@ import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { to: '/', label: 'Overview', icon: 'layers', end: true },
+  { to: '/catalogue', label: 'Catalogue', icon: 'package' },
   { to: '/enquiries', label: 'Enquiries', icon: 'chat' },
   { to: '/bookings', label: 'Bookings', icon: 'calendar' },
   { to: '/projects', label: 'Projects', icon: 'building' },
   { to: '/payments', label: 'Payments', icon: 'rupee' },
+  { to: '/users', label: 'Staff', icon: 'users' },
 ];
 
 /**
