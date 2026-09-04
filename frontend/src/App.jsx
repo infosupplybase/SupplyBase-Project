@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Home from './pages/Home';
@@ -45,6 +45,18 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
+
+        {/* Old catalogue slugs, renamed when the backend categories were
+            aligned with the marketing site (see V9 migration). Kept as
+            redirects so any bookmarked or previously-shared link still
+            lands on the real page instead of "service not found". */}
+        <Route path="services/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
+        <Route path="services/electrician" element={<Navigate to="/services/electrical" replace />} />
+        <Route path="services/interior-work" element={<Navigate to="/services/interior-design" replace />} />
+        <Route path="booking/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
+        <Route path="booking/electrician" element={<Navigate to="/services/electrical" replace />} />
+        <Route path="booking/interior-work" element={<Navigate to="/services/interior-design" replace />} />
+
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}
         <Route path="booking/:slug" element={<ServiceBooking />} />
