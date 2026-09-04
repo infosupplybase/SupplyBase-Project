@@ -16,6 +16,7 @@ import in.supplybase.backend.catalogue.dto.CreateQuestionRequest;
 import in.supplybase.backend.catalogue.dto.QuestionResponse;
 import in.supplybase.backend.catalogue.dto.ServiceFormResponse;
 import in.supplybase.backend.catalogue.dto.UpdateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryActiveRequest;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.Money;
 
@@ -77,10 +78,13 @@ public class CatalogueService {
     @Transactional(readOnly = true)
     public ServiceFormResponse form(String slug) {
         ServiceCategory category = requireCategory(slug);
+        return new ServiceFormResponse(CategoryResponse.from(category), foldQuestions(category.getId()));
+    }
 
+    private List<QuestionResponse> foldQuestions(Long categoryId) {
         Map<String, QuestionBuilder> byKey = new LinkedHashMap<>();
         for (ServiceOption row : options
-                .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(category.getId())) {
+                .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(categoryId)) {
             QuestionBuilder builder = byKey.computeIfAbsent(
                     row.getStepNo() + ":" + row.getQuestionKey(),
                     key -> new QuestionBuilder(row));
@@ -90,12 +94,7 @@ public class CatalogueService {
                         row.getOptionHint(), row.getOptionGroup()));
             }
         }
-
-        List<QuestionResponse> questions = byKey.values().stream()
-                .map(QuestionBuilder::build)
-                .toList();
-
-        return new ServiceFormResponse(CategoryResponse.from(category), questions);
+        return byKey.values().stream().map(QuestionBuilder::build).toList();
     }
 
     /* ----------------------------------------------------------- staff */
@@ -169,6 +168,25 @@ public class CatalogueService {
         ServiceCategory category = requireAnyCategory(slug);
         category.setActive(false);
         categories.save(category);
+    }
+
+    /** Turns a category back on, or off — the admin screen's toggle. */
+    @Transactional
+    public CategoryResponse setCategoryActive(String slug, UpdateCategoryActiveRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+        category.setActive(request.active());
+        return CategoryResponse.from(categories.save(category));
+    }
+
+    /**
+     * Every active question for a category, admin or not — {@link #form}
+     * cannot be reused here because it 404s on an inactive category, and the
+     * admin screen needs to open exactly those to reactivate them.
+     */
+    @Transactional(readOnly = true)
+    public List<QuestionResponse> listQuestions(String slug) {
+        ServiceCategory category = requireAnyCategory(slug);
+        return foldQuestions(category.getId());
     }
 
     /**

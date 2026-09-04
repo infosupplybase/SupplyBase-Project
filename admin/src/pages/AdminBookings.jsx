@@ -63,6 +63,18 @@ export default function AdminBookings() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
+  const [professionals, setProfessionals] = useState([]);
+  const [assignId, setAssignId] = useState('');
+  const [assigning, setAssigning] = useState(false);
+  const [assignError, setAssignError] = useState('');
+
+  useEffect(() => {
+    api.admin.users
+      .list({ role: 'PROFESSIONAL', size: 100 })
+      .then((result) => setProfessionals(result.content))
+      .catch(() => {}); // the assign control just stays empty if this fails
+  }, []);
+
   const load = useCallback(() => {
     setLoading(true);
     setError('');
@@ -91,9 +103,31 @@ export default function AdminBookings() {
     setSelected(booking);
     setForm({ status: booking.status, adminNotes: booking.adminNotes || '' });
     setSaveError('');
+    setAssignId('');
+    setAssignError('');
   };
 
   const closeDrawer = () => setSelected(null);
+
+  const canAssign = selected && ['CONFIRMED', 'ASSIGNMENT_PENDING'].includes(selected.status);
+
+  const handleAssign = async (e) => {
+    e.preventDefault();
+    if (!assignId) return;
+    setAssigning(true);
+    setAssignError('');
+    try {
+      const updated = await api.admin.bookings.assign(selected.id, Number(assignId));
+      setSelected(updated);
+      setForm((f) => ({ ...f, status: updated.status }));
+      setAssignId('');
+      load();
+    } catch (err) {
+      setAssignError(friendlyError(err));
+    } finally {
+      setAssigning(false);
+    }
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -298,6 +332,14 @@ export default function AdminBookings() {
                   {formatDate(selected.preferredDate)} — {selected.preferredSlot || '—'}
                 </dd>
               </div>
+              <div>
+                <dt>Assigned professional</dt>
+                <dd>
+                  {selected.assignedProfessionalName
+                    ? `${selected.assignedProfessionalName} — ${selected.assignedProfessionalPhone}`
+                    : 'Not yet assigned'}
+                </dd>
+              </div>
               {selected.attachmentsPending && (
                 <div>
                   <dt>Attachments</dt>
@@ -305,6 +347,39 @@ export default function AdminBookings() {
                 </div>
               )}
             </dl>
+
+            {canAssign && (
+              <form onSubmit={handleAssign} style={{ marginBottom: 20 }}>
+                <div className="field" style={{ marginBottom: 10 }}>
+                  <label htmlFor="bk-assign">
+                    {selected.assignedProfessionalName ? 'Reassign to' : 'Assign a professional'}
+                  </label>
+                  <select
+                    id="bk-assign"
+                    value={assignId}
+                    onChange={(e) => setAssignId(e.target.value)}
+                  >
+                    <option value="">Select a professional…</option>
+                    {professionals.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.fullName} — {p.phone}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {assignError && (
+                  <div role="alert" className="alert alert-error" style={{ marginBottom: 10 }}>
+                    <Icon name="info" size={18} />
+                    <span>{assignError}</span>
+                  </div>
+                )}
+
+                <button type="submit" className="btn btn-outline btn-block" disabled={assigning || !assignId}>
+                  {assigning ? 'ASSIGNING…' : 'ASSIGN'}
+                </button>
+              </form>
+            )}
 
             <form onSubmit={handleSave}>
               <div className="field" style={{ marginBottom: 16 }}>

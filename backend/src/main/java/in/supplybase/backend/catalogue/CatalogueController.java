@@ -18,6 +18,8 @@ import in.supplybase.backend.catalogue.dto.CreateQuestionRequest;
 import in.supplybase.backend.catalogue.dto.QuestionResponse;
 import in.supplybase.backend.catalogue.dto.ServiceFormResponse;
 import in.supplybase.backend.catalogue.dto.UpdateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryActiveRequest;
+import org.springframework.web.bind.annotation.PatchMapping;
 import jakarta.validation.Valid;
 
 /** Public. The booking form cannot be drawn until this has answered. */
@@ -67,6 +69,19 @@ public class CatalogueController {
     public ResponseEntity<Void> deleteCategory(@PathVariable String slug) {
         service.deactivateCategory(slug);
         return ResponseEntity.noContent().build();
+    }
+
+    /** Turns a category back on, or off — same effect as delete when active=false. */
+    @PatchMapping("/api/admin/catalogue/categories/{slug}/active")
+    public CategoryResponse setCategoryActive(@PathVariable String slug,
+            @Valid @RequestBody UpdateCategoryActiveRequest request) {
+        return service.setCategoryActive(slug, request);
+    }
+
+    /** Every question on this category's form, for the admin editor. */
+    @GetMapping("/api/admin/catalogue/categories/{slug}/questions")
+    public List<QuestionResponse> listQuestions(@PathVariable String slug) {
+        return service.listQuestions(slug);
     }
 
     @PostMapping("/api/admin/catalogue/categories/{slug}/questions")

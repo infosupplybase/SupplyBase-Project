@@ -245,7 +245,7 @@ class BookingControllerTest {
                     "plumbing", "Plumbing", null, null, null, null, null, null, null,
                     LocalDate.now().plusDays(3), "10:00 AM",
                     "Asha Rao", "9820011223", null, null, null, null,
-                    false, null, null, null, null);
+                    false, null, null, null, null, null);
         }
     }
 

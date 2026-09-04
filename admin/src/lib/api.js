@@ -154,6 +154,44 @@ export const api = {
         request(`/api/admin/bookings${qs({ status, type, page, size })}`),
       forDate: (date) => request(`/api/admin/bookings/day${qs({ date })}`),
       update: (id, payload) => request(`/api/admin/bookings/${id}`, { method: 'PATCH', body: payload }),
+      assign: (id, professionalId) =>
+        request(`/api/admin/bookings/${id}/assign`, { method: 'PATCH', body: { professionalId } }),
+    },
+
+    users: {
+      list: ({ role, q, page = 0, size = 20 } = {}) =>
+        request(`/api/admin/users${qs({ role, q, page, size })}`),
+      updateRole: (id, role) =>
+        request(`/api/admin/users/${id}/role`, { method: 'PATCH', body: { role } }),
+      updateStatus: (id, enabled) =>
+        request(`/api/admin/users/${id}/status`, { method: 'PATCH', body: { enabled } }),
+    },
+
+    catalogue: {
+      categories: {
+        /** Plain array, not a Page — includes inactive categories too. */
+        list: () => request('/api/admin/catalogue/categories'),
+        create: (payload) => request('/api/admin/catalogue/categories', { method: 'POST', body: payload }),
+        update: (slug, payload) =>
+          request(`/api/admin/catalogue/categories/${slug}`, { method: 'PUT', body: payload }),
+        setActive: (slug, active) =>
+          request(`/api/admin/catalogue/categories/${slug}/active`, { method: 'PATCH', body: { active } }),
+      },
+      questions: {
+        /** Plain array, one entry per question (options nested inside). */
+        list: (slug) => request(`/api/admin/catalogue/categories/${slug}/questions`),
+        create: (slug, payload) =>
+          request(`/api/admin/catalogue/categories/${slug}/questions`, { method: 'POST', body: payload }),
+        /** Replaces the whole question — resend the full option list, not a diff. */
+        update: (slug, questionKey, payload) =>
+          request(`/api/admin/catalogue/categories/${slug}/questions/${questionKey}`, {
+            method: 'PUT',
+            body: payload,
+          }),
+        /** Soft-deletes the question. Recreate via `create` if it's needed again. */
+        remove: (slug, questionKey) =>
+          request(`/api/admin/catalogue/categories/${slug}/questions/${questionKey}`, { method: 'DELETE' }),
+      },
     },
 
     projects: {

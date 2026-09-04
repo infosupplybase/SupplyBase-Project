@@ -18,7 +18,7 @@ public record BookingResponse(
         String name, String phone, String whatsapp, String email,
         String address, String location,
         boolean attachmentsPending, String adminNotes, Instant createdAt,
-        String assignedProfessionalName, String assignedProfessionalPhone) {
+        Long assignedProfessionalId, String assignedProfessionalName, String assignedProfessionalPhone) {
 
     public static BookingResponse from(Booking b) {
         return new BookingResponse(
@@ -32,6 +32,7 @@ public record BookingResponse(
                 b.getName(), b.getPhone(), b.getWhatsapp(), b.getEmail(),
                 b.getAddress(), b.getLocation(),
                 b.isAttachmentsPending(), b.getAdminNotes(), b.getCreatedAt(),
+                b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getId(),
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getFullName(),
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getPhone());
     }

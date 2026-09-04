@@ -7,12 +7,14 @@ import in.supplybase.backend.common.Money;
 
 public record CategoryResponse(
         String slug, String name, String tagline, String description,
-        String icon, String heroImage, BigDecimal visitFee, String visitFeeDisplay) {
+        String icon, String heroImage, BigDecimal visitFee, String visitFeeDisplay,
+        int sortOrder, boolean active) {
 
     public static CategoryResponse from(ServiceCategory c) {
         return new CategoryResponse(c.getSlug(), c.getName(), c.getTagline(),
                 c.getDescription(), c.getIcon(), c.getHeroImage(),
                 Money.paiseToRupees(c.getVisitFeePaise()),
-                "₹" + Money.formatRupees(c.getVisitFeePaise()));
+                "₹" + Money.formatRupees(c.getVisitFeePaise()),
+                c.getSortOrder(), c.isActive());
     }
 }

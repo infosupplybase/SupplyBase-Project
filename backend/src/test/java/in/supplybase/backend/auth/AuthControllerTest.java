@@ -86,7 +86,7 @@ class AuthControllerTest {
     }
 
     private UserResponse sampleUser() {
-        return new UserResponse(1L, "Jane Doe", "jane@example.com", "9820011223", Role.CUSTOMER, null, true);
+        return new UserResponse(1L, "Jane Doe", "jane@example.com", "9820011223", Role.CUSTOMER, null, true, true);
     }
 
     private AuthResponse sampleAuthResponse() {
