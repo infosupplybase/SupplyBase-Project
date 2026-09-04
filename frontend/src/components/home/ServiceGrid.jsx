@@ -39,7 +39,6 @@ export default function ServiceGrid() {
             <h3>{service.name}</h3>
             <p>{service.description}</p>
             <div className="svc-card-foot">
-              <span className="svc-fee">{service.visitFeeDisplay.replace('.00', '')} site visit</span>
               <Link to={`/services/${service.slug}`} className="btn btn-primary btn-sm">
                 BOOK NOW
                 <Icon name="arrow-right" size={15} />
