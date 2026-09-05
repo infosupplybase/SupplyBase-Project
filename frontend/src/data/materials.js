@@ -33,9 +33,9 @@ export const materialGroups = [
     title: 'Waterproofing Materials',
     icon: 'droplet',
     brands: [
-  { name: 'Asian Paints', logo: '/assets/materials/dr-fixit.png' },
-  { name: 'Berger Paints', logo: '/assets/materials/sika.webp' },
-  { name: 'Nerolac', logo: '/assets/materials/berger-paints.jpg' },
+  { name: 'Dr. Fixit', logo: '/assets/materials/dr-fixit.png' },
+  { name: 'Sika', logo: '/assets/materials/sika.webp' },
+  { name: 'Berger', logo: '/assets/materials/berger-paints.jpg' },
 ],
   },
   {
