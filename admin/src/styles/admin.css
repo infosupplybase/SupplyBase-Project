@@ -322,6 +322,7 @@ input.admin-filter {
 
 .admin-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -622,6 +623,41 @@ input.admin-filter {
   }
 
   .admin-sidebar-foot {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    padding-top: 0;
+    border-top: 0;
+    margin-left: auto;
+  }
+
+  /* Name/avatar make way for the nav on a narrow bar — sign out stays
+     reachable, which just hiding this whole block used to break. */
+  .admin-user {
     display: none;
+  }
+
+  .admin-sidebar-foot .btn {
+    white-space: nowrap;
+  }
+}
+
+/* Filters/search/tabs stack full-width rather than crowding into a row
+   that's already too narrow for them by this point. */
+@media (max-width: 600px) {
+  .admin-toolbar > * {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-sidebar {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .admin-nav-link {
+    padding: 10px 10px;
   }
 }
