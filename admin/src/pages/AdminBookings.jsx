@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Icon from '../components/ui/Icon';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
-import Drawer from '../components/admin/Drawer';
+import Modal from '../components/admin/Modal';
 import api, { friendlyError } from '../lib/api';
 
 const STATUSES = [
@@ -278,150 +278,196 @@ export default function AdminBookings() {
         <Pagination page={data.number} totalPages={data.totalPages} onChange={setPage} />
       )}
 
-      <Drawer
+      <Modal
         open={Boolean(selected)}
         onClose={closeDrawer}
         title={selected ? `Booking ${selected.bookingNumber}` : ''}
       >
         {selected && (
           <>
-            <dl className="admin-detail-list">
-              <div>
-                <dt>Customer</dt>
-                <dd>{selected.name}</dd>
+            <div className="admin-modal-top">
+              <StatusBadge tone={toneFor(selected.status)}>{label(selected.status)}</StatusBadge>
+              <span className="admin-table-sub">
+                {label(selected.bookingType)} booking
+              </span>
+            </div>
+
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="user" size={15} />
+                Customer
+              </h3>
+              <div className="form-grid">
+                <div className="field">
+                  <label>Name</label>
+                  <div className="admin-readonly">{selected.name}</div>
+                </div>
+                <div className="field">
+                  <label>Phone</label>
+                  <div className="admin-readonly">{selected.phone}</div>
+                </div>
+                <div className="field">
+                  <label>WhatsApp</label>
+                  <div className="admin-readonly">{selected.whatsapp || '—'}</div>
+                </div>
+                <div className="field">
+                  <label>Email</label>
+                  <div className="admin-readonly">{selected.email || '—'}</div>
+                </div>
               </div>
-              <div>
-                <dt>Phone</dt>
-                <dd>{selected.phone}</dd>
+            </section>
+
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="map-pin" size={15} />
+                Property &amp; Job
+              </h3>
+              <div className="field" style={{ marginBottom: 16 }}>
+                <label>Address</label>
+                <div className="admin-readonly">{selected.address || selected.location || '—'}</div>
               </div>
-              <div>
-                <dt>WhatsApp</dt>
-                <dd>{selected.whatsapp || '—'}</dd>
+              <div className="form-grid">
+                <div className="field">
+                  <label>Property type</label>
+                  <div className="admin-readonly">{selected.propertyType || '—'}</div>
+                </div>
+                <div className="field">
+                  <label>Area</label>
+                  <div className="admin-readonly">
+                    {selected.areaSqft ? `${selected.areaSqft} sq ft` : '—'}
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Budget</label>
+                  <div className="admin-readonly">{selected.budgetRange || '—'}</div>
+                </div>
+                <div className="field">
+                  <label>Materials</label>
+                  <div className="admin-readonly">{label(selected.materialSupplier) || '—'}</div>
+                </div>
               </div>
-              <div>
-                <dt>Email</dt>
-                <dd>{selected.email || '—'}</dd>
+              <div className="field" style={{ marginTop: 16 }}>
+                <label>Work</label>
+                <div className="admin-readonly">
+                  {selected.workDetail || selected.workNature || selected.workOption || '—'}
+                </div>
               </div>
-              <div>
-                <dt>Address</dt>
-                <dd>{selected.address || selected.location || '—'}</dd>
-              </div>
-              <div>
-                <dt>Property type</dt>
-                <dd>{selected.propertyType || '—'}</dd>
-              </div>
-              <div>
-                <dt>Area</dt>
-                <dd>{selected.areaSqft ? `${selected.areaSqft} sq ft` : '—'}</dd>
-              </div>
-              <div>
-                <dt>Work</dt>
-                <dd>{selected.workDetail || selected.workNature || selected.workOption || '—'}</dd>
-              </div>
-              <div>
-                <dt>Materials</dt>
-                <dd>{label(selected.materialSupplier)}</dd>
-              </div>
-              <div>
-                <dt>Budget</dt>
-                <dd>{selected.budgetRange || '—'}</dd>
-              </div>
-              <div>
-                <dt>Preferred visit</dt>
-                <dd>
+              {selected.attachmentsPending && (
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label>Attachments</label>
+                  <div className="admin-readonly">Customer said files would follow separately.</div>
+                </div>
+              )}
+            </section>
+
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="calendar" size={15} />
+                Schedule
+              </h3>
+              <div className="field">
+                <label>Preferred visit</label>
+                <div className="admin-readonly">
                   {formatDate(selected.preferredDate)} — {selected.preferredSlot || '—'}
-                </dd>
+                </div>
               </div>
-              <div>
-                <dt>Assigned professional</dt>
-                <dd>
+            </section>
+
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="users" size={15} />
+                Assignment
+              </h3>
+              <div className="field" style={{ marginBottom: canAssign ? 16 : 0 }}>
+                <label>Assigned professional</label>
+                <div className="admin-readonly">
                   {selected.assignedProfessionalName
                     ? `${selected.assignedProfessionalName} — ${selected.assignedProfessionalPhone}`
                     : 'Not yet assigned'}
-                </dd>
-              </div>
-              {selected.attachmentsPending && (
-                <div>
-                  <dt>Attachments</dt>
-                  <dd>Customer said files would follow separately.</dd>
                 </div>
-              )}
-            </dl>
+              </div>
 
-            {canAssign && (
-              <form onSubmit={handleAssign} style={{ marginBottom: 20 }}>
-                <div className="field" style={{ marginBottom: 10 }}>
-                  <label htmlFor="bk-assign">
-                    {selected.assignedProfessionalName ? 'Reassign to' : 'Assign a professional'}
-                  </label>
+              {canAssign && (
+                <form onSubmit={handleAssign}>
+                  <div className="field" style={{ marginBottom: 10 }}>
+                    <label htmlFor="bk-assign">
+                      {selected.assignedProfessionalName ? 'Reassign to' : 'Assign a professional'}
+                    </label>
+                    <select
+                      id="bk-assign"
+                      value={assignId}
+                      onChange={(e) => setAssignId(e.target.value)}
+                    >
+                      <option value="">Select a professional…</option>
+                      {professionals.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.fullName} — {p.phone}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {assignError && (
+                    <div role="alert" className="alert alert-error" style={{ marginBottom: 10 }}>
+                      <Icon name="info" size={18} />
+                      <span>{assignError}</span>
+                    </div>
+                  )}
+
+                  <button type="submit" className="btn btn-outline" disabled={assigning || !assignId}>
+                    {assigning ? 'ASSIGNING…' : 'ASSIGN'}
+                  </button>
+                </form>
+              )}
+            </section>
+
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="check-circle" size={15} />
+                Status &amp; Notes
+              </h3>
+              <form onSubmit={handleSave}>
+                <div className="field" style={{ marginBottom: 16 }}>
+                  <label htmlFor="bk-status">Status</label>
                   <select
-                    id="bk-assign"
-                    value={assignId}
-                    onChange={(e) => setAssignId(e.target.value)}
+                    id="bk-status"
+                    value={form.status}
+                    onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
                   >
-                    <option value="">Select a professional…</option>
-                    {professionals.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.fullName} — {p.phone}
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {label(s)}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {assignError && (
-                  <div role="alert" className="alert alert-error" style={{ marginBottom: 10 }}>
+                <div className="field" style={{ marginBottom: 16 }}>
+                  <label htmlFor="bk-notes">Internal notes</label>
+                  <textarea
+                    id="bk-notes"
+                    rows={4}
+                    value={form.adminNotes}
+                    onChange={(e) => setForm((f) => ({ ...f, adminNotes: e.target.value }))}
+                    placeholder="Not visible to the customer"
+                  />
+                </div>
+
+                {saveError && (
+                  <div role="alert" className="alert alert-error" style={{ marginBottom: 16 }}>
                     <Icon name="info" size={18} />
-                    <span>{assignError}</span>
+                    <span>{saveError}</span>
                   </div>
                 )}
 
-                <button type="submit" className="btn btn-outline btn-block" disabled={assigning || !assignId}>
-                  {assigning ? 'ASSIGNING…' : 'ASSIGN'}
+                <button type="submit" className="btn btn-dark btn-block" disabled={saving}>
+                  {saving ? 'SAVING…' : 'SAVE CHANGES'}
                 </button>
               </form>
-            )}
-
-            <form onSubmit={handleSave}>
-              <div className="field" style={{ marginBottom: 16 }}>
-                <label htmlFor="bk-status">Status</label>
-                <select
-                  id="bk-status"
-                  value={form.status}
-                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                >
-                  {STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {label(s)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="field" style={{ marginBottom: 16 }}>
-                <label htmlFor="bk-notes">Internal notes</label>
-                <textarea
-                  id="bk-notes"
-                  rows={4}
-                  value={form.adminNotes}
-                  onChange={(e) => setForm((f) => ({ ...f, adminNotes: e.target.value }))}
-                  placeholder="Not visible to the customer"
-                />
-              </div>
-
-              {saveError && (
-                <div role="alert" className="alert alert-error">
-                  <Icon name="info" size={18} />
-                  <span>{saveError}</span>
-                </div>
-              )}
-
-              <button type="submit" className="btn btn-dark btn-block" disabled={saving}>
-                {saving ? 'SAVING…' : 'SAVE CHANGES'}
-              </button>
-            </form>
+            </section>
           </>
         )}
-      </Drawer>
+      </Modal>
     </div>
   );
 }

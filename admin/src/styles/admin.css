@@ -491,6 +491,148 @@ input.admin-filter {
   padding: var(--space-5);
 }
 
+/* ---------------------------------------------------------------- modal */
+
+.admin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 5, 0.55);
+  z-index: var(--z-drawer);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  overflow-y: auto;
+}
+
+.admin-modal {
+  width: min(720px, 100%);
+  max-height: min(88vh, 900px);
+  margin: auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow-y: auto;
+  animation: admin-modal-in var(--t-slow) var(--ease);
+}
+
+@keyframes admin-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.admin-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 1;
+}
+
+.admin-modal-head h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  margin: 0;
+}
+
+.admin-modal-close {
+  display: flex;
+  background: none;
+  border: 0;
+  color: var(--ink-muted);
+  padding: 6px;
+}
+
+.admin-modal-close:hover {
+  color: var(--ink);
+}
+
+.admin-modal-body {
+  padding: var(--space-5);
+}
+
+@media (max-width: 640px) {
+  .admin-modal-backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .admin-modal {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    animation-name: admin-modal-in-mobile;
+  }
+
+  @keyframes admin-modal-in-mobile {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
+/* -------------------------------------------------------- form sections */
+
+.admin-form-section {
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-form-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.admin-form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gold-deep);
+  margin: 0 0 var(--space-4);
+}
+
+.admin-modal-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-readonly {
+  padding: 10px 14px;
+  min-height: 20px;
+  background: var(--grey-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 /* ---------------------------------------------------------------- detail */
 
 .admin-detail-list {
