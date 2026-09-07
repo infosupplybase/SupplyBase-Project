@@ -171,7 +171,15 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
 
   if (receipt) {
     return (
-      <div className="booking-done">
+      <div
+  className="
+    booking-done
+    !bg-white/45
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+  "
+>
         <div className="booking-done-icon">
           <Icon name="check-circle" size={40} strokeWidth={1.5} />
         </div>
@@ -223,7 +231,13 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
             type="button"
             role="tab"
             aria-selected={lane === key}
-            className={`booking-lane ${lane === key ? 'active' : ''}`}
+            className={`
+  booking-lane
+  backdrop-blur-lg
+  !border-white/35
+  !shadow-[0_4px_16px_rgba(0,0,0,0.06)]
+  ${lane === key ? 'active' : '!bg-white/30'}
+`}
             onClick={() => {
               if (key !== lane) {
                 onLaneChange(key);
@@ -255,7 +269,15 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
       <form onSubmit={handleSubmit} noValidate>
         {/* ---------------------------------------------- 1. service */}
         {step === 0 && (
-          <fieldset className="booking-panel">
+          <fieldset
+  className="
+    booking-panel
+    !bg-white/15
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+  "
+>
             <legend>Which service do you need?</legend>
             <div className="choice-grid">
               {services.map((service) => (
@@ -275,7 +297,15 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
 
         {/* --------------------------------------------- 2. property */}
         {step === 1 && (
-          <fieldset className="booking-panel">
+          <fieldset
+  className="
+    booking-panel
+    !bg-white/15
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+  "
+>
             <legend>What kind of property is it?</legend>
             <div className="choice-grid">
               {propertyTypes.map((type) => (
@@ -295,7 +325,15 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
 
         {/* ------------------------------------------------- 3. work */}
         {step === 2 && (
-          <fieldset className="booking-panel">
+          <fieldset
+  className="
+    booking-panel
+    !bg-white/15
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+  "
+>
             <legend>Tell us about the work</legend>
 
             <div className="form-grid">
@@ -415,7 +453,15 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
 
         {/* ------------------------------------------ 4. appointment */}
         {step === 3 && (
-          <fieldset className="booking-panel">
+          <fieldset
+  className="
+    booking-panel
+    !bg-white/15
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+  "
+>
             <legend>When suits you?</legend>
             <p className="field-hint" style={{ marginBottom: 16 }}>
               This is a preference, not a fixed appointment — we will confirm the exact time with
@@ -453,7 +499,15 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
 
         {/* --------------------------------------------- 5. contact */}
         {step === 4 && (
-          <fieldset className="booking-panel">
+          <fieldset
+  className="
+    booking-panel
+    !bg-white/15
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+  "
+>
             <legend>How do we reach you?</legend>
             <div className="form-grid">
               <div className={`field ${errors.name ? 'error' : ''}`}>

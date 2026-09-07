@@ -251,7 +251,15 @@ export default function ServiceBooking() {
     return (
       <div className="wizard-shell">
         <div className="wizard-container">
-          <div className="wizard-card">
+          <div
+  className="
+    wizard-card
+    !bg-white/45
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_10px_35px_rgba(0,0,0,0.10)]
+  "
+>
             <div role="alert" className="alert alert-error">
               <Icon name="info" size={18} />
               <span>{loadError || 'That service could not be found.'}</span>
@@ -317,7 +325,15 @@ export default function ServiceBooking() {
         </ol>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="wizard-card">
+          <div
+  className="
+    wizard-card
+    !bg-white/45
+    backdrop-blur-[20px]
+    !border-white/35
+    !shadow-[0_10px_35px_rgba(0,0,0,0.10)]
+  "
+>
             {/* ------------------------- 1-3. catalogue questions */}
             {stage < SCHEDULE &&
               stageQuestions[stage].map((question) => (

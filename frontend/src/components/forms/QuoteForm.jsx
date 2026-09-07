@@ -101,7 +101,15 @@ export default function QuoteForm({ defaultService = '', compact = false, source
 
   if (sent) {
     return (
-      <div className="form-card">
+      <div
+  className="
+    form-card
+    !bg-white/25
+    backdrop-blur-xl
+    !border-white/20
+    !shadow-[0_10px_35px_rgba(0,0,0,0.10)]
+  "
+>
         <div className="form-success">
           <div className="form-success-icon">
             <Icon name="check" size={34} strokeWidth={2} />
@@ -128,7 +136,17 @@ export default function QuoteForm({ defaultService = '', compact = false, source
   }
 
   return (
-    <form className="form-card" onSubmit={handleSubmit('whatsapp')} noValidate>
+    <form
+  className="
+    form-card
+    !bg-white/10
+    backdrop-blur-xl
+    !border-white/40
+    !shadow-[0_10px_35px_rgba(0,0,0,0.10)]
+  "
+  onSubmit={handleSubmit('whatsapp')}
+  noValidate
+>
       <div className="form-grid">
         <div className={`field ${errors.name ? 'error' : ''}`}>
           <label htmlFor="q-name">

@@ -59,7 +59,16 @@ export default function Services() {
           <div className="svc-grid">
             {services.map((service, i) => (
               <Reveal key={service.slug} delay={i * 70}>
-                <article className="svc-card" data-service={service.slug}>
+                <article
+  className="
+    svc-card
+    !bg-black/5
+    backdrop-blur-xl
+    !border-white/40
+    !shadow-[0_8px_28px_rgba(0,0,0,0.10)]
+  "
+  data-service={service.slug}
+>
                   <div className="svc-card-icon">
                     <Icon name={service.icon || 'tools'} size={30} strokeWidth={1.4} />
                   </div>

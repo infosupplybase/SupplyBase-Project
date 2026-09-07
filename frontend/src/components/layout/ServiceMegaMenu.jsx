@@ -6,11 +6,31 @@ import { getServicesByGroup } from '../../data/services';
  * ServiceMegaMenu — the full services panel that drops from the header.
  * Groups come straight from services.js, so adding a service adds it here.
  */
-export default function ServiceMegaMenu({ open, onNavigate }) {
+export default function ServiceMegaMenu({ open, scrolled, onNavigate }) {
   const groups = getServicesByGroup();
 
   return (
-    <div className={`mega ${open ? 'open' : ''}`} role="menu" aria-hidden={!open}>
+    <div
+  className={`
+    mega
+    !fixed
+    !z-[999]
+    !bg-black/55
+    backdrop-blur-[20px]
+    !border-b-white/10
+    !shadow-[0_24px_50px_rgba(0,0,0,0.30)]
+
+    ${
+      scrolled
+        ? '!top-[calc(var(--header-h)+16px)] !left-6 !right-6 !rounded-xl'
+        : '!top-[var(--header-h)] !left-0 !right-0 !rounded-none'
+    }
+
+    ${open ? 'open' : ''}
+  `}
+  role="menu"
+  aria-hidden={!open}
+>
       <div className="container">
         <div className="mega-inner">
           {groups.map(({ group, items }) => (
