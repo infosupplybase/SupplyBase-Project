@@ -5,6 +5,8 @@
    reusable controls, then the page sections, then the responsive rules that
    cut across all of them.
    ========================================================================= */
+/* Tailwind css */
+@import "tailwindcss";
 
 /* --- foundation ------------------------------------------------------- */
 @import './variables.css';
@@ -13,6 +15,7 @@
 /* --- reusable controls ------------------------------------------------ */
 @import './buttons.css';
 @import './forms.css';
+@import './dark-mode.css';
 
 /* --- page sections ---------------------------------------------------- */
 @import './header.css';

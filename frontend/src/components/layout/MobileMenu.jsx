@@ -16,7 +16,18 @@ export default function MobileMenu({ open, onClose }) {
   return (
     <div className={`mobile-menu ${open ? 'open' : ''}`}>
       <div className="mobile-backdrop" onClick={onClose} />
-      <div className="mobile-panel" role="dialog" aria-modal="true" aria-label="Menu">
+      <div
+  className="
+    mobile-panel
+    !bg-black/35
+    backdrop-blur-[10px]
+    !border-l-white/15
+    !shadow-[-12px_0_35px_rgba(0,0,0,0.25)]
+  "
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu"
+>
         <div className="mobile-head">
           <Link to="/" onClick={onClose}>
             <img src="/assets/brand/logo.png" alt={company.name} />

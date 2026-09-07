@@ -49,7 +49,15 @@ export default function WhySupplybase() {
   return (
     <section className="why" aria-labelledby="why-heading">
       <div className="why-inner">
-        <Reveal className="why-copy">
+        <Reveal
+  className="
+    why-copy
+    !bg-white/55
+    backdrop-blur-xl
+    !border !border-white/40
+    !shadow-[0_10px_35px_rgba(0,0,0,0.10)] px-6 py-5
+  "
+>
           <span className="why-eyebrow">WHY SUPPLYBASE PROJECTS</span>
           <span className="why-rule" aria-hidden="true" />
 
