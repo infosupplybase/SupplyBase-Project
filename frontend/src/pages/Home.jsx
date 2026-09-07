@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import HeroSlider from '../components/HeroSlider/HeroSlider';
 import ServiceSection from '../components/services/ServiceSection';
-import WhySupplybase from '../components/why/WhySupplybase';
 import MaterialsSection from '../components/materials/MaterialsSection';
 import StatsSection from '../components/home/StatsSection';
 import ProjectGrid from '../components/projects/ProjectGrid';
@@ -20,8 +19,6 @@ export default function Home() {
       <HeroSlider />
 
       <ServiceSection />
-
-      <WhySupplybase />
 
       <MaterialsSection />
 
