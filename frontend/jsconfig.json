@@ -7,7 +7,7 @@
     "jsxImportSource": "react",
     "allowJs": true,
     "checkJs": false,
-    "baseUrl": "."
+    // "baseUrl": "."
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "preview"]
