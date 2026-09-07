@@ -12,7 +12,7 @@ import './ServiceSection.css';
  */
 export default function ServiceSection() {
   return (
-    <section className="sc-section" aria-labelledby="services-heading">
+    <section className="sc-section bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.10),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(0,0,0,0.08),transparent_28%),linear-gradient(to_bottom,#f8f8f8,#eeeeee)]" aria-labelledby="services-heading">
       <div className="sc-section-inner">
         <div className="sc-head">
           <span className="sc-eyebrow">Our Services</span>

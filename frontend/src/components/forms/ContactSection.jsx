@@ -9,7 +9,13 @@ import { telHref, mailtoHref, whatsappHref } from '../../lib/contact';
 export default function ContactSection() {
   return (
     <div className="contact-cards">
-      <a className="contact-card" href={telHref}>
+      <a className="
+  contact-card
+  !bg-white/15
+  backdrop-blur-xl
+  !border-white/25
+  !shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+" href={telHref}>
         <span className="contact-card-icon">
           <Icon name="phone" size={22} />
         </span>
@@ -19,7 +25,13 @@ export default function ContactSection() {
         </span>
       </a>
 
-      <a className="contact-card" href={whatsappHref()} target="_blank" rel="noopener noreferrer">
+      <a className="
+  contact-card
+  !bg-white/15
+  backdrop-blur-xl
+  !border-white/25
+  !shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+" href={whatsappHref()} target="_blank" rel="noopener noreferrer">
         <span className="contact-card-icon">
           <Icon name="whatsapp" size={22} />
         </span>
@@ -29,7 +41,13 @@ export default function ContactSection() {
         </span>
       </a>
 
-      <a className="contact-card" href={mailtoHref}>
+      <a className="
+  contact-card
+  !bg-white/15
+  backdrop-blur-xl
+  !border-white/25
+  !shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+" href={mailtoHref}>
         <span className="contact-card-icon">
           <Icon name="mail" size={22} />
         </span>
@@ -39,7 +57,13 @@ export default function ContactSection() {
         </span>
       </a>
 
-      <div className="contact-card">
+      <div className="
+  contact-card
+  !bg-white/15
+  backdrop-blur-xl
+  !border-white/25
+  !shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+">
         <span className="contact-card-icon">
           <Icon name="map-pin" size={22} />
         </span>
@@ -54,7 +78,13 @@ export default function ContactSection() {
         </span>
       </div>
 
-      <div className="contact-card">
+      <div className="
+  contact-card
+  !bg-white/15
+  backdrop-blur-xl
+  !border-white/25
+  !shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+">
         <span className="contact-card-icon">
           <Icon name="clock" size={22} />
         </span>

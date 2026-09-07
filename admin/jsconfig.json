@@ -6,8 +6,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "allowJs": true,
-    "checkJs": false,
-    "baseUrl": "."
+    // "checkJs": false,
+    // "baseUrl": "."
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "preview"]

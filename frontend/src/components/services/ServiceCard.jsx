@@ -17,7 +17,15 @@ export default function ServiceCard({ service }) {
   } = service;
 
   return (
-    <article className="sc-card">
+    <article
+  className="
+    sc-card
+    !bg-white/60
+backdrop-blur-xl
+!border-white/40
+!shadow-[0_8px_30px_rgba(0,0,0,0.10)]
+  "
+>
       <div className="sc-top">
         <div className="sc-media">
           <img

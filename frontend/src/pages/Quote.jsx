@@ -32,7 +32,16 @@ export default function Quote() {
             <QuoteForm defaultService={preselected ? preselected.name : ''} />
 
             <Reveal>
-              <div className="sidebar-card" style={{ marginBottom: 20 }}>
+              <div
+  className="
+    sidebar-card
+    !bg-white/15
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_8px_28px_rgba(0,0,0,0.08)]
+  "
+  style={{ marginBottom: 20 }}
+>
                 <h4>What happens next</h4>
                 <div style={{ display: 'grid', gap: 16, marginTop: 4 }}>
                   {processSteps.map((step) => (

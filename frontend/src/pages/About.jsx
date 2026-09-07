@@ -89,7 +89,17 @@ export default function About() {
           />
           <div className="value-grid">
             {pillars.map((pillar, i) => (
-              <Reveal key={pillar.title} className="value-card" delay={i * 90}>
+              <Reveal
+  key={pillar.title}
+  className="
+    value-card
+    !bg-black/10
+    backdrop-blur-xl
+    !border-white/25
+    !shadow-[0_8px_28px_rgba(0,0,0,0.08)]
+  "
+  delay={i * 90}
+>
                 <div className="value-icon">
                   <Icon name={pillar.icon} size={26} strokeWidth={1.4} />
                 </div>
@@ -112,7 +122,17 @@ export default function About() {
           />
           <div className="value-grid">
             {whyUsPoints.map((point, i) => (
-              <Reveal key={point.title} className="value-card" delay={(i % 3) * 80}>
+              <Reveal
+  key={point.title}
+  className="
+    value-card
+    !bg-black/10
+    backdrop-blur-xl
+    !border-white/25
+    !shadow-[0_8px_28px_rgba(0,0,0,0.08)]
+  "
+  delay={(i % 3) * 80}
+>
                 <div className="value-icon">
                   <Icon name={point.icon} size={26} strokeWidth={1.4} />
                 </div>

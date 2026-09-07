@@ -36,7 +36,14 @@ export default function WhySupplybaseStats({ showHeading = true }) {
             <Reveal
               as="li"
               key={stat.id ?? stat.label}
-              className={`wss-card${stat.featured ? ' is-featured' : ''}`}
+              className={`
+  wss-card
+  !bg-black/5
+  backdrop-blur-xl
+  !border !border-white/25
+  !shadow-[0_10px_30px_rgba(0,0,0,0.12)]
+  ${stat.featured ? 'is-featured' : ''}
+`}
               delay={i * 90}
             >
               <span className="wss-icon">

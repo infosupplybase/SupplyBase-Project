@@ -5,6 +5,7 @@ import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
 import { mainNav, company } from '../../data/siteConfig';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 /**
  * Navbar — sticky header with the services mega menu and mobile drawer.
@@ -15,6 +16,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -51,11 +53,27 @@ export default function Navbar() {
 
   return (
     <>
-      <header className={`header ${scrolled ? 'scrolled' : ''}`} onMouseLeave={() => setMegaOpen(false)}>
+      <div onMouseLeave={() => setMegaOpen(false)}>
+      <header
+  className={`
+    header
+    !bg-black/55
+    backdrop-blur-[20px]
+    border border-white/10
+    shadow-[0_8px_24px_rgba(0,0,0,0.18)]
+    transition-all duration-300 ease-out
+
+    ${
+      scrolled
+        ? 'scrolled !top-4 !left-6 !right-6 !w-auto !rounded-xl'
+        : '!top-0 !left-0 !right-0 !w-full !rounded-none'
+    }
+  `}
+>
         <div className="container">
           <div className="header-inner">
             <Link to="/" className="brand" aria-label={`${company.name} — home`}>
-              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
+              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} className="brightness-125 contrast-125 drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]"/>
             </Link>
 
             <nav className="nav" aria-label="Main">
@@ -94,6 +112,29 @@ export default function Navbar() {
             </nav>
 
             <div className="header-actions">
+              <button
+  type="button"
+  onClick={toggleTheme}
+  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+  title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+  className="
+    h-10 w-10
+    flex items-center justify-center
+    rounded-full
+    text-white
+    bg-white/10
+    hover:bg-white/20
+    transition-colors
+    shrink-0
+  "
+>
+  <Icon
+    name={isDark ? 'sun' : 'moon'}
+    size={20}
+    strokeWidth={2}
+    className='!text-white'
+  />
+</button>
               <Link to={user ? '/dashboard' : '/login'} className="login-btn">
                 <Icon name="user" size={17} />
                 {user ? 'MY ACCOUNT' : 'LOGIN'}
@@ -110,8 +151,13 @@ export default function Navbar() {
           </div>
         </div>
 
-        <ServiceMegaMenu open={megaOpen} onNavigate={() => setMegaOpen(false)} />
       </header>
+      <ServiceMegaMenu
+  open={megaOpen}
+  scrolled={scrolled}
+  onNavigate={() => setMegaOpen(false)}
+/>
+</div>
 
       <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>
