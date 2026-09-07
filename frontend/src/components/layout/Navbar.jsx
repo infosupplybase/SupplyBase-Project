@@ -5,7 +5,6 @@ import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
 import { mainNav, company } from '../../data/siteConfig';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 
 /**
  * Navbar — sticky header with the services mega menu and mobile drawer.
@@ -16,7 +15,6 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -112,29 +110,6 @@ export default function Navbar() {
             </nav>
 
             <div className="header-actions">
-              <button
-  type="button"
-  onClick={toggleTheme}
-  aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-  title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-  className="
-    h-10 w-10
-    flex items-center justify-center
-    rounded-full
-    text-white
-    bg-white/10
-    hover:bg-white/20
-    transition-colors
-    shrink-0
-  "
->
-  <Icon
-    name={isDark ? 'sun' : 'moon'}
-    size={20}
-    strokeWidth={2}
-    className='!text-white'
-  />
-</button>
               <Link to={user ? '/dashboard' : '/login'} className="login-btn">
                 <Icon name="user" size={17} />
                 {user ? 'MY ACCOUNT' : 'LOGIN'}
