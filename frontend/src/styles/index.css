@@ -15,7 +15,6 @@
 /* --- reusable controls ------------------------------------------------ */
 @import './buttons.css';
 @import './forms.css';
-@import './dark-mode.css';
 
 /* --- page sections ---------------------------------------------------- */
 @import './header.css';
