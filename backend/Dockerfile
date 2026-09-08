@@ -14,6 +14,16 @@ WORKDIR /app
 
 RUN useradd --system --uid 10001 supplybase
 COPY --from=build /workspace/target/backend-0.0.1-SNAPSHOT.jar /app/supplybase-api.jar
+# /data/uploads is where the VPS compose file mounts the uploads volume
+# (STORAGE_ROOT_DIR=/data/uploads there); ./uploads under /app is what a
+# platform without that mount (Render/Railway) falls back to. Docker copies
+# a fresh named volume's ownership from whatever already exists at the mount
+# point in the image on first init, so this has to be created and owned
+# here — chowning only the jar left both of these root-owned, which the
+# non-root user below can start against fine (nothing tries to write on
+# boot) but fails the moment a real upload calls FileStorageService.store().
+RUN mkdir -p /app/uploads /data/uploads \
+    && chown -R supplybase:supplybase /app /data
 RUN chown supplybase:supplybase /app/supplybase-api.jar
 
 USER supplybase
