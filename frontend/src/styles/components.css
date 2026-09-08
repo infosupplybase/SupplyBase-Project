@@ -958,6 +958,12 @@
   .btn-row .btn {
     flex: 1 1 auto;
   }
+  /* Same reason as .ft-cta in footer.css: FloatingActions is fixed at this
+     same corner regardless of scroll, so a full-width button row here
+     would otherwise render right underneath those fab circles. */
+  .cta-band .btn-row {
+    margin-right: 70px;
+  }
   .floating-actions {
     right: 14px;
     bottom: 14px;

@@ -50,10 +50,17 @@
 
   /*
    * The sticky CTA sits over the foot of the page, so every page needs room
-   * underneath it or the last element is unreachable.
+   * underneath it or the last element is unreachable. The footer is what
+   * usually ends the page, not main — it's a sibling of main, not inside
+   * it, so it needs this too, or its own copyright line ends up hidden
+   * behind the bar.
    */
 
   body.has-sticky-cta main {
+    padding-bottom: 80px;
+  }
+
+  body.has-sticky-cta .footer {
     padding-bottom: 80px;
   }
 

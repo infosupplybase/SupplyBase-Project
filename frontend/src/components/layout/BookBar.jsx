@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Icon from '../ui/Icon';
 
@@ -18,8 +19,17 @@ export default function BookBar() {
 
   const onBookingPage = pathname.startsWith('/services/');
   const hidden = HIDE_ON.some((p) => pathname.startsWith(p));
+  const visible = !onBookingPage && !hidden;
 
-  if (onBookingPage || hidden) return null;
+  // The bar is fixed, so nothing in normal document flow reserves room for
+  // it — without this, the footer's own last line ends up underneath it.
+  // See body.has-sticky-cta in responsive.css.
+  useEffect(() => {
+    document.body.classList.toggle('has-sticky-cta', visible);
+    return () => document.body.classList.remove('has-sticky-cta');
+  }, [visible]);
+
+  if (!visible) return null;
 
   return (
     <div className="book-bar">
