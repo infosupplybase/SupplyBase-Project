@@ -255,7 +255,6 @@ export default function ServiceBooking() {
   className="
     wizard-card
     !bg-white/45
-    backdrop-blur-xl
     !border-white/35
     !shadow-[0_10px_35px_rgba(0,0,0,0.10)]
   "
@@ -329,7 +328,6 @@ export default function ServiceBooking() {
   className="
     wizard-card
     !bg-white/45
-    backdrop-blur-[20px]
     !border-white/35
     !shadow-[0_10px_35px_rgba(0,0,0,0.10)]
   "
