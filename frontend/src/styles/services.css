@@ -372,7 +372,8 @@
 }
 
 .fab-top {
-  background: color-mix(in srgb, var(--dark-card) 25%, transparent);
+  background: color-mix(in srgb, var(--dark-card) 78%, transparent);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* ---------------------------------------------------------- responsive */
