@@ -622,12 +622,45 @@ const stageQuestions = useMemo(() => {
 
   if (loadError || !form) {
     return (
-      <div`r`n        className={`r`n          modal`r`n            ? 'w-full'`r`n            : 'wizard-shell'`r`n        }`r`n      >`r`n        <div`r`n          className={`r`n            modal`r`n              ? 'w-full'`r`n              : 'wizard-container'`r`n          }`r`n        >`r`n          <div`r`n            className=wizard-card !bg-white/45 backdrop-blur-xl !border-white/35 !shadow-[0_10px_35px_rgba(0,0,0,0.10)]`r`n          >`r`n            <div`r`n              role=alert`r`n              className=alert alert-error`r`n            >`r`n              <Icon name=info size={18} />`r`n              <span>`r`n                {loadError || 'That service could not be found.'}`r`n              </span>`r`n            </div>`r`n`r`n            <Link`r`n              to=/services`r`n              className=btn btn-primary btn-block
+      <div
+        className={
+          modal
+            ? 'w-full'
+            : 'wizard-shell'
+        }
+      >
+        <div
+          className={
+            modal
+              ? 'w-full'
+              : 'wizard-container'
+          }
+        >
+          <div
+            className="
+              wizard-card
+              !bg-white/45
+              backdrop-blur-xl
+              !border-white/35
+              !shadow-[0_10px_35px_rgba(0,0,0,0.10)]
+            "
+          >
+            <div
+              role="alert"
+              className="alert alert-error"
+            >
+              <Icon name="info" size={18} />
+              <span>
+                {loadError ||
+                  'That service could not be found.'}
+              </span>
+            </div>
 
             <Link
               to="/services"
               className="btn btn-primary btn-block"
             >
+              
               SEE ALL SERVICES
             </Link>
           </div>

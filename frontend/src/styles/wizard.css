@@ -546,6 +546,13 @@
 @media (max-width: 767px) {
   .wizard-container {
     padding-top: var(--space-5);
+    /* The footer below becomes position:fixed, so nothing in normal flow
+       reserves room for it — without this, a short step's content (the
+       date row on the schedule step, for one) sits directly behind the
+       bar at every scroll position, not just at the very bottom of the
+       page. Matches the bar's own height: ~48px button + 20px vertical
+       padding + safe-area. */
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   }
   .tile-grid {
     grid-template-columns: 1fr;
