@@ -7,6 +7,10 @@ import ServiceBooking from './pages/ServiceBooking';
 import Projects from './pages/Projects';
 import Materials from './pages/Materials';
 import Book from './pages/Book';
+import InteriorByChoice from './pages/InteriorByChoice';
+import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
+import InteriorDesignDetail from './pages/InteriorDesignDetail';
+import InteriorBooking from './pages/InteriorBooking';
 import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -26,6 +30,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /projects/:slug         Project detail
  * /materials              Materials and brands we use
  * /book                   Book a site visit (?type=service | ?type=project)
+ * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
  * /about                  About us
  * /contact                Contact
  * /quote                  Get a quote  (?service=<slug> pre-selects a service)
@@ -64,6 +69,16 @@ export default function App() {
         <Route path="projects/:slug" element={<ProjectDetail />} />
         <Route path="materials" element={<Materials />} />
         <Route path="book" element={<Book />} />
+
+        {/* Interior by Choice — the ready-made design catalogue. Its own
+            small route tree, separate from the generic /services/:slug
+            wizard, since it's a browse-then-book flow rather than a
+            question-at-a-time site visit request. */}
+        <Route path="interior-by-choice" element={<InteriorByChoice />} />
+        <Route path="interior-by-choice/book" element={<InteriorBooking />} />
+        <Route path="interior-by-choice/:spaceSlug" element={<InteriorSpaceGallery />} />
+        <Route path="interior-by-choice/:spaceSlug/:designSlug" element={<InteriorDesignDetail />} />
+        <Route path="interior-by-choice/:spaceSlug/:designSlug/book" element={<InteriorBooking />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="quote" element={<Quote />} />
