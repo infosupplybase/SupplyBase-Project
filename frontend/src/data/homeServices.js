@@ -55,7 +55,7 @@ export const homeServices = [
     number: '3',
     title: 'Electrician',
     description: 'Wiring, light installation, fan, switchboard repair, short circuit & more.',
-    route: '/booking/electrical',
+    route: '/services/electrical',
     image: '/assets/hero/electrical.png',
     // the electrician sits nearer the middle than the other three
     focus: '52% center',

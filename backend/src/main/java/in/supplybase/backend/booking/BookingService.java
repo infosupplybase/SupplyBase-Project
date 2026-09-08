@@ -346,6 +346,27 @@ public class BookingService {
         return BookingFileResponse.from(files.save(builder.build()));
     }
 
+    /**
+     * The booking wizard's own upload call, for the two services that collect
+     * photos of the problem or the appliance. Booking creation is public and
+     * usually anonymous, so this cannot require a signed-in owner the way
+     * {@link #listFiles} does — instead it trusts whoever holds both the
+     * booking number (BookingReceipt deliberately withholds the numeric id —
+     * see its own javadoc — so this takes the human-readable number instead)
+     * and the phone number on the booking, the same proof-of-ownership shape
+     * the create endpoint's own rate limit already relies on.
+     */
+    @Transactional
+    public BookingFileResponse uploadOwnFile(String bookingNumber, String phone, String kind, MultipartFile file) {
+        Booking booking = bookings.findByBookingNumber(bookingNumber)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        if (!booking.getPhone().equals(PhoneNumbers.normalise(phone))) {
+            throw ApiException.notFound("That booking");
+        }
+        Long uploaderId = booking.getUser() != null ? booking.getUser().getId() : null;
+        return uploadFile(booking.getId(), kind, file, uploaderId);
+    }
+
     @Transactional(readOnly = true)
     public List<BookingFileResponse> listFiles(Long bookingId, AuthenticatedUser viewer) {
         Booking booking = bookings.findById(bookingId)

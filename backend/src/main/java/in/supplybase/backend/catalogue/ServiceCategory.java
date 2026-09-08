@@ -53,6 +53,19 @@ public class ServiceCategory {
     @Builder.Default
     private long visitFeePaise = 2500L;
 
+    /**
+     * The rough, disclosed-as-an-estimate job cost range shown on the booking
+     * summary — base labour + materials before any add-on is chosen. Null for
+     * categories that don't quote one (a site-visit-first service like the
+     * original four), which is every category this column did not exist for
+     * until it was added.
+     */
+    @Column(name = "estimate_min_paise")
+    private Long estimateMinPaise;
+
+    @Column(name = "estimate_max_paise")
+    private Long estimateMaxPaise;
+
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private int sortOrder = 0;

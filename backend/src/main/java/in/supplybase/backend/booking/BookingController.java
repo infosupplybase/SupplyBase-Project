@@ -72,6 +72,21 @@ public class BookingController {
         return service.listFiles(id, currentUser.require());
     }
 
+    /**
+     * Public, like booking creation itself — keyed by the booking NUMBER
+     * (what BookingReceipt actually hands back), not the numeric id, and see
+     * {@link BookingService#uploadOwnFile} for why {@code phone} stands in
+     * for a signed-in owner check here.
+     */
+    @PostMapping(value = "/api/bookings/by-number/{bookingNumber}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookingFileResponse> uploadOwnFile(@PathVariable String bookingNumber,
+            @RequestParam String phone,
+            @RequestParam(defaultValue = "PHOTO") String kind,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.uploadOwnFile(bookingNumber, phone, kind, file));
+    }
+
     @GetMapping("/api/bookings/{id}/files/{fileId}/download")
     public ResponseEntity<byte[]> downloadFile(@PathVariable Long id, @PathVariable Long fileId) {
         var file = service.downloadFile(id, fileId, currentUser.require());
