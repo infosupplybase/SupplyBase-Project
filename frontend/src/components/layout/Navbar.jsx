@@ -55,17 +55,13 @@ export default function Navbar() {
       <header
   className={`
     header
+    !top-0 !left-0 !right-0 !w-full !rounded-none
     !bg-black/55
     backdrop-blur-[20px]
     border border-white/10
     shadow-[0_8px_24px_rgba(0,0,0,0.18)]
     transition-all duration-300 ease-out
-
-    ${
-      scrolled
-        ? 'scrolled !top-4 !left-6 !right-6 !w-auto !rounded-xl'
-        : '!top-0 !left-0 !right-0 !w-full !rounded-none'
-    }
+    ${scrolled ? 'scrolled' : ''}
   `}
 >
         <div className="container">
