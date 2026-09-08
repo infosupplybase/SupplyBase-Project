@@ -119,6 +119,24 @@ async function send(path, { method = 'GET', body, auth = true } = {}) {
   });
 }
 
+/**
+ * Multipart upload — separate from `request` because that always JSON-encodes
+ * its body. Used only for the booking wizard's own photo attachments, which
+ * are public like booking creation itself (see BookingService.uploadOwnFile
+ * on the backend for the phone-number check that stands in for a login).
+ */
+async function uploadFile(path, formData) {
+  const response = await fetch(`${BASE_URL}${path}`, { method: 'POST', body: formData });
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  if (!response.ok) throw new ApiError(response.status, payload);
+  return payload;
+}
+
 export async function request(path, options = {}) {
   let response = await send(path, options);
 
@@ -197,6 +215,14 @@ export const api = {
    * token when there is one lets the API attach the booking to that account.
    */
   createBooking: (payload) => request('/api/bookings', { method: 'POST', body: payload }),
+
+  /** One photo, attached to a booking that was just created in this session. */
+  uploadBookingFile: (bookingNumber, phone, file, kind = 'PHOTO') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const query = new URLSearchParams({ phone, kind });
+    return uploadFile(`/api/bookings/by-number/${bookingNumber}/files?${query}`, formData);
+  },
 
   myBookings: () => request('/api/bookings/mine'),
 };

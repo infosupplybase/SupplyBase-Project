@@ -1,0 +1,307 @@
+/* =========================================================================
+   SUPPLYBASE — ELECTRICIAN SERVICES
+   Category list + the detailed-service intro splash. The wizard itself
+   (steps, fields, fee panel, confirmation) reuses wizard.css unchanged —
+   only what's new lives here, prefixed `elc-` so nothing collides.
+   ========================================================================= */
+
+.elc-section {
+  padding: var(--section-y) 0;
+}
+
+/* ------------------------------------------------------------- category list */
+
+.elc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.elc-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.elc-tile:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
+}
+
+.elc-tile-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.elc-tile-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.elc-tile-body strong {
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.elc-tile-body span {
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+}
+
+.elc-tile-arrow {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+/* ----------------------------------------------------------- intro splash */
+
+.elc-intro-wrap {
+  padding-bottom: var(--section-y);
+}
+
+.elc-intro-hero {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  background: var(--dark);
+  overflow: hidden;
+}
+
+.elc-intro-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+}
+
+.elc-intro-wrap h1 {
+  margin-top: var(--space-6);
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.elc-intro-tagline {
+  color: var(--ink-muted);
+  font-size: 1.02rem;
+  margin: 6px 0 var(--space-6);
+}
+
+.elc-badges {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.elc-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: var(--space-3);
+  background: var(--light-bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.elc-badge svg {
+  color: var(--gold-deep);
+}
+
+.elc-included {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.elc-included h2 {
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--space-3);
+}
+
+.elc-included ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.elc-included li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.elc-included li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--success);
+}
+
+.elc-get-started {
+  justify-content: center;
+}
+
+.elc-back-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  margin-top: var(--space-4);
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+}
+
+/* ------------------------------------------------------------- estimate */
+
+.elc-estimate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: var(--space-5);
+  margin: var(--space-5) 0;
+  background: var(--gold-a08);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+}
+
+.elc-estimate-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.elc-estimate-value {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--gold-deep);
+}
+
+.elc-estimate-note {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  max-width: 360px;
+}
+
+/* --------------------------------------------------------------- uploads */
+
+.elc-file-field {
+  position: relative;
+  margin-top: var(--space-4);
+}
+
+.elc-file-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.elc-file-thumb {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.elc-file-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.elc-file-thumb button {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: var(--white);
+}
+
+.elc-file-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 72px;
+  height: 72px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.elc-file-add:hover {
+  border-color: var(--gold);
+  color: var(--gold-deep);
+}
+
+.elc-upload-status {
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+  text-align: center;
+  margin: -4px 0 16px;
+}
+
+/* ---------------------------------------------------------------- mobile */
+
+@media (max-width: 767px) {
+  .elc-badges {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Same reason as .btn-row in components.css: FloatingActions is fixed at
+     this corner regardless of scroll, so this full-width control would
+     otherwise land right underneath those fab circles. */
+  .elc-tile,
+  .elc-back-link,
+  .elc-estimate {
+    margin-right: 70px;
+  }
+
+  /* .btn-block sets width: 100% explicitly, so margin-right alone would
+     overflow instead of shrinking it — same fix as .ibc-form-submit. */
+  .elc-get-started {
+    width: auto;
+    margin-right: 70px;
+  }
+}

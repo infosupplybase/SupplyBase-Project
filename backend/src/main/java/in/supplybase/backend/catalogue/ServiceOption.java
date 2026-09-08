@@ -66,6 +66,10 @@ public class ServiceOption {
     @Column(name = "option_group", length = 60)
     private String optionGroup;
 
+    /** Paise. Null for options with no add-on cost of their own (most of them). */
+    @Column(name = "price_paise")
+    private Long pricePaise;
+
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private int sortOrder = 0;

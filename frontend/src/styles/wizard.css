@@ -556,6 +556,11 @@
   }
   .tile-grid {
     grid-template-columns: 1fr;
+    /* FloatingActions is fixed at this same bottom-right corner regardless
+       of scroll position, so a full-width tile here would otherwise render
+       right underneath those fab circles — same reason as .btn-row in
+       components.css. */
+    margin-right: 70px;
   }
   .schedule-grid {
     grid-template-columns: 1fr;

@@ -78,7 +78,7 @@ class CatalogueControllerTest {
 
     private CategoryResponse sampleCategory() {
         return new CategoryResponse("plumbing", "Plumbing", "Taps to tanks", "Description",
-                "wrench", "hero.png", new BigDecimal("25.00"), "₹25.00", 1, true);
+                "wrench", "hero.png", new BigDecimal("25.00"), "₹25.00", null, null, 1, true);
     }
 
     @Nested

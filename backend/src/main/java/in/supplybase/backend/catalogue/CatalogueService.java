@@ -91,7 +91,8 @@ public class CatalogueService {
             if (row.getOptionValue() != null) {
                 builder.options.add(new QuestionResponse.OptionResponse(
                         row.getOptionValue(), row.getOptionLabel(),
-                        row.getOptionHint(), row.getOptionGroup()));
+                        row.getOptionHint(), row.getOptionGroup(),
+                        row.getPricePaise() == null ? null : Money.paiseToRupees(row.getPricePaise())));
             }
         }
         return byKey.values().stream().map(QuestionBuilder::build).toList();
@@ -271,6 +272,7 @@ public class CatalogueService {
                     .optionLabel(option.label())
                     .optionHint(option.hint())
                     .optionGroup(option.group())
+                    .pricePaise(option.price() == null ? null : Money.rupeesToPaise(option.price()))
                     .sortOrder(sortOrder++)
                     .active(true)
                     .build());
@@ -283,7 +285,8 @@ public class CatalogueService {
         List<QuestionResponse.OptionResponse> optionResponses = rows.stream()
                 .filter(row -> row.getOptionValue() != null)
                 .map(row -> new QuestionResponse.OptionResponse(
-                        row.getOptionValue(), row.getOptionLabel(), row.getOptionHint(), row.getOptionGroup()))
+                        row.getOptionValue(), row.getOptionLabel(), row.getOptionHint(), row.getOptionGroup(),
+                        row.getPricePaise() == null ? null : Money.paiseToRupees(row.getPricePaise())))
                 .toList();
         return new QuestionResponse(first.getStepNo(), first.getQuestionKey(), first.getQuestionText(),
                 first.getInputType(), first.isRequired(), optionResponses);

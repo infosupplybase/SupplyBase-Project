@@ -249,8 +249,8 @@ class CatalogueServiceTest {
             when(categories.findBySlug("plumbing")).thenReturn(Optional.of(category(1L, "plumbing", true)));
             CreateQuestionRequest request = new CreateQuestionRequest(1, "issue", "What is the issue?",
                     "SINGLE", true, List.of(
-                            new CreateQuestionRequest.OptionInput("leak", "Leak", null, null),
-                            new CreateQuestionRequest.OptionInput("blockage", "Blockage", null, null)));
+                            new CreateQuestionRequest.OptionInput("leak", "Leak", null, null, null),
+                            new CreateQuestionRequest.OptionInput("blockage", "Blockage", null, null, null)));
 
             QuestionResponse response = service.createQuestion("plumbing", request);
 

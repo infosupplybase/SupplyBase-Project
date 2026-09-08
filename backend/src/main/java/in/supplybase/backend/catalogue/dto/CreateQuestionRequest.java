@@ -1,5 +1,6 @@
 package in.supplybase.backend.catalogue.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
@@ -30,6 +31,7 @@ public record CreateQuestionRequest(
 
         List<OptionInput> options) {
 
-    public record OptionInput(String value, String label, String hint, String group) {
+    /** {@code price}, in rupees, is optional — only add-on options price themselves. */
+    public record OptionInput(String value, String label, String hint, String group, BigDecimal price) {
     }
 }
