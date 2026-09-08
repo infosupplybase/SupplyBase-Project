@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import { services } from '../../data/services';
+import { activeServices as services } from '../../data/services';
 import { projectTypes, budgetRanges, contact } from '../../data/siteConfig';
 import { buildEnquiryMessage, whatsappHref, mailtoWith, telHref } from '../../lib/contact';
 import api from '../../lib/api';

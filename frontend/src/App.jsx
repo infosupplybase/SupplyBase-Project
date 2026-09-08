@@ -11,8 +11,6 @@ import InteriorByChoice from './pages/InteriorByChoice';
 import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
 import InteriorDesignDetail from './pages/InteriorDesignDetail';
 import InteriorBooking from './pages/InteriorBooking';
-import ElectricalCategory from './pages/ElectricalCategory';
-import ElectricianService from './pages/ElectricianService';
 import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -27,8 +25,6 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /                       Home
  * /services               All services
  * /services/:slug         Book a site visit for one of the four services
- * /services/electrical    Electrical Services category list
- * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
  * /booking/:slug          Same booking page, reached from the hero banners
  * /projects               Projects with category filter
  * /projects/:slug         Project detail
@@ -65,16 +61,6 @@ export default function App() {
         <Route path="booking/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
         <Route path="booking/electrician" element={<Navigate to="/services/electrical" replace />} />
         <Route path="booking/interior-work" element={<Navigate to="/services/interior-design" replace />} />
-
-        {/* Electrical Services: a category list (matching the approved
-            journey's step 2) in front of the generic wizard, with seven of
-            its eight tiles opening their own richer, catalogue-driven
-            booking flow instead. Declared ahead of services/:slug so these
-            exact paths win over that wildcard. */}
-        <Route path="services/electrical" element={<ElectricalCategory />} />
-        <Route path="services/electrician" element={<ElectricalCategory />} />
-        <Route path="services/electric" element={<ElectricalCategory />} />
-        <Route path="services/electrical/:subSlug" element={<ElectricianService />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}

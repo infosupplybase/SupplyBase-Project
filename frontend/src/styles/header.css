@@ -204,7 +204,10 @@
 
 .mega-inner {
   display: grid;
-  grid-template-columns: repeat(4, 1fr) 260px;
+  /* Three groups have anything in them now (DESIGN, FINISHING, MEP) — down
+     from five, now that the site is scoped to four core services — plus
+     the fixed-width CTA column. */
+  grid-template-columns: repeat(3, 1fr) 260px;
   gap: var(--space-5);
   padding: var(--space-6) var(--gutter);
   max-width: var(--container);

@@ -7,6 +7,13 @@
  * and gets its own page at /services/<slug>.
  *
  * megaMenuGroup: DESIGN | CONSTRUCTION | FINISHING | MEP | SPECIALIZED
+ *
+ * Scoped down to the four core services per the approved flowchart:
+ * Interior Design, Painting (& Waterproofing), Electrical, Plumbing. The
+ * rest are marked `active: false` rather than deleted — the content stays
+ * here, ready to switch back on, it just doesn't render anywhere live.
+ * Every helper below (and every component that lists services) filters on
+ * that flag; a service object with no `active` field is active by default.
  */
 
 export const megaMenuGroups = ['DESIGN', 'CONSTRUCTION', 'FINISHING', 'MEP', 'SPECIALIZED'];
@@ -16,12 +23,13 @@ export const megaMenuGroups = ['DESIGN', 'CONSTRUCTION', 'FINISHING', 'MEP', 'SP
  * away behind "View all services". Reorder or swap these slugs and the home
  * page follows — no component needs editing.
  */
-export const featuredServiceSlugs = ['painting', 'plumbing', 'pop-false-ceiling', 'furniture'];
+export const featuredServiceSlugs = ['interior-design', 'painting', 'electrical', 'plumbing'];
 
 export const services = [
   /* ------------------------------------------------------------------ 01 */
   {
     slug: 'architectural-design',
+    active: false,
     number: '01',
     name: 'Architectural & Design',
     shortName: 'Architectural & Design',
@@ -65,6 +73,7 @@ export const services = [
   /* ------------------------------------------------------------------ 02 */
   {
     slug: 'civil-construction',
+    active: false,
     number: '02',
     name: 'Civil Construction',
     shortName: 'Civil Construction',
@@ -193,6 +202,7 @@ export const services = [
   /* ------------------------------------------------------------------ 05 */
   {
     slug: 'pop-false-ceiling',
+    active: false,
     number: '05',
     name: 'POP & False Ceiling',
     shortName: 'POP & False Ceiling',
@@ -320,6 +330,7 @@ export const services = [
   /* ------------------------------------------------------------------ 08 */
   {
     slug: 'furniture',
+    active: false,
     number: '08',
     name: 'Furniture Work',
     shortName: 'Furniture Work',
@@ -362,6 +373,7 @@ export const services = [
   /* ------------------------------------------------------------------ 09 */
   {
     slug: 'fabrication',
+    active: false,
     number: '09',
     name: 'Fabrication',
     shortName: 'Fabrication',
@@ -405,6 +417,7 @@ export const services = [
   /* ------------------------------------------------------------------ 10 */
   {
     slug: 'finishing',
+    active: false,
     number: '10',
     name: 'Finishing Work',
     shortName: 'Finishing Work',
@@ -447,18 +460,29 @@ export const services = [
 
 /* ---------------------------------------------------------------- helpers */
 
+/* Looks up by slug across every service, active or not — a project or a
+   quote referencing an inactive service (e.g. a past furniture job) should
+   still show its name and details, not "unknown service". */
 export const getServiceBySlug = (slug) => services.find((s) => s.slug === slug);
 
-/* Kept in featuredServiceSlugs order, not in services[] order, so the list
-   above controls which service leads. A slug that no longer exists is
-   dropped rather than rendering a hole. */
-export const getFeaturedServices = () =>
-  featuredServiceSlugs.map(getServiceBySlug).filter(Boolean);
+/* The list any current, live navigation or picker should render from. */
+export const activeServices = services.filter((s) => s.active !== false);
 
+/* Kept in featuredServiceSlugs order, not in services[] order, so the list
+   above controls which service leads. A slug that no longer exists, or is
+   inactive, is dropped rather than rendering a hole. */
+export const getFeaturedServices = () =>
+  featuredServiceSlugs.map(getServiceBySlug).filter((s) => s && s.active !== false);
+
+/* Empty groups are dropped rather than rendered as a heading with nothing
+   under it — with only four active services spread across five groups,
+   most groups are empty now. */
 export const getServicesByGroup = () =>
-  megaMenuGroups.map((group) => ({
-    group,
-    items: services.filter((s) => s.megaMenuGroup === group),
-  }));
+  megaMenuGroups
+    .map((group) => ({
+      group,
+      items: activeServices.filter((s) => s.megaMenuGroup === group),
+    }))
+    .filter(({ items }) => items.length > 0);
 
 export default services;

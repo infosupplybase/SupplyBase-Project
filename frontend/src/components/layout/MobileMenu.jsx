@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
-import { services } from '../../data/services';
+import { activeServices as services } from '../../data/services';
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
 

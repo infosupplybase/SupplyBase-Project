@@ -52,7 +52,7 @@ export default function ServiceMegaMenu({ open, scrolled, onNavigate }) {
 
           <div className="mega-cta">
             <h4>All Services</h4>
-            <p>See all 10 categories and everything we deliver under one contract.</p>
+            <p>See every service and everything we deliver under one contract.</p>
             <Link
               to="/services"
               className="btn btn-primary btn-sm"
