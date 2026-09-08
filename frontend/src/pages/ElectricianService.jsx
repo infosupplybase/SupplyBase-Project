@@ -421,7 +421,7 @@ export default function ElectricianService() {
         </ol>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="wizard-card !bg-white/45 !border-white/35 !shadow-[0_10px_35px_rgba(0,0,0,0.10)]">
+          <div className="wizard-card">
             {stage === TYPE &&
               typeQuestions.map((q) => (
                 <QuestionField key={q.key} question={q} value={answers[q.key]} onChange={setAnswer(q.key)} error={errors[q.key]} />
