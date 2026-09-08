@@ -467,11 +467,21 @@
     font-size: 14px;
   }
 
-
   /* Columns */
 
   .ft-grid {
     display: block;
+  }
+
+  /* FloatingActions sits fixed at the same bottom-right corner regardless
+     of scroll position, so whenever this card is in view its full-width
+     buttons would otherwise render right underneath those fab circles. */
+  .ft-cta {
+    margin-right: 75px;
+  }
+
+   .ft-col:last-child {
+    border-bottom: 0;
   }
 
 
@@ -480,7 +490,6 @@
   .ft-accordion {
     border-bottom: 1px solid #e5e5e5;
   }
-
   .ft-accordion .ft-heading {
     display: flex;
 
