@@ -1,0 +1,720 @@
+/* =========================================================================
+   SUPPLYBASE — INTERIOR BY CHOICE
+   The design catalogue: space picker, design gallery, design detail and the
+   paid home-visit booking flow. Prefixed `ibc-` throughout so nothing here
+   collides with the generic booking wizard's classes.
+   ========================================================================= */
+
+.ibc-section {
+  padding: var(--section-y) 0;
+}
+
+/* ------------------------------------------------------------ highlights */
+
+.ibc-highlights {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.ibc-highlight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: var(--space-4);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.ibc-highlight-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+/* --------------------------------------------------------- home-visit cta */
+
+.ibc-visit-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--dark);
+  border-radius: var(--radius-lg);
+  color: var(--white);
+  margin-bottom: var(--space-7);
+  transition: transform var(--t) var(--ease);
+}
+
+.ibc-visit-cta:hover {
+  transform: translateY(-2px);
+}
+
+.ibc-visit-cta strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.ibc-visit-cta > span > span {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--on-dark-muted);
+}
+
+.ibc-visit-cta-arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+/* ------------------------------------------------------------- sections */
+
+.ibc-section-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin-bottom: var(--space-4);
+}
+
+.ibc-space-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-7);
+}
+
+.ibc-space-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.ibc-space-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--t-slow) var(--ease);
+}
+
+.ibc-space-tile:hover img {
+  transform: scale(1.06);
+}
+
+.ibc-space-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent 55%);
+}
+
+.ibc-space-tile span {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  z-index: 1;
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+/* ----------------------------------------------------------- custom band */
+
+.ibc-custom-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--dark), var(--dark-card));
+  color: var(--white);
+}
+
+.ibc-custom-copy h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.ibc-custom-copy p {
+  color: var(--on-dark-muted);
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+/* --------------------------------------------------------- filter chips */
+
+.ibc-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: var(--space-6);
+}
+
+.ibc-filter-chip {
+  padding: 9px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  transition: all var(--t-fast) var(--ease);
+}
+
+.ibc-filter-chip.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
+
+.ibc-empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+/* ---------------------------------------------------------- design grid */
+
+.ibc-design-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.ibc-design-card {
+  position: relative;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.ibc-design-media {
+  display: block;
+  aspect-ratio: 4 / 3;
+}
+
+.ibc-design-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ibc-wishlist {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink-muted);
+  box-shadow: var(--shadow-sm);
+}
+
+.ibc-wishlist.active {
+  color: #c23b5a;
+}
+
+.ibc-design-body {
+  display: block;
+  padding: 12px 14px 14px;
+}
+
+.ibc-design-name {
+  display: block;
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 0.92rem;
+  margin-bottom: 3px;
+}
+
+.ibc-design-price {
+  display: block;
+  color: var(--gold-deep);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.ibc-customise-cta {
+  width: 100%;
+  justify-content: center;
+}
+
+/* --------------------------------------------------------- design detail */
+
+.ibc-detail-media {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+  aspect-ratio: 16 / 10;
+}
+
+.ibc-detail-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ibc-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.ibc-detail-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin: 0 0 4px;
+}
+
+.ibc-detail-tagline {
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+.ibc-detail-price {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--gold-deep);
+}
+
+.ibc-detail-block {
+  margin-bottom: var(--space-6);
+}
+
+.ibc-detail-block h3 {
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: var(--space-3);
+}
+
+.ibc-swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ibc-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.ibc-swatch.active {
+  border-color: var(--white);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+
+.ibc-feature-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.ibc-feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: var(--space-3);
+  background: var(--light-bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.ibc-material-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.ibc-material-table tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.ibc-material-table tr:last-child {
+  border-bottom: 0;
+}
+
+.ibc-material-table th,
+.ibc-material-table td {
+  text-align: left;
+  padding: 11px 4px;
+  font-weight: 400;
+}
+
+.ibc-material-table th {
+  color: var(--ink-muted);
+  width: 44%;
+}
+
+.ibc-material-table td {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.ibc-detail-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.ibc-detail-actions .btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+/* -------------------------------------------------------------- booking */
+
+.ibc-steps {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-6);
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+}
+
+.ibc-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.ibc-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+.ibc-step.current .ibc-step-num {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.ibc-step.current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.ibc-step.done .ibc-step-num {
+  border-color: var(--gold);
+  color: var(--gold-deep);
+}
+
+.ibc-selected-service {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--light-bg);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-6);
+}
+
+.ibc-selected-service img {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ibc-selected-service > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.ibc-selected-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.ibc-selected-service strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+.ibc-selected-price {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--gold-deep);
+  font-weight: 600;
+}
+
+.ibc-selected-service > a {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.ibc-form-panel {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.ibc-form-panel h3 {
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.ibc-form-panel h3:first-child {
+  margin-top: 0;
+}
+
+.ibc-form-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+.ibc-secure-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: var(--space-3) 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.ibc-date-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ibc-date-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.ibc-date-chip span:first-child {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  font-weight: 500;
+}
+
+.ibc-date-chip.active {
+  border-color: var(--gold);
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+/* ------------------------------------------------------------- confirm */
+
+.ibc-confirm-panel {
+  max-width: 460px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ibc-confirm-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--space-4);
+  border-radius: 50%;
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.ibc-confirm-panel h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin: 0 0 4px;
+}
+
+.ibc-confirm-panel > p {
+  color: var(--ink-muted);
+  margin: 0 0 var(--space-6);
+}
+
+.ibc-confirm-details {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.ibc-confirm-details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+
+.ibc-confirm-details > div:last-child {
+  border-bottom: 0;
+}
+
+.ibc-confirm-details span {
+  color: var(--ink-muted);
+}
+
+.ibc-confirm-details strong {
+  color: var(--ink);
+  text-align: right;
+}
+
+.ibc-confirm-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  text-align: left;
+  padding: var(--space-4);
+  background: var(--gold-a08);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  line-height: 1.5;
+  margin-bottom: var(--space-5);
+}
+
+.ibc-confirm-note svg {
+  flex-shrink: 0;
+  color: var(--gold-deep);
+}
+
+/* ---------------------------------------------------------------- mobile */
+
+@media (max-width: 767px) {
+  .ibc-highlights,
+  .ibc-feature-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ibc-space-grid,
+  .ibc-design-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ibc-custom-band {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ibc-custom-band .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ibc-steps {
+    gap: var(--space-4);
+  }
+
+  .ibc-detail-actions {
+    flex-direction: column;
+  }
+
+  /* Same reason as .btn-row in components.css: FloatingActions is fixed at
+     this corner regardless of scroll, so this full-width row (or the right
+     column of a two-up grid) would otherwise land right underneath those
+     fab circles. */
+  .ibc-visit-cta,
+  .ibc-custom-band,
+  .ibc-customise-cta,
+  .ibc-detail-actions,
+  .ibc-space-grid,
+  .ibc-design-grid,
+  .ibc-date-row,
+  .ibc-detail-head,
+  .ibc-swatch-row,
+  .ibc-selected-service {
+    margin-right: 70px;
+  }
+
+  /* margin-right alone would overflow here since the table has an explicit
+     width: 100% rather than the auto width the rule above relies on. */
+  .ibc-material-table {
+    width: auto;
+    margin-right: 70px;
+  }
+
+  /* These two panels are width: auto but centred with margin: 0 auto, so a
+     plain margin-right fights the auto left margin instead of shrinking
+     the box — dropping the centring and setting both margins explicitly
+     is what actually narrows it (and, since it's the containing block,
+     everything inside it that's width: 100% — the fields, the submit
+     button, the confirm summary — narrows with it). */
+  .ibc-form-panel,
+  .ibc-confirm-panel {
+    margin: 0 70px 0 0;
+  }
+}

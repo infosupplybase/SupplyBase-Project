@@ -1,9 +1,11 @@
 /**
  * SUPPLYBASE — HOMEPAGE SERVICE CARDS
  *
- * Seed data for the approved "What do you need help with?" section. Four
- * services, matching RULE 1; everything else (Modular Kitchen, False Ceiling,
- * Civil Work) lives as a sub-option inside Interior Work, not as a fifth card.
+ * Seed data for the approved "What do you need help with?" section. Five
+ * cards: the original four, plus Interior by Choice — the browsable design
+ * catalogue (see src/data/interiorCatalog.js) — added as its own card rather
+ * than folded into Interior Work, since it is a distinct booking flow with
+ * its own pages, not a sub-option of the site-visit wizard.
  *
  * These values are the DEFAULTS, not the source of truth. `service_categories`
  * already holds name, description and the visit fee in MySQL, and the admin
@@ -72,6 +74,18 @@ export const homeServices = [
     alt: 'Supplybase Interior Work Service',
     icon: 'sofa',
     badge: 'purple',
+  },
+  {
+    id: 'interior-by-choice',
+    number: '5',
+    title: 'Interior by Choice',
+    description: 'Browse ready-made designs by room, pick your finish and book a home visit for just ₹99.',
+    route: '/interior-by-choice',
+    image: '/assets/projects/modern-interior.jpeg',
+    focus: '60% center',
+    alt: 'Supplybase Interior by Choice catalogue',
+    icon: 'layers',
+    badge: 'gold',
   },
 ];
 

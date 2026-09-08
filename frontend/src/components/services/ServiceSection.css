@@ -46,7 +46,9 @@
    widen the whole grid. */
 .sc-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* auto-fit rather than a fixed 4 columns, so a 5th card (Interior by
+     Choice) reflows evenly instead of wrapping alone onto its own row. */
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
   gap: 20px;
 }
 
