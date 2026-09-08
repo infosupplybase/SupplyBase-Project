@@ -8,7 +8,7 @@ import Icon from '../components/ui/Icon';
 import ProjectGrid from '../components/projects/ProjectGrid';
 import NotFound from './NotFound';
 import { slugify } from '../components/home/ServiceCard';
-import { services, getServiceBySlug } from '../data/services';
+import { activeServices as services, getServiceBySlug } from '../data/services';
 import { getProjectsByService } from '../data/projects';
 import { contact } from '../data/siteConfig';
 import { telHref, whatsappHref } from '../lib/contact';
