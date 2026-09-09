@@ -157,6 +157,150 @@
   color: var(--on-gold);
 }
 
+/* ------------------------------------------------- location + notifications */
+
+.location-select,
+.notif-bell {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--tap-min);
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-light);
+  font-size: 13.5px;
+  font-weight: 500;
+  max-width: 150px;
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.location-btn:hover {
+  color: var(--gold);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.location-btn svg:first-child {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.location-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-menu,
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--z-drawer);
+  background: var(--dark);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.location-menu {
+  min-width: 200px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 6px;
+  list-style: none;
+}
+
+.location-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--on-dark-muted);
+  font-size: 14px;
+  text-align: left;
+}
+
+.location-menu button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+}
+
+.location-menu button.active {
+  color: var(--gold);
+}
+
+.location-menu button svg {
+  color: var(--gold);
+}
+
+.notif-bell-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border-radius: var(--radius-sm);
+  color: var(--text-light);
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.notif-bell-btn:hover {
+  color: var(--gold);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.notif-panel {
+  width: min(280px, 80vw);
+  padding: var(--space-4);
+}
+
+.notif-panel h4 {
+  color: var(--white);
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+
+.notif-panel p {
+  color: var(--on-dark-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .location-btn span {
+    max-width: 74px;
+  }
+}
+
+/* Below 400px the logo (a wide wordmark) and the location/bell/burger
+   cluster cannot both fit with a text label — the pin stays tappable
+   (it opens the same dropdown, which still names every city), the label
+   drops. */
+@media (max-width: 400px) {
+  .location-btn {
+    padding: 0 6px;
+  }
+  .location-btn span {
+    display: none;
+  }
+  .brand img {
+    height: clamp(26px, 8vw, 32px);
+    max-width: 118px;
+  }
+  .header-actions {
+    gap: 2px;
+  }
+}
+
 .burger {
   display: none;
   width: var(--tap-min);
@@ -204,10 +348,10 @@
 
 .mega-inner {
   display: grid;
-  /* Three groups have anything in them now (DESIGN, FINISHING, MEP) — down
-     from five, now that the site is scoped to four core services — plus
-     the fixed-width CTA column. */
-  grid-template-columns: repeat(3, 1fr) 260px;
+  /* Four groups have anything in them now (DESIGN, FINISHING, MEP,
+     SPECIALIZED — the last holding only the single "Other Services"
+     catch-all tile) — plus the fixed-width CTA column. */
+  grid-template-columns: repeat(4, 1fr) 260px;
   gap: var(--space-5);
   padding: var(--space-6) var(--gutter);
   max-width: var(--container);

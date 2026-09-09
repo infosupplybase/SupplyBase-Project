@@ -1,53 +1,45 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
-import { timeSlots } from '../data/booking';
+import SlotPicker from '../components/booking/SlotPicker';
+import api, { friendlyError } from '../lib/api';
+import { useLocationContext } from '../context/LocationContext';
 import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
 
 const STEPS = ['Details', 'Schedule', 'Confirm'];
+const CATEGORY_SLUG = 'interior-by-choice';
 
 /** Ten digits once the +91, spaces and brackets are stripped — same rule the
     site-visit wizard uses, so a phone number valid there is valid here. */
 const isValidPhone = (value) =>
   /^[6-9]\d{9}$/.test(String(value || '').replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
 
-function nextFourDays() {
-  const labels = [];
-  for (let i = 0; i < 4; i += 1) {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    const label = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString('en-IN', { weekday: 'short' });
-    const day = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-    labels.push({ value: d.toISOString().slice(0, 10), label, day });
-  }
-  return labels;
-}
-
-/** A short, obviously-not-a-real-transaction reference for the placeholder
-    confirmation screen — no payment gateway is wired up yet. */
-function makeReference() {
-  return `SB-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-}
-
 /**
  * /interior-by-choice/book and /interior-by-choice/:spaceSlug/:designSlug/book
  *
  * The paid home-visit booking flow from the mockup: Details -> Schedule ->
- * Confirm. No payment gateway is connected yet (per plan, that follows once
- * one is chosen) — "Proceed to Pay" here just moves to the confirmation step
- * with a placeholder reference, it does not charge anything.
+ * Confirm. Books against the real `interior-by-choice` catalogue category —
+ * a real POST /api/bookings, real slot availability from the backend, and a
+ * real booking number on confirmation. (This used to fabricate a client-side
+ * reference and never call the API — fixed as part of the seven-category
+ * catalogue rework, since InteriorBooking now has a real category to book
+ * against.)
  */
 export default function InteriorBooking() {
   const { spaceSlug, designSlug } = useParams();
+  const { location } = useLocationContext();
   const space = spaceSlug ? getSpaceBySlug(spaceSlug) : null;
   const design = spaceSlug && designSlug ? getDesignBySlug(spaceSlug, designSlug) : null;
-  const dateOptions = useMemo(nextFourDays, []);
 
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '', date: dateOptions[1].value, slot: '' });
+  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
   const [errors, setErrors] = useState({});
-  const [reference, setReference] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useState(null);
 
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -64,17 +56,39 @@ export default function InteriorBooking() {
     if (validateDetails()) setStep(1);
   };
 
-  const proceedToPay = () => {
-    if (!form.slot) {
-      setErrors((e) => ({ ...e, slot: 'Pick a time slot' }));
+  const submit = async () => {
+    if (!date || !time) {
+      setErrors((e) => ({ ...e, slot: 'Pick a date and a time' }));
       return;
     }
-    setReference(makeReference());
-    setStep(2);
-  };
 
-  const selectedDate = dateOptions.find((d) => d.value === form.date);
-  const selectedSlot = timeSlots.find((s) => s.value === form.slot);
+    const selectedLabel = design ? `${space.name} – ${design.name}` : space ? space.name : 'Not selected from the catalogue';
+    const notesParts = [`Selected design: ${selectedLabel}.`];
+    if (form.notes.trim()) notesParts.push(form.notes.trim());
+
+    setBusy(true);
+    setError('');
+    try {
+      const result = await api.createBooking({
+        serviceSlug: CATEGORY_SLUG,
+        answers: [{ key: 'notes', value: notesParts.join(' ').slice(0, 400), label: 'Selected design and requirements' }],
+        preferredDate: date,
+        preferredTime: time,
+        name: form.name.trim(),
+        phone: form.phone,
+        address: form.address.trim(),
+        city: location,
+      });
+      setReceipt(result);
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      setError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <>
@@ -127,6 +141,9 @@ export default function InteriorBooking() {
                 <input type="text" placeholder="Enter your complete address" value={form.address} onChange={setField('address')} />
                 {errors.address && <span className="field-error">{errors.address}</span>}
               </div>
+              <p className="field-hint" style={{ marginTop: -8, marginBottom: 16 }}>
+                Service area: <strong>{location}</strong>
+              </p>
               <div className="field">
                 <label>Any specific requirements? (Optional)</label>
                 <textarea rows={3} value={form.notes} onChange={setField('notes')} />
@@ -139,47 +156,36 @@ export default function InteriorBooking() {
 
           {step === 1 && (
             <div className="ibc-form-panel">
-              <h3>Preferred Date</h3>
-              <div className="ibc-date-row">
-                {dateOptions.map((d) => (
-                  <button
-                    key={d.value}
-                    type="button"
-                    className={`ibc-date-chip ${form.date === d.value ? 'active' : ''}`}
-                    onClick={() => setForm((f) => ({ ...f, date: d.value }))}
-                  >
-                    <span>{d.label}</span>
-                    <span>{d.day}</span>
-                  </button>
-                ))}
-              </div>
+              <SlotPicker
+                serviceSlug={CATEGORY_SLUG}
+                date={date}
+                time={time}
+                onPick={(d, t) => {
+                  setDate(d);
+                  setTime(t);
+                  setErrors((e) => ({ ...e, slot: undefined }));
+                }}
+                error={errors.slot}
+              />
 
-              <h3>Preferred Time</h3>
-              <div className="choice-grid slots">
-                {timeSlots.map((s) => (
-                  <button
-                    key={s.value}
-                    type="button"
-                    className={`choice ${form.slot === s.value ? 'active' : ''}`}
-                    onClick={() => setForm((f) => ({ ...f, slot: s.value }))}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-              {errors.slot && <span className="field-error">{errors.slot}</span>}
+              {error && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 16 }}>
+                  <Icon name="info" size={18} />
+                  <span>{error}</span>
+                </div>
+              )}
 
-              <button type="button" className="btn btn-primary ibc-form-submit" onClick={proceedToPay}>
-                Proceed to Pay ₹{HOME_VISIT_FEE}
+              <button type="button" className="btn btn-primary ibc-form-submit" onClick={submit} disabled={busy}>
+                {busy ? 'Booking…' : `Confirm Booking · ₹${HOME_VISIT_FEE}`}
               </button>
               <p className="ibc-secure-note">
                 <Icon name="lock" size={14} />
-                Secure Payment
+                No advance payment — pay the visit fee to our team on the day
               </p>
             </div>
           )}
 
-          {step === 2 && (
+          {step === 2 && receipt && (
             <div className="ibc-confirm-panel">
               <span className="ibc-confirm-icon">
                 <Icon name="check" size={30} />
@@ -189,24 +195,24 @@ export default function InteriorBooking() {
 
               <div className="ibc-confirm-details">
                 <div>
-                  <span>Reference</span>
-                  <strong>{reference}</strong>
+                  <span>Booking ID</span>
+                  <strong>{receipt.bookingNumber}</strong>
                 </div>
                 <div>
                   <span>Date</span>
-                  <strong>{selectedDate.label}, {selectedDate.day}</strong>
+                  <strong>{receipt.date}</strong>
                 </div>
                 <div>
                   <span>Time Slot</span>
-                  <strong>{selectedSlot?.label}</strong>
+                  <strong>{receipt.time}</strong>
                 </div>
                 <div>
                   <span>Address</span>
                   <strong>{form.address}</strong>
                 </div>
                 <div>
-                  <span>Amount Paid</span>
-                  <strong>₹{HOME_VISIT_FEE} (Visit Charge)</strong>
+                  <span>Visit Fee</span>
+                  <strong>{receipt.visitFeeDisplay} (Visit Charge)</strong>
                 </div>
               </div>
 
@@ -214,7 +220,7 @@ export default function InteriorBooking() {
                 <Icon name="helmet" size={26} />
                 <p>
                   Our expert will measure your space, understand your choice, suggest designs and give you a final
-                  quotation. <strong>₹{HOME_VISIT_FEE} will be adjusted in your final project cost!</strong>
+                  quotation. <strong>{receipt.visitFeeDisplay} will be adjusted in your final project cost!</strong>
                 </p>
               </div>
 

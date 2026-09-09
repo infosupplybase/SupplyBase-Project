@@ -13,6 +13,7 @@ import InteriorDesignDetail from './pages/InteriorDesignDetail';
 import InteriorBooking from './pages/InteriorBooking';
 import ElectricalCategory from './pages/ElectricalCategory';
 import ElectricianService from './pages/ElectricianService';
+import OtherServicesCategory from './pages/OtherServicesCategory';
 import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -62,9 +63,17 @@ export default function App() {
         <Route path="services/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
         <Route path="services/electrician" element={<Navigate to="/services/electrical" replace />} />
         <Route path="services/interior-work" element={<Navigate to="/services/interior-design" replace />} />
+        <Route path="services/pop-false-ceiling" element={<Navigate to="/services/pop-ceiling-design" replace />} />
         <Route path="booking/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
         <Route path="booking/electrician" element={<Navigate to="/services/electrical" replace />} />
         <Route path="booking/interior-work" element={<Navigate to="/services/interior-design" replace />} />
+
+        {/* Interior by Choice has its own richer browse-then-book page at
+            /interior-by-choice; a link generated from the catalogue
+            (mega menu, search results, the seven-card grid) points at
+            /services/interior-by-choice like every other category, so it
+            redirects there instead of opening the generic booking wizard. */}
+        <Route path="services/interior-by-choice" element={<Navigate to="/interior-by-choice" replace />} />
 
         {/* Electrical Services: a category list (matching the approved
             journey's step 2) in front of the generic wizard, with seven of
@@ -77,6 +86,11 @@ export default function App() {
         <Route path="services/electrical" element={<ElectricalCategory />} />
         <Route path="services/electric" element={<ElectricalCategory />} />
         <Route path="services/electrical/:subSlug" element={<ElectricianService />} />
+
+        {/* Other Services: the catch-all eighth tile, reactivated on
+            request. A category list in front of five existing generic
+            wizard pages, same shape as the electrical category list. */}
+        <Route path="services/other-services" element={<OtherServicesCategory />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}

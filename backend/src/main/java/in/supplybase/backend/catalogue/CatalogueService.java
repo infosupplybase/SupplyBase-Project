@@ -14,6 +14,7 @@ import in.supplybase.backend.catalogue.dto.CategoryResponse;
 import in.supplybase.backend.catalogue.dto.CreateCategoryRequest;
 import in.supplybase.backend.catalogue.dto.CreateQuestionRequest;
 import in.supplybase.backend.catalogue.dto.QuestionResponse;
+import in.supplybase.backend.catalogue.dto.SearchResultResponse;
 import in.supplybase.backend.catalogue.dto.ServiceFormResponse;
 import in.supplybase.backend.catalogue.dto.UpdateCategoryRequest;
 import in.supplybase.backend.catalogue.dto.UpdateCategoryActiveRequest;
@@ -34,30 +35,46 @@ public class CatalogueService {
         this.options = options;
     }
 
+    /** The seven main categories, in order — a sub-service is left out (see {@link #form}). */
     @Transactional(readOnly = true)
     public List<CategoryResponse> listCategories() {
-        return categories.findByActiveTrueOrderBySortOrderAsc().stream()
+        return categories.findByActiveTrueAndParentSlugIsNullOrderBySortOrderAsc().stream()
                 .map(CategoryResponse::from)
                 .toList();
     }
 
     /**
-     * Short and historical names that people type or bookmark.
-     *
-     * "painting" is the obvious guess for a service actually called
-     * painting-waterproofing, and a 404 for a guess that close is a bad
-     * answer when we know exactly what they meant.
+     * Catalogue-wide search across both main categories and sub-services
+     * (electrician's seven detailed journeys) — capped at 20 so a broad term
+     * like "installation" returns a shortlist, not the whole table.
+     */
+    @Transactional(readOnly = true)
+    public List<SearchResultResponse> search(String q) {
+        String query = q == null ? "" : q.trim();
+        if (query.isEmpty()) {
+            return List.of();
+        }
+        return categories.search(query).stream()
+                .limit(20)
+                .map(SearchResultResponse::from)
+                .toList();
+    }
+
+    /**
+     * Short and historical names that people type or bookmark. A guess this
+     * close deserves the right page, not a 404.
      */
     private static final Map<String, String> SLUG_ALIASES = Map.of(
-            "painting", "painting-waterproofing",
-            "waterproofing", "painting-waterproofing",
-            "paint", "painting-waterproofing",
-            "electrical", "electrician",
-            "electric", "electrician",
-            "interior", "interior-work",
-            "interior-design", "interior-work",
-            "interiors", "interior-work",
-            "plumber", "plumbing");
+            "paint", "painting",
+            "waterproof", "waterproofing",
+            "electric", "electrical",
+            "electrician", "electrical",
+            "interior", "interior-design",
+            "interiors", "interior-design",
+            "interior-choice", "interior-by-choice",
+            "plumber", "plumbing",
+            "pop-false-ceiling", "pop-ceiling-design",
+            "pop-ceiling", "pop-ceiling-design");
 
     @Transactional(readOnly = true)
     public ServiceCategory requireCategory(String slug) {
