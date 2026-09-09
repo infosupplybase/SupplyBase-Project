@@ -273,9 +273,10 @@
 
 @media (min-width: 1024px) {
   .service-tile-grid {
-    /* Eight tiles: four over four, on desktop as on mobile, rather than
-       seven across a row with one stranded alone on its own line. */
-    grid-template-columns: repeat(4, 1fr);
+    /* All eight in one row, filling the full section width edge to edge —
+       the four-over-four stack is a mobile-width concession, not the
+       desktop layout. */
+    grid-template-columns: repeat(8, 1fr);
   }
 }
 
