@@ -54,7 +54,7 @@ export default function AdminLayout({ children }) {
       <aside className="admin-sidebar">
         <div className="admin-sidebar-top">
           <Link to="/" className="admin-brand">
-            <img src="/assets/brand/logo.png" alt="Supplybase Projects logo" />
+            <img src="/assets/brand/logo.png" alt="Supplybase logo" />
           </Link>
 
           <button

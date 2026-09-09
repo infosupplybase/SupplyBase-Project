@@ -49,7 +49,7 @@ export default function About() {
               </h2>
               <p style={{ color: 'var(--grey-600)' }}>
                 Most construction projects go wrong in the gaps — between the architect and the contractor, between
-                the electrician and the carpenter, between what was drawn and what was built. Supplybase Projects
+                the electrician and the carpenter, between what was drawn and what was built. Supplybase
                 exists to close those gaps.
               </p>
               <p style={{ color: 'var(--grey-600)' }}>
@@ -71,7 +71,7 @@ export default function About() {
 
             <Reveal className="media-frame" delay={120}>
               <div className="split-media">
-                <img src="/assets/services/architectural-design.svg" alt="Supplybase Projects design and construction" />
+                <img src="/assets/services/architectural-design.svg" alt="Supplybase design and construction" />
               </div>
             </Reveal>
           </div>

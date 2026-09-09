@@ -1,4 +1,4 @@
-# Supplybase Projects
+# Supplybase
 
 **ONE PARTNER. COMPLETE PROJECT.**
 

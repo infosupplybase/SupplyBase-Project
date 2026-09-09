@@ -28,7 +28,7 @@ export default function Dashboard() {
       <PageHero
         eyebrow="YOUR ACCOUNT"
         title={`WELCOME, ${String(name).toUpperCase()}`}
-        text="You are signed in to your Supplybase Projects account."
+        text="You are signed in to your Supplybase account."
         image="/assets/hero-house.svg"
         breadcrumbs={[{ label: 'My Account' }]}
       >
@@ -89,7 +89,7 @@ export default function Dashboard() {
                     {contact.phoneDisplay}
                   </a>
                   <a
-                    href={whatsappHref('Hello Supplybase Projects, I have a question about my project.')}
+                    href={whatsappHref('Hello Supplybase, I have a question about my project.')}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-whatsapp btn-sm btn-block"

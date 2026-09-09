@@ -22,7 +22,7 @@ export default function WhySupplybaseStats({ showHeading = true }) {
       <div className="wss-inner">
         {showHeading && (
           <Reveal className="wss-head">
-            <span className="wss-eyebrow">WHY SUPPLYBASE PROJECTS?</span>
+            <span className="wss-eyebrow">WHY SUPPLYBASE?</span>
             <span className="wss-rule" aria-hidden="true" />
             <h2 id="stats-heading" className="wss-heading">
               ONE PARTNER — <span className="wss-heading-gold">COMPLETE PROJECT</span>

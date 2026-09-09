@@ -48,7 +48,7 @@ export default function Login() {
   return (
     <div className="admin-login-screen">
       <div className="admin-login-card">
-        <img src="/assets/brand/logo.png" alt="Supplybase Projects logo" />
+        <img src="/assets/brand/logo.png" alt="Supplybase logo" />
         <h1>ADMIN SIGN IN</h1>
         <p>Staff access only.</p>
 

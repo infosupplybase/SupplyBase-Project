@@ -1,4 +1,4 @@
-# Deploy Supplybase Projects
+# Deploy Supplybase
 
 Three independent deployments, all pointed at the same API:
 

@@ -165,7 +165,7 @@ export default function ServiceDetail() {
                     {contact.phoneDisplay}
                   </a>
                   <a
-                    href={whatsappHref(`Hello Supplybase Projects, I would like a quote for ${service.name}.`)}
+                    href={whatsappHref(`Hello Supplybase, I would like a quote for ${service.name}.`)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-whatsapp btn-sm btn-block"

@@ -1,8 +1,8 @@
-# Supplybase Projects — API
+# Supplybase — API
 
 Java 21 · Spring Boot 4.1 · MySQL 8 · Flyway · JWT · Razorpay
 
-The backend for the Supplybase Projects website. It owns four things:
+The backend for the Supplybase website. It owns four things:
 
 | Area | What it does |
 |---|---|
