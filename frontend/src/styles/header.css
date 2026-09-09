@@ -40,7 +40,11 @@
 .brand img {
   width: auto;
   height: clamp(32px, 9vw, 38px);
-  max-width: 160px;
+  /* 160px normally, but never wider than the flexed .brand actually has —
+     a fixed cap alone overflowed past the location/bell/burger cluster on
+     narrow phones (below ~360px) since .brand shrinks with the viewport
+     while a flat max-width does not. */
+  max-width: min(160px, 100%);
 }
 
 /* ------------------------------------------------------------------ nav */
@@ -572,7 +576,7 @@
   .brand img {
     width: auto;
     height: clamp(32px, 9vw, 38px);
-    max-width: 160px;
+    max-width: min(160px, 100%);
   }
 
   .header-actions {

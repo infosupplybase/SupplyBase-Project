@@ -76,6 +76,20 @@
   }
 }
 
+/* The booking wizard's own sticky CONTINUE/PAY bar (wizard.css, ≤767px)
+   fixes to bottom:0 same as book-bar — it needs the identical lift, plus
+   the wizard shell needs the extra 60px added to its own reserved space so
+   the last question on a short step doesn't sit behind the taller stack. */
+@media (max-width: 767px) {
+  .wizard-foot {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .wizard-container {
+    padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media print {
   .bottom-nav {
     display: none !important;

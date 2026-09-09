@@ -254,6 +254,21 @@
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
+  /* A four-across mobile card is too narrow for "Waterproofing" or
+     "Electrician" to fit on one line — hyphenate at a real syllable break
+     (Water-proofing) instead of the browser's default wrap-wherever-it-fits
+     (Waterpr/oofing). html has lang="en" so the hyphenation dictionary
+     applies; overflow-wrap stays as a fallback for anything hyphens can't
+     place. */
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 400px) {
+  .service-tile-name {
+    font-size: 12.5px;
+  }
 }
 
 .service-tile-skeleton {
