@@ -250,6 +250,14 @@
 }
 
 .service-tile-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Reserved for the longest name in the grid ("POP Ceiling & Design",
+     three lines) so every card is exactly the same height regardless of
+     how many words its own name wraps to — a one-line name like
+     "Painting" sits centred in the same space a three-line one fills. */
+  min-height: calc(1.3em * 3);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
