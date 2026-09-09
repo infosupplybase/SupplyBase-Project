@@ -177,7 +177,14 @@
 
 .service-tile-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* minmax(0, 1fr), not a bare 1fr — a bare 1fr is shorthand for
+     minmax(auto, 1fr), so a column whose cells happen to hold a longer
+     unbreakable word (e.g. "Waterproofing") floors at that word's
+     min-content width instead of splitting the row evenly, making every
+     card in that column wider than its neighbours. minmax(0, 1fr) removes
+     the content-based floor so all four (or eight, or three) columns are
+     always exactly equal. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-4);
 }
 
@@ -299,13 +306,13 @@
     /* All eight in one row, filling the full section width edge to edge —
        the four-over-four stack is a mobile-width concession, not the
        desktop layout. */
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(8, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 359px) {
   .service-tile-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
