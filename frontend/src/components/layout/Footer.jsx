@@ -2,18 +2,26 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { company, contact, quickLinks, social } from '../../data/siteConfig';
-import { homeServices } from '../../data/homeServices';
+import { activeServices } from '../../data/services';
 import { telHref, mailtoHref, whatsappHref } from '../../lib/contact';
 
+/** Interior by Choice, Electrical and Other Services each have their own
+    richer page instead of the generic booking wizard — same routing rule
+    as the mega menu and the homepage grid. */
+function footerRoute(slug) {
+  if (slug === 'interior-by-choice') return '/interior-by-choice';
+  return `/services/${slug}`;
+}
+
 /*
- * The same four customer-facing services the home page offers, read from the
+ * The same services the mega menu and homepage grid offer, read from the
  * one file that defines them. A second hand-written list here would be the
  * thing that goes stale when a name or a route changes.
  */
-const footerServices = homeServices.map((s) => ({
-  id: s.id,
-  name: s.title,
-  route: s.route,
+const footerServices = activeServices.map((s) => ({
+  id: s.slug,
+  name: s.shortName || s.name,
+  route: footerRoute(s.slug),
   icon: s.icon,
 }));
 

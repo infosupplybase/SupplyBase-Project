@@ -19,6 +19,7 @@
 /* --- page sections ---------------------------------------------------- */
 @import './header.css';
 @import './hero.css';
+@import './home.css';
 @import './services.css';
 @import './booking.css';
 @import './wizard.css';
@@ -32,3 +33,4 @@
 
 /* --- cross-cutting, must stay last so it can override ----------------- */
 @import './responsive.css';
+@import './bottom-nav.css';

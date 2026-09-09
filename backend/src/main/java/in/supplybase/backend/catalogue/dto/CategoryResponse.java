@@ -6,13 +6,13 @@ import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.common.Money;
 
 public record CategoryResponse(
-        String slug, String name, String tagline, String description,
+        String slug, String parentSlug, String name, String tagline, String description,
         String icon, String heroImage, BigDecimal visitFee, String visitFeeDisplay,
         BigDecimal estimateMin, BigDecimal estimateMax,
         int sortOrder, boolean active) {
 
     public static CategoryResponse from(ServiceCategory c) {
-        return new CategoryResponse(c.getSlug(), c.getName(), c.getTagline(),
+        return new CategoryResponse(c.getSlug(), c.getParentSlug(), c.getName(), c.getTagline(),
                 c.getDescription(), c.getIcon(), c.getHeroImage(),
                 Money.paiseToRupees(c.getVisitFeePaise()),
                 "₹" + Money.formatRupees(c.getVisitFeePaise()),

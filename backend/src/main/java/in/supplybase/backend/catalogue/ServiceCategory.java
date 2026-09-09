@@ -33,6 +33,16 @@ public class ServiceCategory {
     @Column(nullable = false, unique = true, length = 60)
     private String slug;
 
+    /**
+     * NULL for one of the seven main categories. Set to another category's
+     * slug for a sub-service that has its own detailed booking flow (today,
+     * the seven electrician journeys, parented under "electrical") — it
+     * stays fully bookable at its own slug but is left out of the main
+     * catalogue listing.
+     */
+    @Column(name = "parent_slug", length = 60)
+    private String parentSlug;
+
     @Column(nullable = false, length = 80)
     private String name;
 

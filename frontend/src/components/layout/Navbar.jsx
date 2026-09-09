@@ -3,6 +3,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
+import LocationSelector from './LocationSelector';
+import NotificationBell from './NotificationBell';
 import { mainNav, company } from '../../data/siteConfig';
 import { useAuth } from '../../context/AuthContext';
 
@@ -106,6 +108,8 @@ export default function Navbar() {
             </nav>
 
             <div className="header-actions">
+              <LocationSelector />
+              <NotificationBell />
               <Link to={user ? '/dashboard' : '/login'} className="login-btn">
                 <Icon name="user" size={17} />
                 {user ? 'MY ACCOUNT' : 'LOGIN'}

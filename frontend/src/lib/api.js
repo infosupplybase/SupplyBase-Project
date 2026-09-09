@@ -199,6 +199,10 @@ export const api = {
    */
   serviceForm: (slug) => request(`/api/catalogue/services/${slug}/form`, { auth: false }),
 
+  /** Search across active main categories and sub-services. */
+  searchCatalogue: (q) =>
+    request(`/api/catalogue/search?q=${encodeURIComponent(q)}`, { auth: false }),
+
   /* ----------------------------------------------------- appointments */
 
   /** Availability comes from the backend, never from the browser. */

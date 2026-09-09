@@ -8,10 +8,19 @@
  *
  * megaMenuGroup: DESIGN | CONSTRUCTION | FINISHING | MEP | SPECIALIZED
  *
- * Scoped down to the four core services per the approved flowchart:
- * Interior Design, Painting (& Waterproofing), Electrical, Plumbing. The
- * rest are marked `active: false` rather than deleted — the content stays
- * here, ready to switch back on, it just doesn't render anywhere live.
+ * Scoped to the seven main services plus one catch-all: Interior Design,
+ * Interior by Choice, Painting, Waterproofing, POP Ceiling & Design,
+ * Plumber, Electrician, and Other Services — the same eight the backend's
+ * service_categories table now serves at GET /api/catalogue/services (see
+ * backend/.../V13__seven_main_service_categories.sql). "Other Services" is
+ * a single tile, same as Electrician; it opens a category list of the five
+ * services that don't fit the main seven (architectural-design,
+ * civil-construction, furniture, fabrication, finishing) rather than
+ * showing five more top-level tiles.
+ * This file drives navigation only (mega menu, mobile menu); the homepage's
+ * "Popular Services" grid and the /services listing read the live API
+ * instead, so the two never drift apart. The rest stay `active: false`
+ * rather than deleted — ready to switch back on, not rendered anywhere live.
  * Every helper below (and every component that lists services) filters on
  * that flag; a service object with no `active` field is active by default.
  */
@@ -19,11 +28,19 @@
 export const megaMenuGroups = ['DESIGN', 'CONSTRUCTION', 'FINISHING', 'MEP', 'SPECIALIZED'];
 
 /**
- * The four services shown on the home page. Everything else stays one click
- * away behind "View all services". Reorder or swap these slugs and the home
- * page follows — no component needs editing.
+ * The seven main services, in the approved order. Reorder or swap these
+ * slugs and the home page follows — no component needs editing.
  */
-export const featuredServiceSlugs = ['interior-design', 'painting', 'electrical', 'plumbing'];
+export const featuredServiceSlugs = [
+  'interior-design',
+  'interior-by-choice',
+  'painting',
+  'waterproofing',
+  'pop-ceiling-design',
+  'plumbing',
+  'electrical',
+  'other-services',
+];
 
 export const services = [
   /* ------------------------------------------------------------------ 01 */
@@ -157,12 +174,32 @@ export const services = [
     ],
   },
 
+  /* ------------------------------------------------------------------ 03b */
+  {
+    slug: 'interior-by-choice',
+    number: '03b',
+    name: 'Interior by Choice',
+    shortName: 'Interior by Choice',
+    icon: 'layers',
+    megaMenuGroup: 'DESIGN',
+    tagline: 'Browse ready-made designs, pick one, book a home visit.',
+    cardText: 'A catalogue of ready interior designs by space — pick one and book a ₹99 home visit.',
+    summary:
+      'Not every project starts from a blank page. Browse finished designs by space, pick the one closest to what you want, and book a paid home visit — the fee is adjusted into your final project cost if you go ahead.',
+    heroImage: '/assets/projects/modern-interior.jpeg',
+    gallery: ['/assets/projects/modern-interior.jpeg'],
+    subServices: [],
+    highlights: [],
+    process: [],
+    faqs: [],
+  },
+
   /* ------------------------------------------------------------------ 04 */
   {
     slug: 'painting',
     number: '04',
-    name: 'Painting Work',
-    shortName: 'Painting Work',
+    name: 'Painting',
+    shortName: 'Painting',
     icon: 'roller',
     megaMenuGroup: 'FINISHING',
     tagline: 'A finish that holds up.',
@@ -199,13 +236,53 @@ export const services = [
     ],
   },
 
+  /* ------------------------------------------------------------------ 04b */
+  {
+    slug: 'waterproofing',
+    number: '04b',
+    name: 'Waterproofing',
+    shortName: 'Waterproofing',
+    icon: 'droplet',
+    megaMenuGroup: 'FINISHING',
+    tagline: 'Stop the leak at the source.',
+    cardText: 'Terrace, bathroom, balcony, basement, wall and water tank waterproofing.',
+    summary:
+      'Water finds every gap preparation misses. We treat terraces, bathrooms, balconies, basements, walls and water tanks with the right membrane and slope for the surface, tested before anything is covered over.',
+    heroImage: '/assets/services/civil-construction.svg',
+    gallery: ['/assets/services/civil-construction.svg'],
+    subServices: [
+      { name: 'Terrace Waterproofing', text: 'Membrane and slope treatment for exposed roof decks.' },
+      { name: 'Bathroom & Toilet Waterproofing', text: 'Floor and wall treatment before tiling, sealed at every junction.' },
+      { name: 'Balcony Waterproofing', text: 'Weather-exposed balcony and utility area treatment.' },
+      { name: 'Basement Waterproofing', text: 'Below-grade treatment against seepage and rising damp.' },
+      { name: 'Water Tank Waterproofing', text: 'Overhead and underground tank lining and sealing.' },
+      { name: 'Wall & External Waterproofing', text: 'Facade and compound wall damp-proofing.' },
+    ],
+    highlights: [
+      'Correct membrane chosen for the surface, not one product for everything',
+      'Slope and drainage checked before any coat goes on',
+      'Every treated area tested for leaks before it is covered',
+      'Workmanship terms written into the quotation',
+    ],
+    process: [
+      { title: 'Site Inspection', text: 'Source of the leak or the area at risk is identified.' },
+      { title: 'Surface Preparation', text: 'Cleaning, crack filling and priming of the treated area.' },
+      { title: 'Membrane Application', text: 'Waterproofing coat or membrane applied to the agreed system.' },
+      { title: 'Testing & Handover', text: 'Water/flood test before the area is covered or tiled.' },
+    ],
+    faqs: [
+      { q: 'How long does terrace waterproofing last?', a: 'A properly applied system typically holds for five to ten years depending on exposure and maintenance.' },
+      { q: 'Can you waterproof without removing the existing tiles?', a: 'For most leak repairs, yes — we assess this on site and tell you honestly if removal is actually needed.' },
+      { q: 'Do you test before covering the work?', a: 'Yes, a water test is carried out in front of you before the area is tiled or covered.' },
+    ],
+  },
+
   /* ------------------------------------------------------------------ 05 */
   {
-    slug: 'pop-false-ceiling',
-    active: false,
+    slug: 'pop-ceiling-design',
     number: '05',
-    name: 'POP & False Ceiling',
-    shortName: 'POP & False Ceiling',
+    name: 'POP Ceiling & Design',
+    shortName: 'POP Ceiling & Design',
     icon: 'ceiling',
     megaMenuGroup: 'FINISHING',
     tagline: 'Ceilings that carry the lighting design.',
@@ -247,8 +324,8 @@ export const services = [
   {
     slug: 'electrical',
     number: '06',
-    name: 'Electrical Work',
-    shortName: 'Electrical Work',
+    name: 'Electrician',
+    shortName: 'Electrician',
     icon: 'bolt',
     megaMenuGroup: 'MEP',
     tagline: 'Safe wiring, planned properly.',
@@ -289,8 +366,8 @@ export const services = [
   {
     slug: 'plumbing',
     number: '07',
-    name: 'Plumbing Work',
-    shortName: 'Plumbing Work',
+    name: 'Plumber',
+    shortName: 'Plumber',
     icon: 'tap',
     megaMenuGroup: 'MEP',
     tagline: 'Lines laid right the first time.',
@@ -325,6 +402,26 @@ export const services = [
       { q: 'Do you supply the sanitary ware?', a: 'We can supply it as part of the package or install fittings that you have purchased yourself.' },
       { q: 'Do you give any assurance on concealed work?', a: 'Concealed lines are pressure-tested in front of you before covering, and workmanship terms are written into the quotation.' },
     ],
+  },
+
+  /* ------------------------------------------------------------------ 07b */
+  {
+    slug: 'other-services',
+    number: '07b',
+    name: 'Other Services',
+    shortName: 'Other Services',
+    icon: 'settings',
+    megaMenuGroup: 'SPECIALIZED',
+    tagline: 'Everything else we do.',
+    cardText: 'Architectural design, civil construction, furniture, fabrication and finishing work.',
+    summary:
+      'Beyond the seven main services, we also handle architectural design, civil construction, custom furniture, MS/SS fabrication and finishing work — the same accountable team, the same one-partner model.',
+    heroImage: '/assets/hero-house.svg',
+    gallery: [],
+    subServices: [],
+    highlights: [],
+    process: [],
+    faqs: [],
   },
 
   /* ------------------------------------------------------------------ 08 */

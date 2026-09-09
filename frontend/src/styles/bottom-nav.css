@@ -1,0 +1,83 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — MOBILE BOTTOM NAVIGATION
+   Persistent Home / Services / Bookings / Help / Profile bar. Desktop keeps
+   the existing header nav; this exists only below the header's own mobile
+   breakpoint's sibling threshold, 900px, which is where the sticky book bar
+   already switches on — the two bars are designed to coexist.
+
+   Loaded last (see styles/index.css) so its rules win over responsive.css's
+   plain bottom:0 book-bar/floating-actions positions without needing !important.
+   ========================================================================= */
+
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 110;
+    display: flex;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    box-shadow: var(--shadow-up);
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bottom-nav-item {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: var(--tap-min);
+    padding: 4px 2px;
+    border-radius: var(--radius-sm);
+    color: var(--ink-muted);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .bottom-nav-item svg {
+    color: inherit;
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  .bottom-nav-item.active {
+    color: var(--gold);
+  }
+
+  .bottom-nav-item span {
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* Every page reserves room at the very bottom so the footer (or whatever
+     ends the page) is never covered — the sticky-CTA-specific padding in
+     responsive.css already handles the shorter gap up to the book bar
+     itself; this handles the rest of the way to the true bottom. */
+  body {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* The book bar and the floating call/WhatsApp buttons sit above this bar,
+     not underneath it. */
+  .book-bar {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .floating-actions {
+    bottom: calc(142px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media print {
+  .bottom-nav {
+    display: none !important;
+  }
+}

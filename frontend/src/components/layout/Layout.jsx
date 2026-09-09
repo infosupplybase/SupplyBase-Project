@@ -4,6 +4,7 @@ import Footer from './Footer';
 import FloatingActions from './FloatingActions';
 import ScrollToTop from './ScrollToTop';
 import BookBar from './BookBar';
+import BottomNav from './BottomNav';
 
 /**
  * Layout — header + page + footer shell shared by every route.
@@ -19,6 +20,7 @@ export default function Layout() {
       <Footer />
       <FloatingActions />
       <BookBar />
+      <BottomNav />
     </>
   );
 }
