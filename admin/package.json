@@ -2,7 +2,7 @@
   "name": "supplybase-admin",
   "private": true,
   "version": "1.0.0",
-  "description": "Supplybase Projects — staff back-office. Enquiries, bookings, projects and payments.",
+  "description": "Supplybase — staff back-office. Enquiries, bookings, projects and payments.",
   "type": "module",
   "scripts": {
     "dev": "vite",

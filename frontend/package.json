@@ -2,7 +2,7 @@
   "name": "supplybase-projects",
   "private": true,
   "version": "1.0.0",
-  "description": "Supplybase Projects — One Partner. Complete Project. Construction, architectural design, interior design and turnkey project execution.",
+  "description": "Supplybase — One Partner. Complete Project. Construction, architectural design, interior design and turnkey project execution.",
   "type": "module",
   "scripts": {
     "dev": "vite",

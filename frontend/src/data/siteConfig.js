@@ -6,15 +6,15 @@
  */
 
 export const company = {
-  name: 'Supplybase Projects',
-  nameUpper: 'SUPPLYBASE PROJECTS',
+  name: 'Supplybase',
+  nameUpper: 'SUPPLYBASE',
   tagline: 'ONE PARTNER. COMPLETE PROJECT.',
   statement: 'DESIGN. BUILD. DELIVER.',
   model: 'LABOUR + MATERIAL + MANAGEMENT',
   shortIntro:
     'From 3D architectural design to construction and finishing — we provide labour, materials and complete project execution under one roof.',
   longIntro:
-    'Supplybase Projects is a construction, architectural design, interior design and turnkey project execution company. We handle labour, material and project management so our clients deal with one partner from the first drawing to the final handover.',
+    'Supplybase is a construction, architectural design, interior design and turnkey project execution company. We handle labour, material and project management so our clients deal with one partner from the first drawing to the final handover.',
 };
 
 /**

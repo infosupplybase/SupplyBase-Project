@@ -28,7 +28,7 @@ export default function FloatingActions() {
           <Icon name="arrow-up" size={20} />
         </button>
       )}
-      <a href={telHref} className="fab fab-call" aria-label="Call Supplybase Projects">
+      <a href={telHref} className="fab fab-call" aria-label="Call Supplybase">
         <Icon name="phone" size={20} />
       </a>
       <a

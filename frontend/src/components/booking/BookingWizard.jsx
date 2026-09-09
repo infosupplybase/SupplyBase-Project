@@ -200,7 +200,7 @@ export default function BookingWizard({ lane = 'service', onLaneChange }) {
         <div className="btn-row" style={{ justifyContent: 'center', marginTop: 26 }}>
           <a
             href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
-              `Hello Supplybase Projects, this is about my booking ${receipt.reference}.`
+              `Hello Supplybase, this is about my booking ${receipt.reference}.`
             )}`}
             target="_blank"
             rel="noopener noreferrer"

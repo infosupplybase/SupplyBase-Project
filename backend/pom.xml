@@ -12,7 +12,7 @@
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>backend</name>
-	<description>Supplybase Projects API</description>
+	<description>Supplybase API</description>
 	<url/>
 	<licenses>
 		<license/>
