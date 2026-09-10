@@ -111,10 +111,12 @@ export default function Dashboard() {
                     Our Services
                     <Icon name="chevron-right" size={15} />
                   </Link>
+                  {/* Projects section disabled sitewide — see App.jsx.
                   <Link to="/projects">
                     Our Projects
                     <Icon name="chevron-right" size={15} />
                   </Link>
+                  */}
                   <Link to="/quote">
                     Start a New Enquiry
                     <Icon name="chevron-right" size={15} />

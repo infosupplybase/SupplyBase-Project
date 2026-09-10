@@ -4,8 +4,10 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import Home from './pages/Home';
 import Services from './pages/Services';
 import ServiceBooking from './pages/ServiceBooking';
-import Projects from './pages/Projects';
-import Materials from './pages/Materials';
+// Projects and Materials sections are disabled sitewide — see the commented
+// routes below. Imports kept (not deleted) so re-enabling is a two-line diff.
+// import Projects from './pages/Projects';
+// import Materials from './pages/Materials';
 import Book from './pages/Book';
 import InteriorByChoice from './pages/InteriorByChoice';
 import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
@@ -20,7 +22,7 @@ import PlumbingConsultationList from './pages/PlumbingConsultationList';
 import PlumbingConsultationBook from './pages/PlumbingConsultationBook';
 import PlumbingCart from './pages/PlumbingCart';
 import PlumbingCheckout from './pages/PlumbingCheckout';
-import ProjectDetail from './pages/ProjectDetail';
+// import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Quote from './pages/Quote';
@@ -41,9 +43,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /services/plumbing/consultation, /consultation/:typeSlug  Consultation list + booking
  * /services/plumbing/:tabSlug  One plumbing category's itemised service list
  * /booking/:slug          Same booking page, reached from the hero banners
- * /projects               Projects with category filter
- * /projects/:slug         Project detail
- * /materials              Materials and brands we use
+ * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
  * /book                   Book a site visit (?type=service | ?type=project)
  * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
  * /about                  About us
@@ -116,9 +116,14 @@ export default function App() {
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}
         <Route path="booking/:slug" element={<ServiceBooking />} />
-        <Route path="projects" element={<Projects />} />
-        <Route path="projects/:slug" element={<ProjectDetail />} />
-        <Route path="materials" element={<Materials />} />
+        {/* Projects and Materials sections — disabled sitewide on request.
+            Routes commented out rather than removed so this is a quick
+            revert; every Link that pointed here is also commented out
+            (siteConfig.js's mainNav/quickLinks, Home.jsx, About.jsx,
+            Dashboard.jsx). */}
+        {/* <Route path="projects" element={<Projects />} /> */}
+        {/* <Route path="projects/:slug" element={<ProjectDetail />} /> */}
+        {/* <Route path="materials" element={<Materials />} /> */}
         <Route path="book" element={<Book />} />
 
         {/* Interior by Choice — the ready-made design catalogue. Its own

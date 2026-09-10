@@ -62,10 +62,12 @@ export default function About() {
                   OUR SERVICES
                   <Icon name="arrow-right" size={17} />
                 </Link>
+                {/* Projects section disabled sitewide — see App.jsx.
                 <Link to="/projects" className="btn btn-ghost">
                   VIEW PROJECTS
                   <Icon name="arrow-right" size={17} />
                 </Link>
+                */}
               </div>
             </Reveal>
 

@@ -143,8 +143,9 @@ export const whyUsPoints = [
 export const mainNav = [
   { label: 'HOME', path: '/' },
   { label: 'SERVICES', path: '/services', hasMegaMenu: true },
-  { label: 'PROJECTS', path: '/projects' },
-  { label: 'MATERIALS', path: '/materials' },
+  // Projects and Materials sections are disabled sitewide — see App.jsx.
+  // { label: 'PROJECTS', path: '/projects' },
+  // { label: 'MATERIALS', path: '/materials' },
   { label: 'ABOUT US', path: '/about' },
   { label: 'CONTACT US', path: '/contact' },
 ];
@@ -155,8 +156,9 @@ export const mainNav = [
 export const quickLinks = [
   { label: 'Home', path: '/' },
   { label: 'Services', path: '/services' },
-  { label: 'Projects', path: '/projects' },
-  { label: 'Materials', path: '/materials' },
+  // Projects and Materials sections are disabled sitewide — see App.jsx.
+  // { label: 'Projects', path: '/projects' },
+  // { label: 'Materials', path: '/materials' },
   { label: 'About Us', path: '/about' },
   { label: 'Contact Us', path: '/contact' },
   { label: 'Get a Quote', path: '/quote' },
