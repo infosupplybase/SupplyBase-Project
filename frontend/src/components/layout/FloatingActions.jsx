@@ -17,7 +17,8 @@ export default function FloatingActions() {
   }, []);
 
   return (
-    <div className="floating-actions">
+  <div className="floating-actions">
+    <div className="fab-options">
       {showTop && (
         <button
           type="button"
@@ -28,9 +29,16 @@ export default function FloatingActions() {
           <Icon name="arrow-up" size={20} />
         </button>
       )}
-      <a href={telHref} className="fab fab-call" aria-label="Call Supplybase">
+
+
+      <a
+        href={telHref}
+        className="fab fab-call"
+        aria-label="Call Supplybase Projects"
+      >
         <Icon name="phone" size={20} />
       </a>
+
       <a
         href={whatsappHref()}
         target="_blank"
@@ -41,5 +49,14 @@ export default function FloatingActions() {
         <Icon name="whatsapp" size={22} />
       </a>
     </div>
-  );
+
+    <button
+      type="button"
+      className="fab fab-main"
+      aria-label="Open quick actions"
+    >
+      <Icon name="menu" size={22} />
+    </button>
+  </div>
+);
 }

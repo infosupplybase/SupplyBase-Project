@@ -160,23 +160,6 @@ export default function HeroSlider() {
 
       {/* ------------------------------------------------- controls */}
 
-      <button
-        type="button"
-        className="hero-arrow prev"
-        onClick={prev}
-        aria-label="Previous slide"
-      >
-        <Icon name="arrow-left" size={22} />
-      </button>
-
-      <button
-        type="button"
-        className="hero-arrow next"
-        onClick={next}
-        aria-label="Next slide"
-      >
-        <Icon name="arrow-right" size={22} />
-      </button>
 
       <div className="hero-dots" role="tablist" aria-label="Choose slide">
         {heroSlides.map((slide, i) => (

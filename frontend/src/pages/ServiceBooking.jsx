@@ -1,22 +1,11 @@
-
 import { useEffect, useMemo, useState } from 'react';
-
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-
 import Icon from '../components/ui/Icon';
-
 import QuestionField from '../components/booking/QuestionField';
-
 import SlotPicker from '../components/booking/SlotPicker';
-
 import api, { friendlyError } from '../lib/api';
-
 import { useAuth } from '../context/AuthContext';
-
 import { contact } from '../data/siteConfig';
-
-
-
 
 /**
  * One booking page, four services.
@@ -28,13 +17,9 @@ import { contact } from '../data/siteConfig';
  * Five stages:
  * Service -> Property -> Details -> Schedule -> Confirm
  */
-
 const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
-
 const SCHEDULE = 3;
 const CONFIRM = 4;
-
-// const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
 const emptyDetails = {
@@ -62,33 +47,22 @@ export default function ServiceBooking({
   onClose,
 }) {
   const { slug: routeSlug } = useParams();
-
   const slug = serviceSlug || routeSlug;
-
   const { user } = useAuth();
-
   const [searchParams] = useSearchParams();
-
   const preselect = searchParams.get('preselect');
 
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-
   const [stage, setStage] = useState(0);
-
   const [answers, setAnswers] = useState({});
-
   const [details, setDetails] = useState(emptyDetails);
-
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
-
   const [busy, setBusy] = useState(false);
-
   const [receipt, setReceipt] = useState(null);
 
   /**
@@ -115,14 +89,11 @@ export default function ServiceBooking({
         if (cancelled) return;
 
         if (!result || !Array.isArray(result.questions)) {
-          throw new Error('Invalid service form received from server.');
+          throw new Error(
+            'Invalid service form received from server.'
+          );
         }
 
-        /*
-         * Debug information.
-         *
-         * This also helps identify duplicate question keys such as "notes".
-         */
         console.log(
           'SERVICE FORM QUESTIONS:',
           result.questions.map((q, index) => ({
@@ -135,10 +106,6 @@ export default function ServiceBooking({
 
         setForm(result);
 
-        /*
-         * Switching service mid-flow must not carry answers to questions
-         * that the new service never asked.
-         */
         setStage(0);
 
         const validPreselect =
@@ -146,7 +113,9 @@ export default function ServiceBooking({
           result.questions.some(
             (q) =>
               q.key === 'service_needed' &&
-              q.options?.some((o) => o.value === preselect)
+              q.options?.some(
+                (o) => o.value === preselect
+              )
           );
 
         setAnswers(
@@ -197,109 +166,59 @@ export default function ServiceBooking({
 
   /**
    * Questions for each question stage.
-   *
-   * Service:
-   *   service_needed
-   *
-   * Property:
-   *   property_type
-   *
-   * Details:
-   *   everything else
-   *
-   * FILE questions are excluded.
-   *
-   * Dedicated flow questions beginning with pop_ or wp_ are excluded because
-   * those are handled by their dedicated flow pages.
    */
-  // const stageQuestions = useMemo(() => {
-  //   if (!form || !Array.isArray(form.questions)) {
-  //     return [[], [], []];
-  //   }
+  const stageQuestions = useMemo(() => {
+    if (!form || !Array.isArray(form.questions)) {
+      return [[], [], []];
+    }
 
-  //   const usable = form.questions.filter(
-  //     (q) =>
-  //       q &&
-  //       q.inputType !== 'FILE' &&
-  //       !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-  //         String(q.key || '').startsWith(prefix)
-  //       )
-  //   );
+    const seenKeys = new Set();
 
-  //   const service = usable.filter(
-  //     (q) => q.key === 'service_needed'
-  //   );
+    const usable = form.questions
+      .filter(
+        (q) =>
+          q &&
+          q.inputType !== 'FILE' &&
+          !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+            String(q.key || '').startsWith(prefix)
+          )
+      )
+      .filter((q) => {
+        if (seenKeys.has(q.key)) {
+          return false;
+        }
 
-  //   const property = usable.filter(
-  //     (q) => q.key === 'property_type'
-  //   );
+        seenKeys.add(q.key);
+        return true;
+      })
+      .map((q, index) => ({
+        ...q,
+        _questionId: `${q.key}-${index}`,
+      }));
 
-  //   const detailsQuestions = usable.filter(
-  //     (q) =>
-  //       q.key !== 'service_needed' &&
-  //       q.key !== 'property_type'
-  //   );
+    const service = usable.filter(
+      (q) => q.key === 'service_needed'
+    );
 
-  //   return [service, property, detailsQuestions];
-  // }, [form]);
-const stageQuestions = useMemo(() => {
-  if (!form || !Array.isArray(form.questions)) {
-    return [[], [], []];
-  }
+    const property = usable.filter(
+      (q) => q.key === 'property_type'
+    );
 
-  const seenKeys = new Set();
-
-  const usable = form.questions
-    .filter(
+    const detailsQuestions = usable.filter(
       (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-          String(q.key || '').startsWith(prefix)
-        )
-    )
-    .filter((q) => {
-      // Same question key ko sirf ek baar show karo
-      if (seenKeys.has(q.key)) {
-        return false;
-      }
+        q.key !== 'service_needed' &&
+        q.key !== 'property_type'
+    );
 
-      seenKeys.add(q.key);
-      return true;
-    })
-    .map((q, index) => ({
-      ...q,
-      _questionId: `${q.key}-${index}`,
-    }));
+    return [
+      service,
+      property,
+      detailsQuestions,
+    ];
+  }, [form]);
 
-  const service = usable.filter(
-    (q) => q.key === 'service_needed'
-  );
-
-  const property = usable.filter(
-    (q) => q.key === 'property_type'
-  );
-
-  const detailsQuestions = usable.filter(
-    (q) =>
-      q.key !== 'service_needed' &&
-      q.key !== 'property_type'
-  );
-
-  return [
-    service,
-    property,
-    detailsQuestions,
-  ];
-}, [form]);
   /**
    * Set answer.
-   *
-   * QuestionField can send either:
-   *   - a direct value
-   *   - a functional updater
-   *
-   * Both are supported here.
    */
   const setAnswer = (key) => (next) => {
     setAnswers((currentAnswers) => {
@@ -357,7 +276,8 @@ const stageQuestions = useMemo(() => {
         : !value;
 
       if (empty) {
-        nextErrors[question.key] = 'Please choose an option';
+        nextErrors[question.key] =
+          'Please choose an option';
       }
     });
 
@@ -373,13 +293,16 @@ const stageQuestions = useMemo(() => {
     const nextErrors = {};
 
     if (!details.name.trim()) {
-      nextErrors.name = 'Please enter your name';
+      nextErrors.name =
+        'Please enter your name';
     }
 
     if (!details.phone.trim()) {
-      nextErrors.phone = 'Please enter your mobile number';
+      nextErrors.phone =
+        'Please enter your mobile number';
     } else if (!isValidPhone(details.phone)) {
-      nextErrors.phone = 'Enter a 10-digit mobile number';
+      nextErrors.phone =
+        'Enter a 10-digit mobile number';
     }
 
     if (
@@ -401,18 +324,23 @@ const stageQuestions = useMemo(() => {
     }
 
     if (!details.address.trim()) {
-      nextErrors.address = 'Please enter your address';
+      nextErrors.address =
+        'Please enter your address';
     }
 
     if (!details.city.trim()) {
-      nextErrors.city = 'Please enter your city';
+      nextErrors.city =
+        'Please enter your city';
     }
 
     if (
       details.pincode.trim() &&
-      !/^[1-9][0-9]{5}$/.test(details.pincode.trim())
+      !/^[1-9][0-9]{5}$/.test(
+        details.pincode.trim()
+      )
     ) {
-      nextErrors.pincode = 'Enter a 6-digit pincode';
+      nextErrors.pincode =
+        'Enter a 6-digit pincode';
     }
 
     setErrors(nextErrors);
@@ -425,7 +353,9 @@ const stageQuestions = useMemo(() => {
    */
   const canLeaveStage = () => {
     if (stage < SCHEDULE) {
-      return validateQuestions(stageQuestions[stage]);
+      return validateQuestions(
+        stageQuestions[stage]
+      );
     }
 
     if (stage === SCHEDULE) {
@@ -497,71 +427,68 @@ const stageQuestions = useMemo(() => {
     setError('');
 
     try {
-      /*
+      /**
        * Flatten answers.
        *
        * MULTI questions become one row per selected option.
        */
       const flat = [];
 
-      Object.entries(answers).forEach(([key, value]) => {
-        const question = form.questions.find(
-          (q) => q.key === key
-        );
+      Object.entries(answers).forEach(
+        ([key, value]) => {
+          const question = form.questions.find(
+            (q) => q.key === key
+          );
 
-        const values = Array.isArray(value)
-          ? value
-          : [value];
+          const values = Array.isArray(value)
+            ? value
+            : [value];
 
-        values
-          .filter(
-            (v) =>
-              v !== '' &&
-              v !== null &&
-              v !== undefined
-          )
-          .forEach((v) => {
-            const option = (
-              question?.options || []
-            ).find((o) => o.value === v);
+          values
+            .filter(
+              (v) =>
+                v !== '' &&
+                v !== null &&
+                v !== undefined
+            )
+            .forEach((v) => {
+              const option = (
+                question?.options || []
+              ).find(
+                (o) => o.value === v
+              );
 
-            flat.push({
-              key,
-              value: String(v),
-              label: option
-                ? option.label
-                : String(v),
+              flat.push({
+                key,
+                value: String(v),
+                label: option
+                  ? option.label
+                  : String(v),
+              });
             });
-          });
-      });
+        }
+      );
 
-      const result = await api.createBooking({
-        serviceSlug: slug,
-
-        answers: flat,
-
-        preferredDate: date,
-
-        preferredTime: time,
-
-        name: details.name,
-
-        phone: details.phone,
-
-        whatsapp: details.whatsapp || null,
-
-        email: details.email || null,
-
-        address: details.address,
-
-        city: details.city,
-
-        pincode: details.pincode || null,
-
-        areaSqft: answers.area_sqft
-          ? Number(answers.area_sqft)
-          : null,
-      });
+      const result =
+        await api.createBooking({
+          serviceSlug: slug,
+          answers: flat,
+          preferredDate: date,
+          preferredTime: time,
+          name: details.name,
+          phone: details.phone,
+          whatsapp:
+            details.whatsapp || null,
+          email:
+            details.email || null,
+          address: details.address,
+          city: details.city,
+          pincode:
+            details.pincode || null,
+          areaSqft: answers.area_sqft
+            ? Number(answers.area_sqft)
+            : null,
+        });
 
       setReceipt(result);
 
@@ -649,7 +576,11 @@ const stageQuestions = useMemo(() => {
               role="alert"
               className="alert alert-error"
             >
-              <Icon name="info" size={18} />
+              <Icon
+                name="info"
+                size={18}
+              />
+
               <span>
                 {loadError ||
                   'That service could not be found.'}
@@ -660,7 +591,6 @@ const stageQuestions = useMemo(() => {
               to="/services"
               className="btn btn-primary btn-block"
             >
-              
               SEE ALL SERVICES
             </Link>
           </div>
@@ -823,17 +753,27 @@ const stageQuestions = useMemo(() => {
             {/* --------------------------------------------
                 Stages 1-3: Questions
             -------------------------------------------- */}
+
             {stage < SCHEDULE &&
               stageQuestions[stage].map(
                 (question, index) => (
-              <QuestionField
-                key={question._questionId || `${question.key}-${index}`}
-                question={question}
-                value={answers[question.key]}
-                onChange={setAnswer(question.key)}
-                error={errors[question.key]}
-                serviceSlug={slug}
-              />
+                  <QuestionField
+                    key={
+                      question._questionId ||
+                      `${question.key}-${index}`
+                    }
+                    question={question}
+                    value={
+                      answers[question.key]
+                    }
+                    onChange={setAnswer(
+                      question.key
+                    )}
+                    error={
+                      errors[question.key]
+                    }
+                    serviceSlug={slug}
+                  />
                 )
               )}
 
@@ -862,10 +802,12 @@ const stageQuestions = useMemo(() => {
                     setDate(d);
                     setTime(t);
 
-                    setErrors((currentErrors) => ({
-                      ...currentErrors,
-                      slot: undefined,
-                    }));
+                    setErrors(
+                      (currentErrors) => ({
+                        ...currentErrors,
+                        slot: undefined,
+                      })
+                    );
                   }}
                   error={errors.slot}
                 />
@@ -1137,6 +1079,7 @@ function Field({
     >
       <label htmlFor={id}>
         {label}{' '}
+
         {required && (
           <span className="req">
             *
@@ -1175,9 +1118,6 @@ function Summary({
   date,
   time,
 }) {
-  /*
-   * Filter out FILE questions and dedicated-flow questions.
-   */
   const rows = form.questions
     .filter(
       (q) =>
@@ -1257,10 +1197,6 @@ function Summary({
         </div>
 
         {rows.map((row) => (
-          /*
-           * Index is included because the API can return duplicate
-           * catalogue keys such as "notes".
-           */
           <div
             key={`${row.key}-${row.index}`}
           >
@@ -1303,10 +1239,12 @@ function Summary({
 
         <p className="fee-small">
           This is a one-time fee.{' '}
+
           <strong>
             No advance payment is required
             for the actual work.
           </strong>{' '}
+
           The final project cost will be
           provided after site inspection.
           Supplybase will provide the
