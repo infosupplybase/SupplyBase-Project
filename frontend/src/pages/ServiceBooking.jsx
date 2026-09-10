@@ -37,8 +37,14 @@ const emptyDetails = {
 const isValidPhone = (v) =>
   /^[6-9]\d{9}$/.test(String(v || '').replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
 
-export default function ServiceBooking() {
-  const { slug } = useParams();
+export default function ServiceBooking({
+  serviceSlug,
+  modal = false,
+  onStepChange,
+  onClose,
+}) {
+  const { slug: routeSlug } = useParams();
+  const slug = serviceSlug || routeSlug;
   const { user } = useAuth();
 
   const [form, setForm] = useState(null);
@@ -54,6 +60,12 @@ export default function ServiceBooking() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useState(null);
+
+  useEffect(() => {
+  if (modal && onStepChange) {
+    onStepChange();
+  }
+}, [stage, receipt, modal, onStepChange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -181,13 +193,17 @@ export default function ServiceBooking() {
     setError('');
     if (!canLeaveStage()) return;
     setStage((s) => Math.min(s + 1, CONFIRM));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!modal) {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
   };
 
   const goBack = () => {
     setError('');
     setStage((s) => Math.max(s - 1, 0));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!modal) {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
   };
 
   const handleSubmit = async (e) => {
@@ -226,7 +242,9 @@ export default function ServiceBooking() {
         areaSqft: answers.area_sqft ? Number(answers.area_sqft) : null,
       });
       setReceipt(result);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (!modal) {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setError(friendlyError(err));
@@ -239,8 +257,8 @@ export default function ServiceBooking() {
 
   if (loading) {
     return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
+      <div className={modal ? 'w-full' : 'wizard-shell'}>
+    <div className={modal ? 'w-full' : 'wizard-container'}>
           <p style={{ color: 'rgba(255,255,255,.6)' }}>Loading…</p>
         </div>
       </div>
@@ -248,9 +266,9 @@ export default function ServiceBooking() {
   }
 
   if (loadError || !form) {
-    return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
+  return (
+    <div className={modal ? 'w-full' : 'wizard-shell'}>
+      <div className={modal ? 'w-full' : 'wizard-container'}>
           <div className="wizard-card">
             <div role="alert" className="alert alert-error">
               <Icon name="info" size={18} />
@@ -268,13 +286,20 @@ export default function ServiceBooking() {
   const { category } = form;
 
   if (receipt) {
-    return <Confirmation receipt={receipt} details={details} />;
-  }
+  return (
+    <Confirmation
+      receipt={receipt}
+      details={details}
+      modal={modal}
+    />
+  );
+}
 
   return (
-    <div className="wizard-shell">
-      <div className="wizard-container">
+  <div className={modal ? 'w-full' : 'wizard-shell'}>
+    <div className={modal ? 'w-full' : 'wizard-container'}>
         {/* ------------------------------------------------------ top bar */}
+        {!modal &&(
         <div className="wizard-top">
           {stage > 0 ? (
             <button type="button" className="wizard-back" onClick={goBack} aria-label="Go back">
@@ -299,9 +324,9 @@ export default function ServiceBooking() {
             Need help?
           </a>
         </div>
-
+        )}
         {/* ----------------------------------------------------- progress */}
-        <ol className="wizard-steps">
+        <ol className={modal ? 'wizard-steps !mb-5' : 'wizard-steps'}>
           {STAGES.map((label, i) => (
             <li
               key={label}
@@ -317,7 +342,7 @@ export default function ServiceBooking() {
         </ol>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="wizard-card">
+          <div className={modal ? 'wizard-card !rounded-xl !shadow-none !p-5' : 'wizard-card'}>
             {/* ------------------------- 1-3. catalogue questions */}
             {stage < SCHEDULE &&
               stageQuestions[stage].map((question) => (
@@ -414,24 +439,65 @@ export default function ServiceBooking() {
             )}
 
             {/* ---------------------------------------------- footer */}
-            <div className={`wizard-foot ${stage === 0 ? 'single' : ''}`}>
-              {stage > 0 && (
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>
-                  BACK
-                </button>
-              )}
+            <div
+  className={`
+    wizard-foot
+    ${stage === 0 ? 'single' : ''}
+    ${
+      modal
+  ? 'max-md:!sticky max-md:!left-auto max-md:!right-auto max-md:!bottom-0 max-md:!z-20 max-md:!px-2 max-md:!py-2 max-md:!mt-4 max-md:!bg-white max-md:!border-0 max-md:!shadow-none max-md:!rounded-lg'
+  : ''
+    }
+  `}
+>
+              {(stage > 0 || modal) && (
+  <button
+    type="button"
+    className="btn btn-ghost btn-back btn-sm md:!flex-none md:!w-36 md:!me-auto"
+    onClick={stage > 0 ? goBack : onClose}
+  >
+    BACK
+  </button>
+)}
 
               {stage === CONFIRM ? (
-                <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'BOOKING…' : 'PAY & CONFIRM BOOKING'}
-                  <Icon name="arrow-right" size={17} />
-                </button>
-              ) : (
-                <button type="button" className="btn btn-primary" onClick={goNext}>
-                  CONTINUE
-                  <Icon name="arrow-right" size={17} />
-                </button>
-              )}
+  <button
+    type="submit"
+    className="
+  btn btn-primary btn-sm
+  md:!flex-none md:!w-56 md:!ms-auto
+  max-md:!text-[11px]
+  max-md:!px-3
+  max-md:!whitespace-nowrap
+  max-md:!ms-auto
+"
+    disabled={busy}
+  >
+    {busy ? 'BOOKING…' : 'PAY & CONFIRM BOOKING'}
+    <Icon name="arrow-right" size={15} />
+  </button>
+) : (
+  (
+  stage >= SCHEDULE ||
+  (
+    stageQuestions[stage].length > 0 &&
+    stageQuestions[stage].every((question) => {
+      if (!question.required) return true;
+
+      const value = answers[question.key];
+
+      return Array.isArray(value)
+        ? value.length > 0
+        : Boolean(value);
+    })
+  )
+) && (
+    <button type="button" className="btn btn-primary btn-sm md:!flex-none md:!w-44 md:!ms-auto" onClick={goNext}>
+      CONTINUE
+      <Icon name="arrow-right" size={17} />
+    </button>
+  )
+)}
             </div>
           </div>
         </form>
@@ -525,15 +591,21 @@ function Summary({ category, form, answers, date, time }) {
 }
 
 /** The confirmation screen from the approved reference. */
-function Confirmation({ receipt, details }) {
+function Confirmation({ receipt, details, modal = false }) {
   const message = encodeURIComponent(
     `Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`
   );
 
   return (
-    <div className="wizard-shell">
-      <div className="wizard-container">
-        <div className="wizard-card">
+    <div className={modal ? 'w-full' : 'wizard-shell'}>
+  <div className={modal ? 'w-full' : 'wizard-container'}>
+        <div
+  className={
+    modal
+      ? 'wizard-card !p-5 !rounded-xl !shadow-none'
+      : 'wizard-card'
+  }
+>
           <div className="confirmed">
             <div className="confirmed-tick">
               <Icon name="check" size={38} strokeWidth={3} />
