@@ -447,7 +447,7 @@ export default function PaintingFlow() {
           {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
           {step.notSureNote && (
             <p className="question-hint" style={{ marginTop: -8, marginBottom: 16 }}>
-              You can choose more than one is not needed here — not sure? Our expert will help you
+              Pick the one that matters most — not sure? Our expert will help you
               identify the best walls during the home visit.
             </p>
           )}
