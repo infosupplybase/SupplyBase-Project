@@ -1055,10 +1055,8 @@ export default function PaintingFlow({
                 marginBottom: 16,
               }}
             >
-              Pick the one that matters most —
-              not sure? Our expert will help you
-              identify the best walls during the
-              home visit.
+              Pick the one that matters most — not sure? Our expert will help you
+              identify the best walls during the home visit.
             </p>
           )}
 
