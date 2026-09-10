@@ -90,20 +90,6 @@ export default function HomeHero() {
             <h1>Home Services Made Simple</h1>
             <p>Skilled professionals. Quality work. At your doorstep.</p>
           </div>
-
-          {/* Mobile only (see home.css) — a distinct rounded photo beside
-              the heading, matching the approved reference. Desktop keeps
-              the full-bleed background photo above instead; this stays
-              hidden there so the same photo isn't shown twice. */}
-          <div className="home-hero-photo">
-            <img
-              src="/assets/projects/hero-house.jpeg"
-              alt=""
-              width={400}
-              height={400}
-              loading="lazy"
-            />
-          </div>
         </div>
 
         <div className="home-search" ref={boxRef}>
