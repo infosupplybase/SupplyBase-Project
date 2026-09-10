@@ -34,7 +34,7 @@ cd admin && npm install && npm run dev      # http://localhost:3001
 
 ## 2. Deploy it
 
-For the production setup, follow [`DEPLOYMENT.md`](DEPLOYMENT.md). It covers deploying `frontend/` and `admin/` as two separate static-site projects, and `backend/` to Render or Railway, including every environment variable each platform needs.
+For the production setup, follow [`DEPLOYMENT.md`](DEPLOYMENT.md). It covers deploying `frontend/` and `admin/` as two separate static-site projects on Vercel, and `backend/` (with its MySQL database) self-hosted on a Hostinger VPS, including every environment variable each needs.
 
 ---
 
