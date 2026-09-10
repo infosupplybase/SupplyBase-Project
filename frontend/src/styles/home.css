@@ -312,6 +312,31 @@
   }
 }
 
+/* One more round of the same shorter/wider adjustment, phone-only — still
+   fine at 480px and up (tablets, desktop), but a card at four-across on a
+   narrow phone needed to give up a bit more height to stay comfortably
+   inside the viewport. Placed after the base .service-tile* rules above so
+   it actually wins the cascade (same specificity, later source order). */
+@media (max-width: 479px) {
+  .service-tile-grid {
+    gap: 6px;
+  }
+
+  .service-tile {
+    gap: 6px;
+    padding: 10px 6px;
+  }
+
+  .service-tile-photo {
+    aspect-ratio: 4 / 3;
+  }
+
+  .service-tile-icon {
+    width: 26px;
+    height: 26px;
+  }
+}
+
 .service-tile-skeleton {
   aspect-ratio: 3 / 4;
   background: var(--light-bg);
