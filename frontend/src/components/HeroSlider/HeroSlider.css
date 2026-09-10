@@ -9,9 +9,9 @@
 .hero-slider {
   position: relative;
   width: 100%;
-  margin-top: var(--header-h);
-  background: var(--black);
-  overflow: visible;
+  margin-top: 0;
+  background: transparent;
+  overflow: hidden;
 
 
   /* the keyboard focus ring belongs on the controls, not the whole banner */
@@ -144,17 +144,18 @@
 }
 
 .hero-dots {
-  position: sticky;
-  left: 0;
-  right: 0;
-  bottom: 16px;
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+
   z-index: 3;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  width: 100%;
+  width: auto;
   gap: 10px;
 }
 
@@ -224,19 +225,22 @@
    */
 
   .hero-dots {
-  position: sticky;
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
 
-  width: 100%;
-  height: 34px;
+  width: auto;
+  height: auto;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  gap: 8px;
+  gap: 7px;
+  padding: 0;
 
-  padding: 8px 0;
-  transform: none;
+  z-index: 5;
 }
 
   .hero-dot {
