@@ -295,11 +295,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Reserved for the longest name in the grid ("POP Ceiling & Design",
-     three lines) so every card is exactly the same height regardless of
-     how many words its own name wraps to — a one-line name like
-     "Painting" sits centred in the same space a three-line one fills. */
-  min-height: calc(1.3em * 3);
+  /* Two lines, not three: only "POP Ceiling & Design" ever needs a third
+     line, and CSS Grid already sizes each ROW to its own tallest cell —
+     that one card's row still grows to fit it without this reservation
+     forcing every OTHER row (most names are one or two lines) to carry
+     the same empty space underneath a short label. */
+  min-height: calc(1.3em * 2);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
@@ -328,21 +329,21 @@
    it actually wins the cascade (same specificity, later source order). */
 @media (max-width: 479px) {
   .service-tile-grid {
-    gap: 6px;
+    gap: 4px;
   }
 
   .service-tile {
-    gap: 6px;
-    padding: 10px 6px;
+    gap: 4px;
+    padding: 8px 4px;
   }
 
   .service-tile-photo {
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 3 / 2;
   }
 
   .service-tile-icon {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
   }
 }
 
