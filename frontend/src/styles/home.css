@@ -358,7 +358,17 @@
   .home-hero {
     min-height: 0;
     padding-top: calc(var(--header-h-mobile) + var(--space-6));
-    padding-bottom: var(--space-6);
+    /* Was --space-6 (32px) — combined with .popular-services' own top
+       padding this left a conspicuously large empty gap below the search
+       bar on mobile, matching neither the reference nor the rest of the
+       page's spacing rhythm. */
+    padding-bottom: var(--space-4);
+  }
+
+  /* Same reason as .home-hero's own padding-bottom above — tightens the
+     gap below the search bar to match the reference. */
+  .popular-services {
+    padding-top: var(--space-5);
   }
 
   /* Matches the approved reference: no full-bleed background photo on
