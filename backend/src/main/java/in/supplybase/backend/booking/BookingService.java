@@ -55,13 +55,30 @@ public class BookingService {
      * The plumbing cart's pricing rule (from the approved rate card): actual
      * itemised pricing up to ₹5,000, a flat ₹99 home-visit/assessment fee
      * above that (adjusted into the final bill if the customer proceeds).
-     * Scoped narrowly to the 'cart_item' and 'consultation_type' question
-     * keys introduced for this flow (see V14) — every other category's
-     * pricing, including the electrician add-ons' own priced options, is
+     * Scoped narrowly to the 'plumbing' category slug (checked in create()
+     * below) and its 'cart_item'/'consultation_type' question keys (see
+     * V14) — every other category's pricing, including painting's own
+     * itemised total and the electrician add-ons' priced options, is
      * untouched by this.
      */
+    private static final String PLUMBING_SLUG = "plumbing";
     private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
     private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+
+    /**
+     * Painting's itemised answer keys (see V15) — priced the same way
+     * plumbing's 'cart_item' is (matched catalogue price × quantity, summed
+     * into itemsTotalPaise), but WITHOUT plumbing's ₹5,000/₹99 threshold
+     * override: painting's visitFeePaise stays exactly the category's own
+     * configured fee (see V15's pricing-conflict notes — the reference's
+     * ₹99 is not applied here pending confirmation). 'paint_brand' and every
+     * *_area/*_colour key are deliberately excluded — they carry no price in
+     * the reference, they are recorded as plain answers only.
+     */
+    private static final Set<String> PAINTING_PRICED_KEYS = Set.of(
+            "home_type", "full_home_painting_type", "full_home_product", "full_home_addon",
+            "few_walls_painting_type", "few_walls_product", "few_walls_addon",
+            "renovation_repair", "renovation_addon");
 
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
@@ -155,9 +172,14 @@ public class BookingService {
         // as before.
         if (pricing.itemsTotalPaise() > 0) {
             saved.setItemsTotalPaise(pricing.itemsTotalPaise());
-            saved.setVisitFeePaise(pricing.itemsTotalPaise() <= ACTUAL_PRICING_THRESHOLD_PAISE
-                    ? pricing.itemsTotalPaise()
-                    : HOME_VISIT_FEE_PAISE);
+            // Plumbing's ₹5,000/₹99 threshold is plumbing-only — painting
+            // (and anything else with a non-zero itemsTotalPaise) keeps the
+            // category's own flat visitFeePaise, already set above.
+            if (PLUMBING_SLUG.equals(category.getSlug())) {
+                saved.setVisitFeePaise(pricing.itemsTotalPaise() <= ACTUAL_PRICING_THRESHOLD_PAISE
+                        ? pricing.itemsTotalPaise()
+                        : HOME_VISIT_FEE_PAISE);
+            }
             saved = bookings.save(saved);
         } else if (pricing.hasConsultationAnswer()) {
             saved.setVisitFeePaise(HOME_VISIT_FEE_PAISE);
@@ -234,7 +256,7 @@ public class BookingService {
                     .answerValue(input.value())
                     .answerLabel(input.label());
 
-            if ("cart_item".equals(input.key())) {
+            if ("cart_item".equals(input.key()) || PAINTING_PRICED_KEYS.contains(input.key())) {
                 ServiceOption matched = optionByKeyAndValue.get(input.key() + " " + input.value());
                 if (matched != null && matched.getPricePaise() != null) {
                     int quantity = input.quantity() == null ? 1 : Math.max(1, input.quantity());
