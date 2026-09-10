@@ -15,13 +15,19 @@
   align-items: center;
   padding-top: calc(var(--header-h) + var(--space-6));
   padding-bottom: var(--space-8);
-  overflow: hidden;
   background: var(--white);
 }
 
+/* overflow:hidden lives here, not on .home-hero itself — this box is
+   inset:0 so it clips the background photo identically, but keeping it off
+   .home-hero means the search results dropdown (a descendant positioned
+   absolutely below the search input) can extend past the hero's bottom
+   edge instead of being clipped and appearing to vanish behind the
+   Popular Services section underneath it. */
 .home-hero-media {
   position: absolute;
   inset: 0;
+  overflow: hidden;
 }
 
 .home-hero-media img {
