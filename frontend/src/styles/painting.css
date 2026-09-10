@@ -1,10 +1,11 @@
-/* =========================================================================
-   SUPPLYBASE — PAINTING SERVICES
+/* -------------------------------------------------------------------------
+  SUPPLYBASE — PAINTING SERVICES
+
    Three itemised booking journeys (Full Home / Few Walls / Renovation),
    matching the approved reference. Prefixed `pnt-` so nothing collides with
    the rest of the site. Booking-flow screens (Details/Schedule/Confirm)
    reuse wizard.css directly, same precedent as plumbing.css.
-   ========================================================================= */
+  ------------------------------------------------------------------------- */
 
 .pnt-section {
   padding: var(--section-y) 0 calc(var(--section-y) + 40px);
@@ -34,7 +35,12 @@
 .pnt-hero-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(5, 5, 5, 0.5) 0%, rgba(5, 5, 5, 0.7) 55%, rgba(5, 5, 5, 0.92) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 5, 0.5) 0%,
+    rgba(5, 5, 5, 0.7) 55%,
+    rgba(5, 5, 5, 0.92) 100%
+  );
 }
 
 .pnt-hero-inner {
@@ -147,7 +153,10 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
 
 .pnt-overview-card:hover,
@@ -384,11 +393,17 @@
   color: var(--on-dark-muted);
   font-size: 0.72rem;
   font-weight: 700;
-  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  transition:
+    background var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-step.current .pnt-step-num {
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--gold-light) 0%,
+    var(--gold) 100%
+  );
   color: var(--on-gold);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
@@ -402,7 +417,6 @@
   color: var(--gold);
   stroke: var(--gold);
 }
-
 
 .pnt-step-line {
   flex: 1 1 auto;
@@ -458,7 +472,10 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-option:hover {
@@ -486,9 +503,16 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
   color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-option-body {
@@ -526,7 +550,11 @@
 
 .pnt-option.selected .pnt-option-radio {
   border-color: var(--gold);
-  background: radial-gradient(circle, var(--gold) 0 40%, transparent 42%);
+  background: radial-gradient(
+    circle,
+    var(--gold) 0 40%,
+    transparent 42%
+  );
 }
 
 .pnt-compare-link {
@@ -565,7 +593,10 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
 
 .pnt-brand-card:hover {
@@ -657,7 +688,9 @@
   font-size: 0.84rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 }
 
 .pnt-tab.active {
@@ -701,7 +734,10 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-product:hover {
@@ -729,9 +765,16 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
   color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-product-body {
@@ -795,11 +838,15 @@
   align-items: center;
   justify-content: center;
   color: rgba(0, 0, 0, 0.55);
-  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition:
+    box-shadow var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
 
 .pnt-swatch.selected .pnt-swatch-chip {
-  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--gold);
+  box-shadow:
+    0 0 0 2px var(--white),
+    0 0 0 4px var(--gold);
   transform: scale(0.94);
 }
 
@@ -934,12 +981,15 @@
   .pnt-modal-overlay {
     align-items: center;
   }
+
   .pnt-modal {
     border-radius: var(--radius-lg);
   }
+
   .pnt-compare-table {
     flex-direction: row;
   }
+
   .pnt-compare-col {
     flex: 1;
   }
@@ -964,7 +1014,10 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-addon:hover {
@@ -991,9 +1044,16 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
   color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-addon-body {
@@ -1087,7 +1147,11 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  background: linear-gradient(180deg, #fffdf5 0%, var(--gold-a08) 100%);
+  background: linear-gradient(
+    180deg,
+    #fffdf5 0%,
+    var(--gold-a08) 100%
+  );
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
@@ -1193,7 +1257,8 @@
   position: relative;
   margin-top: var(--space-6);
   padding: var(--space-7) var(--space-5);
-  background: var(--black) url('/assets/projects/modern-interior.jpeg') center/cover;
+  background: var(--black) url('/assets/projects/modern-interior.jpeg')
+    center/cover;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   text-align: center;
@@ -1204,7 +1269,11 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(5, 5, 5, 0.75), rgba(5, 5, 5, 0.9));
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 5, 0.75),
+    rgba(5, 5, 5, 0.9)
+  );
 }
 
 .pnt-closing-eyebrow,
@@ -1235,10 +1304,12 @@
   .pnt-hero {
     min-height: 340px;
   }
+
   .pnt-hero-logo {
     width: 64px;
     top: calc(var(--header-h-mobile) + var(--space-3));
   }
+
   /* Reserves room for the logo (64px + its right gutter) so a longer
      heading, like POP Ceiling & Design's, wraps before reaching it
      instead of running underneath — Painting's own shorter title never
@@ -1262,23 +1333,28 @@
     padding-top: calc(var(--header-h-mobile) + var(--space-3));
     padding-right: 90px;
   }
+
   .pnt-trust-row,
   .pnt-intro-trust {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .pnt-problems-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .pnt-brand-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .pnt-swatch-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-/* =========================================================
+
+/* ---------------------------------------------------------
    Painting flow inside Services modal
-   ========================================================= */
+   --------------------------------------------------------- */
 
 .painting-modal-scope .pnt-section {
   /* .pnt-section's own top/bottom padding (clamp 56-104px each) is meant to
@@ -1315,9 +1391,9 @@
   margin-top: 0 !important;
 }
 
-/* =========================================================
+/* -----------------------------------------------------------
    Painting modal — mobile product card layout
-   ========================================================= */
+   ----------------------------------------------------------- */
 
 @media (max-width: 767px) {
   .painting-modal-scope .pnt-product {
@@ -1376,13 +1452,9 @@
   }
 }
 
-/* =========================================================
+/* ---------------------------------------------------------
    Painting modal — progress indicator colours
-   ========================================================= */
-
-/* =========================================================
-   Painting modal — progress indicator colours
-   ========================================================= */
+   --------------------------------------------------------- */
 
 .painting-modal-scope .pnt-step-num {
   background: #000000 !important;
@@ -1420,9 +1492,9 @@
   background: var(--gold) !important;
 }
 
-/* =========================================================
+/* ---------------------------------------------------------
    Painting modal — top heading and help link colours
-   ========================================================= */
+   --------------------------------------------------------- */
 
 .painting-modal-scope .pnt-top-title {
   color: var(--ink) !important;
@@ -1436,9 +1508,9 @@
   color: var(--gold-deep) !important;
 }
 
-/* =========================================================
+/* ----------------------------------------------------------
    PAINTING DETAILS — MATCH WATERPROOFING CONTENT WIDTH
-   ========================================================= */
+   ----------------------------------------------------------*/
 
 @media (min-width: 768px) {
   .painting-details-container {

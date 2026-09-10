@@ -22,6 +22,8 @@ import PlumbingConsultationList from './pages/PlumbingConsultationList';
 import PlumbingConsultationBook from './pages/PlumbingConsultationBook';
 import PlumbingCart from './pages/PlumbingCart';
 import PlumbingCheckout from './pages/PlumbingCheckout';
+import PaintingCategory from './pages/PaintingCategory';
+import PaintingFlow from './pages/PaintingFlow';
 // import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -42,6 +44,8 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /services/plumbing/cart, /checkout  The item cart and its checkout flow
  * /services/plumbing/consultation, /consultation/:typeSlug  Consultation list + booking
  * /services/plumbing/:tabSlug  One plumbing category's itemised service list
+ * /services/painting      Painting Services overview grid (Full Home / Few Walls / Room / Renovation)
+ * /services/painting/:flowSlug  One painting journey (full-home | few-walls | renovation)
  * /booking/:slug          Same booking page, reached from the hero banners
  * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
  * /book                   Book a site visit (?type=service | ?type=project)
@@ -112,6 +116,14 @@ export default function App() {
         <Route path="services/plumbing/consultation" element={<PlumbingConsultationList />} />
         <Route path="services/plumbing/consultation/:typeSlug" element={<PlumbingConsultationBook />} />
         <Route path="services/plumbing/:tabSlug" element={<PlumbingTab />} />
+
+        {/* Painting Services: three itemised booking journeys (V15
+            migration) replacing the old generic wizard for this one
+            category — same precedent as plumbing above. One page component
+            (PaintingFlow) driven by the :flowSlug param and paintingContent.js's
+            flow config, rather than one file per journey. */}
+        <Route path="services/painting" element={<PaintingCategory />} />
+        <Route path="services/painting/:flowSlug" element={<PaintingFlow />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}
