@@ -14,6 +14,22 @@
   padding-bottom: calc(var(--space-9) + 40px);
 }
 
+/* Every wizard-shell page (this one, ElectricianService, PlumbingCheckout,
+   PlumbingConsultationBook) already has its own "Need help?" WhatsApp link
+   in the top bar, so the site-wide floating call/WhatsApp buttons are
+   redundant here — and being position:fixed at the bottom-right corner
+   regardless of scroll, they used to force every full-width row (tiles,
+   button rows) to reserve a permanent 70px margin so a row scrolled under
+   that corner wouldn't have its right edge visually hidden and its taps
+   intercepted by the fab circles instead of the row underneath. Hiding the
+   fabs here removes the need for that reservation, so rows can be genuinely
+   full width. body:has() rather than a route check: works for any current
+   or future page that renders .wizard-shell, with no routing knowledge to
+   keep in sync. */
+body:has(.wizard-shell) .floating-actions {
+  display: none;
+}
+
 .wizard-container {
   width: 100%;
   max-width: 780px;
@@ -555,12 +571,9 @@
     padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   }
   .tile-grid {
+    /* Genuinely full width now — the fabs that used to force a 70px
+       reservation here are hidden on wizard-shell pages, see above. */
     grid-template-columns: 1fr;
-    /* FloatingActions is fixed at this same bottom-right corner regardless
-       of scroll position, so a full-width tile here would otherwise render
-       right underneath those fab circles — same reason as .btn-row in
-       components.css. */
-    margin-right: 70px;
   }
   .schedule-grid {
     grid-template-columns: 1fr;

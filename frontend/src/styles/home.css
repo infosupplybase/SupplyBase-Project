@@ -183,19 +183,21 @@
 
 .service-tile-grid {
   display: grid;
-  /* Two per row below the desktop breakpoint (was four) — at four-across,
-     each card was too narrow for its photo, icon and label to read
-     comfortably on a phone. Two full-width cards per row fixes that at
-     every phone size. */
   /* minmax(0, 1fr), not a bare 1fr — a bare 1fr is shorthand for
      minmax(auto, 1fr), so a column whose cells happen to hold a longer
      unbreakable word (e.g. "Waterproofing") floors at that word's
      min-content width instead of splitting the row evenly, making every
      card in that column wider than its neighbours. minmax(0, 1fr) removes
-     the content-based floor so all four (or eight, or two) columns are
-     always exactly equal. */
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
+     the content-based floor so all four (or eight) columns are always
+     exactly equal. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (min-width: 480px) {
+  .service-tile-grid {
+    gap: var(--space-4);
+  }
 }
 
 /* A plain grid, not auto-fit/stretch: seven items in a four-wide grid
@@ -279,7 +281,7 @@
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
-  /* At the eight-across desktop width a card is still too narrow for
+  /* A four-across mobile card (eight-across on desktop) is too narrow for
      "Waterproofing" or "Electrician" to fit on one line — hyphenate at a
      real syllable break (Water-proofing) instead of the browser's default
      wrap-wherever-it-fits (Waterpr/oofing). html has lang="en" so the
@@ -317,6 +319,16 @@
        the four-over-four stack is a mobile-width concession, not the
        desktop layout. */
     grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+/* Three-across only on the narrowest phones (iPhone SE and similar,
+   ≤359px) — four columns at that width leaves each tile too small for its
+   photo, icon and label to read at all. Every other phone size keeps four
+   per row. */
+@media (max-width: 359px) {
+  .service-tile-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
