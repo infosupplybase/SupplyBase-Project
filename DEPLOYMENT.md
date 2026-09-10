@@ -1,19 +1,17 @@
 # Deploy Supplybase
 
-Three independent deployments, all pointed at the same API:
-
 - `frontend/` (the public website) → **Vercel**
 - `admin/` (the staff back-office) → **Vercel**, as a second, separate project
-- `backend/` (Java/Spring Boot API) → **Render** or **Railway**
+- `backend/` (Java/Spring Boot API) **and its MySQL database** → **self-hosted
+  on a Hostinger VPS** — see **section 6**, the actual deployment path this
+  project uses. Sections 1–5 describe an alternative managed-hosting path
+  (bring your own MySQL provider, deploy the API to any Docker-friendly host)
+  for anyone who isn't using the Hostinger VPS — skip straight to section 6
+  if you are.
 
-They share one MySQL database but are intentionally separate services — each
-frontend app can be redeployed, scaled or taken down without touching the
-other two.
-
-Sections 1–5 below cover that path (a managed MySQL provider + Render/Railway
-for the API). If you'd rather run the API and its database yourself on a
-single VPS instead — for example a Hostinger VPS/Cloud Hosting plan — skip to
-**section 6**.
+They share one MySQL database but are intentionally separate deployments —
+each frontend app can be redeployed, scaled or taken down without touching
+the other two.
 
 ## 1. Prepare MySQL
 
@@ -28,23 +26,15 @@ the API starts.
 
 ## 2. Deploy the Spring Boot API
 
-### Render
+Build and run [`backend/Dockerfile`](backend/Dockerfile) on any Docker-capable
+host (a plain VM, a container platform, etc.), pointed at the MySQL database
+from step 1.
 
-1. Push this repository to GitHub.
-2. In Render, choose **New → Blueprint** and select the repository.
-3. Render reads [`render.yaml`](render.yaml), builds `backend/Dockerfile`, and
-   creates the `supplybase-api` service.
-4. Add the required environment variables below, then deploy.
-5. Open `https://YOUR-API-HOST/actuator/health`. A healthy API returns an
+1. Push this repository to your Git host.
+2. Build the image from `backend/Dockerfile` and deploy it.
+3. Add the required environment variables below, then start it.
+4. Open `https://YOUR-API-HOST/actuator/health`. A healthy API returns an
    `UP` status.
-
-### Railway
-
-1. Create a new Railway project from the same GitHub repository.
-2. Set the service root directory to `backend`.
-3. Railway detects `backend/Dockerfile`; deploy it.
-4. Add the same environment variables listed below.
-5. Copy the public API URL after the deployment is healthy.
 
 ### Required API environment variables
 
@@ -133,12 +123,11 @@ either Vercel project — those stay in the API's environment only.
   the deployed website, and staff sign-in from the deployed admin app.
 - Use HTTPS-only production URLs.
 
-## 6. Self-host on a VPS (e.g. Hostinger)
+## 6. Self-host on a VPS (Hostinger) — the actual deployment used
 
-An alternative to sections 1–5 — everything on one server you control, MySQL
-included. Needs a VPS/Cloud Hosting plan with root SSH access (not a shared
-or "Business/WordPress" plan — those can't run Docker or a custom Java app),
-and Ubuntu 22.04 or 24.04.
+Everything on one server you control, MySQL included. Needs a VPS/Cloud
+Hosting plan with root SSH access (not a shared or "Business/WordPress" plan
+— those can't run Docker or a custom Java app), and Ubuntu 22.04 or 24.04.
 
 The pieces this uses: [`backend/docker-compose.prod.yml`](backend/docker-compose.prod.yml)
 (runs MySQL and the API as containers, MySQL never exposed outside that
