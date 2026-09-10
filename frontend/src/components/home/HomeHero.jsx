@@ -85,53 +85,69 @@ export default function HomeHero() {
       </div>
 
       <div className="container home-hero-inner">
-        <div className="home-hero-copy">
-          <h1>Home Services Made Simple</h1>
-          <p>Skilled professionals. Quality work. At your doorstep.</p>
-
-          <div className="home-search" ref={boxRef}>
-            <Icon name="search" size={19} className="home-search-icon" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setOpen(true);
-              }}
-              onFocus={() => setOpen(true)}
-              placeholder="Search for a service (e.g. painting, electrician)"
-              aria-label="Search for a service"
-            />
-
-            {open && query.trim() && (
-              <div className="home-search-results" role="listbox">
-                {searching && <p className="home-search-status">Searching…</p>}
-                {!searching && searchError && <p className="home-search-status error">{searchError}</p>}
-                {!searching && !searchError && results && results.length === 0 && (
-                  <p className="home-search-status">
-                    No services found for &ldquo;{query.trim()}&rdquo;. Try painting, plumbing or electrician.
-                  </p>
-                )}
-                {!searching &&
-                  !searchError &&
-                  results &&
-                  results.map((r) => (
-                    <button
-                      key={`${r.parentSlug || ''}-${r.slug}`}
-                      type="button"
-                      className="home-search-result"
-                      onClick={() => goTo(r)}
-                    >
-                      <Icon name={r.icon} size={17} />
-                      <span>
-                        <strong>{r.name}</strong>
-                        {r.tagline && <small>{r.tagline}</small>}
-                      </span>
-                    </button>
-                  ))}
-              </div>
-            )}
+        <div className="home-hero-top">
+          <div className="home-hero-copy">
+            <h1>Home Services Made Simple</h1>
+            <p>Skilled professionals. Quality work. At your doorstep.</p>
           </div>
+
+          {/* Mobile only (see home.css) — a distinct rounded photo beside
+              the heading, matching the approved reference. Desktop keeps
+              the full-bleed background photo above instead; this stays
+              hidden there so the same photo isn't shown twice. */}
+          <div className="home-hero-photo">
+            <img
+              src="/assets/projects/hero-house.jpeg"
+              alt=""
+              width={400}
+              height={400}
+              loading="lazy"
+            />
+          </div>
+        </div>
+
+        <div className="home-search" ref={boxRef}>
+          <Icon name="search" size={19} className="home-search-icon" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+            placeholder="Search for a service (e.g. painting, electrician)"
+            aria-label="Search for a service"
+          />
+
+          {open && query.trim() && (
+            <div className="home-search-results" role="listbox">
+              {searching && <p className="home-search-status">Searching…</p>}
+              {!searching && searchError && <p className="home-search-status error">{searchError}</p>}
+              {!searching && !searchError && results && results.length === 0 && (
+                <p className="home-search-status">
+                  No services found for &ldquo;{query.trim()}&rdquo;. Try painting, plumbing or electrician.
+                </p>
+              )}
+              {!searching &&
+                !searchError &&
+                results &&
+                results.map((r) => (
+                  <button
+                    key={`${r.parentSlug || ''}-${r.slug}`}
+                    type="button"
+                    className="home-search-result"
+                    onClick={() => goTo(r)}
+                  >
+                    <Icon name={r.icon} size={17} />
+                    <span>
+                      <strong>{r.name}</strong>
+                      {r.tagline && <small>{r.tagline}</small>}
+                    </span>
+                  </button>
+                ))}
+            </div>
+          )}
         </div>
       </div>
     </section>

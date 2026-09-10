@@ -54,22 +54,11 @@ export default function Navbar() {
   return (
     <>
       <div onMouseLeave={() => setMegaOpen(false)}>
-      <header
-  className={`
-    header
-    !top-0 !left-0 !right-0 !w-full !rounded-none
-    !bg-black/55
-    backdrop-blur-[20px]
-    border border-white/10
-    shadow-[0_8px_24px_rgba(0,0,0,0.18)]
-    transition-all duration-300 ease-out
-    ${scrolled ? 'scrolled' : ''}
-  `}
->
+      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
         <div className="container">
           <div className="header-inner">
             <Link to="/" className="brand" aria-label={`${company.name} — home`}>
-              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} className="brightness-125 contrast-125 drop-shadow-[0_2px_4px_rgba(0,0,0,0.45)]"/>
+              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
             </Link>
 
             <nav className="nav" aria-label="Main">
