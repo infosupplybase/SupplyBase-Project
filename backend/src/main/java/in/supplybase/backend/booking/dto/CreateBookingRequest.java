@@ -43,6 +43,8 @@ public record CreateBookingRequest(
     public record AnswerInput(
             @NotBlank @Size(max = 60) String key,
             @NotBlank @Size(max = 400) String value,
-            @Size(max = 300) String label) {
+            @Size(max = 300) String label,
+            /** Cart quantity — only meaningful for a 'cart_item' answer; null/absent means 1. */
+            @jakarta.validation.constraints.Min(1) Integer quantity) {
     }
 }
