@@ -1,7 +1,10 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import FloatingActions from './FloatingActions';
+// FloatingActions (the floating call/WhatsApp buttons) is disabled
+// sitewide on request. Import kept, not deleted, so re-enabling is a
+// two-line diff.
+// import FloatingActions from './FloatingActions';
 import ScrollToTop from './ScrollToTop';
 // BookBar (the sticky "Site visit + quotation / BOOK NOW" bar) is disabled
 // sitewide on request. Import kept, not deleted, so re-enabling is a
@@ -21,7 +24,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <Footer />
-      <FloatingActions />
+      {/* <FloatingActions /> */}
       {/* <BookBar /> */}
       <BottomNav />
     </>
