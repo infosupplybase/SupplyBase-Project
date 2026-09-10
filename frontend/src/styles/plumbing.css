@@ -812,16 +812,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* FloatingActions (call/WhatsApp) is fixed at this corner regardless of
-     scroll — same reason as .btn-row in components.css and .elc-tile in
-     electrician.css — so every row with a right-aligned action control needs
-     the same clearance or that control lands under the FAB circles. */
-  .plb-row,
-  .plb-visit-banner,
-  .plb-consult-card {
-    margin-right: 70px;
-  }
-
   .plb-row {
     flex-wrap: wrap;
   }

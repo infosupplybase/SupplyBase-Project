@@ -289,25 +289,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  /* .elc-tile, .elc-back-link and .elc-get-started all render on
-     ElectricianService's intro splash screen (.elc-intro-wrap), which is
-     NOT inside .wizard-shell — the site-wide floating call/WhatsApp
-     buttons are still visible there, same reason as .btn-row in
-     components.css: FloatingActions is fixed at this corner regardless of
-     scroll, so this full-width control would otherwise land right
-     underneath those fab circles. (.elc-estimate, further down this file,
-     only renders inside the wizard-shell steps that follow the splash,
-     where those fabs are hidden — see wizard.css — so it no longer needs
-     the same reservation.) */
-  .elc-tile,
-  .elc-back-link {
-    margin-right: 70px;
-  }
-
-  /* .btn-block sets width: 100% explicitly, so margin-right alone would
-     overflow instead of shrinking it — same fix as .ibc-form-submit. */
+  /* .elc-tile, .elc-back-link and .elc-get-started used to reserve a 70px
+     right margin here so they wouldn't render underneath the site-wide
+     floating call/WhatsApp buttons — FloatingActions is disabled sitewide
+     now (see Layout.jsx), so that reservation is gone too; these can be
+     genuinely full width. */
   .elc-get-started {
     width: auto;
-    margin-right: 70px;
   }
 }
