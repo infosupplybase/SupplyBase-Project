@@ -3,7 +3,10 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import FloatingActions from './FloatingActions';
 import ScrollToTop from './ScrollToTop';
-import BookBar from './BookBar';
+// BookBar (the sticky "Site visit + quotation / BOOK NOW" bar) is disabled
+// sitewide on request. Import kept, not deleted, so re-enabling is a
+// two-line diff.
+// import BookBar from './BookBar';
 import BottomNav from './BottomNav';
 
 /**
@@ -19,7 +22,7 @@ export default function Layout() {
       </main>
       <Footer />
       <FloatingActions />
-      <BookBar />
+      {/* <BookBar /> */}
       <BottomNav />
     </>
   );
