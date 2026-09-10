@@ -1127,13 +1127,4 @@
   .booking-nav .btn {
     flex: 1 1 auto;
   }
-  /* Same reason as .btn-row in components.css: these run edge to edge once
-     collapsed to a single column, so FloatingActions (fixed at this same
-     corner regardless of scroll) would otherwise sit right on top of
-     whichever one is in view. */
-  .booking-lanes,
-  .choice-grid,
-  .booking-nav {
-    margin-right: 70px;
-  }
 }

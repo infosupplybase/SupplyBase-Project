@@ -958,19 +958,10 @@
   .btn-row .btn {
     flex: 1 1 auto;
   }
-  /* Same reason as .ft-cta in footer.css: the .btn { flex: 1 1 auto } above
-     turns every .btn-row into a full-width row on mobile, and FloatingActions
-     is fixed at this same corner regardless of scroll, so without this any
-     of them would render right underneath those fab circles. */
-  .btn-row {
-    margin-right: 70px;
-  }
-  /* Same reason again: a form's fields run edge to edge, so whichever ones
-     land in the fab's corner while scrolling would otherwise have their
-     right portion covered and untappable. */
-  .form-card {
-    margin-right: 40px;
-  }
+  /* .btn-row and .form-card used to reserve a right margin here so they
+     wouldn't render underneath the site-wide floating call/WhatsApp
+     buttons — FloatingActions is disabled sitewide now (see Layout.jsx),
+     so both can be genuinely full width. */
   .floating-actions {
     right: 14px;
     bottom: 14px;
