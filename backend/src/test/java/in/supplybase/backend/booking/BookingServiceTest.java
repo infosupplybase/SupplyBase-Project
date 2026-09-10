@@ -136,7 +136,7 @@ class BookingServiceTest {
                     .thenReturn(List.of(question));
 
             CreateBookingRequest request = requestFor(date, time,
-                    List.of(new CreateBookingRequest.AnswerInput("issue", "leak", "Leaking pipe")));
+                    List.of(new CreateBookingRequest.AnswerInput("issue", "leak", "Leaking pipe", null)));
 
             BookingReceipt receipt = service.create(request, null);
 

@@ -14,6 +14,12 @@ import InteriorBooking from './pages/InteriorBooking';
 import ElectricalCategory from './pages/ElectricalCategory';
 import ElectricianService from './pages/ElectricianService';
 import OtherServicesCategory from './pages/OtherServicesCategory';
+import PlumbingCategory from './pages/PlumbingCategory';
+import PlumbingTab from './pages/PlumbingTab';
+import PlumbingConsultationList from './pages/PlumbingConsultationList';
+import PlumbingConsultationBook from './pages/PlumbingConsultationBook';
+import PlumbingCart from './pages/PlumbingCart';
+import PlumbingCheckout from './pages/PlumbingCheckout';
 import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -30,6 +36,10 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /services/:slug         Book a site visit for one of the four services
  * /services/electrical    Electrical Services category list
  * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
+ * /services/plumbing      Plumbing Services overview grid (8 categories + consultation)
+ * /services/plumbing/cart, /checkout  The item cart and its checkout flow
+ * /services/plumbing/consultation, /consultation/:typeSlug  Consultation list + booking
+ * /services/plumbing/:tabSlug  One plumbing category's itemised service list
  * /booking/:slug          Same booking page, reached from the hero banners
  * /projects               Projects with category filter
  * /projects/:slug         Project detail
@@ -91,6 +101,17 @@ export default function App() {
             request. A category list in front of five existing generic
             wizard pages, same shape as the electrical category list. */}
         <Route path="services/other-services" element={<OtherServicesCategory />} />
+
+        {/* Plumbing Services: an itemised cart catalogue (V14 migration)
+            replacing the old generic wizard for this one category. Exact
+            child paths declared ahead of services/:slug so they win over
+            that wildcard, same precedent as services/electrical above. */}
+        <Route path="services/plumbing" element={<PlumbingCategory />} />
+        <Route path="services/plumbing/cart" element={<PlumbingCart />} />
+        <Route path="services/plumbing/checkout" element={<PlumbingCheckout />} />
+        <Route path="services/plumbing/consultation" element={<PlumbingConsultationList />} />
+        <Route path="services/plumbing/consultation/:typeSlug" element={<PlumbingConsultationBook />} />
+        <Route path="services/plumbing/:tabSlug" element={<PlumbingTab />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}

@@ -1,0 +1,882 @@
+/* =========================================================================
+   SUPPLYBASE — PLUMBING SERVICES
+   The itemised cart catalogue: hero, pricing banner, category tabs, service
+   rows, consultation cards and the sticky cart bar. Everything here is
+   prefixed `plb-` so nothing collides with the rest of the site. The
+   booking flows (checkout / consultation booking) reuse wizard.css instead
+   of duplicating it — only the plumbing-specific screens live here.
+   ========================================================================= */
+
+.plb-section {
+  padding: var(--section-y) 0 calc(var(--section-y) + 70px);
+}
+
+/* ------------------------------------------------------------------ hero */
+
+.plb-hero {
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--black);
+  overflow: hidden;
+}
+
+.plb-hero > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+}
+
+.plb-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.55) 0%, rgba(5, 5, 5, 0.72) 55%, rgba(5, 5, 5, 0.92) 100%);
+}
+
+.plb-hero-inner {
+  position: relative;
+  z-index: 1;
+  padding: 96px 0 var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.plb-hero-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold-light);
+  text-transform: uppercase;
+}
+
+.plb-hero-inner h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  color: var(--white);
+  max-width: 700px;
+}
+
+.plb-hero-inner > p {
+  color: var(--on-dark-muted);
+  font-size: 1rem;
+  max-width: 560px;
+}
+
+.plb-hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.plb-hero-trust li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--on-dark);
+}
+
+.plb-hero-trust svg {
+  color: var(--gold-light);
+  flex-shrink: 0;
+}
+
+/* The site header is `position: fixed` with its own z-index (--z-header),
+   always on top regardless of scroll — so this has to sit below the
+   header's own height, not just below its top edge, or it renders hidden
+   behind the header's translucent bar and nav controls. */
+.plb-hero-logo {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--header-h) + var(--space-4));
+  right: var(--gutter);
+  width: 84px;
+  height: auto;
+}
+
+/* ---------------------------------------------------------- pricing banner */
+
+.plb-pricing-banner {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  background: #fdf7e9;
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  margin: var(--space-6) 0 var(--space-5);
+}
+
+.plb-pricing-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gold-a24);
+  color: var(--gold-deep);
+}
+
+.plb-pricing-banner h3 {
+  font-size: 0.98rem;
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+
+.plb-pricing-banner p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.plb-pricing-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--gold-deep);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------- overview */
+
+.plb-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.plb-overview-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.plb-overview-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.plb-overview-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  background: var(--light-bg);
+  overflow: hidden;
+}
+
+.plb-overview-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.plb-overview-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: var(--space-3) var(--space-4) 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.plb-overview-name svg {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+.plb-overview-price {
+  padding: 6px var(--space-4) 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--gold-deep);
+}
+
+.plb-overview-price-note {
+  padding: 0 var(--space-4) var(--space-4);
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+}
+
+.plb-overview-consult {
+  background: var(--dark);
+  border-color: var(--dark);
+}
+
+.plb-overview-consult .plb-overview-name {
+  color: var(--white);
+}
+
+.plb-overview-consult .plb-overview-name svg {
+  color: var(--on-dark-muted);
+}
+
+.plb-overview-consult .plb-overview-price {
+  color: var(--gold-light);
+}
+
+.plb-overview-consult .plb-overview-price-note {
+  color: var(--on-dark-muted);
+}
+
+.plb-trust-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  margin: var(--space-7) 0 0;
+  padding: var(--space-5) 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.plb-trust-row li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.plb-trust-row svg {
+  color: var(--gold-deep);
+}
+
+/* -------------------------------------------------------------- category tabs */
+
+.plb-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+  margin-bottom: var(--space-5);
+}
+
+.plb-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.plb-tab {
+  flex-shrink: 0;
+  padding: 9px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.plb-tab.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-gold);
+}
+
+/* ------------------------------------------------------------------ search */
+
+.plb-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--space-4);
+  height: 48px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--ink-muted);
+  margin-bottom: var(--space-4);
+}
+
+.plb-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+.plb-select-heading {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin: 0 0 var(--space-3);
+}
+
+/* -------------------------------------------------------------- service rows */
+
+.plb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: var(--space-6);
+}
+
+.plb-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.plb-row-thumb {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-sm);
+  background: var(--svc-plumbing-soft);
+  color: var(--svc-plumbing);
+}
+
+.plb-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plb-row-name {
+  font-weight: 600;
+  font-size: 0.96rem;
+  color: var(--ink);
+}
+
+.plb-row-desc {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.plb-row-price {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gold-deep);
+}
+
+.plb-row-price span {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--ink-muted);
+  margin-left: 4px;
+}
+
+.plb-add-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.plb-add-btn:hover {
+  background: var(--gold-dark);
+}
+
+.plb-qty {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.plb-qty button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.plb-qty button:hover {
+  background: var(--gold-a24);
+}
+
+.plb-qty span {
+  min-width: 26px;
+  text-align: center;
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.plb-visit-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--dark);
+  border-radius: var(--radius-lg);
+  color: var(--on-dark);
+}
+
+.plb-visit-banner svg {
+  flex-shrink: 0;
+  color: var(--gold-light);
+}
+
+.plb-visit-banner > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.plb-visit-banner strong {
+  display: block;
+  font-size: 0.96rem;
+  margin-bottom: 2px;
+}
+
+.plb-visit-banner p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--on-dark-muted);
+}
+
+.plb-visit-banner .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- consultation */
+
+.plb-consult-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.plb-consult-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.plb-consult-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.plb-consult-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.plb-consult-body strong {
+  display: block;
+  font-size: 1rem;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.plb-consult-body p {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+}
+
+.plb-consult-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.plb-consult-price {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  color: var(--gold-deep);
+}
+
+.plb-consult-price em {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+  margin-left: 4px;
+}
+
+.plb-consult-duration {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.plb-consult-book {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.plb-consult-book:hover {
+  background: var(--gold-dark);
+}
+
+/* --------------------------------------------------------------- sticky cart */
+
+.plb-cart-bar {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 18px;
+  z-index: var(--z-sticky-cta);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--dark);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: calc(var(--container-narrow) - var(--gutter) * 2);
+  margin: 0 auto;
+}
+
+.plb-cart-bar-icon {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--gold-a24);
+  color: var(--gold-light);
+}
+
+.plb-cart-bar-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.plb-cart-bar-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.plb-cart-bar-text strong {
+  font-size: 0.88rem;
+  color: var(--white);
+}
+
+.plb-cart-bar-text span {
+  font-size: 0.76rem;
+  color: var(--on-dark-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plb-cart-bar-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.plb-cart-bar-btn:hover {
+  background: var(--gold-dark);
+}
+
+/* -------------------------------------------------------------------- cart */
+
+.plb-cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-8) 0;
+  color: var(--ink-muted);
+}
+
+.plb-cart-empty h1 {
+  font-size: 1.3rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.plb-cart-empty p {
+  margin: 0 0 var(--space-2);
+}
+
+.plb-cart-head {
+  margin-bottom: var(--space-5);
+}
+
+.plb-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-3);
+}
+
+.plb-cart-head h1 {
+  font-size: 1.4rem;
+  color: var(--ink);
+  margin: 0;
+}
+
+.plb-cart-head h1 span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-muted);
+  margin-left: 6px;
+}
+
+.plb-cart-row {
+  flex-wrap: wrap;
+}
+
+.plb-cart-row-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.plb-cart-row-total {
+  min-width: 72px;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+
+.plb-cart-row-remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--ink-muted);
+}
+
+.plb-cart-row-remove:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.plb-cart-summary {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.plb-cart-summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.plb-cart-summary-row span {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.plb-cart-summary-row strong {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--gold-deep);
+}
+
+.plb-cart-summary-note {
+  margin: 0 0 var(--space-4);
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- mobile */
+
+@media (max-width: 767px) {
+  .plb-hero {
+    min-height: 320px;
+  }
+
+  .plb-hero-inner {
+    padding: 72px 0 var(--space-6);
+  }
+
+  .plb-hero-logo {
+    width: 56px;
+    top: calc(var(--header-h-mobile) + var(--space-3));
+  }
+
+  .plb-overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plb-trust-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* FloatingActions (call/WhatsApp) is fixed at this corner regardless of
+     scroll — same reason as .btn-row in components.css and .elc-tile in
+     electrician.css — so every row with a right-aligned action control needs
+     the same clearance or that control lands under the FAB circles. */
+  .plb-row,
+  .plb-visit-banner,
+  .plb-consult-card {
+    margin-right: 70px;
+  }
+
+  .plb-row {
+    flex-wrap: wrap;
+  }
+
+  .plb-row-body {
+    order: 1;
+    flex-basis: calc(100% - 68px);
+  }
+
+  .plb-add-btn,
+  .plb-qty {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .plb-visit-banner {
+    flex-wrap: wrap;
+  }
+
+  .plb-consult-card {
+    flex-wrap: wrap;
+  }
+
+  .plb-consult-body {
+    flex-basis: calc(100% - 68px);
+  }
+
+  .plb-consult-book {
+    margin-left: auto;
+  }
+
+  .plb-cart-bar {
+    left: var(--space-3);
+    right: var(--space-3);
+  }
+
+  .plb-cart-row-actions {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+}
+
+/* Lift the cart bar above the bottom nav, same convention bottom-nav.css
+   uses for .book-bar (same breakpoint, same offset). */
+@media (max-width: 900px) {
+  .plb-cart-bar {
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ------------------------------------------------------------ wide desktop */
+
+@media (min-width: 1024px) {
+  .plb-overview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

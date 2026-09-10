@@ -51,6 +51,18 @@ public class BookingService {
     /** A real person does not book six site visits in an hour; a bot does. */
     private static final int MAX_PER_PHONE_PER_HOUR = 5;
 
+    /**
+     * The plumbing cart's pricing rule (from the approved rate card): actual
+     * itemised pricing up to ₹5,000, a flat ₹99 home-visit/assessment fee
+     * above that (adjusted into the final bill if the customer proceeds).
+     * Scoped narrowly to the 'cart_item' and 'consultation_type' question
+     * keys introduced for this flow (see V14) — every other category's
+     * pricing, including the electrician add-ons' own priced options, is
+     * untouched by this.
+     */
+    private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
+    private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
     private final UserRepository users;
@@ -135,9 +147,28 @@ public class BookingService {
         }
 
         Booking saved = bookings.save(booking);
-        storeAnswers(saved, category, request.answers());
+        CartPricing pricing = storeAnswers(saved, category, request.answers());
+
+        // Cart/consultation pricing rule — scoped to the 'cart_item' and
+        // 'consultation_type' answer keys only (see the constants' Javadoc).
+        // Every other booking keeps the category's flat visitFeePaise exactly
+        // as before.
+        if (pricing.itemsTotalPaise() > 0) {
+            saved.setItemsTotalPaise(pricing.itemsTotalPaise());
+            saved.setVisitFeePaise(pricing.itemsTotalPaise() <= ACTUAL_PRICING_THRESHOLD_PAISE
+                    ? pricing.itemsTotalPaise()
+                    : HOME_VISIT_FEE_PAISE);
+            saved = bookings.save(saved);
+        } else if (pricing.hasConsultationAnswer()) {
+            saved.setVisitFeePaise(HOME_VISIT_FEE_PAISE);
+            saved = bookings.save(saved);
+        }
+
         notifyStaff(saved);
         return BookingReceipt.from(saved);
+    }
+
+    private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
     }
 
     /**
@@ -146,25 +177,38 @@ public class BookingService {
      * The request shape is open — questions are data — but that must not mean
      * anything can be written. A key the service never asks about is dropped,
      * and a choice that is not one of the offered options is refused outright.
+     *
+     * Also computes the cart pricing total: for a 'cart_item' answer whose
+     * matched catalogue option carries a price, the line's unit price and
+     * quantity are copied from the catalogue/request — quantity from the
+     * request (client-chosen, capped at 1 minimum by validation), price
+     * always from the catalogue, never from the request — and multiplied
+     * into a running total. This is what create() uses to decide the real
+     * amount payable, so a manipulated client-side total can never be
+     * charged.
      */
-    private void storeAnswers(Booking booking, ServiceCategory category,
+    private CartPricing storeAnswers(Booking booking, ServiceCategory category,
                               List<CreateBookingRequest.AnswerInput> submitted) {
         if (submitted == null || submitted.isEmpty()) {
-            return;
+            return new CartPricing(0L, false);
         }
 
         Map<String, ServiceOption> questionByKey = new HashMap<>();
         Map<String, Set<String>> allowedByKey = new HashMap<>();
+        Map<String, ServiceOption> optionByKeyAndValue = new HashMap<>();
         for (ServiceOption option : options
                 .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(category.getId())) {
             questionByKey.putIfAbsent(option.getQuestionKey(), option);
             if (option.getOptionValue() != null) {
                 allowedByKey.computeIfAbsent(option.getQuestionKey(), k -> new HashSet<>())
                         .add(option.getOptionValue());
+                optionByKeyAndValue.put(option.getQuestionKey() + " " + option.getOptionValue(), option);
             }
         }
 
         List<BookingAnswer> rows = new ArrayList<>();
+        long itemsTotalPaise = 0L;
+        boolean hasConsultationAnswer = false;
         for (CreateBookingRequest.AnswerInput input : submitted) {
             ServiceOption question = questionByKey.get(input.key());
             if (question == null) {
@@ -181,17 +225,31 @@ public class BookingService {
                         "\"" + input.value() + "\" is not an option for that question.");
             }
 
-            rows.add(BookingAnswer.builder()
+            BookingAnswer.BookingAnswerBuilder row = BookingAnswer.builder()
                     .bookingId(booking.getId())
                     .questionKey(input.key())
                     // Copied from the catalogue, not from the request — the
                     // browser does not get to decide what it was asked.
                     .questionText(question.getQuestionText())
                     .answerValue(input.value())
-                    .answerLabel(input.label())
-                    .build());
+                    .answerLabel(input.label());
+
+            if ("cart_item".equals(input.key())) {
+                ServiceOption matched = optionByKeyAndValue.get(input.key() + " " + input.value());
+                if (matched != null && matched.getPricePaise() != null) {
+                    int quantity = input.quantity() == null ? 1 : Math.max(1, input.quantity());
+                    long lineTotal = matched.getPricePaise() * quantity;
+                    row.quantity(quantity).unitPricePaise(matched.getPricePaise()).lineTotalPaise(lineTotal);
+                    itemsTotalPaise += lineTotal;
+                }
+            } else if ("consultation_type".equals(input.key())) {
+                hasConsultationAnswer = true;
+            }
+
+            rows.add(row.build());
         }
         answers.saveAll(rows);
+        return new CartPricing(itemsTotalPaise, hasConsultationAnswer);
     }
 
     /* ------------------------------------------------------------- reads */

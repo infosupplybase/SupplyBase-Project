@@ -83,7 +83,8 @@ class BookingControllerTest {
     private static BookingReceipt sampleReceipt() {
         return new BookingReceipt("SB-20260906-000001", BookingStatus.PAYMENT_PENDING,
                 "Plumbing", LocalDate.now().plusDays(3), LocalTime.of(10, 0),
-                new java.math.BigDecimal("25.00"), "₹25.00", "Your booking is reserved.");
+                new java.math.BigDecimal("25.00"), "₹25.00", null, null, true,
+                "Your booking is reserved.");
     }
 
     @Nested
