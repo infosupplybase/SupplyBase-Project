@@ -202,7 +202,7 @@
      the content-based floor so all four (or eight) columns are always
      exactly equal. */
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 @media (min-width: 480px) {
@@ -218,8 +218,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: var(--space-4) var(--space-2);
+  gap: 8px;
+  padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
   background: var(--white);
   box-shadow: var(--shadow-sm);
@@ -239,7 +239,10 @@
 .service-tile-photo {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  /* Slightly shorter than square so the card as a whole reads wider than
+     tall at four-across — a plain 1:1 photo left these noticeably taller
+     than wide once the icon and (up to three-line) label were added. */
+  aspect-ratio: 6 / 5;
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--light-bg);
