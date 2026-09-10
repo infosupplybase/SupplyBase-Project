@@ -246,6 +246,11 @@
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--light-bg);
+  /* Forces its own compositing layer — WebKit/Safari can otherwise fail to
+     clip a transformed child (the scaled img below) to this box's own
+     border-radius, letting its square corners paint outside the rounded
+     photo and the card border around it. */
+  transform: translateZ(0);
 }
 
 .service-tile-photo img {
@@ -258,6 +263,10 @@
      slightly crops that border out of frame so only this container's own
      border-radius shows, instead of two mismatched roundings stacking. */
   transform: scale(1.14);
+  /* Belt and braces alongside overflow:hidden + translateZ(0) above — if a
+     browser still fails to clip the scaled image to the container, the
+     image is rounded to the same radius regardless. */
+  border-radius: inherit;
 }
 
 /* Only reachable if a category is ever missing hero_image entirely — every
