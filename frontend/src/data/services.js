@@ -289,8 +289,8 @@ export const services = [
     cardText: 'POP, gypsum and designer false ceilings with cove and LED lighting.',
     summary:
       'A false ceiling does more than hide wiring — it sets the lighting and the proportion of the room. We execute POP and gypsum ceilings, designer profiles, wall moulding, cornice and partition work, with the LED cove and light points planned into the design from the start.',
-    heroImage: '/assets/services/pop-false-ceiling.svg',
-    gallery: ['/assets/services/pop-false-ceiling.svg', '/assets/projects/modern-interior.svg'],
+    heroImage: '/assets/pop-ceiling/hero/living-room-cove.jpg',
+    gallery: ['/assets/pop-ceiling/hero/living-room-cove.jpg', '/assets/pop-ceiling/full-home/ceiling-design.jpg'],
     subServices: [
       { name: 'POP Ceiling', text: 'Traditional plaster of Paris ceilings with a smooth, paint-ready finish.' },
       { name: 'Gypsum Ceiling', text: 'Gypsum board ceilings on GI framing — fast, clean and stable.' },
