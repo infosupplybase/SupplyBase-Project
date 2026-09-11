@@ -371,11 +371,14 @@
   }
 }
 
-/* Three-across only on the narrowest phones (iPhone SE and similar,
-   ≤359px) — four columns at that width leaves each tile too small for its
-   photo, icon and label to read at all. Every other phone size keeps four
-   per row. */
-@media (max-width: 359px) {
+/* Three-across on every phone up to 430px (iPhone SE through the largest
+   Pro Max / Android flagships in portrait) — four columns at these widths
+   left long single-word labels ("Waterproofing", "Design", "Services") too
+   narrow to hyphenate cleanly, wrapping down to a dangling 2-3 letter
+   fragment ("Waterproof-ing", "De-sign", "Ser-vices"). Three columns gives
+   each tile enough width for hyphens:auto to break at a sensible point, or
+   avoid breaking the word at all. */
+@media (max-width: 430px) {
   .service-tile-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
