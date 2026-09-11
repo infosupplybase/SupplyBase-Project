@@ -49,6 +49,12 @@ export default function ServiceBooking({
   const { slug: routeSlug } = useParams();
   const slug = serviceSlug || routeSlug;
   const { user } = useAuth();
+
+  // A category-list card can deep-link straight into one `service_needed`
+  // choice, e.g. /booking/pop-ceiling-design?preselect=False%20Ceiling —
+  // used by subservices that have no dedicated flow of their own and fall
+  // back to this generic wizard. Read once; a value that doesn't match any
+  // option this category actually offers is silently ignored below.
   const [searchParams] = useSearchParams();
   const preselect = searchParams.get('preselect');
 
@@ -1059,9 +1065,9 @@ export default function ServiceBooking({
   );
 }
 
-/* ==========================================================
+/* ----------------------------------------------------------
    Field
-========================================================== */
+---------------------------------------------------------- */
 
 function Field({
   id,
@@ -1107,9 +1113,9 @@ function Field({
   );
 }
 
-/* ==========================================================
+/* ----------------------------------------------------------
    Summary
-========================================================== */
+---------------------------------------------------------- */
 
 function Summary({
   category,
@@ -1256,9 +1262,9 @@ function Summary({
   );
 }
 
-/* ==========================================================
+/* ----------------------------------------------------------
    Confirmation
-========================================================== */
+---------------------------------------------------------- */
 
 function Confirmation({
   receipt,

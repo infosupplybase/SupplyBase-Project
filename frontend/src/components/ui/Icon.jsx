@@ -431,6 +431,61 @@ const paths = {
       <path d="m10.5 9.5 5 2.5-5 2.5z" />
     </>
   ),
+
+  /* -------------------------------------------------------- pop ceiling */
+  tv: (
+    <>
+      <rect x="2.5" y="4.5" width="19" height="13" rx="1.5" />
+      <path d="M8 21h8M12 17.5V21" />
+    </>
+  ),
+  cove: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M3 6c2 3 4 4 9 4s7-1 9-4" />
+      <path d="M9 20h6M12 14v6" />
+    </>
+  ),
+  tray: (
+    <>
+      <rect x="3" y="4" width="18" height="6" rx="1" />
+      <rect x="6.5" y="10" width="11" height="5" rx="1" />
+      <path d="M9 20h6M12 15v5" />
+    </>
+  ),
+  border: (
+    <>
+      <rect x="3" y="4" width="18" height="5" rx="1" />
+      <path d="M6 9v9M18 9v9" />
+      <path d="M9 20h6M12 9v11" />
+    </>
+  ),
+  cornice: (
+    <>
+      <path d="M3 4h18v4H10v13H3z" />
+      <path d="M3 4v13h7" />
+    </>
+  ),
+  moulding: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M3 6v3M8 6v3M13 6v3M18 6v3M21 6v3" />
+      <path d="M9 20h6M12 9v11" />
+    </>
+  ),
+  curtain: (
+    <>
+      <path d="M4 4h16" />
+      <path d="M6 4c0 6-2 8-2 14M18 4c0 6 2 8 2 14" />
+      <path d="M10 4c0 7-1.5 9-1.5 14M14 4c0 7 1.5 9 1.5 14" />
+    </>
+  ),
+  panel: (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="1.5" />
+      <path d="M9 3.5v17M15 3.5v17" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 22, strokeWidth = 1.6, className = '', ...rest }) {
