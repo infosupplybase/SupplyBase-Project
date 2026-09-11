@@ -108,7 +108,7 @@ export default function About() {
                   <video
                     className="supplybase-video"
                     autoPlay
-                    unmuted
+                    muted
                     loop
                     playsInline
                     controls
