@@ -30,6 +30,20 @@ const ICON_BY_SLUG = {
     convention as the photo itself. */
 const iconSrc = (slug) => `/assets/popular-services/${slug}-icon.png`;
 
+/** Soft-hyphen (­, invisible unless the browser actually breaks the
+    line there) insertion points for the two labels that are a single long
+    word with no space to wrap at. Deliberately explicit rather than relying
+    on CSS hyphens:auto — its dictionary-based guess is inconsistent across
+    browsers and, on some phones, breaks at an ugly point ("Waterproof-ing"
+    instead of "Water-proofing"). Every other label wraps fine at its own
+    word boundary and needs no override. */
+const LABEL_OVERRIDES = {
+  waterproofing: 'Water­proofing',
+  electrical: 'Electri­cian',
+};
+
+const displayName = (category) => LABEL_OVERRIDES[category.slug] || category.name;
+
 export default function PopularServices() {
   const [categories, setCategories] = useState(null);
   const [error, setError] = useState('');
@@ -95,7 +109,7 @@ export default function PopularServices() {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-                <span className="service-tile-name">{category.name}</span>
+                <span className="service-tile-name">{displayName(category)}</span>
               </Link>
             ))}
           </div>
