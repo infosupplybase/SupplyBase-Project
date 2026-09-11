@@ -20,7 +20,7 @@ import { contact } from '../data/siteConfig';
 const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
 const SCHEDULE = 3;
 const CONFIRM = 4;
-const DEDICATED_FLOW_PREFIXES = ['wp_'];
+const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
 
 const emptyDetails = {
   name: '',
@@ -171,7 +171,27 @@ export default function ServiceBooking({
   }, [user]);
 
   /**
-   * Questions for each question stage.
+   * Questions for each of the three question stages.
+   *
+   * Split by MEANING, not by the catalogue's step number. Plumbing puts
+   * property_type at step 3 while painting puts it at step 2, so a positional
+   * split labelled the "Where is the service required?" question as
+   * "Property". The Property stage is whichever question asks for the
+   * property type, wherever the catalogue happens to place it.
+   *
+   * FILE questions are dropped for now — uploads are collected on WhatsApp
+   * until the storage backend exists, and a dead upload button would be worse
+   * than none.
+   *
+   * A category can be PARTLY rebuilt (POP Ceiling, Waterproofing): most of
+   * its subservices get their own dedicated flow page with its own new,
+   * flow-prefixed catalogue keys (pop_*, wp_*), but a few still fall back
+   * to this generic wizard via a ?preselect= deep link (see the `preselect`
+   * handling above). Those flow-prefixed keys exist on the SAME category row
+   * as the legacy generic-wizard questions, so without this exclusion they
+   * would silently appear as extra, out-of-place Details-stage fields here
+   * too — this wizard was never designed to render them. Any newly added
+   * dedicated-flow prefix should be added to this list.
    */
   const stageQuestions = useMemo(() => {
     if (!form || !Array.isArray(form.questions)) {

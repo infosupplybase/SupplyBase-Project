@@ -26,6 +26,9 @@ import PaintingCategory from './pages/PaintingCategory';
 import PaintingFlow from './pages/PaintingFlow';
 import PopCeilingCategory from './pages/PopCeilingCategory';
 import PopCeilingFlow from './pages/PopCeilingFlow';
+import WaterproofingCategory from './pages/WaterproofingCategory';
+import WaterproofingBathroom from './pages/WaterproofingBathroom';
+import WaterproofingFlow from './pages/WaterproofingFlow';
 // import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -50,6 +53,10 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /services/painting/:flowSlug  One painting journey (full-home | few-walls | renovation)
  * /services/pop-ceiling-design  POP Ceiling & Design overview list (six subservices)
  * /services/pop-ceiling-design/:flowSlug  One of the two detailed POP journeys (full-home | room)
+ * /services/waterproofing       Waterproofing overview list (six subservices)
+ * /services/waterproofing/bathroom  Bathroom's own six-row list (only Floor Waterproofing is detailed)
+ * /services/waterproofing/:flowSlug  One of six detailed journeys (terrace | exterior-wall |
+ *                                 bathroom-floor | interior-wall | water-tank | basement)
  * /booking/:slug          Same booking page, reached from the hero banners — also where
  *                          POP's four non-detailed subservices land, via ?preselect=<value>
  *                          (see ServiceBooking.jsx)
@@ -140,6 +147,16 @@ export default function App() {
             preselected (see ServiceBooking.jsx). */}
         <Route path="services/pop-ceiling-design" element={<PopCeilingCategory />} />
         <Route path="services/pop-ceiling-design/:flowSlug" element={<PopCeilingFlow />} />
+
+        {/* Waterproofing: six subservices, in the reference's own order.
+            Five open WaterproofingFlow directly; Bathroom opens its own
+            six-row sub-list first (WaterproofingBathroom), where only
+            Floor Waterproofing has a detailed flow of its own — the other
+            five link to /booking/waterproofing?preselect=..., same
+            fallback pattern as POP Ceiling's non-detailed subservices. */}
+        <Route path="services/waterproofing" element={<WaterproofingCategory />} />
+        <Route path="services/waterproofing/bathroom" element={<WaterproofingBathroom />} />
+        <Route path="services/waterproofing/:flowSlug" element={<WaterproofingFlow />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}
