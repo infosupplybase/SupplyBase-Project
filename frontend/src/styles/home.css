@@ -281,16 +281,6 @@
   color: var(--gold);
 }
 
-/* The category's own gold icon, sitting in the plain white space between
-   the photo and its label — not overlapping the photo at all, so it can
-   never read as a misplaced element. */
-.service-tile-icon {
-  display: block;
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-}
-
 .service-tile-name {
   display: flex;
   align-items: center;
@@ -340,11 +330,6 @@
 
   .service-tile-photo {
     aspect-ratio: 3 / 2;
-  }
-
-  .service-tile-icon {
-    width: 22px;
-    height: 22px;
   }
 }
 
