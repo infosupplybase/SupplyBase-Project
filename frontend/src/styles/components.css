@@ -503,7 +503,7 @@
 .page-hero h1 {
   color: var(--ink);
   font-size: clamp(2rem, 4.6vw, 3.4rem);
-  margin-bottom: 0.7rem;
+  margin-bottom: 1.2rem;
 }
 
 .page-hero p {
@@ -977,4 +977,15 @@
   .stats {
     grid-template-columns: 1fr;
   }
+}
+
+
+
+/* Contact page — reduce the gap between hero and enquiry section */
+.page-hero.contact-page-hero {
+  padding-bottom: 1rem;
+}
+
+.contact-section {
+  padding-top: 1rem;
 }

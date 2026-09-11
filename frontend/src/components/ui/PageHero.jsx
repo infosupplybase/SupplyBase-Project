@@ -6,9 +6,9 @@ import Breadcrumbs from './Breadcrumbs';
  * Pass `accent` a service slug and the header takes that service's colour on
  * its top rule and eyebrow. Left off, the header stays neutral.
  */
-export default function PageHero({ eyebrow, title, text, image, breadcrumbs = [], accent, children }) {
+export default function PageHero({ eyebrow, title, text, image, breadcrumbs = [], accent, children, className = '' }) {
   return (
-    <section className="page-hero" data-service={accent}>
+   <section className={`page-hero ${className}`} data-service={accent}>
       {image && (
         <div className="page-hero-bg">
           <img src={image} alt="" />
