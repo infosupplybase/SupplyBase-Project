@@ -1128,3 +1128,57 @@
     flex: 1 1 auto;
   }
 }
+.service-card {
+  position: relative;
+  min-height: 280px;
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.service-card-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  transition: transform 0.4s ease;
+}
+
+.service-card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.82),
+    rgba(0,0,0,0.25)
+  );
+}
+
+.service-card-content {
+  position: relative;
+  z-index: 2;
+  min-height: 280px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.service-card-content h3 {
+  color: #fff !important;
+  margin-bottom: 8px;
+}
+
+.service-card-content p {
+  color: #fff !important;
+  font-size: 0.93rem;
+  margin: 0;
+}
+
+.service-card:hover .service-card-bg {
+  transform: scale(1.05);
+}
