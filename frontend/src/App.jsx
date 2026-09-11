@@ -29,6 +29,9 @@ import PopCeilingFlow from './pages/PopCeilingFlow';
 import WaterproofingCategory from './pages/WaterproofingCategory';
 import WaterproofingBathroom from './pages/WaterproofingBathroom';
 import WaterproofingFlow from './pages/WaterproofingFlow';
+import InteriorDesignCategory from './pages/InteriorDesignCategory';
+import InteriorDesignCatalogue from './pages/InteriorDesignCatalogue';
+import InteriorDesignFlow from './pages/InteriorDesignFlow';
 // import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -57,6 +60,10 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /services/waterproofing/bathroom  Bathroom's own six-row list (only Floor Waterproofing is detailed)
  * /services/waterproofing/:flowSlug  One of six detailed journeys (terrace | exterior-wall |
  *                                 bathroom-floor | interior-wall | water-tank | basement)
+ * /services/interior-design      Category grid (1 BHK / 2 BHK / 3 BHK / Villa) — separate
+ *                                 from /interior-by-choice below, which is untouched
+ * /services/interior-design/:categorySlug  Project grid for one category
+ * /services/interior-design/:categorySlug/:projectSlug  One project's full flow
  * /booking/:slug          Same booking page, reached from the hero banners — also where
  *                          POP's four non-detailed subservices land, via ?preselect=<value>
  *                          (see ServiceBooking.jsx)
@@ -157,6 +164,15 @@ export default function App() {
         <Route path="services/waterproofing" element={<WaterproofingCategory />} />
         <Route path="services/waterproofing/bathroom" element={<WaterproofingBathroom />} />
         <Route path="services/waterproofing/:flowSlug" element={<WaterproofingFlow />} />
+
+        {/* Interior Design: separate from Interior by Choice (its own
+            routes below, untouched) — a category grid (1/2/3 BHK + Villa),
+            each opening a project grid, each project opening one
+            config-driven flow (package -> details -> customise ->
+            consultation -> confirm). */}
+        <Route path="services/interior-design" element={<InteriorDesignCategory />} />
+        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignCatalogue />} />
+        <Route path="services/interior-design/:categorySlug/:projectSlug" element={<InteriorDesignFlow />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}
