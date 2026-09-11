@@ -61,12 +61,17 @@ export default function About() {
                 </h2>
 
                 <p className="text-[var(--grey-600)] mb-3">
-                  Most construction projects go wrong in the gaps - between design, people, and execution. Supplybase exists to close those gaps.
+                 Most construction projects go wrong in the gaps - between
+                design, people, and execution. Supplybase exists to close
+                those gaps.
 
                 </p>
 
                 <p className="text-[var(--grey-600)] mb-0">
-                  Supplybase brings the entire project together under one team.We handle drawings, labour, materials, and project management.You get one contract, one point of contact, and clear accountability.From the first sketch to handover, we manage it all.
+                  Supplybase brings the entire project together under one team.
+                  We handle drawings, labour, materials, and project management.
+                  You get one contract, one point of contact, and clear
+                  accountability. From the first sketch to handover, we manage it all.
                 </p>
 
                 <div className="flex flex-wrap gap-3 mt-5">
@@ -94,19 +99,29 @@ export default function About() {
               </div>
             </Reveal>
 
-            {/* Image */}
-            <Reveal
-              className="media-frame"
-              delay={120}
-            >
-              <div className="split-media">
-                <img
-                  src="/assets/services/architectural-design.svg"
-                  alt="Supplybase design and construction"
-                  className="w-full h-auto block"
-                />
-              </div>
-            </Reveal>
+            {/* Video */}
+              <Reveal
+                className="media-frame"
+                delay={120}
+              >
+                <div className="split-media w-full max-w-md">
+                  <video
+                    className="supplybase-video"
+                    autoPlay
+                    unmuted
+                    loop
+                    playsInline
+                    controls
+                    preload="metadata"
+                  >
+                    <source
+                      src="/assets/hero/aboutus.mp4"
+                      type="video/mp4"
+                    />
+                    Your browser does not support video.
+                  </video>
+                </div>
+              </Reveal>
 
           </div>
         </div>
