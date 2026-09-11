@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
@@ -26,8 +26,17 @@ const isValidPhone = (value) =>
  * catalogue rework, since InteriorBooking now has a real category to book
  * against.)
  */
-export default function InteriorBooking() {
-  const { spaceSlug, designSlug } = useParams();
+export default function InteriorBooking({
+  modal = false,
+  spaceSlug: propSpaceSlug,
+  designSlug: propDesignSlug,
+  onBack,
+  onStepChange,
+}) {
+  const params = useParams();
+
+const spaceSlug = propSpaceSlug || params.spaceSlug;
+const designSlug = propDesignSlug || params.designSlug;
   const { location } = useLocationContext();
   const space = spaceSlug ? getSpaceBySlug(spaceSlug) : null;
   const design = spaceSlug && designSlug ? getDesignBySlug(spaceSlug, designSlug) : null;
@@ -40,6 +49,12 @@ export default function InteriorBooking() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useState(null);
+
+  useEffect(() => {
+  if (modal && onStepChange) {
+    onStepChange();
+  }
+}, [step, receipt, modal, onStepChange]);
 
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -80,8 +95,13 @@ export default function InteriorBooking() {
         city: location,
       });
       setReceipt(result);
-      setStep(2);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+setStep(2);
+
+if (modal) {
+  onStepChange?.();
+} else {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setError(friendlyError(err));
@@ -92,14 +112,26 @@ export default function InteriorBooking() {
 
   return (
     <>
-      <PageHero
+     {!modal && (  <PageHero
         eyebrow="INTERIOR BY CHOICE"
         title="Book a Home Visit"
         breadcrumbs={[{ label: 'Interior by Choice', to: '/interior-by-choice' }, { label: 'Book a Home Visit' }]}
-      />
+      />)}
 
-      <section className="ibc-section">
-        <div className="container container-narrow">
+<section
+  className={
+    modal
+      ? 'ibc-booking-modal w-full'
+      : 'ibc-section'
+  }
+>
+  <div
+    className={
+      modal
+        ? 'w-full max-sm:mx-auto max-sm:max-w-[360px]'
+        : 'container container-narrow'
+    }
+  >
           {step < 2 && (
             <ol className="ibc-steps">
               {STEPS.map((label, i) => (
@@ -119,7 +151,21 @@ export default function InteriorBooking() {
                 <strong>{design ? `${space.name} – ${design.name}` : space.name}</strong>
                 {design && <span className="ibc-selected-price">₹{HOME_VISIT_FEE} (Visit Charge)</span>}
               </div>
-              <Link to={`/interior-by-choice${spaceSlug ? `/${spaceSlug}` : ''}`}>Change</Link>
+              {modal ? (
+  <button
+    type="button"
+    onClick={onBack}
+    className="ibc-selected-change"
+  >
+    Change
+  </button>
+) : (
+  <Link
+    to={`/interior-by-choice${spaceSlug ? `/${spaceSlug}` : ''}`}
+  >
+    Change
+  </Link>
+)}
             </div>
           )}
 
@@ -186,7 +232,7 @@ export default function InteriorBooking() {
           )}
 
           {step === 2 && receipt && (
-            <div className="ibc-confirm-panel">
+            <div className="ibc-confirm-panel pb-6">
               <span className="ibc-confirm-icon">
                 <Icon name="check" size={30} />
               </span>
@@ -224,8 +270,19 @@ export default function InteriorBooking() {
                 </p>
               </div>
 
-              <Link to="/dashboard" className="btn btn-dark ibc-form-submit">View Booking</Link>
-              <Link to="/" className="btn btn-ghost ibc-form-submit">Back to Home</Link>
+              <Link
+  to="/dashboard"
+  className="btn btn-dark ibc-form-submit"
+>
+  View Booking
+</Link>
+
+<Link
+  to="/"
+  className="btn btn-ghost ibc-form-submit mb-2"
+>
+  Back to Home
+</Link>
             </div>
           )}
         </div>

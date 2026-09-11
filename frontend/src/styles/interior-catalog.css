@@ -717,4 +717,24 @@
   .ibc-confirm-panel {
     margin: 0 70px 0 0;
   }
+  /* Interior booking shown inside Services modal:
+   no floating-action clearance is needed here. */
+.ibc-booking-modal .ibc-visit-cta,
+.ibc-booking-modal .ibc-custom-band,
+.ibc-booking-modal .ibc-customise-cta,
+.ibc-booking-modal .ibc-detail-actions,
+.ibc-booking-modal .ibc-space-grid,
+.ibc-booking-modal .ibc-design-grid,
+.ibc-booking-modal .ibc-date-row,
+.ibc-booking-modal .ibc-detail-head,
+.ibc-booking-modal .ibc-swatch-row,
+.ibc-booking-modal .ibc-selected-service {
+  margin-right: 0;
+}
+
+.ibc-booking-modal .ibc-form-panel,
+.ibc-booking-modal .ibc-confirm-panel {
+  margin-left: auto;
+  margin-right: auto;
+}
 }
