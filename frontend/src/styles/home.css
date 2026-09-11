@@ -240,9 +240,8 @@
   position: relative;
   width: 100%;
   /* Slightly shorter than square so the card as a whole reads wider than
-     tall at four-across — a plain 1:1 photo left these noticeably taller
-     than wide once the icon and (up to three-line) label were added. */
-  aspect-ratio: 6 / 5;
+     tall at four-across. */
+  aspect-ratio: 11 / 10;
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--light-bg);
@@ -329,7 +328,7 @@
   }
 
   .service-tile-photo {
-    aspect-ratio: 3 / 2;
+    aspect-ratio: 4 / 3;
   }
 }
 
