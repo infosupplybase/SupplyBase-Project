@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+
 import PageHero from '../components/ui/PageHero';
 import SectionHeading from '../components/ui/SectionHeading';
 import Reveal from '../components/ui/Reveal';
@@ -6,22 +7,23 @@ import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
 import StatsSection from '../components/home/StatsSection';
 import ProcessSection from '../components/home/ProcessSection';
+
 import { company, whyUsPoints } from '../data/siteConfig';
 
 const pillars = [
   {
-    icon: 'blueprint',
     title: 'Design',
+    image: '/assets/services/architectural-design.jpeg',
     text: 'Architectural planning, 2D/3D designs, elevations, and working drawings.',
   },
   {
-    icon: 'crane',
     title: 'Build',
+    image: '/assets/services/construction.jpeg',
     text: 'RCC, masonry, plastering, electrical, plumbing, and all essential building work.',
   },
   {
-    icon: 'trowel',
     title: 'Finish',
+    image: '/assets/services/interior-design.jpeg',
     text: 'Ceiling, furniture, painting, flooring, and final touch-ups for a perfect handover.',
   },
 ];
@@ -35,7 +37,7 @@ export default function About() {
         eyebrow="ABOUT US"
         title="ONE PARTNER. COMPLETE PROJECT."
         text={company.longIntro}
-        image="/assets/hero-house.svg"
+        image="/assets/hero-house.jpeg"
         breadcrumbs={[{ label: 'About Us' }]}
       />
 
@@ -61,17 +63,17 @@ export default function About() {
                 </h2>
 
                 <p className="text-[var(--grey-600)] mb-3">
-                 Most construction projects go wrong in the gaps - between
-                design, people, and execution. Supplybase exists to close
-                those gaps.
-
+                  Most construction projects go wrong in the gaps - between
+                  design, people, and execution. Supplybase exists to close
+                  those gaps.
                 </p>
 
                 <p className="text-[var(--grey-600)] mb-0">
                   Supplybase brings the entire project together under one team.
                   We handle drawings, labour, materials, and project management.
                   You get one contract, one point of contact, and clear
-                  accountability. From the first sketch to handover, we manage it all.
+                  accountability. From the first sketch to handover, we manage
+                  it all.
                 </p>
 
                 <div className="flex flex-wrap gap-3 mt-5">
@@ -127,117 +129,114 @@ export default function About() {
         </div>
       </section>
 
-    {/* ================= WHAT WE DO ================= */}
-<section className="pt-0 pb-4 md:pb-6 bg-[var(--section-light)]">
-  <div className="container mx-auto px-3 md:px-5">
+      {/* ================= WHAT WE DO ================= */}
+      <section className="section section-light">
 
-    <SectionHeading
-      center
-      eyebrow="WHAT WE DO"
-      title="THREE STAGES, ONE TEAM"
-      text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
-    />
+        <div className="container">
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <SectionHeading
+            center
+            eyebrow="WHAT WE DO"
+            title="THREE STAGES, ONE TEAM"
+            text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
+          />
 
-      {pillars.map((pillar, i) => (
-        <Reveal
-          key={pillar.title}
-          delay={i * 90}
-          className="
-            value-card
-            !bg-black/10
-            backdrop-blur-xl
-            !border-white/25
-            !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
-            !p-3
-            !m-0
-          "
-        >
-          <div className="value-icon mb-2">
-            <Icon
-              name={pillar.icon}
-              size={24}
-              strokeWidth={1.4}
-            />
+          <div className="value-grid">
+
+            {pillars.map((pillar, i) => (
+              <Reveal
+                key={pillar.title}
+                className="value-card service-card"
+                delay={i * 90}
+              >
+
+                <img
+                  src={pillar.image}
+                  alt={pillar.title}
+                  className="service-card-bg"
+                />
+
+                <div className="service-card-overlay" />
+
+                <div className="service-card-content">
+
+                  <h3>{pillar.title}</h3>
+
+                  <p>{pillar.text}</p>
+
+                </div>
+
+              </Reveal>
+            ))}
+
           </div>
 
-          <h3 className="!mt-0 !mb-1">
-            {pillar.title}
-          </h3>
+        </div>
 
-          <p className="!mt-0 !mb-0">
-            {pillar.text}
-          </p>
-        </Reveal>
-      ))}
+      </section>
 
-    </div>
-  </div>
-</section>
+      {/* ================= HOW WE WORK ================= */}
+      <section className="section">
 
-     {/* ================= HOW WE WORK ================= */}
-<section className="py-4 md:py-6">
-  <div className="container mx-auto px-3 md:px-5">
+        <div className="container">
 
-    <SectionHeading
-      center
-      eyebrow="HOW WE WORK"
-      title="WHAT YOU CAN EXPECT"
-      text="The things our clients tell us matter most when they hand over a project."
-    />
+          <SectionHeading
+            center
+            eyebrow="HOW WE WORK"
+            title="WHAT YOU CAN EXPECT"
+            text="The things our clients tell us matter most when they hand over a project."
+          />
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div className="value-grid">
 
-      {whyUsPoints.map((point, i) => (
-        <Reveal
-          key={point.title}
-          delay={(i % 3) * 80}
-          className="
-            value-card
-            !bg-black/10
-            backdrop-blur-xl
-            !border-white/25
-            !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
-            !p-3
-            !m-0
-          "
-        >
-          <div className="value-icon mb-2">
-            <Icon
-              name={point.icon}
-              size={24}
-              strokeWidth={1.4}
-            />
+            {whyUsPoints.map((point, i) => (
+              <Reveal
+                key={point.title}
+                className="value-card service-card"
+                delay={(i % 3) * 80}
+              >
+
+                <img
+                  src={point.image}
+                  alt={point.title}
+                  className="service-card-bg"
+                />
+
+                <div className="service-card-overlay" />
+
+                <div className="service-card-content">
+
+                  <h3>{point.title}</h3>
+
+                  <p>{point.text}</p>
+
+                </div>
+
+              </Reveal>
+            ))}
+
           </div>
 
-          <h3 className="!mt-0 !mb-1">
-            {point.title}
-          </h3>
+        </div>
 
-          <p className="!mt-0 !mb-0">
-            {point.text}
-          </p>
-        </Reveal>
-      ))}
+      </section>
 
-    </div>
-  </div>
-</section>
       {/* ================= PROCESS ================= */}
       <div className="mt-0">
         <ProcessSection />
       </div>
 
       {/* ================= STATS ================= */}
-      {/* <div className="mt-0">
+      {/*
+      <div className="mt-0">
         <StatsSection showHeading={false} />
-      </div> */}
+      </div>
+      */}
 
       {/* ================= CTA ================= */}
       <div className="mt-1 mb-1 w-full px-0 py-10">
-      <CtaBand />
-    </div>
+        <CtaBand />
+      </div>
 
     </div>
   );
