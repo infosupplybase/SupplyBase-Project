@@ -42,7 +42,7 @@
    a negative inset reaches outside the border box and widened the whole page
    by 16px, which is invisible on a desktop and a horizontal scrollbar on a
    phone. */
-.media-frame {
+/* .media-frame {
   position: relative;
   padding: 0 18px 18px 0;
 }
@@ -54,6 +54,24 @@
   border: 2px solid var(--gold);
   border-radius: var(--radius-lg);
   z-index: -1;
+} */
+
+.media-frame {
+  position: relative;
+  padding: 0 18px 18px 0;
+}
+
+.media-frame .split-media {
+  width: 60%;
+  overflow: hidden;
+  position: relative;
+  border-radius: var(--radius-lg);
+}
+
+.supplybase-video {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 /* checked list */
