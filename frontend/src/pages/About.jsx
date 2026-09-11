@@ -8,20 +8,38 @@ import StatsSection from '../components/home/StatsSection';
 import ProcessSection from '../components/home/ProcessSection';
 import { company, whyUsPoints } from '../data/siteConfig';
 
+// const pillars = [
+//   {
+//     icon: 'blueprint',
+//     title: 'Design',
+//     text: 'Architectural planning, 2D drawings, 3D exterior and interior views, elevations and working drawings.',
+//   },
+//   {
+//     icon: 'crane',
+//     title: 'Build',
+//     text: 'RCC structure, masonry, plastering, electrical, plumbing and everything the building needs to stand up.',
+//   },
+//   {
+//     icon: 'trowel',
+//     title: 'Finish',
+//     text: 'Ceiling, furniture, painting, flooring and the final touch-up that decides how the project looks on handover day.',
+//   },
+// ];
+
 const pillars = [
   {
-    icon: 'blueprint',
     title: 'Design',
+    image: '/assets/services/architectural-design.jpeg',
     text: 'Architectural planning, 2D drawings, 3D exterior and interior views, elevations and working drawings.',
   },
   {
-    icon: 'crane',
     title: 'Build',
+    image: '/assets/services/construction.jpeg',
     text: 'RCC structure, masonry, plastering, electrical, plumbing and everything the building needs to stand up.',
   },
   {
-    icon: 'trowel',
     title: 'Finish',
+    image: '/assets/services/interior-design.jpeg',
     text: 'Ceiling, furniture, painting, flooring and the final touch-up that decides how the project looks on handover day.',
   },
 ];
@@ -33,7 +51,7 @@ export default function About() {
         eyebrow="ABOUT US"
         title="ONE PARTNER. COMPLETE PROJECT."
         text={company.longIntro}
-        image="/assets/hero-house.svg"
+        image="/assets/hero-house.jpeg"
         breadcrumbs={[{ label: 'About Us' }]}
       />
 
@@ -90,7 +108,7 @@ export default function About() {
             text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
           />
           <div className="value-grid">
-            {pillars.map((pillar, i) => (
+            {/* {pillars.map((pillar, i) => (
               <Reveal
   key={pillar.title}
   className="
@@ -108,13 +126,38 @@ export default function About() {
                 <h3>{pillar.title}</h3>
                 <p>{pillar.text}</p>
               </Reveal>
-            ))}
+            ))} */}
+
+<div className="value-grid">
+  {pillars.map((pillar, i) => (
+    <Reveal
+      key={pillar.title}
+      className="value-card service-card"
+      delay={i * 90}
+    >
+      <img
+        src={pillar.image}
+        alt={pillar.title}
+        className="service-card-bg"
+      />
+
+      <div className="service-card-overlay" />
+
+      <div className="service-card-content">
+        <h3>{pillar.title}</h3>
+        <p>{pillar.text}</p>
+      </div>
+    </Reveal>
+  ))}
+  
+</div>
+   
           </div>
         </div>
       </section>
 
       {/* how we work */}
-      <section className="section">
+      {/* <section className="section">
         <div className="container">
           <SectionHeading
             center
@@ -144,7 +187,41 @@ export default function About() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
+
+      <section className="section">
+  <div className="container">
+    <SectionHeading
+      center
+      eyebrow="HOW WE WORK"
+      title="WHAT YOU CAN EXPECT"
+      text="The things our clients tell us matter most when they hand over a project."
+    />
+
+    <div className="value-grid">
+      {whyUsPoints.map((point, i) => (
+        <Reveal
+          key={point.title}
+          className="value-card service-card"
+          delay={(i % 3) * 80}
+        >
+          <img
+            src={point.image}
+            alt={point.title}
+            className="service-card-bg"
+          />
+
+          <div className="service-card-overlay" />
+
+          <div className="service-card-content">
+            <h3>{point.title}</h3>
+            <p>{point.text}</p>
+          </div>
+        </Reveal>
+      ))}
+    </div>
+  </div>
+</section>
 
       <ProcessSection />
       <StatsSection showHeading={false} />

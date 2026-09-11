@@ -104,38 +104,78 @@ export const processSteps = [
  * DIFFERENTIATORS — the reasons to choose us, shown on the home page and the
  * About page. (There is no longer a separate Why Us page.)
  */
+// export const whyUsPoints = [
+//   {
+//     icon: 'partners',
+//     title: 'One Partner For Everything',
+//     text: 'Design, civil work, interiors, electrical, plumbing and finishing handled by a single accountable team — no coordinating five different contractors.',
+//   },
+//   {
+//     icon: 'package',
+//     title: 'Labour + Material Supplied',
+//     text: 'We arrange skilled labour and quality materials together, so you get one clear rate instead of chasing suppliers yourself.',
+//   },
+//   {
+//     icon: 'blueprint',
+//     title: 'Design Before You Build',
+//     text: '2D plans, 3D exterior and 3D interior views let you see the finished result before the first brick is laid.',
+//   },
+//   {
+//     icon: 'shield',
+//     title: 'Quality You Can Trust',
+//     text: 'Supervised workmanship, standard materials and stage-wise checks on every project we take on.',
+//   },
+//   {
+//     icon: 'clock',
+//     title: 'On-Time Delivery',
+//     text: 'Clear timelines agreed at the start and a schedule that our site team is held to.',
+//   },
+//   {
+//     icon: 'rupee',
+//     title: 'Transparent Pricing',
+//     text: 'Itemised quotations with no hidden charges, so you always know what you are paying for.',
+//   },
+// ];
+
 export const whyUsPoints = [
   {
-    icon: 'partners',
     title: 'One Partner For Everything',
-    text: 'Design, civil work, interiors, electrical, plumbing and finishing handled by a single accountable team — no coordinating five different contractors.',
+    text: 'Design, civil work, interiors, electrical, plumbing and finishing handled by a single accountable team.',
+    icon: 'users',
+    image: '/assets/about/one-partner.jpeg',
   },
   {
-    icon: 'package',
     title: 'Labour + Material Supplied',
     text: 'We arrange skilled labour and quality materials together, so you get one clear rate instead of chasing suppliers yourself.',
+    icon: 'box',
+    image: '/assets/about/labour-material.jpeg',
   },
   {
-    icon: 'blueprint',
     title: 'Design Before You Build',
     text: '2D plans, 3D exterior and 3D interior views let you see the finished result before the first brick is laid.',
+    icon: 'layout',
+    image: '/assets/about/design-before-build.jpeg',
   },
   {
-    icon: 'shield',
     title: 'Quality You Can Trust',
     text: 'Supervised workmanship, standard materials and stage-wise checks on every project we take on.',
+    icon: 'shield',
+    image: '/assets/about/quality.jpeg',
   },
   {
-    icon: 'clock',
     title: 'On-Time Delivery',
-    text: 'Clear timelines agreed at the start and a schedule that our site team is held to.',
+    text: 'Clear timelines agreed at the start and a schedule that our site team sticks to.',
+    icon: 'clock',
+    image: '/assets/about/on-time.jpeg',
   },
   {
-    icon: 'rupee',
     title: 'Transparent Pricing',
     text: 'Itemised quotations with no hidden charges, so you always know what you are paying for.',
+    icon: 'circle-dollar',
+    image: '/assets/about/pricing.jpeg',
   },
 ];
+
 
 /**
  * PRIMARY NAVIGATION.

@@ -12,3 +12,4 @@ preview/out
 
 # local editor / agent config (machine-specific paths)
 .claude
+/.metadata/
