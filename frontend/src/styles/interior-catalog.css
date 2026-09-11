@@ -683,58 +683,9 @@
     flex-direction: column;
   }
 
-  /* Same reason as .btn-row in components.css: FloatingActions is fixed at
-     this corner regardless of scroll, so this full-width row (or the right
-     column of a two-up grid) would otherwise land right underneath those
-     fab circles. */
-  .ibc-visit-cta,
-  .ibc-custom-band,
-  .ibc-customise-cta,
-  .ibc-detail-actions,
-  .ibc-space-grid,
-  .ibc-design-grid,
-  .ibc-date-row,
-  .ibc-detail-head,
-  .ibc-swatch-row,
-  .ibc-selected-service {
-    margin-right: 70px;
-  }
-
-  /* margin-right alone would overflow here since the table has an explicit
-     width: 100% rather than the auto width the rule above relies on. */
-  .ibc-material-table {
-    width: auto;
-    margin-right: 70px;
-  }
-
-  /* These two panels are width: auto but centred with margin: 0 auto, so a
-     plain margin-right fights the auto left margin instead of shrinking
-     the box — dropping the centring and setting both margins explicitly
-     is what actually narrows it (and, since it's the containing block,
-     everything inside it that's width: 100% — the fields, the submit
-     button, the confirm summary — narrows with it). */
-  .ibc-form-panel,
-  .ibc-confirm-panel {
-    margin: 0 70px 0 0;
-  }
-  /* Interior booking shown inside Services modal:
-   no floating-action clearance is needed here. */
-.ibc-booking-modal .ibc-visit-cta,
-.ibc-booking-modal .ibc-custom-band,
-.ibc-booking-modal .ibc-customise-cta,
-.ibc-booking-modal .ibc-detail-actions,
-.ibc-booking-modal .ibc-space-grid,
-.ibc-booking-modal .ibc-design-grid,
-.ibc-booking-modal .ibc-date-row,
-.ibc-booking-modal .ibc-detail-head,
-.ibc-booking-modal .ibc-swatch-row,
-.ibc-booking-modal .ibc-selected-service {
-  margin-right: 0;
-}
-
-.ibc-booking-modal .ibc-form-panel,
-.ibc-booking-modal .ibc-confirm-panel {
-  margin-left: auto;
-  margin-right: auto;
-}
+  /* These all used to reserve a right margin here (and, for the two panels
+     below, drop their own centring to do it) so they wouldn't render
+     underneath the site-wide floating call/WhatsApp buttons —
+     FloatingActions is disabled sitewide now (see Layout.jsx), so
+     everything here is genuinely full width again. */
 }

@@ -26,6 +26,10 @@
 @import './interior-catalog.css';
 @import './electrician.css';
 @import './plumbing.css';
+@import './painting.css';
+@import './pop-ceiling.css';
+@import './waterproofing.css';
+@import './interior-design.css';
 @import './footer.css';
 
 /* --- still being migrated off the old token names --------------------- */

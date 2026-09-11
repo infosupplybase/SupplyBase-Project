@@ -5,8 +5,10 @@ import { processSteps } from '../../data/siteConfig';
 
 export default function ProcessSection({ dark = true }) {
   return (
-    <section className={`section ${dark ? 'section-dark' : 'section-light'}`}>
-      <div className="container">
+     <section
+      className={`section !pt-0 ${dark ? 'section-dark' : 'section-light'}`}
+    >
+      <div className="container !pt-5" >
         <SectionHeading
           center
           eyebrow="HOW IT WORKS"

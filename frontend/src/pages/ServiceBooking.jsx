@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import QuestionField from '../components/booking/QuestionField';
 import SlotPicker from '../components/booking/SlotPicker';
@@ -46,6 +46,13 @@ export default function ServiceBooking({
   const { slug: routeSlug } = useParams();
   const slug = serviceSlug || routeSlug;
   const { user } = useAuth();
+  // A category-list card can deep-link straight into one `service_needed`
+  // choice, e.g. /booking/pop-ceiling-design?preselect=False%20Ceiling —
+  // used by subservices that have no dedicated flow of their own and fall
+  // back to this generic wizard. Read once; a value that doesn't match any
+  // option this category actually offers is silently ignored below.
+  const [searchParams] = useSearchParams();
+  const preselect = searchParams.get('preselect');
 
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +86,10 @@ export default function ServiceBooking({
         // Switching service mid-flow must not carry answers to questions the
         // new service never asked.
         setStage(0);
-        setAnswers({});
+        const validPreselect = preselect
+          && result.questions.some((q) => q.key === 'service_needed'
+            && q.options?.some((o) => o.value === preselect));
+        setAnswers(validPreselect ? { service_needed: [preselect] } : {});
         setDate('');
         setTime('');
         setErrors({});
@@ -119,10 +129,23 @@ export default function ServiceBooking({
    * FILE questions are dropped for now — uploads are collected on WhatsApp
    * until the storage backend exists, and a dead upload button would be worse
    * than none.
+   *
+   * A category can be PARTLY rebuilt (POP Ceiling, Waterproofing): most of
+   * its subservices get their own dedicated flow page with its own new,
+   * flow-prefixed catalogue keys (pop_*, wp_*), but a few still fall back
+   * to this generic wizard via a ?preselect= deep link (see the `preselect`
+   * handling above). Those flow-prefixed keys exist on the SAME category
+   * row as the legacy generic-wizard questions, so without this exclusion
+   * they would silently appear as extra, out-of-place Details-stage fields
+   * here too — this wizard was never designed to render them. Any newly
+   * added dedicated-flow prefix should be added to this list.
    */
+  const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
   const stageQuestions = useMemo(() => {
     if (!form) return [[], [], []];
-    const usable = form.questions.filter((q) => q.inputType !== 'FILE');
+    const usable = form.questions.filter(
+      (q) => q.inputType !== 'FILE' && !DEDICATED_FLOW_PREFIXES.some((p) => q.key.startsWith(p))
+    );
     const service = usable.filter((q) => q.key === 'service_needed');
     const property = usable.filter((q) => q.key === 'property_type');
     const details = usable.filter(

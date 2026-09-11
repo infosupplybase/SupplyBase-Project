@@ -240,12 +240,16 @@
   position: relative;
   width: 100%;
   /* Slightly shorter than square so the card as a whole reads wider than
-     tall at four-across — a plain 1:1 photo left these noticeably taller
-     than wide once the icon and (up to three-line) label were added. */
-  aspect-ratio: 6 / 5;
+     tall at four-across. */
+  aspect-ratio: 11 / 10;
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--light-bg);
+  /* Forces its own compositing layer — WebKit/Safari can otherwise fail to
+     clip a transformed child (the scaled img below) to this box's own
+     border-radius, letting its square corners paint outside the rounded
+     photo and the card border around it. */
+  transform: translateZ(0);
 }
 
 .service-tile-photo img {
@@ -258,6 +262,10 @@
      slightly crops that border out of frame so only this container's own
      border-radius shows, instead of two mismatched roundings stacking. */
   transform: scale(1.14);
+  /* Belt and braces alongside overflow:hidden + translateZ(0) above — if a
+     browser still fails to clip the scaled image to the container, the
+     image is rounded to the same radius regardless. */
+  border-radius: inherit;
 }
 
 /* Only reachable if a category is ever missing hero_image entirely — every
@@ -272,43 +280,55 @@
   color: var(--gold);
 }
 
-/* The category's own gold icon, sitting in the plain white space between
-   the photo and its label — not overlapping the photo at all, so it can
-   never read as a misplaced element. */
-.service-tile-icon {
-  display: block;
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-}
-
 .service-tile-name {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Reserved for the longest name in the grid ("POP Ceiling & Design",
-     three lines) so every card is exactly the same height regardless of
-     how many words its own name wraps to — a one-line name like
-     "Painting" sits centred in the same space a three-line one fills. */
-  min-height: calc(1.3em * 3);
+  /* Two lines, not three: only "POP Ceiling & Design" ever needs a third
+     line, and CSS Grid already sizes each ROW to its own tallest cell —
+     that one card's row still grows to fit it without this reservation
+     forcing every OTHER row (most names are one or two lines) to carry
+     the same empty space underneath a short label. */
+  min-height: calc(1.3em * 2);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
   /* A four-across mobile card (eight-across on desktop) is too narrow for
-     "Waterproofing" or "Electrician" to fit on one line — hyphenate at a
-     real syllable break (Water-proofing) instead of the browser's default
-     wrap-wherever-it-fits (Waterpr/oofing). html has lang="en" so the
-     hyphenation dictionary applies; overflow-wrap stays as a fallback for
-     anything hyphens can't place. */
-  hyphens: auto;
-  -webkit-hyphens: auto;
+     "Waterproofing" or "Electrician" to fit on one line. hyphens: manual
+     (not auto) breaks ONLY at the explicit soft hyphens PopularServices.jsx
+     inserts for those two labels (Water­proofing, Electri­cian) — auto's
+     per-browser dictionary guess is inconsistent and, on some phones,
+     chooses an ugly point ("Waterproof-ing") instead. overflow-wrap stays
+     as a fallback for anything a soft hyphen doesn't cover. */
+  hyphens: manual;
+  -webkit-hyphens: manual;
   overflow-wrap: break-word;
 }
 
 @media (max-width: 400px) {
   .service-tile-name {
     font-size: 12.5px;
+  }
+}
+
+/* One more round of the same shorter/wider adjustment, phone-only — still
+   fine at 480px and up (tablets, desktop), but a card at four-across on a
+   narrow phone needed to give up a bit more height to stay comfortably
+   inside the viewport. Placed after the base .service-tile* rules above so
+   it actually wins the cascade (same specificity, later source order). */
+@media (max-width: 479px) {
+  .service-tile-grid {
+    gap: 4px;
+  }
+
+  .service-tile {
+    gap: 4px;
+    padding: 8px 4px;
+  }
+
+  .service-tile-photo {
+    aspect-ratio: 4 / 3;
   }
 }
 
@@ -339,7 +359,9 @@
 /* Three-across only on the narrowest phones (iPhone SE and similar,
    ≤359px) — four columns at that width leaves each tile too small for its
    photo, icon and label to read at all. Every other phone size keeps four
-   per row. */
+   per row, always two rows of four for today's eight categories — see the
+   manual break points on the label text itself (PopularServices.jsx) for
+   how long single-word labels stay readable at that width instead. */
 @media (max-width: 359px) {
   .service-tile-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -1,0 +1,1216 @@
+/* =========================================================================
+   SUPPLYBASE — PAINTING SERVICES
+   Three itemised booking journeys (Full Home / Few Walls / Renovation),
+   matching the approved reference. Prefixed `pnt-` so nothing collides with
+   the rest of the site. Booking-flow screens (Details/Schedule/Confirm)
+   reuse wizard.css directly, same precedent as plumbing.css.
+   ========================================================================= */
+
+.pnt-section {
+  padding: var(--section-y) 0 calc(var(--section-y) + 40px);
+}
+
+/* ------------------------------------------------------------------ hero */
+
+.pnt-hero {
+  position: relative;
+  width: 100%;
+  min-height: 420px;
+  display: flex;
+  align-items: flex-end;
+  background: var(--black);
+  overflow: hidden;
+}
+
+.pnt-hero > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+}
+
+.pnt-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.5) 0%, rgba(5, 5, 5, 0.7) 55%, rgba(5, 5, 5, 0.92) 100%);
+}
+
+.pnt-hero-inner {
+  position: relative;
+  z-index: 1;
+  padding: 96px 0 var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pnt-hero-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold-light);
+  text-transform: uppercase;
+}
+
+.pnt-hero-inner h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  color: var(--white);
+  max-width: 700px;
+}
+
+.pnt-hero-inner > p {
+  color: var(--on-dark-muted);
+  font-size: 1rem;
+  max-width: 560px;
+}
+
+.pnt-hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.pnt-hero-trust li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--on-dark);
+}
+
+.pnt-hero-trust svg {
+  color: var(--gold-light);
+  flex-shrink: 0;
+}
+
+.pnt-hero-logo {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--header-h) + var(--space-4));
+  right: var(--gutter);
+  width: 84px;
+  height: auto;
+}
+
+/* ------------------------------------------------------------- trust row */
+
+.pnt-trust-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+}
+
+.pnt-trust-row li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: var(--space-3);
+  background: var(--light-bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.pnt-trust-row svg {
+  color: var(--gold-deep);
+}
+
+/* -------------------------------------------------------- overview cards */
+
+.pnt-overview-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.pnt-overview-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.pnt-overview-card:hover,
+.pnt-overview-card:focus-visible {
+  border-color: var(--gold-a40);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.pnt-overview-photo {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--light-bg);
+}
+
+.pnt-overview-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pnt-overview-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pnt-overview-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pnt-overview-tagline {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.pnt-overview-arrow {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+/* ------------------------------------------------------------- flow intro */
+
+.pnt-intro-heading {
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+  margin-top: var(--space-2);
+}
+
+.pnt-intro-text {
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+  margin-bottom: var(--space-5);
+}
+
+.pnt-intro-trust {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+}
+
+.pnt-intro-trust li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.pnt-intro-trust svg {
+  color: var(--gold-deep);
+}
+
+.pnt-problems {
+  margin-bottom: var(--space-6);
+}
+
+.pnt-problems h3 {
+  font-size: 1rem;
+  margin-bottom: var(--space-3);
+}
+
+.pnt-problems-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.pnt-problem-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: var(--space-3);
+  background: var(--light-bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.pnt-problem-card svg {
+  color: var(--gold-deep);
+}
+
+.pnt-included {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.pnt-included h3 {
+  font-size: 1rem;
+  margin-bottom: var(--space-3);
+}
+
+.pnt-included ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pnt-included li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.pnt-included li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--success);
+}
+
+/* ---------------------------------------------------------- flow shell */
+
+.pnt-flow-shell {
+  min-height: 100vh;
+  background: var(--dark);
+  padding: var(--space-6) 0 calc(var(--space-9) + 40px);
+}
+
+.pnt-flow-shell .container-narrow {
+  max-width: 780px;
+}
+
+.pnt-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.pnt-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex-shrink: 0;
+  color: var(--white);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+}
+
+.pnt-top-title {
+  flex: 1;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin: 0;
+}
+
+.pnt-help {
+  font-size: 0.85rem;
+  color: var(--on-dark-muted);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- step dots */
+
+.pnt-steps {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+}
+
+.pnt-step {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+}
+
+.pnt-step:last-child {
+  flex: 0 0 auto;
+}
+
+.pnt-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--on-dark-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.pnt-step.current .pnt-step-num {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.pnt-step.done .pnt-step-num {
+  background: var(--gold-a40);
+  color: var(--white);
+}
+
+.pnt-step-line {
+  flex: 1 1 auto;
+  height: 2px;
+  margin: 0 4px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pnt-step.done .pnt-step-line {
+  background: var(--gold-a40);
+}
+
+/* --------------------------------------------------------------- card */
+
+.pnt-step-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 3vw, 28px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.pnt-step-title {
+  font-size: 1.15rem;
+  margin-bottom: var(--space-4);
+}
+
+.pnt-step-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.pnt-step-actions .btn-primary {
+  flex: 1;
+}
+
+/* ----------------------------------------------------- single-choice list */
+
+.pnt-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pnt-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.pnt-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pnt-option.selected {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.pnt-option-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.pnt-option-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pnt-option-label {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pnt-option-hint {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.pnt-option-price {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold-deep);
+}
+
+.pnt-option-radio {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+}
+
+.pnt-option.selected .pnt-option-radio {
+  border-color: var(--gold);
+  background: radial-gradient(circle, var(--gold) 0 40%, transparent 42%);
+}
+
+.pnt-compare-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--space-3);
+  padding: 10px 0;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.pnt-compare-link svg:last-child {
+  margin-left: auto;
+}
+
+/* -------------------------------------------------------------- brands */
+
+.pnt-brand-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.pnt-brand-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 88px;
+  padding: var(--space-3);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.pnt-brand-card input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pnt-brand-card.selected {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.pnt-brand-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.pnt-brand-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.pnt-brand-why {
+  background: var(--light-bg);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.pnt-brand-why h3 {
+  font-size: 0.95rem;
+  margin-bottom: var(--space-2);
+}
+
+.pnt-brand-why ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.pnt-brand-why li::before {
+  content: '✓ ';
+  color: var(--success);
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------- tabs */
+
+.pnt-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.pnt-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.pnt-tab {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--light-bg);
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.pnt-tab.active {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+/* ----------------------------------------------------------- products */
+
+.pnt-product-gap {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: var(--space-4);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-size: 0.88rem;
+}
+
+.pnt-product-gap svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.pnt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pnt-product {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.pnt-product input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pnt-product.selected {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.pnt-product-swatch {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.pnt-product-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pnt-product-label {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pnt-product-hint {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+.pnt-product-price {
+  flex-shrink: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold-deep);
+  margin-right: 22px;
+}
+
+/* -------------------------------------------------------------- colours */
+
+.pnt-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.pnt-swatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.pnt-swatch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pnt-swatch-chip {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.55);
+  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.pnt-swatch.selected .pnt-swatch-chip {
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--gold);
+  transform: scale(0.94);
+}
+
+.pnt-swatch-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.pnt-gallery-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--light-bg);
+  border-radius: var(--radius-sm);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: var(--space-3);
+}
+
+.pnt-gallery-link svg:last-child {
+  margin-left: auto;
+}
+
+.pnt-colour-disclaimer {
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-3);
+}
+
+.pnt-colour-selected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--gold-a08);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.pnt-colour-selected .pnt-swatch-chip {
+  width: 28px;
+  height: 28px;
+  aspect-ratio: unset;
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------- modal */
+
+.pnt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+.pnt-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--white);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--space-5);
+}
+
+.pnt-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.pnt-modal-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.pnt-modal-head button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--light-bg);
+  color: var(--ink);
+}
+
+.pnt-gallery-group {
+  margin-bottom: var(--space-5);
+}
+
+.pnt-gallery-group h4 {
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-3);
+}
+
+.pnt-compare-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pnt-compare-col {
+  padding: var(--space-3);
+  background: var(--light-bg);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pnt-compare-col p {
+  font-size: 0.84rem;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .pnt-modal-overlay {
+    align-items: center;
+  }
+  .pnt-modal {
+    border-radius: var(--radius-lg);
+  }
+  .pnt-compare-table {
+    flex-direction: row;
+  }
+  .pnt-compare-col {
+    flex: 1;
+  }
+}
+
+/* ---------------------------------------------------------------- addons */
+
+.pnt-addon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pnt-addon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.pnt-addon input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pnt-addon.selected {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+}
+
+.pnt-addon-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.pnt-addon-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pnt-addon-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pnt-addon-hint {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.pnt-addon-price {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gold-deep);
+}
+
+.pnt-addon-check {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  color: transparent;
+}
+
+.pnt-addon.selected .pnt-addon-check {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+/* -------------------------------------------------------------- summary */
+
+.pnt-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 var(--space-5);
+}
+
+.pnt-summary-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pnt-summary-row dt {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  flex-shrink: 0;
+}
+
+.pnt-summary-row dd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+}
+
+.pnt-summary-edit {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pnt-summary-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background: var(--gold-a08);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-5);
+}
+
+.pnt-summary-total span {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+
+.pnt-summary-total strong {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--gold-deep);
+}
+
+.pnt-summary-includes {
+  margin-bottom: var(--space-4);
+}
+
+.pnt-summary-includes h3 {
+  font-size: 0.92rem;
+  margin-bottom: var(--space-2);
+}
+
+.pnt-summary-includes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pnt-summary-includes li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+
+.pnt-summary-includes li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--success);
+}
+
+.pnt-summary-note {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+/* ----------------------------------------------------------------- fee */
+
+.pnt-fee-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-5);
+  padding: 14px 18px;
+  background: var(--black);
+  border-radius: var(--radius);
+  color: var(--white);
+}
+
+.pnt-fee-strip span:first-child {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--gold-light);
+}
+
+.pnt-fee-strip span:last-child {
+  font-size: 0.76rem;
+  color: var(--on-dark-muted);
+}
+
+.pnt-fee-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--gold-a08);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  text-align: left;
+}
+
+.pnt-fee-note svg {
+  flex-shrink: 0;
+  color: var(--gold-deep);
+  margin-top: 1px;
+}
+
+/* -------------------------------------------------------- renovation closing */
+
+.pnt-closing {
+  position: relative;
+  margin-top: var(--space-6);
+  padding: var(--space-7) var(--space-5);
+  background: var(--black) url('/assets/projects/modern-interior.jpeg') center/cover;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  overflow: hidden;
+}
+
+.pnt-closing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.75), rgba(5, 5, 5, 0.9));
+}
+
+.pnt-closing-eyebrow,
+.pnt-closing h2,
+.pnt-closing .btn {
+  position: relative;
+  z-index: 1;
+}
+
+.pnt-closing-eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--gold-light);
+  margin-bottom: var(--space-3);
+}
+
+.pnt-closing h2 {
+  color: var(--white);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  margin-bottom: var(--space-5);
+}
+
+/* --------------------------------------------------------------- mobile */
+
+@media (max-width: 767px) {
+  .pnt-hero {
+    min-height: 340px;
+  }
+  .pnt-hero-logo {
+    width: 64px;
+    top: calc(var(--header-h-mobile) + var(--space-3));
+  }
+  .pnt-trust-row,
+  .pnt-intro-trust {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pnt-problems-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pnt-brand-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pnt-swatch-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

@@ -12,8 +12,8 @@ function routeFor(slug) {
 }
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
-    key in components/ui/Icon.jsx — used only if a category has no matching
-    file in /assets/popular-services (see iconSrc below). */
+    key in components/ui/Icon.jsx — used only as a placeholder if a category
+    has no hero image at all. */
 const ICON_BY_SLUG = {
   'interior-design': 'sofa',
   'interior-by-choice': 'layers',
@@ -25,10 +25,19 @@ const ICON_BY_SLUG = {
   'other-services': 'settings',
 };
 
-/** The client-supplied gold-outline icon for this card, one file per main
-    category at /assets/popular-services/<slug>-icon.png — same naming
-    convention as the photo itself. */
-const iconSrc = (slug) => `/assets/popular-services/${slug}-icon.png`;
+/** Soft-hyphen (­, invisible unless the browser actually breaks the
+    line there) insertion points for the two labels that are a single long
+    word with no space to wrap at. Deliberately explicit rather than relying
+    on CSS hyphens:auto — its dictionary-based guess is inconsistent across
+    browsers and, on some phones, breaks at an ugly point ("Waterproof-ing"
+    instead of "Water-proofing"). Every other label wraps fine at its own
+    word boundary and needs no override. */
+const LABEL_OVERRIDES = {
+  waterproofing: 'Water­proofing',
+  electrical: 'Electri­cian',
+};
+
+const displayName = (category) => LABEL_OVERRIDES[category.slug] || category.name;
 
 export default function PopularServices() {
   const [categories, setCategories] = useState(null);
@@ -82,20 +91,7 @@ export default function PopularServices() {
                     </span>
                   )}
                 </span>
-                <img
-                  className="service-tile-icon"
-                  src={iconSrc(category.slug)}
-                  alt=""
-                  width={34}
-                  height={34}
-                  loading="lazy"
-                  onError={(e) => {
-                    // A category with no dedicated icon file falls back to
-                    // the inline icon set instead of a broken image.
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                <span className="service-tile-name">{category.name}</span>
+                <span className="service-tile-name">{displayName(category)}</span>
               </Link>
             ))}
           </div>

@@ -463,7 +463,7 @@
 
 .page-hero {
   position: relative;
-  background: var(--bg-soft);
+  background: transparent;
   border-bottom: 1px solid var(--line-gold);
   padding: calc(var(--header-h) + clamp(3rem, 6vw, 5rem)) 0 clamp(3rem, 6vw, 5rem);
   overflow: hidden;
@@ -472,32 +472,38 @@
 .page-hero-bg {
   position: absolute;
   inset: 0;
+  z-index: 0;
 }
 
 .page-hero-bg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.18;
+  opacity: 0.55;
+  display: block;
 }
 
 .page-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(95deg, rgba(250, 248, 244, 0.96) 20%, rgba(250, 248, 244, 0.8) 70%, rgba(250, 248, 244, 0.62));
+  display: none;
 }
 
 .page-hero-inner {
   position: relative;
   z-index: 2;
   max-width: 780px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .page-hero h1 {
   color: var(--ink);
   font-size: clamp(2rem, 4.6vw, 3.4rem);
-  margin-bottom: 0.7rem;
+  margin-bottom: 1.2rem;
 }
 
 .page-hero p {
@@ -505,24 +511,6 @@
   font-size: 1.05rem;
   max-width: 60ch;
   margin: 0;
-}
-
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-  font-size: 0.85rem;
-  color: var(--ink-muted);
-}
-
-.breadcrumbs a:hover {
-  color: var(--gold-deep);
-}
-
-.breadcrumbs span[aria-current] {
-  color: var(--accent);
 }
 
 /* --------------------------------------------------------------- faq */
@@ -958,19 +946,10 @@
   .btn-row .btn {
     flex: 1 1 auto;
   }
-  /* Same reason as .ft-cta in footer.css: the .btn { flex: 1 1 auto } above
-     turns every .btn-row into a full-width row on mobile, and FloatingActions
-     is fixed at this same corner regardless of scroll, so without this any
-     of them would render right underneath those fab circles. */
-  .btn-row {
-    margin-right: 70px;
-  }
-  /* Same reason again: a form's fields run edge to edge, so whichever ones
-     land in the fab's corner while scrolling would otherwise have their
-     right portion covered and untappable. */
-  .form-card {
-    margin-right: 40px;
-  }
+  /* .btn-row and .form-card used to reserve a right margin here so they
+     wouldn't render underneath the site-wide floating call/WhatsApp
+     buttons — FloatingActions is disabled sitewide now (see Layout.jsx),
+     so both can be genuinely full width. */
   .floating-actions {
     right: 14px;
     bottom: 14px;
@@ -998,4 +977,15 @@
   .stats {
     grid-template-columns: 1fr;
   }
+}
+
+
+
+/* Contact page — reduce the gap between hero and enquiry section */
+.page-hero.contact-page-hero {
+  padding-bottom: 1rem;
+}
+
+.contact-section {
+  padding-top: 1rem;
 }

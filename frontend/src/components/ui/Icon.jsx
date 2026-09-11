@@ -293,6 +293,56 @@ const paths = {
       <path d="M9.5 13.2a2.6 2.6 0 0 0 2.5 2.6" />
     </>
   ),
+  /* -------------------------------------------------- wall condition (painting) */
+  'wall-crack': (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="1.5" />
+      <path d="M9 3.5 11 9l-2.5 2 3 3-1.5 5.5" />
+    </>
+  ),
+  'wall-peel': (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="1.5" />
+      <path d="M13 3.5v7.5l4.5-2.5" />
+      <path d="M13 11 9 13.5" />
+    </>
+  ),
+  'wall-stain': (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="1.5" />
+      <path d="M14 8.5c1.8 0 3.2 1.3 3.2 3.1 0 1.3-.9 2.1-2.2 2.6 1 .5 1.6 1.2 1.6 2.2 0 1.6-1.5 2.6-3.2 2.6-2.2 0-3.6-1.3-3.8-3" />
+    </>
+  ),
+  'wall-mould': (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="1.5" />
+      <circle cx="9" cy="9" r="1.3" />
+      <circle cx="13.2" cy="8" r="1" />
+      <circle cx="11.2" cy="12.5" r="1.6" />
+      <circle cx="15.5" cy="13" r="1" />
+      <circle cx="9.5" cy="16" r="1.1" />
+    </>
+  ),
+  'wall-faded': (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="1.5" strokeDasharray="3 2.5" />
+    </>
+  ),
+  sparkle: (
+    <>
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+      <path d="m6.3 6.3 2 2M15.7 15.7l2 2M6.3 17.7l2-2M15.7 8.3l2-2" />
+    </>
+  ),
+  palette: (
+    <>
+      <path d="M12 3a9 9 0 1 0 0 18c1.4 0 2-1 2-2 0-.6-.3-1-.6-1.4-.3-.4-.3-1.1.4-1.4.5-.2 1.2-.2 2 0 1.7.4 3.2-.5 3.2-2.4A8.9 8.9 0 0 0 12 3z" />
+      <circle cx="7.5" cy="11" r="1.1" />
+      <circle cx="9.5" cy="7.3" r="1.1" />
+      <circle cx="14.5" cy="7.3" r="1.1" />
+      <circle cx="16.5" cy="11" r="1.1" />
+    </>
+  ),
   ruler: (
     <>
       <rect x="2.5" y="8" width="19" height="8" rx="1.5" />
@@ -379,6 +429,99 @@ const paths = {
     <>
       <rect x="2.5" y="6" width="19" height="12" rx="3.5" />
       <path d="m10.5 9.5 5 2.5-5 2.5z" />
+    </>
+  ),
+
+  /* -------------------------------------------------------- pop ceiling */
+  tv: (
+    <>
+      <rect x="2.5" y="4.5" width="19" height="13" rx="1.5" />
+      <path d="M8 21h8M12 17.5V21" />
+    </>
+  ),
+  cove: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M3 6c2 3 4 4 9 4s7-1 9-4" />
+      <path d="M9 20h6M12 14v6" />
+    </>
+  ),
+  tray: (
+    <>
+      <rect x="3" y="4" width="18" height="6" rx="1" />
+      <rect x="6.5" y="10" width="11" height="5" rx="1" />
+      <path d="M9 20h6M12 15v5" />
+    </>
+  ),
+  border: (
+    <>
+      <rect x="3" y="4" width="18" height="5" rx="1" />
+      <path d="M6 9v9M18 9v9" />
+      <path d="M9 20h6M12 9v11" />
+    </>
+  ),
+  cornice: (
+    <>
+      <path d="M3 4h18v4H10v13H3z" />
+      <path d="M3 4v13h7" />
+    </>
+  ),
+  moulding: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M3 6v3M8 6v3M13 6v3M18 6v3M21 6v3" />
+      <path d="M9 20h6M12 9v11" />
+    </>
+  ),
+  curtain: (
+    <>
+      <path d="M4 4h16" />
+      <path d="M6 4c0 6-2 8-2 14M18 4c0 6 2 8 2 14" />
+      <path d="M10 4c0 7-1.5 9-1.5 14M14 4c0 7 1.5 9 1.5 14" />
+    </>
+  ),
+  panel: (
+    <>
+      <rect x="3" y="3.5" width="18" height="17" rx="1.5" />
+      <path d="M9 3.5v17M15 3.5v17" />
+    </>
+  ),
+
+  /* ------------------------------------------------------- waterproofing */
+  terrace: (
+    <>
+      <path d="M3 21h18" />
+      <path d="M4 21V9l8-5 8 5v12" />
+      <path d="M4 9h16" />
+      <path d="M8 21v-5h8v5" />
+    </>
+  ),
+  tank: (
+    <>
+      <path d="M6 5c0-1.1 2.7-2 6-2s6 .9 6 2-2.7 2-6 2-6-.9-6-2z" />
+      <path d="M6 5v13c0 1.1 2.7 2 6 2s6-.9 6-2V5" />
+      <path d="M6 12c0 1.1 2.7 2 6 2s6-.9 6-2" />
+    </>
+  ),
+  grout: (
+    <>
+      <rect x="3" y="3.5" width="8" height="8" rx="1" />
+      <rect x="13" y="3.5" width="8" height="8" rx="1" />
+      <rect x="3" y="13.5" width="8" height="8" rx="1" />
+      <rect x="13" y="13.5" width="8" height="8" rx="1" />
+    </>
+  ),
+  drain: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v10M7 12h10M8.5 8.5l7 7M15.5 8.5l-7 7" />
+    </>
+  ),
+  inspect: (
+    <>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m20 20-4.8-4.8" />
+      <path d="M10.5 7.5v6M7.5 10.5h6" />
     </>
   ),
 };
