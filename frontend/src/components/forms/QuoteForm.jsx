@@ -59,14 +59,24 @@ export default function QuoteForm({ defaultService = '', compact = false, source
 
   const validate = () => {
     const next = {};
-    if (!form.name.trim()) next.name = 'Please enter your name';
-    if (!form.phone.trim()) next.phone = 'Please enter your phone number';
-    else if (!/^[+\d][\d\s-]{8,15}$/.test(form.phone.trim())) next.phone = 'Please enter a valid phone number';
+    if (!form.name.trim()) {
+  next.name = 'Please enter your name';
+} else if (!/^[A-Za-z\s]+$/.test(form.name.trim())) {
+  next.name = 'Please enter a valid name';
+}
+    if (!form.phone.trim()) {
+  next.phone = 'Please enter your phone number';
+} else if (!/^\d{10}$/.test(form.phone.trim())) {
+  next.phone = 'Please enter a valid 10-digit phone number';
+}
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
       next.email = 'Please enter a valid email address';
     if (!form.projectType) next.projectType = 'Please select a project type';
-    if (!form.description.trim() || form.description.trim().length < 10)
-      next.description = 'Please describe your project in a little more detail';
+   if (!form.description.trim()) {
+  next.description = 'Please enter your project description';
+} else if (form.description.trim().length < 20) {
+  next.description = 'Please describe your project in a little more detail';
+}
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -262,13 +272,7 @@ export default function QuoteForm({ defaultService = '', compact = false, source
         </button>
       </div>
 
-      <div className="form-note">
-        <Icon name="info" size={18} />
-        <span>
-          This form opens your own WhatsApp or email app with the enquiry filled in, and also sends it to our team.
-          You can also call us directly on <a href={telHref}>{contact.phoneDisplay}</a>.
-        </span>
-      </div>
+      
     </form>
   );
 }

@@ -9,15 +9,14 @@ import { contact } from '../data/siteConfig';
 export default function Contact() {
   return (
     <>
-      <PageHero
-        eyebrow="CONTACT US"
-        title="LET'S DISCUSS YOUR PROJECT"
-        text={`Call us on ${contact.phoneDisplay}, message us on WhatsApp, or send the enquiry form and we will get back to you.`}
-        image="/assets/projects/office-fitout.svg"
-        breadcrumbs={[{ label: 'Contact Us' }]}
-      />
-
-      <section className="section">
+    <PageHero
+  eyebrow="CONTACT US"
+  title="LET'S DISCUSS YOUR PROJECT"
+  image="/assets/projects/office-fitout.svg"
+  breadcrumbs={[{ label: 'Contact Us' }]}
+  className="contact-page-hero"
+/>
+     <section className="section contact-section">
         <div className="container">
           <div className="contact-layout">
             <div>
