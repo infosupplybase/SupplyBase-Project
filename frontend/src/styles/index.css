@@ -27,6 +27,7 @@
 @import './electrician.css';
 @import './plumbing.css';
 @import './painting.css';
+@import './pop-ceiling.css';
 @import './footer.css';
 
 /* --- still being migrated off the old token names --------------------- */
