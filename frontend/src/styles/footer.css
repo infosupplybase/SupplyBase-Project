@@ -3,11 +3,13 @@
    Clean layout inspired by the provided Urban Company reference
    ========================================================================= */
 
-.ft {
+/* .ft {
   width: 100%;
   background: #ffffff;
   color: #666666;
   font-size: 15px;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 
@@ -15,38 +17,83 @@
    MAIN CONTAINER
    ========================================================================= */
 
-.ft-inner {
+/* .ft-inner {
   width: min(1380px, calc(100% - 80px));
-  margin: 0 auto;
-  padding: 70px 0 35px;
-}
+
+  /* Center footer content */
+  /* margin: 0 auto !important; */
+
+  /* Control vertical spacing here */
+  /* padding: 50px 0 30px !important; */
+
+  /* box-sizing: border-box; }*/
+
 
 
 /* =========================================================================
    LOGO + TAGLINE
    ========================================================================= */
 
+/* .ft-brand {
+   margin: 0 !important;
+  padding: 0 !important;
+}*/
+
+/*.ft-logo {
+  display: block;
+
+  width: 170px;
+  max-width: 170px;
+  height: auto;
+
+  object-fit: contain;
+
+  margin: 0 !important;
+  padding: 0 !important;
+} */
+
+.ft {
+  width: 100%;
+  background: #ffffff;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ft-inner {
+  width: min(1380px, calc(100% - 80px));
+  margin: 0 auto !important;
+
+  /* Remove white space above logo */
+  padding-top: 0 !important;
+  padding-bottom: 30px !important;
+}
+
 .ft-brand {
-  margin-bottom: 58px;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .ft-logo {
   display: block;
   width: 170px;
-  max-width: 170px;
   height: auto;
-  object-fit: contain;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .ft-intro {
   max-width: 500px;
-  margin: 16px 0 0;
+
+  /* Space between logo and description */
+  margin: 20px 0 0 !important;
+  padding: 0 !important;
+
   color: #666666;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.65;
 }
-
+ 
 
 /* =========================================================================
    FOUR COLUMN LAYOUT
@@ -64,16 +111,25 @@
   gap: clamp(45px, 6vw, 110px);
 
   align-items: start;
-}
 
+  margin: 40px 0 0 !important;
+  padding: 0 !important;
+}
+ .ft-col {
+  margin: 0;
+  padding: 0;
+}
 
 /* =========================================================================
    HEADINGS
    ========================================================================= */
 
 .ft-heading {
-  margin: 0 0 28px;
-  padding: 0;
+  /* margin: 0 0 28px;
+  padding: 0; */
+
+  margin: 0 0 22px !important;
+  padding: 0 !important;
 
   color: #202020;
 
@@ -98,16 +154,19 @@
 .ft-list {
   list-style: none;
 
-  padding: 0;
-  margin: 0;
+  /* padding: 0;
+  margin: 0; */
+   margin: 0 !important;
+  padding: 0 !important;
 }
 
 .ft-list li {
-  margin: 0 0 14px;
+  margin: 0 0 14px !important;
+  padding: 0 !important;
 }
 
 .ft-list li:last-child {
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
 }
 
 
@@ -118,6 +177,7 @@
 .ft-list a {
   display: inline-block;
 
+   margin: 0;
   padding: 0;
 
   color: #666666;

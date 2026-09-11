@@ -24,6 +24,8 @@ import PlumbingCart from './pages/PlumbingCart';
 import PlumbingCheckout from './pages/PlumbingCheckout';
 import PaintingCategory from './pages/PaintingCategory';
 import PaintingFlow from './pages/PaintingFlow';
+import PopCeilingCategory from './pages/PopCeilingCategory';
+import PopCeilingFlow from './pages/PopCeilingFlow';
 // import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
@@ -46,7 +48,11 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /services/plumbing/:tabSlug  One plumbing category's itemised service list
  * /services/painting      Painting Services overview grid (Full Home / Few Walls / Room / Renovation)
  * /services/painting/:flowSlug  One painting journey (full-home | few-walls | renovation)
- * /booking/:slug          Same booking page, reached from the hero banners
+ * /services/pop-ceiling-design  POP Ceiling & Design overview list (six subservices)
+ * /services/pop-ceiling-design/:flowSlug  One of the two detailed POP journeys (full-home | room)
+ * /booking/:slug          Same booking page, reached from the hero banners — also where
+ *                          POP's four non-detailed subservices land, via ?preselect=<value>
+ *                          (see ServiceBooking.jsx)
  * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
  * /book                   Book a site visit (?type=service | ?type=project)
  * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
@@ -124,6 +130,16 @@ export default function App() {
             flow config, rather than one file per journey. */}
         <Route path="services/painting" element={<PaintingCategory />} />
         <Route path="services/painting/:flowSlug" element={<PaintingFlow />} />
+
+        {/* POP Ceiling & Design: only two of its six subservices have a
+            detailed reference journey (V16 migration) — Full Home POP and
+            Room POP get their own dedicated flow here; the other four
+            (False Ceiling, POP Design Work, POP TV Wall, POP Repair &
+            Renovation) link to /booking/pop-ceiling-design?preselect=...,
+            the existing generic wizard below, with their subservice
+            preselected (see ServiceBooking.jsx). */}
+        <Route path="services/pop-ceiling-design" element={<PopCeilingCategory />} />
+        <Route path="services/pop-ceiling-design/:flowSlug" element={<PopCeilingFlow />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}

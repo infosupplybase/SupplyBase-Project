@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import QuestionField from '../components/booking/QuestionField';
 import SlotPicker from '../components/booking/SlotPicker';
@@ -46,6 +46,13 @@ export default function ServiceBooking({
   const { slug: routeSlug } = useParams();
   const slug = serviceSlug || routeSlug;
   const { user } = useAuth();
+  // A category-list card can deep-link straight into one `service_needed`
+  // choice, e.g. /booking/pop-ceiling-design?preselect=False%20Ceiling —
+  // used by subservices that have no dedicated flow of their own and fall
+  // back to this generic wizard. Read once; a value that doesn't match any
+  // option this category actually offers is silently ignored below.
+  const [searchParams] = useSearchParams();
+  const preselect = searchParams.get('preselect');
 
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +86,10 @@ export default function ServiceBooking({
         // Switching service mid-flow must not carry answers to questions the
         // new service never asked.
         setStage(0);
-        setAnswers({});
+        const validPreselect = preselect
+          && result.questions.some((q) => q.key === 'service_needed'
+            && q.options?.some((o) => o.value === preselect));
+        setAnswers(validPreselect ? { service_needed: [preselect] } : {});
         setDate('');
         setTime('');
         setErrors({});

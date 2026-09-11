@@ -63,17 +63,15 @@ table; on later runs it only applies migrations that have not run yet.
 
 ## 2. How the pieces fit
 
-## Deploy on Render or Railway
+## Deploy
 
-This API includes a production [`Dockerfile`](Dockerfile). Render reads the
-repository's `render.yaml`; Railway uses the same Dockerfile when the service
-root directory is set to `backend`. Both platforms provide `PORT` automatically
-and the application honours it.
+This API includes a production [`Dockerfile`](Dockerfile) and is self-hosted
+on a Hostinger VPS via [`docker-compose.prod.yml`](docker-compose.prod.yml) —
+see the repository-level [`DEPLOYMENT.md`](../DEPLOYMENT.md) (section 6) for
+the full setup and update workflow.
 
 Set `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`
-and exact production `CORS_ORIGINS` in the platform dashboard. Do not upload a
-`.env` file or commit it. See the repository-level
-[`DEPLOYMENT.md`](../DEPLOYMENT.md) for the complete Vercel + API workflow.
+and exact production `CORS_ORIGINS` in the server's `.env`. Do not commit it.
 
 After deployment, `GET /actuator/health` is the health check endpoint. It only
 exposes health/status information; it does not expose customer or booking data.
@@ -245,10 +243,9 @@ only class that imports the SDK, so changing or adding a gateway is one file.
       first admin account, then unset them — they only ever act while zero
       admins exist, but there's no reason to leave real credentials in the
       environment longer than needed
-- [ ] Set `STORAGE_ROOT_DIR` to a persistent volume, or move to S3-compatible
-      storage — project documents and booking files are stored on local disk
-      today, which does not survive a redeploy on Render/Railway's ephemeral
-      filesystem
+- [x] `STORAGE_ROOT_DIR` already persists — `docker-compose.prod.yml` mounts
+      it as a named Docker volume (`supplybase-uploads`) on the VPS, which
+      survives container restarts and rebuilds
 - [ ] Set `springdoc.api-docs.enabled=false` (or otherwise gate it) — API docs
       at `/swagger-ui.html` and `/v3/api-docs` are open by default for local
       development convenience

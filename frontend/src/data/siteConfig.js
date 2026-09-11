@@ -78,7 +78,7 @@ export const processSteps = [
     number: '01',
     icon: 'chat',
     title: 'CONSULTATION',
-    text: 'Share your requirements with our experts and we assess the site, scope and budget.',
+    text: 'Share your requirements, and we assess the site, scope, and budget.',
   },
   {
     number: '02',
@@ -90,13 +90,13 @@ export const processSteps = [
     number: '03',
     icon: 'helmet',
     title: 'EXECUTION',
-    text: 'Our team executes the work with supervised quality control, on schedule and on budget.',
+    text: 'Supervised quality, on-time and on-budget delivery.',
   },
   {
     number: '04',
     icon: 'handover',
     title: 'HANDOVER',
-    text: 'We complete the finishing, clean the site and hand over a project ready to use.',
+    text: 'We finish, clean, and hand over a ready-to-use project.',
   },
 ];
 
@@ -140,19 +140,19 @@ export const processSteps = [
 export const whyUsPoints = [
   {
     title: 'One Partner For Everything',
-    text: 'Design, civil work, interiors, electrical, plumbing and finishing handled by a single accountable team.',
+    text: 'Design, construction, interiors, and finishing—all managed by one accountable team.',
     icon: 'users',
     image: '/assets/about/one-partner.jpeg',
   },
   {
     title: 'Labour + Material Supplied',
-    text: 'We arrange skilled labour and quality materials together, so you get one clear rate instead of chasing suppliers yourself.',
+    text: 'Skilled labour and quality materials, bundled into one clear rate—saving you time, hassle, and supplier chasing.',
     icon: 'box',
     image: '/assets/about/labour-material.jpeg',
   },
   {
     title: 'Design Before You Build',
-    text: '2D plans, 3D exterior and 3D interior views let you see the finished result before the first brick is laid.',
+    text: '2D plans and 3D views help you visualize your project before construction begins.',
     icon: 'layout',
     image: '/assets/about/design-before-build.jpeg',
   },
@@ -175,7 +175,6 @@ export const whyUsPoints = [
     image: '/assets/about/pricing.jpeg',
   },
 ];
-
 
 /**
  * PRIMARY NAVIGATION.

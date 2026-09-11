@@ -1,0 +1,17 @@
+/* =========================================================================
+   SUPPLYBASE — POP CEILING & DESIGN
+   Full Home POP and Room POP, built on the same shared markup and `pnt-`
+   classes as painting.css (hero, overview rows, flow shell, step card,
+   option list, addon list, summary) — POP's own visual design is the same
+   black/gold/white language already established there, so almost nothing
+   new is needed here beyond this one row-icon treatment: the reference's
+   category-page rows are icon-led, not photo-led, unlike Painting's.
+   ========================================================================= */
+
+.pce-overview-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--light-bg);
+  color: var(--gold-deep);
+}
