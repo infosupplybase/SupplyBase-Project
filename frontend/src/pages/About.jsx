@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+
 import PageHero from '../components/ui/PageHero';
 import SectionHeading from '../components/ui/SectionHeading';
 import Reveal from '../components/ui/Reveal';
@@ -6,23 +7,27 @@ import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
 import StatsSection from '../components/home/StatsSection';
 import ProcessSection from '../components/home/ProcessSection';
+
 import { company, whyUsPoints } from '../data/siteConfig';
 
 const pillars = [
   {
-    icon: 'blueprint',
     title: 'Design',
+    image: '/assets/services/architectural-design.jpeg',
     text: 'Architectural planning, 2D/3D designs, elevations, and working drawings.',
+    icon: 'blueprint',
   },
   {
-    icon: 'crane',
     title: 'Build',
+    image: '/assets/services/construction.jpeg',
     text: 'RCC, masonry, plastering, electrical, plumbing, and all essential building work.',
+    icon: 'crane',
   },
   {
-    icon: 'trowel',
     title: 'Finish',
+    image: '/assets/services/interior-design.jpeg',
     text: 'Ceiling, furniture, painting, flooring, and final touch-ups for a perfect handover.',
+    icon: 'trowel',
   },
 ];
 
@@ -35,20 +40,18 @@ export default function About() {
         eyebrow="ABOUT US"
         title="ONE PARTNER. COMPLETE PROJECT."
         text={company.longIntro}
-        image="/assets/hero-house.svg"
+        image="/assets/hero-house.jpeg"
         breadcrumbs={[{ label: 'About Us' }]}
       />
 
       {/* ================= WHO WE ARE ================= */}
       <section className="py-8 md:py-10">
         <div className="container mx-auto px-4 md:px-6">
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
 
             {/* Text */}
             <Reveal>
               <div className="max-w-xl">
-
                 <span className="eyebrow">
                   WHO WE ARE
                 </span>
@@ -61,10 +64,9 @@ export default function About() {
                 </h2>
 
                 <p className="text-[var(--grey-600)] mb-3">
-                 Most construction projects go wrong in the gaps - between
-                design, people, and execution. Supplybase exists to close
-                those gaps.
-
+                  Most construction projects go wrong in the gaps - between
+                  design, people, and execution. Supplybase exists to close
+                  those gaps.
                 </p>
 
                 <p className="text-[var(--grey-600)] mb-0">
@@ -75,7 +77,6 @@ export default function About() {
                 </p>
 
                 <div className="flex flex-wrap gap-3 mt-5">
-
                   <Link
                     to="/services"
                     className="btn btn-dark inline-flex items-center gap-2"
@@ -93,151 +94,150 @@ export default function About() {
                     <Icon name="arrow-right" size={17} />
                   </Link>
                   */}
-
                 </div>
-
               </div>
             </Reveal>
 
             {/* Video */}
-              <Reveal
-                className="media-frame"
-                delay={120}
-              >
-                <div className="split-media w-full max-w-md">
-                  <video
-                    className="supplybase-video"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                    preload="metadata"
-                  >
-                    <source
-                      src="/assets/hero/aboutus.mp4"
-                      type="video/mp4"
-                    />
-                    Your browser does not support video.
-                  </video>
-                </div>
-              </Reveal>
+            <Reveal
+              className="media-frame"
+              delay={120}
+            >
+              <div className="split-media w-full max-w-md">
+                <video
+                  className="supplybase-video"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  controls
+                  preload="metadata"
+                >
+                  <source
+                    src="/assets/hero/aboutus.mp4"
+                    type="video/mp4"
+                  />
+                  Your browser does not support video.
+                </video>
+              </div>
+            </Reveal>
 
           </div>
         </div>
       </section>
 
-    {/* ================= WHAT WE DO ================= */}
-<section className="pt-0 pb-4 md:pb-6 bg-[var(--section-light)]">
-  <div className="container mx-auto px-3 md:px-5">
+      {/* ================= WHAT WE DO ================= */}
+      <section className="pt-0 pb-4 md:pb-6 bg-[var(--section-light)]">
+        <div className="container mx-auto px-3 md:px-5">
 
-    <SectionHeading
-      center
-      eyebrow="WHAT WE DO"
-      title="THREE STAGES, ONE TEAM"
-      text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
-    />
+          <SectionHeading
+            center
+            eyebrow="WHAT WE DO"
+            title="THREE STAGES, ONE TEAM"
+            text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
+          />
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+            {pillars.map((pillar, i) => (
+              <Reveal
+                key={pillar.title}
+                delay={i * 90}
+                className="
+                  value-card
+                  !bg-black/10
+                  backdrop-blur-xl
+                  !border-white/25
+                  !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
+                  !p-3
+                  !m-0
+                "
+              >
+                <div className="value-icon mb-2">
+                  <Icon
+                    name={pillar.icon}
+                    size={24}
+                    strokeWidth={1.4}
+                  />
+                </div>
 
-      {pillars.map((pillar, i) => (
-        <Reveal
-          key={pillar.title}
-          delay={i * 90}
-          className="
-            value-card
-            !bg-black/10
-            backdrop-blur-xl
-            !border-white/25
-            !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
-            !p-3
-            !m-0
-          "
-        >
-          <div className="value-icon mb-2">
-            <Icon
-              name={pillar.icon}
-              size={24}
-              strokeWidth={1.4}
-            />
+                <h3 className="!mt-0 !mb-1">
+                  {pillar.title}
+                </h3>
+
+                <p className="!mt-0 !mb-0">
+                  {pillar.text}
+                </p>
+              </Reveal>
+            ))}
           </div>
 
-          <h3 className="!mt-0 !mb-1">
-            {pillar.title}
-          </h3>
+        </div>
+      </section>
 
-          <p className="!mt-0 !mb-0">
-            {pillar.text}
-          </p>
-        </Reveal>
-      ))}
+      {/* ================= HOW WE WORK ================= */}
+      <section className="py-4 md:py-6">
+        <div className="container mx-auto px-3 md:px-5">
 
-    </div>
-  </div>
-</section>
+          <SectionHeading
+            center
+            eyebrow="HOW WE WORK"
+            title="WHAT YOU CAN EXPECT"
+            text="The things our clients tell us matter most when they hand over a project."
+          />
 
-     {/* ================= HOW WE WORK ================= */}
-<section className="py-4 md:py-6">
-  <div className="container mx-auto px-3 md:px-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+            {whyUsPoints.map((point, i) => (
+              <Reveal
+                key={point.title}
+                delay={(i % 3) * 80}
+                className="
+                  value-card
+                  !bg-black/10
+                  backdrop-blur-xl
+                  !border-white/25
+                  !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
+                  !p-3
+                  !m-0
+                "
+              >
+                <div className="value-icon mb-2">
+                  <Icon
+                    name={point.icon}
+                    size={24}
+                    strokeWidth={1.4}
+                  />
+                </div>
 
-    <SectionHeading
-      center
-      eyebrow="HOW WE WORK"
-      title="WHAT YOU CAN EXPECT"
-      text="The things our clients tell us matter most when they hand over a project."
-    />
+                <h3 className="!mt-0 !mb-1">
+                  {point.title}
+                </h3>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-
-      {whyUsPoints.map((point, i) => (
-        <Reveal
-          key={point.title}
-          delay={(i % 3) * 80}
-          className="
-            value-card
-            !bg-black/10
-            backdrop-blur-xl
-            !border-white/25
-            !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
-            !p-3
-            !m-0
-          "
-        >
-          <div className="value-icon mb-2">
-            <Icon
-              name={point.icon}
-              size={24}
-              strokeWidth={1.4}
-            />
+                <p className="!mt-0 !mb-0">
+                  {point.text}
+                </p>
+              </Reveal>
+            ))}
           </div>
 
-          <h3 className="!mt-0 !mb-1">
-            {point.title}
-          </h3>
+        </div>
+      </section>
 
-          <p className="!mt-0 !mb-0">
-            {point.text}
-          </p>
-        </Reveal>
-      ))}
-
-    </div>
-  </div>
-</section>
       {/* ================= PROCESS ================= */}
       <div className="mt-0">
         <ProcessSection />
       </div>
 
       {/* ================= STATS ================= */}
-      {/* <div className="mt-0">
+      {/*
+      <div className="mt-0">
         <StatsSection showHeading={false} />
-      </div> */}
+      </div>
+      */}
 
       {/* ================= CTA ================= */}
       <div className="mt-1 mb-1 w-full px-0 py-10">
-      <CtaBand />
-    </div>
+        <CtaBand />
+      </div>
 
     </div>
   );
