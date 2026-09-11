@@ -1,0 +1,201 @@
+/* =========================================================================
+   SUPPLYBASE — WATERPROOFING
+   Six journeys (Terrace, Exterior Wall, Bathroom/Floor, Interior Wall,
+   Water Tank, Basement) sharing the same `pnt-` hero/overview/flow-shell/
+   step-card classes already established by painting.css — same black/
+   gold/white design language the reference itself uses. Only the pieces
+   with no equivalent elsewhere (brand grid, rate table, work-stage list)
+   get their own `wp-` rules here.
+   ========================================================================= */
+
+/* ------------------------------------------------------------ work stages */
+
+.wp-stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.wp-stage-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.wp-stage-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--light-bg);
+  color: var(--gold-deep);
+}
+
+.wp-stage-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wp-stage-body strong {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.wp-stage-body span {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+/* -------------------------------------------------------------- brands */
+
+.wp-brand-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.wp-brand-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.wp-brand-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wp-brand-card.selected {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+}
+
+.wp-brand-card img {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--light-bg);
+  padding: 6px;
+}
+
+.wp-brand-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wp-brand-body strong {
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.wp-brand-body span {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+.wp-brand-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--black);
+}
+
+/* ---------------------------------------------------------- rate table */
+
+.wp-rate-table {
+  margin-bottom: var(--space-4);
+}
+
+.wp-rate-table h3 {
+  font-size: 0.95rem;
+  margin-bottom: var(--space-2);
+  color: var(--ink);
+}
+
+.wp-rate-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  font-size: 0.88rem;
+}
+
+.wp-rate-table thead th {
+  background: var(--light-bg);
+  color: var(--ink-soft);
+  text-align: left;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wp-rate-table thead th:last-child {
+  text-align: right;
+}
+
+.wp-rate-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+}
+
+.wp-rate-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.wp-rate-table tbody td:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: var(--gold-deep);
+  white-space: nowrap;
+}
+
+.wp-rate-gap {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: var(--space-4);
+  background: var(--light-bg);
+  border-radius: var(--radius-sm);
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.wp-rate-note {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #2b5876;
+  background: #eaf3fa;
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+}

@@ -486,6 +486,44 @@ const paths = {
       <path d="M9 3.5v17M15 3.5v17" />
     </>
   ),
+
+  /* ------------------------------------------------------- waterproofing */
+  terrace: (
+    <>
+      <path d="M3 21h18" />
+      <path d="M4 21V9l8-5 8 5v12" />
+      <path d="M4 9h16" />
+      <path d="M8 21v-5h8v5" />
+    </>
+  ),
+  tank: (
+    <>
+      <path d="M6 5c0-1.1 2.7-2 6-2s6 .9 6 2-2.7 2-6 2-6-.9-6-2z" />
+      <path d="M6 5v13c0 1.1 2.7 2 6 2s6-.9 6-2V5" />
+      <path d="M6 12c0 1.1 2.7 2 6 2s6-.9 6-2" />
+    </>
+  ),
+  grout: (
+    <>
+      <rect x="3" y="3.5" width="8" height="8" rx="1" />
+      <rect x="13" y="3.5" width="8" height="8" rx="1" />
+      <rect x="3" y="13.5" width="8" height="8" rx="1" />
+      <rect x="13" y="13.5" width="8" height="8" rx="1" />
+    </>
+  ),
+  drain: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v10M7 12h10M8.5 8.5l7 7M15.5 8.5l-7 7" />
+    </>
+  ),
+  inspect: (
+    <>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m20 20-4.8-4.8" />
+      <path d="M10.5 7.5v6M7.5 10.5h6" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 22, strokeWidth = 1.6, className = '', ...rest }) {

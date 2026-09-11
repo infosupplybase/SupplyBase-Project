@@ -129,10 +129,23 @@ export default function ServiceBooking({
    * FILE questions are dropped for now — uploads are collected on WhatsApp
    * until the storage backend exists, and a dead upload button would be worse
    * than none.
+   *
+   * A category can be PARTLY rebuilt (POP Ceiling, Waterproofing): most of
+   * its subservices get their own dedicated flow page with its own new,
+   * flow-prefixed catalogue keys (pop_*, wp_*), but a few still fall back
+   * to this generic wizard via a ?preselect= deep link (see the `preselect`
+   * handling above). Those flow-prefixed keys exist on the SAME category
+   * row as the legacy generic-wizard questions, so without this exclusion
+   * they would silently appear as extra, out-of-place Details-stage fields
+   * here too — this wizard was never designed to render them. Any newly
+   * added dedicated-flow prefix should be added to this list.
    */
+  const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
   const stageQuestions = useMemo(() => {
     if (!form) return [[], [], []];
-    const usable = form.questions.filter((q) => q.inputType !== 'FILE');
+    const usable = form.questions.filter(
+      (q) => q.inputType !== 'FILE' && !DEDICATED_FLOW_PREFIXES.some((p) => q.key.startsWith(p))
+    );
     const service = usable.filter((q) => q.key === 'service_needed');
     const property = usable.filter((q) => q.key === 'property_type');
     const details = usable.filter(
