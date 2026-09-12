@@ -40,7 +40,7 @@ export default function About() {
         eyebrow="ABOUT US"
         title="ONE PARTNER. COMPLETE PROJECT."
         text={company.longIntro}
-        image="/assets/hero-house.jpeg"
+        image="/assets/projects/hero-house1.jpeg"
         breadcrumbs={[{ label: 'About Us' }]}
       />
 

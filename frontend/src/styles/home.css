@@ -10,14 +10,14 @@
 
 .home-hero {
   position: relative;
-  min-height: 560px;
+  min-height: 500px;
   display: flex;
   align-items: center;
-  padding-top: calc(var(--header-h) + var(--space-6));
-  padding-bottom: var(--space-8);
-  background: var(--white);
+  padding-top: calc(var(--header-h) + 20px);
+  padding-bottom: 35px;
+  background: #fff;
+  overflow: visible;
 }
-
 /* overflow:hidden lives here, not on .home-hero itself — this box is
    inset:0 so it clips the background photo identically, but keeping it off
    .home-hero means the search results dropdown (a descendant positioned
@@ -26,29 +26,38 @@
    Popular Services section underneath it. */
 .home-hero-media {
   position: absolute;
-  inset: 0;
+  top: 80px;
+  right: -50px;
+  bottom: 0;
+  left: auto;
+
+  width: 62%;
   overflow: hidden;
+  z-index: 0;
 }
 
 .home-hero-media img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: 78% center;
+  object-fit: contain;
+  object-position: center center;
+  display: block;
 }
-
 /* A soft WHITE gradient, not a dark scrim — the reference keeps the photo
    bright and lifts the left side just enough for the heading to read. */
 .home-hero-gradient {
   position: absolute;
   inset: 0;
+
   background: linear-gradient(
-    100deg,
-    rgba(255, 255, 255, 0.97) 0%,
-    rgba(255, 255, 255, 0.92) 30%,
-    rgba(255, 255, 255, 0.55) 55%,
-    rgba(255, 255, 255, 0.08) 78%
+    90deg,
+    #fff 0%,
+    rgba(255, 255, 255, 0.85) 8%,
+    rgba(255, 255, 255, 0.35) 22%,
+    rgba(255, 255, 255, 0) 42%
   );
+
+  z-index: 1;
 }
 
 .home-hero-inner {
@@ -58,7 +67,10 @@
 }
 
 .home-hero-copy {
-  max-width: 620px;
+  position: relative;
+  z-index: 3;
+  max-width: 520px;
+  width: 50%;
 }
 
 .home-hero h1 {
@@ -82,13 +94,11 @@
 
 .home-search {
   position: relative;
-  max-width: 560px;
-  /* .home-search used to sit right after the <p>, inheriting its
-     margin-bottom for free — now a sibling of .home-hero-top instead (so
-     it can run full width under the photo on mobile), it needs its own
-     top margin. */
-  margin-top: var(--space-6);
-}
+  z-index: 10;
+  width: min(680px, 100%);
+  max-width: 680px;
+  margin-top: 40px;
+  }
 
 .home-search-icon {
   position: absolute;
@@ -101,12 +111,12 @@
 
 .home-search input {
   width: 100%;
-  height: 58px;
+  height: 64px;
   padding: 0 20px 0 52px;
-  border: none;
+  /* border: 1px solid #003968; */
   border-radius: var(--radius-pill);
   background: var(--white);
-  box-shadow: 0 10px 30px rgba(5, 5, 5, 0.12);
+  box-shadow: 0 5px 10px #012b7a;
   font-size: 15px;
   color: var(--ink);
 }
@@ -116,7 +126,7 @@
 }
 
 .home-search input:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
 }
 
@@ -368,46 +378,121 @@
   }
 }
 
-@media (max-width: 767px) {
+
+
+/* -----------------------------------------------------------mobile hero */
+  
+
+/* ----------------------------------------------------------- mobile hero */
+
+/* ----------------------------------------------------------- mobile hero */
+
+@media (max-width: 768px) {
+
   .home-hero {
     min-height: 0;
-    padding-top: calc(var(--header-h-mobile) + var(--space-6));
-    /* Was --space-6 (32px) — combined with .popular-services' own top
-       padding this left a conspicuously large empty gap below the search
-       bar on mobile, matching neither the reference nor the rest of the
-       page's spacing rhythm. */
-    padding-bottom: var(--space-4);
+    height: auto;
+    padding-top: 70px;
+    padding-bottom: 16px;
+    overflow: visible;
   }
 
-  /* Same reason as .home-hero's own padding-bottom above — tightens the
-     gap below the search bar to match the reference. */
-  .popular-services {
-    padding-top: var(--space-5);
+  /* HOUSE IMAGE */
+  .home-hero-media {
+    position: absolute;
+    top: 72px;
+    right: -18px;
+    left: auto;
+
+    width: 62%;
+    height: 190px;
+
+    overflow: hidden;
+    z-index: 1;
   }
 
-  /* Same full-bleed background-photo-with-gradient treatment as desktop
-     (per follow-up request) — just a different photo crop and a steeper
-     gradient, tuned for a narrow phone. */
   .home-hero-media img {
-    object-position: 68% center;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: right top;
+    display: block;
   }
 
-  /* A steeper, more vertical gradient than desktop's diagonal one — on a
-     narrow phone the photo has far less horizontal room to fade across. */
+  /* NO WHITE GRADIENT ON MOBILE */
   .home-hero-gradient {
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.97) 0%,
-      rgba(255, 255, 255, 0.93) 55%,
-      rgba(255, 255, 255, 0.75) 100%
-    );
+    display: none;
+  }
+
+  /* HERO CONTENT */
+  .home-hero-inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  /* TEXT */
+  .home-hero-copy {
+    position: relative;
+    z-index: 3;
+
+    width: 52%;
+    max-width: 230px;
+
+    padding-top: 18px;
+  }
+
+  .home-hero h1 {
+    font-size: 28px;
+    line-height: 1.08;
+    margin-bottom: 10px;
+  }
+
+  .home-hero-copy > p {
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 210px;
+    margin-bottom: 0;
+  }
+
+  /* SEARCH */
+  .home-search {
+    position: relative;
+    z-index: 5;
+
+    width: 100%;
+    max-width: none;
+
+    margin-top: 15px;
+    margin-bottom: 0;
   }
 
   .home-search input {
-    height: 52px;
+    width: 100%;
+    height: 54px;
+
+    padding-left: 48px;
+
+    font-size: 13px;
+
+    /* DARK BORDER */
+   /* border: 1px solid  #012b7a; */
+   box-shadow: 0 5px 10px #012b7a;
+  }
+
+  /* POPULAR SERVICES */
+  .popular-services {
+    margin-top: 0;
+    padding-top: 8px;
+  }
+
+  .popular-services-title {
+    font-size: 18px;
+    margin-bottom: 10px;
   }
 }
-
 /* ------------------------------------------------------- consultation cta */
 
 .consult-banner {
