@@ -1,34 +1,31 @@
 import { Link } from 'react-router-dom';
-import HomeHero from '../components/home/HomeHero';
+// import HomeHero from '../components/home/HomeHero';
 import PopularServices from '../components/home/PopularServices';
 import ConsultationBanner from '../components/home/ConsultationBanner';
-// Materials and Projects sections are disabled sitewide — see App.jsx.
-// import MaterialsSection from '../components/materials/MaterialsSection';
+import MaterialsSection from '../components/materials/MaterialsSection';
 import StatsSection from '../components/home/StatsSection';
-// import ProjectGrid from '../components/projects/ProjectGrid';
+import ProjectGrid from '../components/projects/ProjectGrid';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
-// import { getFeaturedProjects } from '../data/projects';
+import { getFeaturedProjects } from '../data/projects';
 
 export default function Home() {
-  // const featured = getFeaturedProjects(4);
+  const featured = getFeaturedProjects(4);
 
   return (
     /* page-home widens every .container on this page to the full viewport —
        see "full-width home page" in pages.css. Other pages stay centred. */
     <div className="page-home">
-      <HomeHero />
+      {/* <HomeHero /> */}
 
       <PopularServices />
 
       <ConsultationBanner />
 
-      {/* Materials section — disabled sitewide, see App.jsx.
-      <MaterialsSection /> */}
+      <MaterialsSection />
 
-      {/* ------------------------------------------------------ projects
-          Featured Projects section — disabled sitewide, see App.jsx.
+      {/* ------------------------------------------------------ projects */}
       <section className="section">
         <div className="container">
           <div className="section-head-row">
@@ -52,7 +49,6 @@ export default function Home() {
           <ProjectGrid projects={featured} />
         </div>
       </section>
-      */}
 
       {/* --------------------------------------------------------- stats */}
       <StatsSection />
