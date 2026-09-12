@@ -336,12 +336,15 @@
 
 .value-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
   gap: 20px;
+
 }
 
+
+
 .value-card {
-  padding: 26px 24px;
+  padding: 30px 24px;
   border: 1px solid var(--grey-200);
   border-radius: var(--radius);
   background: var(--white);
