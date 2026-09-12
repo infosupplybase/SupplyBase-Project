@@ -13,6 +13,18 @@ import ServiceBooking from './ServiceBooking';
  * Fetched, not hard-coded: this and the booking form read the same catalogue,
  * so they cannot drift apart.
  */
+
+const serviceImages = {
+  'interior-design': '/assets/services/interior-design.webp',
+  'interior-by-choice': '/assets/services/interior-by-choice.png',
+  painting: '/assets/services/painting.jpg',
+  waterproofing: '/assets/services/waterproofing.jpeg',
+  'pop-ceiling-design': '/assets/services/pop-ceiling-design.jpg',
+  plumbing: '/assets/services/plumber.jpg',
+  electrical: '/assets/services/electrician.jpg',
+  'other-services': '/assets/services/other-services.webp',
+};
+
 export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,15 +36,17 @@ export default function Services() {
     let cancelled = false;
     api
       .services()
-      .then((result) => {
-        if (!cancelled) setServices(result);
-      })
+     .then((result) => {
+  console.log(result);
+  if (!cancelled) setServices(result);
+})
       .catch((err) => {
         if (!cancelled) setError(friendlyError(err));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
@@ -63,31 +77,41 @@ export default function Services() {
             {services.map((service, i) => (
               <Reveal key={service.slug} delay={i * 70}>
                 <article
-  className="
-    svc-card
-    !bg-black/5
-    backdrop-blur-xl
-    !border-white/40
-    !shadow-[0_8px_28px_rgba(0,0,0,0.10)]
-  "
+  className="svc-card"
   data-service={service.slug}
 >
-                  <div className="svc-card-icon">
-                    <Icon name={service.icon || 'tools'} size={30} strokeWidth={1.4} />
-                  </div>
-                  <h2>{service.name}</h2>
-                  <p>{service.description}</p>
-                  <div className="svc-card-foot">
-                    <button
-  type="button"
-  className="btn btn-primary btn-sm"
-  onClick={() => setSelectedService(service)}
->
-  BOOK NOW
-  <Icon name="arrow-right" size={15} />
-</button>
-                  </div>
-                </article>
+  <div className="svc-card-media">
+  <img
+    src={serviceImages[service.slug]}
+    alt={service.name}
+  />
+</div>
+
+  <div className="svc-card-body">
+    <h2>{service.name}</h2>
+
+    <p>{service.description}</p>
+
+    <div className="svc-card-foot">
+      <div className="svc-card-icon">
+        <Icon
+          name={service.icon || 'tools'}
+          size={22}
+          strokeWidth={1.4}
+        />
+      </div>
+
+      <button
+        type="button"
+        className="svc-book"
+        onClick={() => setSelectedService(service)}
+      >
+        BOOK NOW
+        <Icon name="arrow-right" size={15} />
+      </button>
+    </div>
+  </div>
+</article>
               </Reveal>
             ))}
           </div>
@@ -95,92 +119,91 @@ export default function Services() {
       </section>
 
       <CtaBand />
+
       {selectedService && (
-  <div
-    className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/65 backdrop-blur-[3px] p-4"
-    onClick={() => setSelectedService(null)}
-  >
-    <div
-  className="
-  relative
-  w-full
-  max-w-[760px]
-  max-h-[88vh]
-  overflow-hidden
-  rounded-2xl
-  bg-white
-  shadow-2xl
+        <div
+          className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/65 backdrop-blur-[3px] p-4"
+          onClick={() => setSelectedService(null)}
+        >
+          <div
+            className="
+              relative
+              w-full
+              max-w-[760px]
+              max-h-[88vh]
+              overflow-hidden
+              rounded-2xl
+              bg-white
+              shadow-2xl
+              max-sm:h-[92vh]
+              max-sm:max-h-[92vh]
+              max-sm:rounded-xl
+            "
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedService(null)}
+              className="
+                !absolute !right-5 !top-5 !z-50
+                !flex !h-10 !w-10
+                !items-center !justify-center
+                !rounded-full
+                !border !border-gray-200
+                !bg-white
+                !text-xl !text-gray-700
+                !shadow-sm
+                transition
+                hover:!bg-gray-100
+              "
+              aria-label="Close booking modal"
+            >
+              
+            </button>
 
-  max-sm:h-[92vh]
-  max-sm:max-h-[92vh]
-  max-sm:rounded-xl
-"
-  onClick={(e) => e.stopPropagation()}
->
-      <button
-        type="button"
-        onClick={() => setSelectedService(null)}
-        className="
-  !absolute !right-5 !top-5 !z-50
-  !flex !h-10 !w-10
-  !items-center !justify-center
-  !rounded-full
-  !border !border-gray-200
-  !bg-white
-  !text-xl !text-gray-700
-  !shadow-sm
-  transition
-  hover:!bg-gray-100
-"
-        aria-label="Close booking modal"
-      >
-        ✕
-      </button>
+            <div className="px-6 pt-6 pr-16">
+              <p className="mb-1 text-sm font-semibold uppercase tracking-[0.16em] text-amber-500">
+                Book a service
+              </p>
 
-      <div className="px-6 pt-6 pr-16">
-        <p className="mb-1 text-sm font-semibold uppercase tracking-[0.16em] text-amber-500">
-          Book a service
-        </p>
+              <h2 className="text-2xl font-bold text-gray-950">
+                {selectedService.name}
+              </h2>
 
-        <h2 className="text-2xl font-bold text-gray-950">
-          {selectedService.name
-          }
-        </h2>
+              <p className="mt-2 text-sm leading-6 text-gray-500">
+                {selectedService.description}
+              </p>
+            </div>
 
-        <p className="mt-2 text-sm leading-6 text-gray-500">
-          {selectedService.description}
-        </p>
-      </div>
+            <div className="my-6 h-px bg-gray-200" />
 
-      <div className="my-6 h-px bg-gray-200" />
-
-      <div
-  ref={modalScrollRef}
-  className="
-  max-h-[calc(88vh-170px)]
-  overflow-y-auto
-  px-6 pb-6
-  [scrollbar-width:none]
-  [&::-webkit-scrollbar]:hidden
-"
->
-  <ServiceBooking
-  serviceSlug={selectedService.slug}
-  modal={true}
-  onClose={() => setSelectedService(null)}
-  onStepChange={() => {
-  requestAnimationFrame(() => {
-    modalScrollRef.current?.scrollTo({
-      top: 0,
-      behavior: 'auto',
-    });
-  });
-}}
-/>
-</div>
-    </div>
-  </div>
-)}
+            <div
+              ref={modalScrollRef}
+              className="
+                max-h-[calc(88vh-170px)]
+                overflow-y-auto
+                px-6 pb-6
+                [scrollbar-width:none]
+                [&::-webkit-scrollbar]:hidden
+              "
+            >
+              <ServiceBooking
+                serviceSlug={selectedService.slug}
+                modal={true}
+                onClose={() => setSelectedService(null)}
+                onStepChange={() => {
+                  requestAnimationFrame(() => {
+                    modalScrollRef.current?.scrollTo({
+                      top: 0,
+                      behavior: 'auto',
+                    });
+                  });
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
