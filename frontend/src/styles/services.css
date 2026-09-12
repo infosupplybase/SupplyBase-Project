@@ -4,11 +4,6 @@
 
 /* ---------------------------------------------------------- service grid */
 
-/*
- * auto-fit with a 260px floor gives 4 / 2 / 1 columns across the breakpoints
- * without three separate media queries — the track count follows the space
- * available rather than a number someone guessed.
- */
 .svc-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -18,19 +13,28 @@
 .svc-card {
   display: flex;
   flex-direction: column;
+
   background: var(--white);
-  border: 1px solid var(--border);
+
+  border: 1px solid #e5e5e5 !important;
+  border-top: 1px solid #e5e5e5 !important;
+
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+
   overflow: hidden;
-  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease),
-              border-color var(--t) var(--ease);
+
+  transition:
+    transform var(--t) var(--ease),
+    box-shadow var(--t) var(--ease);
 }
 
 .svc-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--gold);
+
+  border: 1px solid #d5d5d5 !important;
+  border-top: 1px solid #d5d5d5 !important;
 }
 
 .svc-card-media {
@@ -54,18 +58,22 @@
 /* The icon straddles the image and the body, which ties the two halves of
    the card together without a divider line. */
 .svc-card-icon {
-  position: absolute;
-  left: 18px;
-  bottom: -22px;
-  width: 52px;
-  height: 52px;
+  position: static;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius);
-  background: var(--gold);
-  color: var(--on-gold);
-  box-shadow: var(--shadow);
+
+  box-sizing: border-box;
+  border-radius: 8px;
+
+  background: #eef9fb;
+  color: #0b7285;
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .svc-card-body {
@@ -95,8 +103,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding-top: var(--space-4);
+  gap: 16px;
+
+  padding-top: 16px;
+  margin-top: auto;
+
   border-top: 1px solid var(--border);
 }
 
@@ -139,15 +150,6 @@
   padding: 0 var(--space-2);
 }
 
-/*
- * The connector runs from one circle to the next, which means it necessarily
- * leaves the item's own box to cross the grid gap. `overflow: clip` on the
- * grid keeps that from widening the page — clip rather than hidden, so no
- * scroll container is created.
- *
- * It is suppressed below 1200px, where the grid wraps and a connector would
- * point at empty space.
- */
 .how-grid {
   overflow: clip;
 }
@@ -337,7 +339,6 @@
   gap: 12px;
 }
 
-/* Hidden action buttons */
 .fab-options {
   position: absolute;
   bottom: 52px;
@@ -403,7 +404,6 @@
   opacity: 1;
 }
 
-/* staggered reveal */
 .floating-actions:hover .fab-options .fab:nth-child(1) {
   transition-delay: 80ms;
 }
@@ -444,7 +444,6 @@
     0 0 0 8px rgba(212, 160, 23, 0.10);
 }
 
-/* Individual actions */
 .fab-whatsapp {
   background: color-mix(in srgb, var(--whatsapp) 55%, transparent);
 }
@@ -466,20 +465,18 @@
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-6) var(--space-4);
   }
-  /* Connectors only make sense along a row; with a wrapped grid they would
-     point at nothing. */
+
   .how-step::after {
     display: none !important;
   }
 }
 
 @media (max-width: 767px) {
-  /* Vertical timeline on a phone: circle on the left, text beside it, one
-     continuous line down the side. */
   .how-grid {
     grid-template-columns: 1fr;
     gap: 0;
   }
+
   .how-step {
     display: grid;
     grid-template-columns: 68px 1fr;
@@ -488,6 +485,7 @@
     padding: 0 0 var(--space-6);
     position: relative;
   }
+
   .how-step:not(:last-child)::before {
     content: '';
     position: absolute;
@@ -497,9 +495,11 @@
     width: 1px;
     background: var(--gold-a40);
   }
+
   .how-icon {
     margin: 0;
   }
+
   .how-step h3 {
     margin-top: 6px;
   }
@@ -507,8 +507,58 @@
   .whatsapp-card {
     padding: var(--space-4);
   }
+
   .fab {
     width: 48px;
     height: 48px;
   }
+}
+
+.svc-book {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 140px;
+  height: 44px;
+
+  box-sizing: border-box;
+  gap: 8px;
+  padding: 0 18px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: var(--gold);
+  color: var(--on-gold);
+
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  cursor: pointer;
+
+  position: relative;
+  top: -3px;
+}
+
+.svc-book:hover {
+  background: var(--gold-deep);
+  color: var(--white);
+  transform: translateY(-1px);
+}
+
+.svc-book svg {
+  transition: transform var(--t) var(--ease);
+}
+
+.svc-book:hover svg {
+  transform: translateX(3px);
+}
+
+.svc-card-icon {
+  height: 44px !important;
+  transform: translateY(4px);
 }
