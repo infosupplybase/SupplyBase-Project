@@ -142,9 +142,9 @@ export const whyUsPoints = [
  */
 export const mainNav = [
   { label: 'HOME', path: '/' },
-  // { label: 'SERVICES', path: '/services', hasMegaMenu: true },
+  { label: 'SERVICES', path: '/services', hasMegaMenu: true },
   // { label: 'PROJECTS', path: '/projects' },
-  { label: 'MATERIALS', path: '/materials' },
+  // { label: 'MATERIALS', path: '/materials' },
   { label: 'ABOUT US', path: '/about' },
   { label: 'CONTACT US', path: '/contact' },
 ];
