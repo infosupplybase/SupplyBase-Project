@@ -1,0 +1,447 @@
+/* ============================================================
+   URBAN COMPANY STYLE SECTION
+   ============================================================ */
+
+.uc-section {
+  background: #ffffff;
+  /* Added padding-top to clear the fixed header */
+  padding-top: calc(var(--header-h) + 40px); 
+  padding-bottom: 100px;
+  font-family: inherit;
+}
+
+.uc-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.uc-header {
+  margin-bottom: 40px;
+}
+
+.uc-title {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.uc-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.uc-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* --- SEARCH DROPDOWN --- */
+.uc-search-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+}
+
+.uc-search-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 16px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s;
+}
+
+.uc-search-box:focus-within {
+  border-color: #d4af37;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.1);
+}
+
+.uc-search-box > svg:first-child {
+  color: #888;
+  flex-shrink: 0;
+}
+
+.uc-search-box input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: transparent;
+}
+
+.uc-search-box input::placeholder {
+  color: #999;
+}
+
+.uc-search-arrow {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+}
+
+.uc-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 100;
+  padding: 6px;
+  animation: ucFadeIn 0.15s ease;
+}
+
+@keyframes ucFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.uc-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  text-align: left;
+  font-size: 14px;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.uc-dropdown-item:hover,
+.uc-dropdown-item.active {
+  background: #fdfaf1;
+}
+
+.uc-dropdown-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 6px;
+  color: #555;
+}
+
+.uc-dropdown-item.active .uc-dropdown-icon {
+  background: #fbf2dc;
+  color: #b8960c;
+}
+
+.uc-dropdown-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.uc-no-result {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+/* ============================================================
+   SUB-SERVICES GRID (Urban Company 3D Style)
+   ============================================================ */
+
+.uc-subservices-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.uc-subservices-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px 16px;
+}
+
+.uc-subservice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  text-decoration: none;
+  color: #1a1a1a;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.uc-subservice-card:hover {
+  transform: translateY(-6px);
+}
+
+/* ============================================================
+   THE 3D ICON BOX
+   ============================================================ */
+
+.uc-subservice-icon-box {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+
+  /* Soft white gradient background */
+  background: linear-gradient(145deg, #ffffff 0%, #f4f4f4 100%);
+
+  /* Rounded corners like Urban Company */
+  border-radius: 20px;
+
+  /* 3D layered shadow — this is the key to the "lifted" look */
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.04),
+    0 10px 20px rgba(0, 0, 0, 0.05),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.02),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+
+  /* Smooth transitions */
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Cut off any image that overflows */
+  overflow: hidden;
+  position: relative;
+}
+
+/* HOVER — lifts the box up with a deeper shadow */
+.uc-subservice-card:hover .uc-subservice-icon-box {
+  transform: translateY(-4px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.05),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 20px 40px rgba(0, 0, 0, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.02),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================================
+   IMAGE INSIDE THE BOX (Background Removal + 3D)
+   ============================================================ */
+
+.uc-subservice-icon-box img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+
+  /* REMOVE WHITE BACKGROUND — this is the magic trick */
+  mix-blend-mode: multiply;
+  filter: contrast(1.05) saturate(1.1);
+
+  /* Prevent the image from blurring when scaled */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: block;
+}
+
+/* HOVER — image grows slightly */
+.uc-subservice-card:hover .uc-subservice-icon-box img {
+  transform: scale(1.12);
+}
+
+/* Keep SVG fallback styling (in case you use Icons too) */
+.uc-subservice-icon-box svg {
+  width: 38px;
+  height: 38px;
+  stroke-width: 1.4;
+  transition: transform 0.2s ease;
+}
+
+.uc-subservice-card:hover .uc-subservice-icon-box svg {
+  transform: scale(1.1);
+}
+
+/* ============================================================
+   SUB-SERVICE NAME
+   ============================================================ */
+
+.uc-subservice-name {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #2a2a2a;
+  max-width: 100px;
+  transition: color 0.2s ease;
+}
+
+.uc-subservice-card:hover .uc-subservice-name {
+  color: #b8960c;
+}
+
+/* ============================================================
+   VIEW ALL LINK
+   ============================================================ */
+
+.uc-view-all-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.uc-view-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.uc-view-all-link:hover {
+  color: #d4af37;
+}
+
+.uc-empty-service {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  color: #1a1a1a;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  grid-column: 1 / -1;
+}
+
+.uc-empty-service:hover {
+  border-color: #d4af37;
+}
+
+/* ============================================================
+   RIGHT COLUMN (Image Collage)
+   ============================================================ */
+
+.uc-right-col {
+  position: sticky;
+  top: 40px;
+}
+
+.uc-image-collage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 240px 240px;
+  gap: 16px;
+}
+
+.uc-img-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  background: #f0f0f0;
+}
+
+.uc-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.uc-img-wrapper:hover img {
+  transform: scale(1.03);
+}
+
+.uc-img-wrapper.uc-img-1 {
+  grid-row: 1 / 3;
+  grid-column: 1 / 2;
+}
+
+.uc-img-wrapper.uc-img-2 {
+  grid-row: 1 / 2;
+  grid-column: 2 / 3;
+}
+
+.uc-img-wrapper.uc-img-3 {
+  grid-row: 2 / 3;
+  grid-column: 2 / 3;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 992px) {
+  .uc-main-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .uc-right-col {
+    position: static;
+    order: -1;
+  }
+
+  .uc-image-collage {
+    grid-template-rows: 180px 180px;
+  }
+  
+  .uc-subservices-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .uc-section {
+    padding: 40px 0 60px;
+  }
+
+  .uc-search-wrapper {
+    max-width: 100%;
+  }
+
+  .uc-subservices-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 10px;
+  }
+
+  .uc-subservice-icon-box {
+    max-width: 75px;
+    border-radius: 16px;
+  }
+
+  .uc-subservice-name {
+    font-size: 11px;
+    max-width: 80px;
+  }
+
+  .uc-image-collage {
+    grid-template-rows: 140px 140px;
+    gap: 10px;
+  }
+}
