@@ -1214,3 +1214,85 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+/* =========================================================
+   Painting flow inside Services modal
+   ========================================================= */
+
+.painting-modal-scope .pnt-flow-shell,
+.painting-modal-scope .wizard-shell {
+  min-height: 0 !important;
+  background: transparent !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.painting-modal-scope .pnt-flow-shell .container,
+.painting-modal-scope .pnt-flow-shell .container-narrow,
+.painting-modal-scope .wizard-container {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  background: transparent !important;
+  padding-top: 0 !important;
+}
+
+/* =========================================================
+   Painting modal — mobile product card layout
+   ========================================================= */
+
+@media (max-width: 767px) {
+  .painting-modal-scope .pnt-product {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 20px;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 4px;
+    align-items: start;
+    padding: 12px;
+  }
+
+  .painting-modal-scope .pnt-product-swatch {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+
+    width: 40px;
+    height: 40px;
+  }
+
+  .painting-modal-scope .pnt-product-body {
+    grid-column: 2;
+    grid-row: 1;
+
+    width: 100%;
+    min-width: 0;
+  }
+
+  .painting-modal-scope .pnt-product-label {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  .painting-modal-scope .pnt-product-hint {
+    display: block;
+    width: 100%;
+    line-height: 1.4;
+  }
+
+  .painting-modal-scope .pnt-product-price {
+    grid-column: 2;
+    grid-row: 2;
+
+    margin-right: 0;
+    white-space: nowrap;
+  }
+
+  .painting-modal-scope .pnt-option-radio {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+
+    align-self: center;
+  }
+}
