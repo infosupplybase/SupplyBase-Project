@@ -143,9 +143,9 @@ const SERVICE_IMAGES = {
     'https://images.livspace-cdn.com/w:3840/plain/https://d3gq2merok8n5r.cloudfront.net/abhinav/ond-1634120396-Obfdc/di-2026-1769081758-Ayx2Q/amj-1774778677-BA1IA/false-ceiling-1775037704-53sHV/fc-7-1777449942-pNIOS.png',
   ],
   waterproofing: [
-    'https://images.unsplash.com/photo-1620626011761-996317b8d101?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&q=80&w=800',
-    'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=800',
+    'https://locknseal.in/wp-content/uploads/2026/02/Untitled-design-58.png',
+    'https://aapkapainter.com/blog/wp-content/uploads/2022/10/5888866c-b833-425a-b2c3-0df2a77dbd9a1628244450.webp',
+    'https://sunandaglobal.com/wp-content/uploads/2024/10/How-to-Choose-the-Right-Roof-Waterproofing-Services.webp',
   ],
   'other-services': [
     'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=800',
