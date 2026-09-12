@@ -4,7 +4,7 @@ import SectionHeading from '../components/ui/SectionHeading';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
-import StatsSection from '../components/home/StatsSection';
+// import StatsSection from '../components/home/StatsSection';
 import ProcessSection from '../components/home/ProcessSection';
 import { company, whyUsPoints } from '../data/siteConfig';
 
@@ -145,7 +145,7 @@ export default function About() {
       </section>
 
       <ProcessSection />
-      <StatsSection showHeading={false} />
+      {/* <StatsSection showHeading={false} /> */}
       <CtaBand />
     </>
   );
