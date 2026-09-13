@@ -1,63 +1,32 @@
-import { Link } from 'react-router-dom';
-import HomeHero from '../components/home/HomeHero';
 import PopularServices from '../components/home/PopularServices';
-import ConsultationBanner from '../components/home/ConsultationBanner';
-// Materials and Projects sections are disabled sitewide — see App.jsx.
-// import MaterialsSection from '../components/materials/MaterialsSection';
-import StatsSection from '../components/home/StatsSection';
-// import ProjectGrid from '../components/projects/ProjectGrid';
-import Reveal from '../components/ui/Reveal';
-import CtaBand from '../components/ui/CtaBand';
-import Icon from '../components/ui/Icon';
-// import { getFeaturedProjects } from '../data/projects';
+import StatsStrip from '../components/home/StatsStrip';
+import MostBooked from '../components/home/MostBooked';
+import HomeCta from '../components/home/HomeCta';
+import HowItWorks from '../components/home/HowItWorks';
+import OurPromise from '../components/home/OurPromise';
 
 export default function Home() {
-  // const featured = getFeaturedProjects(4);
-
   return (
-    /* page-home widens every .container on this page to the full viewport —
-       see "full-width home page" in pages.css. Other pages stay centred. */
     <div className="page-home">
-      <HomeHero />
 
+      {/* 1. Popular Services */}
       <PopularServices />
 
-      <ConsultationBanner />
+      {/* 2. Stats Strip */}
+      <StatsStrip />
 
-      {/* Materials section — disabled sitewide, see App.jsx.
-      <MaterialsSection /> */}
+      {/* 3. Most Booked / Spotlight */}
+      <MostBooked />
 
-      {/* ------------------------------------------------------ projects
-          Featured Projects section — disabled sitewide, see App.jsx.
-      <section className="section">
-        <div className="container">
-          <div className="section-head-row">
-            <div>
-              <span className="eyebrow">OUR WORK</span>
-              <div className="rule" />
-              <h2>
-                FEATURED <span className="gold">PROJECTS</span>
-              </h2>
-              <p>
-                Residential, commercial and interior fit-out work — completed and ongoing. Every project
-                below was designed, built and handed over by the same team.
-              </p>
-            </div>
-            <Link to="/projects" className="btn btn-ghost">
-              VIEW ALL PROJECTS
-              <Icon name="arrow-right" size={17} />
-            </Link>
-          </div>
+      {/* 4. Clean CTA */}
+      <HomeCta />
 
-          <ProjectGrid projects={featured} />
-        </div>
-      </section>
-      */}
+      {/* 5. How It Works */}
+      <HowItWorks />
 
-      {/* --------------------------------------------------------- stats */}
-      <StatsSection />
+      {/* 6. Our Promise */}
+      <OurPromise />
 
-      <CtaBand />
     </div>
   );
 }
