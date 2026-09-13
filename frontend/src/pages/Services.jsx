@@ -29,10 +29,10 @@ const serviceImages = {
   'interior-design': '/assets/services/interior-design.webp',
   'interior-by-choice': '/assets/services/interior-by-choice.png',
   painting: '/assets/services/painting.jpg',
-  waterproofing: '/assets/services/waterproofing.jpeg',
+  waterproofing: '/assets/services/waterproofing.avif',
   'pop-ceiling-design': '/assets/services/pop-ceiling-design.jpg',
   plumbing: '/assets/services/plumber.jpg',
-  electrical: '/assets/services/electrician.jpg',
+  electrical: '/assets/services/electrician.avif',
   'other-services': '/assets/services/other-services.webp',
 };
 
@@ -103,7 +103,7 @@ const closeModal = () => {
         eyebrow="OUR SERVICES"
         title="WHAT WE DO"
         text="Four services, one accountable team. Book a site visit and we will assess the work and send you a written quotation."
-        image="/assets/hero-house.svg"
+        image="/assets/services/service-hero.jpg"
         breadcrumbs={[{ label: 'Services' }]}
       />
 
