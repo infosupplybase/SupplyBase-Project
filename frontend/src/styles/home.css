@@ -10,14 +10,16 @@
 
 .home-hero {
   position: relative;
-  min-height: 500px;
+  min-height: 640px;
   display: flex;
   align-items: center;
-  padding-top: calc(var(--header-h) + 20px);
-  padding-bottom: 35px;
-  background: #fff;
+  padding-top: var(--header-h);
+  padding-bottom: 60px;
+  background: #0c0e14;
   overflow: visible;
+  isolation: isolate;
 }
+
 /* overflow:hidden lives here, not on .home-hero itself — this box is
    inset:0 so it clips the background photo identically, but keeping it off
    .home-hero means the search results dropdown (a descendant positioned
@@ -26,51 +28,39 @@
    Popular Services section underneath it. */
 .home-hero-media {
   position: absolute;
-  top: 80px;
-  right: -250px;
-  bottom: 0;
-  left: auto;
-
-  width: 90%;
+  inset: 0;
   overflow: hidden;
   z-index: 0;
-
-   -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.25) 8%,
-    #000 22%,
-    #000 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(0, 0, 0, 0.25) 8%,
-    #000 22%,
-    #000 100%
-  );
 }
 
 .home-hero-media img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center center;
+  object-fit: cover;
+  object-position: center 60%;
   display: block;
 }
-/* A soft WHITE gradient, not a dark scrim — the reference keeps the photo
-   bright and lifts the left side just enough for the heading to read. */
+
+/* A dark, photographic scrim — strongest over the text on the left,
+   fading out toward the right so the house itself still reads clearly,
+   plus a gentle bottom fade so the section resolves into what follows. */
 .home-hero-gradient {
   position: absolute;
   inset: 0;
 
-  background: linear-gradient(
-    90deg,
-    #8f8c8c 0%,
-    rgba(44, 43, 43, 0.85) 8%,
-    rgba(75, 75, 75, 0.35) 22%,
-    rgba(71, 71, 71, 0) 42%
-  );
+  background:
+    linear-gradient(
+      100deg,
+      rgba(8, 10, 16, 0.92) 0%,
+      rgba(8, 10, 16, 0.78) 30%,
+      rgba(8, 10, 16, 0.42) 55%,
+      rgba(8, 10, 16, 0.12) 78%
+    ),
+    linear-gradient(
+      to top,
+      rgba(8, 10, 16, 0.5) 0%,
+      rgba(8, 10, 16, 0) 30%
+    );
 
   z-index: 1;
 }
@@ -84,22 +74,48 @@
 .home-hero-copy {
   position: relative;
   z-index: 3;
-  max-width: 520px;
-  width: 50%;
+  max-width: 620px;
+}
+
+.home-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: var(--space-4);
+  padding: 6px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-pill);
+
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
 }
 
 .home-hero h1 {
-  color: var(--ink);
-  font-size: clamp(34px, 5.2vw, 60px);
-  line-height: 1.06;
+  color: #fff;
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1.1;
   margin-bottom: var(--space-4);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
   /* Title case, not the site-wide h1 default of all-caps — matches the
      approved reference mockup for this one heading. */
   text-transform: none;
 }
 
-.home-hero-copy > p {
-  color: var(--ink-soft);
+.home-hero-accent {
+  color: var(--gold);
+}
+
+.home-hero-copy > .home-hero-sub {
+  max-width: 460px;
+  color: rgba(255, 255, 255, 0.82);
   font-size: clamp(15px, 1.4vw, 18px);
   line-height: 1.6;
   margin-bottom: var(--space-6);
@@ -128,10 +144,10 @@
   width: 100%;
   height: 64px;
   padding: 0 20px 0 52px;
-  /* border: 1px solid #003968; */
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-pill);
   background: var(--white);
-  box-shadow: 0 5px 10px #012b7a;
+  box-shadow: var(--shadow-lg);
   font-size: 15px;
   color: var(--ink);
 }
@@ -141,7 +157,7 @@
 }
 
 .home-search input:focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
@@ -407,39 +423,27 @@
   .home-hero {
     min-height: 0;
     height: auto;
-    padding-top: 70px;
-    padding-bottom: 16px;
+    padding-top: calc(var(--header-h) + 28px);
+    padding-bottom: 28px;
     overflow: visible;
   }
 
-  /* HOUSE IMAGE */
-  .home-hero-media {
-    position: absolute;
-    top: 72px;
-    right: -18px;
-    left: auto;
-
-    width: 70%;
-    height: 240px;
-
-    overflow: hidden;
-    z-index: 1;
-
-     -webkit-mask-image: none;
-    mask-image: none;
-  }
-
+  /* HOUSE IMAGE — same full-bleed cover as desktop, just shorter */
   .home-hero-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: right top;
-    display: block;
+    object-position: center 65%;
   }
 
-  /* NO WHITE GRADIENT ON MOBILE */
+  /* A single, stronger scrim on mobile: the text now spans the full
+     width over the photo instead of sitting beside it, so it needs even
+     contrast everywhere rather than a left-to-right fade. */
   .home-hero-gradient {
-    display: none;
+    background:
+      linear-gradient(
+        to top,
+        rgba(6, 8, 13, 0.92) 0%,
+        rgba(6, 8, 13, 0.66) 45%,
+        rgba(6, 8, 13, 0.55) 100%
+      );
   }
 
   /* HERO CONTENT */
@@ -455,23 +459,25 @@
   .home-hero-copy {
     position: relative;
     z-index: 3;
+    max-width: none;
+  }
 
-    width: 52%;
-    max-width: 230px;
-
-    padding-top: 18px;
+  .home-hero-eyebrow {
+    margin-bottom: 12px;
+    padding: 5px 12px;
+    font-size: 11px;
   }
 
   .home-hero h1 {
-    font-size: 28px;
-    line-height: 1.08;
+    font-size: 30px;
+    line-height: 1.14;
     margin-bottom: 10px;
   }
 
-  .home-hero-copy > p {
-    font-size: 13px;
-    line-height: 1.4;
-    max-width: 210px;
+  .home-hero-copy > .home-hero-sub {
+    max-width: none;
+    font-size: 14px;
+    line-height: 1.5;
     margin-bottom: 0;
   }
 
@@ -483,7 +489,7 @@
     width: 100%;
     max-width: none;
 
-    margin-top: 15px;
+    margin-top: 20px;
     margin-bottom: 0;
   }
 
@@ -494,10 +500,6 @@
     padding-left: 48px;
 
     font-size: 13px;
-
-    /* DARK BORDER */
-   /* border: 1px solid  #012b7a; */
-   box-shadow: 0 5px 10px #012b7a;
   }
 
   /* POPULAR SERVICES */
