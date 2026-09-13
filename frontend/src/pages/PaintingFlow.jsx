@@ -27,8 +27,15 @@ import { contact } from '../data/siteConfig';
  * "summary"); then Details, Schedule and Confirm, the same three-stage tail
  * ServiceBooking.jsx already uses for every other category.
  */
-export default function PaintingFlow() {
-  const { flowSlug } = useParams();
+export default function PaintingFlow({
+  modal = false,
+  flowSlug: propFlowSlug,
+  onBackToCategories,
+  onStepChange,
+}) {
+  const params = useParams();
+
+  const flowSlug = propFlowSlug || params.flowSlug;
   const flow = paintingFlows[flowSlug];
   const { user } = useAuth();
   const { category, loading, error: loadError, optionsFor, productsByTier, coloursByTab } =
@@ -121,12 +128,21 @@ export default function PaintingFlow() {
     [resolved]
   );
 
-  if (!flow) return <Navigate to="/services/painting" replace />;
+  if (!flow) {
+  if (modal) return null;
+
+  return <Navigate to="/services/painting" replace />;
+}
 
   const jumpToStep = (i) => {
-    setStage(i);
+  setStage(i);
+
+  if (modal) {
+    onStepChange?.();
+  } else {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }
+};
 
   const validateStep = (step) => {
     if (step.type === 'option') {
@@ -152,18 +168,37 @@ export default function PaintingFlow() {
   };
 
   const goNext = () => {
-    setSubmitError('');
-    const step = configSteps[stage - 1];
-    if (step && !validateStep(step)) return;
-    setStage((s) => Math.min(s + 1, CONFIRM));
+  setSubmitError('');
+
+  const step = configSteps[stage - 1];
+
+  if (step && !validateStep(step)) return;
+
+  setStage((s) => Math.min(s + 1, CONFIRM));
+
+  if (modal) {
+    onStepChange?.();
+  } else {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }
+};
 
   const goBack = () => {
-    setSubmitError('');
-    setStage((s) => Math.max(s - 1, 0));
+  setSubmitError('');
+
+  if (stage === 0 && modal) {
+    onBackToCategories?.();
+    return;
+  }
+
+  setStage((s) => Math.max(s - 1, 0));
+
+  if (modal) {
+    onStepChange?.();
+  } else {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }
+};
 
   const canLeaveDetails = () => {
     const next = validateDetails(details);
@@ -223,8 +258,13 @@ export default function PaintingFlow() {
         pincode: details.pincode || null,
       });
       setReceipt(result);
-      setStage(CONFIRM);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+setStage(CONFIRM);
+
+if (modal) {
+  onStepChange?.();
+} else {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setSubmitError(friendlyError(err));
@@ -263,7 +303,13 @@ export default function PaintingFlow() {
         <PaintingHero eyebrow="PROFESSIONAL" title={flow.name} tagline={flow.heroTagline} image={
           flow.slug === 'renovation' ? undefined : flow.introImage
         } />
-        <section className="pnt-section">
+        <section
+  className={
+    modal
+      ? 'pnt-section pnt-modal-flow !pb-1 md:!pb-6'
+      : 'pnt-section'
+  }
+>
           <div className="container container-narrow">
             <h2 className="pnt-intro-heading">{flow.introHeading}</h2>
             <p className="pnt-intro-text">{flow.introText}</p>
@@ -303,7 +349,14 @@ export default function PaintingFlow() {
               </ul>
             </div>
 
-            <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+            <button type="button" className="
+  btn
+  btn-primary
+  !w-full
+  md:!w-[250px]
+  md:!mx-auto
+  md:!flex
+" onClick={() => jumpToStep(1)}>
               Get Started <Icon name="arrow-right" size={17} />
             </button>
           </div>
@@ -316,8 +369,20 @@ export default function PaintingFlow() {
   if (stage === CONFIRM && receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
+      <div
+  className={
+    modal
+      ? 'wizard-shell pnt-modal-flow !min-h-0 !pb-0'
+      : 'wizard-shell'
+  }
+>
+        <div
+  className={
+    modal
+      ? 'wizard-container !min-h-0 !pb-0'
+      : 'wizard-container'
+  }
+>
           <div className="wizard-card">
             <div className="confirmed">
               <div className="confirmed-tick">
@@ -339,24 +404,55 @@ export default function PaintingFlow() {
               </div>
 
               <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
-              <div className="btn-row" style={{ marginTop: 12 }}>
-                <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
-                  <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
-                </a>
-                <Link to="/services/painting" className="btn btn-ghost btn-back">BACK TO PAINTING</Link>
-              </div>
+              <div
+  className={
+    modal
+      ? 'btn-row !mt-3 !flex !w-full !flex-wrap !items-center !justify-center !gap-3'
+      : 'btn-row'
+  }
+>
+  <a
+    href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={
+      modal
+        ? 'btn btn-whatsapp !w-auto !min-w-[190px] !justify-center'
+        : 'btn btn-whatsapp'
+    }
+  >
+    <Icon name="whatsapp" size={17} />
+    CHAT ON WHATSAPP
+  </a>
+
+  <Link
+    to="/services/painting"
+    className={
+      modal
+        ? 'btn btn-ghost btn-back !w-auto !min-w-[190px] !justify-center'
+        : 'btn btn-ghost btn-back'
+    }
+  >
+    BACK TO PAINTING
+  </Link>
+</div>
             </div>
           </div>
 
-          {flow.closing && (
-            <div className="pnt-closing">
-              <span className="pnt-closing-eyebrow">RENOVATION PAINTING BY SUPPLYBASE</span>
-              <h2>{flow.closing.heading}</h2>
-              <Link to="/services/painting" className="btn btn-primary">
-                {flow.closing.cta} <Icon name="arrow-right" size={17} />
-              </Link>
-            </div>
-          )}
+          {!modal && flow.closing && (
+  <div className="pnt-closing">
+    <span className="pnt-closing-eyebrow">
+      RENOVATION PAINTING BY SUPPLYBASE
+    </span>
+
+    <h2>{flow.closing.heading}</h2>
+
+    <Link to="/services/painting" className="btn btn-primary">
+      {flow.closing.cta}
+      <Icon name="arrow-right" size={17} />
+    </Link>
+  </div>
+)}
         </div>
       </div>
     );
@@ -380,9 +476,30 @@ export default function PaintingFlow() {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary">CONTINUE <Icon name="arrow-right" size={17} /></button>
+              <div
+  className={
+    modal
+      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
+                <button
+  type="button"
+  className={
+    modal
+  ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
+  : 'btn btn-ghost btn-back'
+  }
+  onClick={goBack}
+>BACK</button>
+                <button
+  type="submit"
+  className={
+    modal
+  ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[150px] md:!min-w-[150px] md:!flex-none md:!px-4'
+  : 'btn btn-primary'
+  }
+>CONTINUE <Icon name="arrow-right" size={17} /></button>
               </div>
             </div>
           </form>
@@ -421,10 +538,32 @@ export default function PaintingFlow() {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'BOOKING…' : 'BOOK HOME VISIT'} <Icon name="arrow-right" size={17} />
+              <div
+  className={
+    modal
+      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
+                <button
+  type="button"
+  className={
+  modal
+    ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
+    : 'btn btn-ghost btn-back'
+}
+  onClick={goBack}
+>BACK</button>
+                <button
+  type="submit"
+ className={
+  modal
+    ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[190px] md:!min-w-[190px] md:!flex-none md:!px-4'
+    : 'btn btn-primary'
+}
+  disabled={busy}
+>
+                  {busy ? 'BOOKING…' : 'BOOK NOW'} <Icon name="arrow-right" size={17} />
                 </button>
               </div>
             </div>
@@ -438,12 +577,30 @@ export default function PaintingFlow() {
   const step = configSteps[stage - 1];
 
   return (
-    <div className="pnt-flow-shell">
-      <div className="container container-narrow">
+    <div
+  className={
+    modal
+      ? 'pnt-flow-shell pnt-modal-flow'
+      : 'pnt-flow-shell'
+  }
+>
+      <div
+  className={
+    modal
+      ? 'container container-narrow !w-full !max-w-none !px-0'
+      : 'container container-narrow'
+  }
+>
         <FlowTopBar flow={flow} onBack={goBack} plain />
         <StepIndicator steps={configSteps} activeIndex={stage - 1} />
 
-        <div className="pnt-step-card">
+        <div
+  className={
+    modal
+      ? 'pnt-step-card !w-full !max-w-none !px-3 sm:!px-5'
+      : 'pnt-step-card'
+  }
+>
           {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
           {step.notSureNote && (
             <p className="question-hint" style={{ marginTop: -8, marginBottom: 16 }}>
@@ -520,9 +677,23 @@ export default function PaintingFlow() {
             />
           )}
 
-          <div className="pnt-step-actions">
-            <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-            <button type="button" className="btn btn-primary" onClick={goNext}>
+          <div
+  className={
+    modal
+      ? 'pnt-step-actions !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      : 'pnt-step-actions'
+  }
+>
+            <button type="button" className={
+  modal
+    ? 'btn btn-ghost btn-back !w-[80px] !min-w-[80px] !px-2 md:!w-auto md:!min-w-0 md:!px-4'
+    : 'btn btn-ghost btn-back'
+} onClick={goBack}>BACK</button>
+            <button type="button" className={
+  modal
+    ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-3 !text-[11px] !whitespace-nowrap md:!ml-auto md:!w-[190px] md:!max-w-[190px] md:!flex-none md:!px-4 md:!text-sm'
+    : 'btn btn-primary'
+} onClick={goNext}>
               {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
             </button>
           </div>
