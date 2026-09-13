@@ -60,7 +60,6 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useState(null);
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useState(null);
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useState(null);
-  const [selectedPaintingCategoryName, setSelectedPaintingCategoryName] = useState(null);
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useState(null);
   const [plumbingView, setPlumbingView] = useState('category');
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useState(null);
@@ -97,13 +96,13 @@ export default function ServiceBookingModal({ service, onClose }) {
           relative
           w-full
 
-       ${service.slug === 'interior-by-choice'
-  ? 'max-w-[1000px]'
-  : service.slug === 'interior-design'
-    ? 'max-w-[7600px]'
-    : 'max-w-[500px]'
-    
-}
+          ${service.slug === 'interior-by-choice'
+            ? 'max-w-[1000px]'
+            : service.slug === 'interior-design'
+              ? 'max-w-[820px]'
+              : 'max-w-[760px]'
+          }
+
           max-h-[88vh]
           h-auto
           overflow-hidden
@@ -181,7 +180,7 @@ export default function ServiceBookingModal({ service, onClose }) {
             {service.name}
           </h2>
 
-          {/* <p
+          <p
             className="
               mt-2
               text-sm
@@ -190,7 +189,7 @@ export default function ServiceBookingModal({ service, onClose }) {
             "
           >
             {service.description}
-          </p> */}
+          </p>
         </div>
 
         <div className="my-6 h-px bg-gray-200" />
@@ -268,10 +267,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                             scrollModalToTop();
                           }}
                         >
-                          {/* <Icon
+                          <Icon
                             name="arrow-left"
                             size={16}
-                          /> */}
+                          />
 
                           BACK
                         </button>
@@ -383,10 +382,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                             >
                               CUSTOMISE THIS DESIGN
 
-                              {/* <Icon
+                              <Icon
                                 name="arrow-right"
                                 size={17}
-                              /> */}
+                              />
                             </button>
                           </div>
                         </div>
@@ -411,10 +410,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                         scrollModalToTop();
                       }}
                     >
-                      {/* <Icon
+                      <Icon
                         name="arrow-left"
                         size={16}
-                      /> */}
+                      />
 
                       BACK
                     </button>
@@ -539,10 +538,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                     >
                       Customise Your Design
 
-                      {/* <Icon
+                      <Icon
                         name="arrow-right"
                         size={17}
-                      /> */}
+                      />
                     </button>
                   </div>
                 </>
@@ -722,31 +721,26 @@ export default function ServiceBookingModal({ service, onClose }) {
             selectedPaintingFlow ? (
               <div className="painting-modal-scope">
                 <PaintingFlow
-  modal={true}
-  flowSlug={selectedPaintingFlow}
-  paintingCategoryName={selectedPaintingCategoryName}
-  onBackToCategories={() => {
-    setSelectedPaintingFlow(null);
-    scrollModalToTop();
-  }}
-  onStepChange={scrollModalToTop}
-/>
-              </div>
-            ) : (
-              <div className="painting-modal-scope">
-                <PaintingCategory
                   modal={true}
-                onSelectFlow={(flowSlug, categoryName) => {
-  setSelectedPaintingFlow(flowSlug);
-  setSelectedPaintingCategoryName(categoryName);
-  scrollModalToTop();
-}}
+                  flowSlug={selectedPaintingFlow}
+                  onBackToCategories={() => {
+                    setSelectedPaintingFlow(null);
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
                 />
               </div>
+            ) : (
+              <PaintingCategory
+                modal={true}
+                onSelectFlow={(flowSlug) => {
+                  setSelectedPaintingFlow(flowSlug);
+                  scrollModalToTop();
+                }}
+              />
             )
           ) : service.slug === 'plumbing' ? (
-            <div className="plumbing-modal-scope">
-            {plumbingView === 'category' ? (
+            plumbingView === 'category' ? (
               <PlumbingCategory
                 modal={true}
                 onSelectTab={(tabSlug) => {
@@ -836,8 +830,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                   scrollModalToTop();
                 }}
               />
-            ) : null}
-            </div>
+            ) : null
           ) : service.slug === 'other-services' ? (
             selectedOtherService ? (
               <ServiceBooking

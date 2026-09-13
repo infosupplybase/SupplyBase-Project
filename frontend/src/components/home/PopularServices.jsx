@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import api, { friendlyError } from '../../lib/api';
-
-/** Where the card should open — interior-by-choice and electrical each have
-    their own richer page instead of the generic booking wizard. */
-function routeFor(slug) {
-  if (slug === 'interior-by-choice') return '/interior-by-choice';
-  if (slug === 'electrical') return '/services/electrical';
-  return `/services/${slug}`;
-}
+import ServiceBookingModal, { useServiceBookingModal } from '../services/ServiceBookingModal';
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
     key in components/ui/Icon.jsx — used only as a placeholder if a category
@@ -42,6 +34,8 @@ const displayName = (category) => LABEL_OVERRIDES[category.slug] || category.nam
 export default function PopularServices() {
   const [categories, setCategories] = useState(null);
   const [error, setError] = useState('');
+
+  const booking = useServiceBookingModal();
 
   useEffect(() => {
     let cancelled = false;
@@ -81,7 +75,12 @@ export default function PopularServices() {
         {!error && categories && (
           <div className="service-tile-grid">
             {categories.map((category) => (
-              <Link key={category.slug} to={routeFor(category.slug)} className="service-tile">
+              <button
+                key={category.slug}
+                type="button"
+                className="service-tile"
+                onClick={() => booking.open(category)}
+              >
                 <span className="service-tile-photo">
                   {category.heroImage ? (
                     <img src={category.heroImage} alt="" width={200} height={200} loading="lazy" />
@@ -92,11 +91,19 @@ export default function PopularServices() {
                   )}
                 </span>
                 <span className="service-tile-name">{displayName(category)}</span>
-              </Link>
+              </button>
             ))}
           </div>
         )}
       </div>
+
+      {booking.service && (
+        <ServiceBookingModal
+          key={booking.openToken}
+          service={booking.service}
+          onClose={booking.close}
+        />
+      )}
     </section>
   );
 }
