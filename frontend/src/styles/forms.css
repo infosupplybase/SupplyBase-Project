@@ -109,15 +109,15 @@ textarea.input {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: clamp(20px, 3vw, 30px);
+  padding: clamp(16px, 3vw, 24px);
 }
 
 .form-section + .form-section {
-  margin-top: var(--space-5);
+  margin-top: var(--space-4);
 }
 
 .form-section-head {
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .form-section-head h2,
