@@ -1,11 +1,10 @@
 /* ============================================================
-   URBAN COMPANY STYLE SECTION
+   URBAN COMPANY STYLE — HOME SERVICES SECTION
    ============================================================ */
 
 .uc-section {
   background: #ffffff;
-  /* Added padding-top to clear the fixed header */
-  padding-top: calc(var(--header-h) + 40px); 
+  padding-top: calc(var(--header-h) + 40px);
   padding-bottom: 60px;
   font-family: inherit;
 }
@@ -28,13 +27,15 @@
   margin: 0;
   line-height: 1.15;
   word-break: break-word;
-
-  
 }
+
+/* ============================================================
+   MAIN GRID (Left column + Image collage)
+   ============================================================ */
 
 .uc-main-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 60px;
   align-items: start;
 }
@@ -45,7 +46,10 @@
   gap: 30px;
 }
 
-/* --- SEARCH DROPDOWN --- */
+/* ============================================================
+   SEARCH BAR
+   ============================================================ */
+
 .uc-search-wrapper {
   position: relative;
   width: 100%;
@@ -88,79 +92,6 @@
   color: #999;
 }
 
-.uc-search-arrow {
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  color: #888;
-  display: flex;
-  align-items: center;
-}
-
-.uc-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-  max-height: 320px;
-  overflow-y: auto;
-  z-index: 100;
-  padding: 6px;
-  animation: ucFadeIn 0.15s ease;
-}
-
-@keyframes ucFadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.uc-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 10px 12px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  text-align: left;
-  font-size: 14px;
-  color: #1a1a1a;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.uc-dropdown-item:hover,
-.uc-dropdown-item.active {
-  background: #fdfaf1;
-}
-
-.uc-dropdown-icon {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  border-radius: 6px;
-  color: #555;
-}
-
-.uc-dropdown-item.active .uc-dropdown-icon {
-  background: #fbf2dc;
-  color: #b8960c;
-}
-
-.uc-dropdown-name {
-  flex: 1;
-  font-weight: 500;
-}
-
 .uc-no-result {
   padding: 20px;
   text-align: center;
@@ -169,22 +100,16 @@
 }
 
 /* ============================================================
-   SUB-SERVICES GRID (Urban Company 3D Style)
+   MAIN SERVICES GRID (8 services, Urban Company style)
    ============================================================ */
 
-.uc-subservices-container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.uc-subservices-grid {
+.uc-main-services {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 28px 16px;
 }
 
-.uc-subservice-card {
+.uc-main-service-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -194,30 +119,23 @@
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.uc-subservice-card:hover {
+.uc-main-service-card:hover {
   transform: translateY(-6px);
 }
 
-/* ============================================================
-   THE 3D ICON BOX
-   ============================================================ */
-
-.uc-subservice-icon-box {
+/* THE 3D ICON BOX */
+.uc-main-service-icon-box {
   width: 100%;
   aspect-ratio: 1 / 1;
-  max-width: 100px;
+  max-width: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
 
-  /* Soft white gradient background */
   background: linear-gradient(145deg, #ffffff 0%, #f4f4f4 100%);
+  border-radius: 22px;
 
-  /* Rounded corners like Urban Company */
-  border-radius: 20px;
-
-  /* 3D layered shadow — this is the key to the "lifted" look */
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.04),
     0 4px 8px rgba(0, 0, 0, 0.04),
@@ -225,18 +143,15 @@
     inset 0 -2px 4px rgba(0, 0, 0, 0.02),
     inset 0 2px 4px rgba(255, 255, 255, 0.9);
 
-  /* Smooth transitions */
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Cut off any image that overflows */
   overflow: hidden;
   position: relative;
 }
 
-/* HOVER — lifts the box up with a deeper shadow */
-.uc-subservice-card:hover .uc-subservice-icon-box {
+.uc-main-service-card:hover .uc-main-service-icon-box {
   transform: translateY(-4px);
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.05),
@@ -246,20 +161,15 @@
     inset 0 2px 4px rgba(255, 255, 255, 0.9);
 }
 
-/* ============================================================
-   IMAGE INSIDE THE BOX (Background Removal + 3D)
-   ============================================================ */
-
-.uc-subservice-icon-box img {
-  width: 78%;
-  height: 78%;
+/* IMAGE INSIDE THE BOX (with white-bg removal trick) */
+.uc-main-service-icon-box img {
+  width: 80%;
+  height: 80%;
   object-fit: contain;
 
-  /* REMOVE WHITE BACKGROUND — this is the magic trick */
   mix-blend-mode: multiply;
   filter: contrast(1.05) saturate(1.1);
 
-  /* Prevent the image from blurring when scaled */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 
@@ -267,86 +177,25 @@
   display: block;
 }
 
-/* HOVER — image grows slightly */
-.uc-subservice-card:hover .uc-subservice-icon-box img {
-  transform: scale(1.12);
-}
-
-/* Keep SVG fallback styling (in case you use Icons too) */
-.uc-subservice-icon-box svg {
-  width: 38px;
-  height: 38px;
-  stroke-width: 1.4;
-  transition: transform 0.2s ease;
-}
-
-.uc-subservice-card:hover .uc-subservice-icon-box svg {
+.uc-main-service-card:hover .uc-main-service-icon-box img {
   transform: scale(1.1);
 }
 
-/* ============================================================
-   SUB-SERVICE NAME
-   ============================================================ */
-
-.uc-subservice-name {
-  font-size: 13px;
-  font-weight: 500;
+.uc-main-service-name {
+  font-size: 13.5px;
+  font-weight: 600;
   line-height: 1.35;
   color: #2a2a2a;
-  max-width: 100px;
+  max-width: 110px;
   transition: color 0.2s ease;
 }
 
-.uc-subservice-card:hover .uc-subservice-name {
+.uc-main-service-card:hover .uc-main-service-name {
   color: #b8960c;
 }
 
 /* ============================================================
-   VIEW ALL LINK
-   ============================================================ */
-
-.uc-view-all-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-
-.uc-view-all-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1a1a1a;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.uc-view-all-link:hover {
-  color: #d4af37;
-}
-
-.uc-empty-service {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  color: #1a1a1a;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  transition: border-color 0.2s;
-  grid-column: 1 / -1;
-}
-
-.uc-empty-service:hover {
-  border-color: #d4af37;
-}
-
-/* ============================================================
-   RIGHT COLUMN (Image Collage)
+   RIGHT COLUMN — IMAGE COLLAGE
    ============================================================ */
 
 .uc-right-col {
@@ -396,82 +245,6 @@
 }
 
 /* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 992px) {
-  .uc-main-grid {
-    grid-template-columns: 1fr;
-    gap: 24px !important;
-  }
-
-  .uc-right-col {
-    position: static;
-    order: -1;
-  }
-
-  .uc-image-collage {
-    grid-template-rows: 180px 180px;
-  }
-  
-  .uc-subservices-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-   .uc-left-col {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .uc-container {
-    padding: 0 16px !important;
-  }
-}
-
-@media (max-width: 600px) {
-  .uc-section {
-    padding: 40px 0 60px;
-  }
-
-  .uc-search-wrapper {
-    max-width: 100%;
-  }
-
-  .uc-subservices-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px 10px;
-  }
-
-  .uc-subservice-icon-box {
-    max-width: 75px;
-    border-radius: 16px;
-  }
-
-  .uc-subservice-name {
-    font-size: 11px;
-    max-width: 80px;
-  }
-
-  .uc-image-collage {
-    grid-template-rows: 140px 140px;
-    gap: 10px;
-  }
-
-  @media (max-width: 600px) {
-  .uc-title {
-    font-size: 26px;      /* Smaller on mobile */
-    line-height: 1.2;
-  }
-
-  .uc-header {
-    margin-bottom: 28px;
-    padding: 0 4px;
-  }
-}
-}
-
-/* ============================================================
    SHARED EYEBROW STYLE
    ============================================================ */
 
@@ -486,84 +259,68 @@
 }
 
 /* ============================================================
-   WHY SUPPLYBASE (Trust Section)
+   STATS STRIP
    ============================================================ */
 
-.uc-trust-section {
+.uc-stats-strip {
   background: #ffffff;
-  padding: 20px 0 60px;
+  padding: 60px 0 70px;
+  width: 100%;
 }
 
-.uc-trust-header {
-  text-align: center;
-  margin-bottom: 48px;
-}
-
-.uc-trust-title {
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 10px;
-  letter-spacing: -0.02em;
-}
-
-.uc-trust-desc {
-  font-size: 15px;
-  color: #666;
-  margin: 0;
-}
-
-.uc-trust-grid {
+.uc-stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(2, auto);
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
-.uc-trust-card {
-  text-align: center;
-  padding: 36px 24px;
-  background: linear-gradient(145deg, #ffffff 0%, #f9f9f9 100%);
-  border-radius: 20px;
-  border: 1px solid #f0f0f0;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.03),
-    0 4px 8px rgba(0, 0, 0, 0.03),
-    0 10px 20px rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.uc-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.uc-trust-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.05),
-    0 8px 16px rgba(0, 0, 0, 0.06),
-    0 20px 40px rgba(0, 0, 0, 0.08);
-}
-
-.uc-trust-icon {
-  display: inline-flex;
+.uc-stat-icon {
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
-  margin-bottom: 18px;
-  border-radius: 18px;
-  background: #fdfaf1;
-  color: #b8960c;
+  color: #1a1a1a;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
 }
 
-.uc-trust-card h3 {
-  font-size: 20px;
+.uc-stat-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.uc-stat-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.uc-stat-value {
+  font-size: 22px;
   font-weight: 700;
   color: #1a1a1a;
-  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
 }
 
-.uc-trust-card p {
-  font-size: 13.5px;
-  color: #666;
-  margin: 0;
-  line-height: 1.5;
+.uc-stat-label {
+  font-size: 14px;
+  color: #888;
+  margin-top: 3px;
+  font-weight: 400;
+  line-height: 1.3;
 }
 
 /* ============================================================
@@ -592,7 +349,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-   max-width: 1050px;   /* ← keeps the grid narrower, cards smaller */
+  max-width: 1050px;
   margin: 0 auto;
 }
 
@@ -691,282 +448,7 @@
 }
 
 /* ============================================================
-   REVIEWS SECTION
-   ============================================================ */
-
-.uc-reviews-section {
-  background: #ffffff;
-  padding: 70px 0 90px;
-}
-
-.uc-reviews-header {
-  text-align: center;
-  margin-bottom: 48px;
-}
-
-.uc-reviews-title {
-  font-size: clamp(28px, 3vw, 40px);
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 10px;
-  letter-spacing: -0.02em;
-}
-
-.uc-reviews-desc {
-  font-size: 15px;
-  color: #666;
-  margin: 0;
-}
-
-.uc-reviews-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-.uc-review-card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #f0f0f0;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.03),
-    0 4px 12px rgba(0, 0, 0, 0.04);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.uc-review-card:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.05),
-    0 12px 28px rgba(0, 0, 0, 0.08);
-}
-
-.uc-review-stars {
-  color: #d4af37;
-  font-size: 16px;
-  letter-spacing: 3px;
-  margin-bottom: 14px;
-}
-
-.uc-review-text {
-  font-size: 14px;
-  color: #333;
-  line-height: 1.6;
-  margin: 0 0 20px;
-  flex: 1;
-}
-
-.uc-review-client {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.uc-review-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #d4af37 0%, #b8960c 100%);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  flex-shrink: 0;
-}
-
-.uc-review-client strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-  line-height: 1.3;
-}
-
-.uc-review-client span {
-  display: block;
-  font-size: 12px;
-  color: #888;
-  line-height: 1.4;
-  margin-top: 2px;
-}
-
-/* ============================================================
-   RESPONSIVE FOR NEW SECTIONS
-   ============================================================ */
-
-@media (max-width: 992px) {
-  .uc-trust-grid,
-  .uc-reviews-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .uc-spotlight-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .uc-spotlight-card {
-    min-height: 280px;
-  }
-}
-
-@media (max-width: 600px) {
-  .uc-trust-section,
-  .uc-spotlight-section,
-  .uc-reviews-section {
-    padding: 50px 0;
-  }
-
-  .uc-trust-grid,
-  .uc-reviews-row {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .uc-trust-card {
-    padding: 28px 20px;
-  }
-
-  .uc-review-card {
-    padding: 20px;
-  }
-
-  .uc-spotlight-card {
-    min-height: 240px;
-  }
-
-  .uc-spotlight-body h3 {
-    font-size: 19px;
-  }
-}
-
-/* ============================================================
-   STATS STRIP — Always Horizontal
-   ============================================================ */
-
-.uc-stats-strip {
-  background: #ffffff;
-  padding: 60px 0 70px;
-  width: 100%;
-}
-
-.uc-stats-row {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  justify-content: center;
-  align-items: center;
-  gap: 80px;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.uc-stat-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.uc-stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1a1a1a;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-}
-
-.uc-stat-icon svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.uc-stat-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  text-align: left;
-}
-
-.uc-stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1a1a1a;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
-}
-
-.uc-stat-label {
-  font-size: 14px;
-  color: #888;
-  margin-top: 3px;
-  font-weight: 400;
-  line-height: 1.3;
-}
-
-/* ============================================================
-   RESPONSIVE — Keep Stats Side-by-Side on Mobile
-   ============================================================ */
-
-@media (max-width: 600px) {
-  .uc-stats-strip {
-    padding: 40px 0 50px;
-  }
-
-  .uc-stats-row {
-    /* Still 2 columns side by side, just smaller */
-    grid-template-columns: repeat(2, auto);
-    gap: 30px;
-    padding: 0 16px;
-  }
-
-  .uc-stat-item {
-    gap: 10px;
-  }
-
-  .uc-stat-icon {
-    width: 30px;
-    height: 30px;
-  }
-
-  .uc-stat-value {
-    font-size: 17px;
-  }
-
-  .uc-stat-label {
-    font-size: 11.5px;
-  }
-}
-
-@media (max-width: 380px) {
-  .uc-stats-row {
-    gap: 20px;
-  }
-
-  .uc-stat-icon {
-    width: 26px;
-    height: 26px;
-  }
-
-  .uc-stat-value {
-    font-size: 15px;
-  }
-
-  .uc-stat-label {
-    font-size: 10.5px;
-  }
-}
-/* ============================================================
-   HOME CTA (Clean, Minimal — matches service cards)
+   HOME CTA (Clean, Minimal)
    ============================================================ */
 
 .home-cta-section {
@@ -1011,7 +493,7 @@
   margin: 0 0 8px;
   letter-spacing: -0.015em;
   line-height: 1.2;
-  text-transform: none;   /* ← Removes the ALL-CAPS look */
+  text-transform: none;
 }
 
 .home-cta-desc {
@@ -1067,38 +549,6 @@
 }
 
 /* ============================================================
-   RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 768px) {
-  .home-cta-card {
-    padding: 32px 28px;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-  }
-
-  .home-cta-right {
-    width: 100%;
-  }
-
-  .home-cta-btn {
-    flex: 1;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .home-cta-right {
-    flex-direction: column;
-  }
-
-  .home-cta-btn {
-    width: 100%;
-  }
-}
-
-/* ============================================================
    HOW IT WORKS — Timeline Style
    ============================================================ */
 
@@ -1136,7 +586,6 @@
   gap: 20px;
 }
 
-/* Connector line running behind the step circles */
 .uc-how-grid::before {
   content: '';
   position: absolute;
@@ -1164,7 +613,7 @@
 }
 
 .uc-how-number {
-  display: none; /* hidden — we'll show the icon as the step marker */
+  display: none;
 }
 
 .uc-how-icon {
@@ -1195,7 +644,6 @@
     inset 0 1px 1px rgba(255, 255, 255, 0.9);
 }
 
-/* Small number badge inside the icon circle */
 .uc-how-icon::after {
   content: attr(data-step);
   position: absolute;
@@ -1234,7 +682,7 @@
 }
 
 /* ============================================================
-   OUR PROMISE — Refined Cards with Gold Accent
+   OUR PROMISE
    ============================================================ */
 
 .uc-promise-section {
@@ -1284,7 +732,6 @@
   overflow: hidden;
 }
 
-/* Gold accent bar at the top of each card */
 .uc-promise-card::before {
   content: '';
   position: absolute;
@@ -1344,23 +791,135 @@
 }
 
 /* ============================================================
-   RESPONSIVE — HOW + PROMISE
+   RESPONSIVE — HOME SERVICES
    ============================================================ */
 
 @media (max-width: 992px) {
-  .uc-how-grid,
-  .uc-promise-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 32px 20px;
+  .uc-main-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
   }
 
-  /* Hide the horizontal connector on tablet */
-  .uc-how-grid::before {
-    display: none;
+  .uc-right-col {
+    order: -1;
+    position: static;
+  }
+
+  .uc-image-collage {
+    grid-template-rows: 180px 180px;
+    gap: 12px;
+  }
+
+  .uc-main-services {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px 14px;
+  }
+
+  .uc-main-service-icon-box {
+    max-width: 100px;
+    border-radius: 20px;
+  }
+
+  .uc-main-service-name {
+    font-size: 13px;
   }
 }
 
 @media (max-width: 600px) {
+  .uc-section {
+    padding-top: calc(var(--header-h) + 20px);
+    padding-bottom: 40px;
+  }
+
+  .uc-title {
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .uc-header {
+    margin-bottom: 28px;
+  }
+
+  .uc-main-services {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 10px;
+  }
+
+  .uc-main-service-icon-box {
+    max-width: 78px;
+    border-radius: 16px;
+  }
+
+  .uc-main-service-name {
+    font-size: 11.5px;
+    max-width: 82px;
+  }
+
+  .uc-image-collage {
+    grid-template-rows: 140px 140px;
+    gap: 10px;
+  }
+
+  .uc-stats-strip {
+    padding: 40px 0 50px;
+  }
+
+  .uc-stats-row {
+    grid-template-columns: repeat(2, auto);
+    gap: 30px;
+    padding: 0 16px;
+  }
+
+  .uc-stat-item {
+    gap: 10px;
+  }
+
+  .uc-stat-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .uc-stat-value {
+    font-size: 17px;
+  }
+
+  .uc-stat-label {
+    font-size: 11.5px;
+  }
+
+  .uc-spotlight-section {
+    padding: 50px 0;
+  }
+
+  .uc-spotlight-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .uc-spotlight-card {
+    min-height: 240px;
+  }
+
+  .uc-spotlight-body h3 {
+    font-size: 19px;
+  }
+
+  .home-cta-card {
+    padding: 32px 28px;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .home-cta-right {
+    width: 100%;
+  }
+
+  .home-cta-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
   .uc-how-section {
     padding: 60px 0 40px;
   }
@@ -1374,6 +933,13 @@
     margin-bottom: 40px;
   }
 
+  .uc-how-title,
+  .uc-promise-title {
+    font-size: 20px;
+    line-height: 1.3;
+    padding: 0 8px;
+  }
+
   .uc-how-grid {
     grid-template-columns: 1fr;
     gap: 36px;
@@ -1382,6 +948,10 @@
   .uc-promise-grid {
     grid-template-columns: 1fr;
     gap: 16px;
+  }
+
+  .uc-how-grid::before {
+    display: none;
   }
 
   .uc-how-icon {
@@ -1403,138 +973,55 @@
     width: 54px;
     height: 54px;
   }
+}
 
-  @media (max-width: 600px) {
-  .uc-how-title {
-    font-size: 20px;         /* Smaller so it fits on one line */
-    line-height: 1.3;
-    letter-spacing: -0.01em;
-    padding: 0 8px;
+@media (max-width: 380px) {
+  .uc-main-service-icon-box {
+    max-width: 68px;
   }
-}
-}
 
-@media (max-width: 600px) {
-  .uc-title {
-    font-size: 22px !important;
-    line-height: 1.25 !important;
-    letter-spacing: -0.01em !important;
-    max-width: 100% !important;
-    word-wrap: break-word !important;
+  .uc-main-service-name {
+    font-size: 10.5px;
+    max-width: 72px;
   }
-}
-.uc-header {
-  overflow: visible !important;
-  height: auto !important;
-  min-height: 0 !important;
-}
 
-.uc-title {
-  overflow: visible !important;
-  height: auto !important;
-  min-height: 0 !important;
-  display: block !important;
+  .uc-stats-row {
+    gap: 20px;
+  }
+
+  .uc-stat-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .uc-stat-value {
+    font-size: 15px;
+  }
+
+  .uc-stat-label {
+    font-size: 10.5px;
+  }
+
+  .home-cta-right {
+    flex-direction: column;
+  }
+
+  .home-cta-btn {
+    width: 100%;
+  }
 }
 /* ============================================================
-   MOBILE FIX — Image first, then search + icons
+   LARGER INNER ICONS for specific services
+   (Interior Design, Painting, Waterproofing)
    ============================================================ */
 
-@media (max-width: 992px) {
-  /* Title — visible */
-  .uc-header {
-    display: block;
-    overflow: visible;
-    height: auto;
-    min-height: 0;
-    margin-bottom: 24px;
-    padding: 0;
-  }
-
-  .uc-title {
-    display: block;
-    overflow: visible;
-    font-size: 24px;
-    line-height: 1.2;
-    color: #1a1a1a;
-    max-width: 100%;
-    word-wrap: break-word;
-  }
-
-  /* Stack the grid vertically */
-  .uc-main-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  /* Image collage FIRST */
-  .uc-right-col {
-    order: 1;
-    position: static;
-    width: 100%;
-  }
-
-  /* Search + icons BELOW the image */
-  .uc-left-col {
-    order: 2;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-  }
-
-  /* Search stays first in the left column */
-  .uc-search-wrapper {
-    order: 1;
-    max-width: 100%;
-  }
-
-  /* Icons below search */
-  .uc-subservices-container {
-    order: 2;
-  }
-
-  .uc-subservices-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px 12px;
-  }
-
-  .uc-image-collage {
-    grid-template-rows: 180px 180px;
-    gap: 12px;
-  }
+.uc-main-service-icon-box img.uc-icon-large {
+  width: 105%;
+  height: 105%;
+  transform: scale(1.05);
 }
 
-@media (max-width: 600px) {
-  .uc-section {
-    padding-top: calc(var(--header-h) + 24px);
-    padding-bottom: 40px;
-  }
-
-  .uc-title {
-    font-size: 22px;
-    line-height: 1.25;
-  }
-
-  .uc-subservices-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px 10px;
-  }
-
-  .uc-subservice-icon-box {
-    max-width: 72px;
-    border-radius: 14px;
-  }
-
-  .uc-subservice-name {
-    font-size: 11px;
-    max-width: 76px;
-  }
-
-  .uc-image-collage {
-    grid-template-rows: 140px 140px;
-    gap: 10px;
-  }
+/* Keep the hover scale feeling consistent */
+.uc-main-service-card:hover .uc-main-service-icon-box img.uc-icon-large {
+  transform: scale(1.15);
 }

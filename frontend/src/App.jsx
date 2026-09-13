@@ -23,32 +23,10 @@ import Dashboard from './pages/Dashboard';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
 
-/**
- * ROUTES
- * /                       Home
- * /services               All services
- * /services/:slug         Book a site visit for one of the four services
- * /services/electrical    Electrical Services category list
- * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
- * /booking/:slug          Same booking page, reached from the hero banners
- * /projects               Projects with category filter
- * /projects/:slug         Project detail
- * /materials              Materials and brands we use
- * /book                   Book a site visit (?type=service | ?type=project)
- * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
- * /about                  About us
- * /contact                Contact
- * /quote                  Get a quote  (?service=<slug> pre-selects a service)
- * /login                  Sign in       (no header/footer)
- * /register               Create account (same page, other tab)
- * /dashboard              Client account page — only visible once signed in
- * /privacy-policy, /terms Legal pages
- */
 export default function App() {
   return (
     <Routes>
-      {/* the account page sits outside the main layout — full-screen split page.
-          both paths render it; the tab that opens is taken from the URL. */}
+      {/* Login/Register sit outside the main layout */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
 
@@ -56,10 +34,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
 
-        {/* Old catalogue slugs, renamed when the backend categories were
-            aligned with the marketing site (see V9 migration). Kept as
-            redirects so any bookmarked or previously-shared link still
-            lands on the real page instead of "service not found". */}
+        {/* ---------- Legacy URL redirects ---------- */}
         <Route path="services/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
         <Route path="services/electrician" element={<Navigate to="/services/electrical" replace />} />
         <Route path="services/interior-work" element={<Navigate to="/services/interior-design" replace />} />
@@ -68,47 +43,43 @@ export default function App() {
         <Route path="booking/electrician" element={<Navigate to="/services/electrical" replace />} />
         <Route path="booking/interior-work" element={<Navigate to="/services/interior-design" replace />} />
 
-        {/* Interior by Choice has its own richer browse-then-book page at
-            /interior-by-choice; a link generated from the catalogue
-            (mega menu, search results, the seven-card grid) points at
-            /services/interior-by-choice like every other category, so it
-            redirects there instead of opening the generic booking wizard. */}
+        {/* ---------- Interior by Choice redirects ---------- */}
+        {/* Both /services/interior-by-choice AND /services/interior-design
+            redirect to the richer catalogue page. This must come BEFORE
+            the wildcard services/:slug route below. */}
         <Route path="services/interior-by-choice" element={<Navigate to="/interior-by-choice" replace />} />
+        <Route path="services/interior-design" element={<Navigate to="/interior-by-choice" replace />} />
 
-        {/* Electrical Services: a category list (matching the approved
-            journey's step 2) in front of the generic wizard, with seven of
-            its eight tiles opening their own richer, catalogue-driven
-            booking flow instead. Declared ahead of services/:slug so these
-            exact paths win over that wildcard. */}
-        {/* services/electrician already redirects to services/electrical
-            above, so only that exact path needs to render the category
-            list here. */}
+        {/* ---------- Electrical: category list + sub-service pages ---------- */}
+        {/* Must be BEFORE services/:slug wildcard */}
         <Route path="services/electrical" element={<ElectricalCategory />} />
         <Route path="services/electric" element={<ElectricalCategory />} />
         <Route path="services/electrical/:subSlug" element={<ElectricianService />} />
 
-        {/* Other Services: the catch-all eighth tile, reactivated on
-            request. A category list in front of five existing generic
-            wizard pages, same shape as the electrical category list. */}
+        {/* ---------- Other Services: category list ---------- */}
+        {/* Must be BEFORE services/:slug wildcard */}
         <Route path="services/other-services" element={<OtherServicesCategory />} />
 
+        {/* ---------- Generic service page (booking form) ---------- */}
+        {/* Handles: painting, waterproofing, plumbing, pop-ceiling-design */}
+        {/* These already show the correct service landing pages */}
         <Route path="services/:slug" element={<ServiceBooking />} />
-        {/* The hero banners link to /booking/<slug>; same page, second door. */}
         <Route path="booking/:slug" element={<ServiceBooking />} />
+
+        {/* ---------- Projects & Materials ---------- */}
         <Route path="projects" element={<Projects />} />
         <Route path="projects/:slug" element={<ProjectDetail />} />
         <Route path="materials" element={<Materials />} />
         <Route path="book" element={<Book />} />
 
-        {/* Interior by Choice — the ready-made design catalogue. Its own
-            small route tree, separate from the generic /services/:slug
-            wizard, since it's a browse-then-book flow rather than a
-            question-at-a-time site visit request. */}
+        {/* ---------- Interior by Choice (full catalogue tree) ---------- */}
         <Route path="interior-by-choice" element={<InteriorByChoice />} />
         <Route path="interior-by-choice/book" element={<InteriorBooking />} />
         <Route path="interior-by-choice/:spaceSlug" element={<InteriorSpaceGallery />} />
         <Route path="interior-by-choice/:spaceSlug/:designSlug" element={<InteriorDesignDetail />} />
         <Route path="interior-by-choice/:spaceSlug/:designSlug/book" element={<InteriorBooking />} />
+
+        {/* ---------- Static pages ---------- */}
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="quote" element={<Quote />} />
