@@ -35,8 +35,17 @@ const CONSULT_DETAILS = 3;
 const SCHEDULE = 4;
 const CONFIRM = 5;
 
-export default function InteriorDesignFlow() {
-  const { categorySlug, projectSlug } = useParams();
+export default function InteriorDesignFlow({
+  modal = false,
+  categorySlug: propCategorySlug,
+  projectSlug: propProjectSlug,
+  onBackToCatalogue,
+  onStepChange,
+}) {
+  const params = useParams();
+
+  const categorySlug = propCategorySlug || params.categorySlug;
+  const projectSlug = propProjectSlug || params.projectSlug;
   const category = getCategoryBySlug(categorySlug);
   const project = category ? getProjectBySlug(category.slug, projectSlug) : null;
   const { user } = useAuth();
@@ -68,17 +77,42 @@ export default function InteriorDesignFlow() {
     return ID_REFERENCE_PACKAGES[tier];
   }, [hasPricing, tier]);
 
-  if (!category || !project) return <Navigate to="/services/interior-design" replace />;
+  if (!category || !project) {
+    if (modal) return null;
+
+    return (
+      <Navigate
+        to="/services/interior-design"
+        replace
+      />
+    );
+  }
 
   const jumpToStage = (s) => {
     setStage(s);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const goBack = () => {
     setSubmitError('');
+
+    if (stage === PACKAGE && modal) {
+      onBackToCatalogue?.();
+      return;
+    }
+
     setStage((s) => Math.max(s - 1, PACKAGE));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const canLeaveDetails = () => {
@@ -128,7 +162,12 @@ export default function InteriorDesignFlow() {
       });
       setReceipt(result);
       setStage(CONFIRM);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (modal) {
+        onStepChange?.();
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setSubmitError(friendlyError(err));
@@ -148,8 +187,20 @@ export default function InteriorDesignFlow() {
     // genuinely already reached CONFIRMED.
     const isConfirmed = receipt.status === 'CONFIRMED';
     return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
+      <div
+  className={
+    modal
+      ? 'wizard-shell !min-h-0 !bg-transparent !p-0'
+      : 'wizard-shell'
+  }
+>
+  <div
+    className={
+      modal
+        ? 'wizard-container !w-full !max-w-none !bg-transparent !p-0'
+        : 'wizard-container'
+    }
+  >
           <div className="wizard-card">
             <div className="confirmed">
               <div className="confirmed-tick">
@@ -170,66 +221,150 @@ export default function InteriorDesignFlow() {
                 <span>{receipt.message}</span>
               </div>
 
-              <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
-              <div className="btn-row" style={{ marginTop: 12 }}>
+              <Link to="/dashboard" className={
+  modal
+    ? 'btn btn-primary md:!w-[45%] !mx-auto'
+    : 'btn btn-primary'
+}>GO TO DASHBOARD</Link>
+              <div
+  className={
+    modal
+      ? 'btn-row !flex !items-center !justify-center !gap-3'
+      : 'btn-row'
+  }
+  style={{ marginTop: 12 }}
+>
                 <a href={`https://wa.me/${contact.phoneRaw}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
                   <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
                 </a>
-                <Link to="/services/interior-design" className="btn btn-ghost btn-back">BACK TO INTERIOR DESIGN</Link>
+                {modal ? (
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-back"
+                    onClick={onBackToCatalogue}
+                  >
+                    BACK TO INTERIOR DESIGN
+                  </button>
+                ) : (
+                  <Link
+                    to="/services/interior-design"
+                    className="btn btn-ghost btn-back"
+                  >
+                    BACK TO INTERIOR DESIGN
+                  </Link>
+                )}
               </div>
             </div>
           </div>
 
-          {/* What Happens Next */}
-          <div className="pnt-included" style={{ marginTop: 24 }}>
-            <h3>What Happens Next?</h3>
-            <ul>
-              {idWhatsNext.map((step, i) => (
-                <li key={step.title} className="id-next-li">
-                  <span className="id-next-num">{i + 1}</span>
-                  <span>
-                    <strong style={{ display: 'block' }}>{step.title}</strong>
-                    {step.text}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {!modal && (
+            <>
+              {/* What Happens Next */}
+              <div className="pnt-included" style={{ marginTop: 24 }}>
+                <h3>What Happens Next?</h3>
 
-          {/* Process */}
-          <div className="id-process-row">
-            {idProcessSteps.map((p) => (
-              <div key={p.label} className="id-process-step">
-                <Icon name={p.icon} size={24} />
-                <span>{p.label}</span>
+                <ul>
+                  {idWhatsNext.map((step, i) => (
+                    <li
+                      key={step.title}
+                      className="id-next-li"
+                    >
+                      <span className="id-next-num">
+                        {i + 1}
+                      </span>
+
+                      <span>
+                        <strong style={{ display: 'block' }}>
+                          {step.title}
+                        </strong>
+
+                        {step.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            ))}
-          </div>
-          <Link to="/services/interior-design" className="btn btn-primary btn-block" style={{ marginBottom: 24 }}>
-            VIEW MORE PROJECTS <Icon name="arrow-right" size={17} />
-          </Link>
 
-          {/* Support */}
-          <div className="id-support-card">
-            <h3>Need Help?</h3>
-            <a href={`tel:+${contact.phoneRaw}`} className="id-support-row">
-              <Icon name="phone" size={18} /> Call Us — {contact.phoneDisplay}
-            </a>
-            <a href={`https://wa.me/${contact.phoneRaw}`} target="_blank" rel="noopener noreferrer" className="id-support-row">
-              <Icon name="whatsapp" size={18} /> Chat on WhatsApp
-            </a>
-            <a href={`mailto:${contact.email}`} className="id-support-row">
-              <Icon name="mail" size={18} /> Email Us — {contact.email}
-            </a>
-            <div className="id-faqs">
-              {idFaqs.map((f) => (
-                <details key={f.q}>
-                  <summary>{f.q}</summary>
-                  <p>{f.a}</p>
-                </details>
-              ))}
-            </div>
-          </div>
+              {/* Process */}
+              <div className="id-process-row">
+                {idProcessSteps.map((p) => (
+                  <div
+                    key={p.label}
+                    className="id-process-step"
+                  >
+                    <Icon
+                      name={p.icon}
+                      size={24}
+                    />
+
+                    <span>{p.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                to="/services/interior-design"
+                className="btn btn-primary btn-block"
+                style={{ marginBottom: 24 }}
+              >
+                VIEW MORE PROJECTS
+
+                <Icon
+                  name="arrow-right"
+                  size={17}
+                />
+              </Link>
+
+              {/* Support */}
+              <div className="id-support-card">
+                <h3>Need Help?</h3>
+
+                <a
+                  href={`tel:+${contact.phoneRaw}`}
+                  className="id-support-row"
+                >
+                  <Icon
+                    name="phone"
+                    size={18}
+                  />
+                  Call Us — {contact.phoneDisplay}
+                </a>
+
+                <a
+                  href={`https://wa.me/${contact.phoneRaw}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="id-support-row"
+                >
+                  <Icon
+                    name="whatsapp"
+                    size={18}
+                  />
+                  Chat on WhatsApp
+                </a>
+
+                <a
+                  href={`mailto:${contact.email}`}
+                  className="id-support-row"
+                >
+                  <Icon
+                    name="mail"
+                    size={18}
+                  />
+                  Email Us — {contact.email}
+                </a>
+
+                <div className="id-faqs">
+                  {idFaqs.map((f) => (
+                    <details key={f.q}>
+                      <summary>{f.q}</summary>
+                      <p>{f.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
@@ -238,7 +373,7 @@ export default function InteriorDesignFlow() {
   /* ------------------------------------------------------------ details */
   if (stage === CONSULT_DETAILS) {
     return (
-      <div className="wizard-shell">
+      <div className={modal ? 'wizard-shell id-modal-flow' : 'wizard-shell'}>
         <div className="wizard-container">
           <FlowTopBar project={project} onBack={goBack} />
           <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) jumpToStage(SCHEDULE); }} noValidate>
@@ -253,9 +388,36 @@ export default function InteriorDesignFlow() {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary">CONTINUE <Icon name="arrow-right" size={17} /></button>
+              <div
+  className={
+    modal
+      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 !bg-transparent !p-0 !shadow-none md:!flex md:!justify-between md:!gap-3'
+      : 'wizard-foot'
+  }
+>
+                <button
+                  type="button"
+                  className={
+  modal
+    ? 'btn btn-ghost btn-back !w-[72px] !min-w-[72px] !px-2 md:!w-auto md:!min-w-0 md:!flex-none md:!px-4'
+    : 'btn btn-ghost btn-back'
+}
+                  onClick={goBack}
+                >
+                  BACK
+                </button>
+
+                <button
+                  type="submit"
+                  className={
+  modal
+    ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-3 !whitespace-nowrap md:!ml-auto md:!w-auto md:!max-w-none md:!flex-none md:!px-5'
+    : 'btn btn-primary'
+}
+                >
+                  CONTINUE
+                  <Icon name="arrow-right" size={17} />
+                </button>
               </div>
             </div>
           </form>
@@ -267,8 +429,20 @@ export default function InteriorDesignFlow() {
   /* ----------------------------------------------------------- schedule */
   if (stage === SCHEDULE) {
     return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
+      <div
+  className={
+    modal
+      ? 'wizard-shell !min-h-0 !bg-transparent !p-0'
+      : 'wizard-shell'
+  }
+>
+        <div
+  className={
+    modal
+      ? 'wizard-container !w-full !max-w-none !bg-transparent !p-0'
+      : 'wizard-container'
+  }
+>
           <FlowTopBar project={project} onBack={goBack} />
           <form onSubmit={handleSubmit} noValidate>
             <div className="wizard-card">
@@ -294,9 +468,33 @@ export default function InteriorDesignFlow() {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary" disabled={busy}>
+              <div
+  className={
+    modal
+      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 !bg-transparent !p-0 !shadow-none md:!flex md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
+                <button
+  type="button"
+  className={
+    modal
+      ? 'btn btn-ghost btn-back !m-0 !w-full !min-w-0 !max-w-full !px-2 !overflow-hidden !whitespace-nowrap md:!w-auto md:!px-4'
+      : 'btn btn-ghost btn-back'
+  }
+  onClick={goBack}
+>
+  BACK
+</button>
+                <button
+  type="submit"
+  className={
+  modal
+    ? 'btn btn-primary !m-0 !w-full !min-w-0 !max-w-full !px-2 !text-[10px] !whitespace-nowrap !overflow-hidden md:!w-fit md:!min-w-0 md:!max-w-none md:!px-5 md:!text-sm md:!ml-auto'
+    : 'btn btn-primary'
+}
+  disabled={busy}
+>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'} <Icon name="arrow-right" size={17} />
                 </button>
               </div>
@@ -311,9 +509,30 @@ export default function InteriorDesignFlow() {
   if (stage === PACKAGE) {
     return (
       <>
-        <PaintingHero eyebrow="INTERIOR DESIGN" title={`${category.name.replace(' Interiors', '')} – ${project.name}`} tagline={project.location} image={project.image} trustPoints={[]} />
-        <section className="pnt-section">
-          <div className="container container-narrow">
+  {!modal && (
+    <PaintingHero
+      eyebrow="INTERIOR DESIGN"
+      title={`${category.name.replace(' Interiors', '')} – ${project.name}`}
+      tagline={project.location}
+      image={project.image}
+      trustPoints={[]}
+    />
+  )}
+
+  <section
+    className={
+      modal
+        ? '!w-full !bg-transparent !p-0'
+        : 'pnt-section'
+    }
+  >
+    <div
+      className={
+        modal
+          ? '!w-full !max-w-none !mx-auto !p-0'
+          : 'container container-narrow'
+      }
+    >
             <h2 className="pnt-step-title">Choose Your Package</h2>
 
             <div className="id-package-grid">
@@ -357,9 +576,38 @@ export default function InteriorDesignFlow() {
               </p>
             )}
 
-            <div className="pnt-step-actions">
-              <Link to={`/services/interior-design/${category.slug}`} className="btn btn-ghost btn-back">BACK</Link>
-              <button type="button" className="btn btn-primary" onClick={() => jumpToStage(DETAILS)}>
+            <div
+  className={
+    modal
+      ? 'pnt-step-actions !flex !w-full !items-center !justify-between !gap-3'
+      : 'pnt-step-actions'
+  }
+>
+              {modal ? (
+  <button
+    type="button"
+    className="btn btn-ghost btn-back !w-auto !min-w-0 !flex-none !px-4"
+    onClick={onBackToCatalogue}
+  >
+    BACK
+  </button>
+) : (
+  <Link
+    to={`/services/interior-design/${category.slug}`}
+    className="btn btn-ghost btn-back"
+  >
+    BACK
+  </Link>
+)}
+              <button
+  type="button"
+  className={
+    modal
+      ? 'btn btn-primary !ml-auto !w-auto !min-w-0 !flex-none !px-5'
+      : 'btn btn-primary'
+  }
+  onClick={() => jumpToStage(DETAILS)}
+>
                 Continue <Icon name="arrow-right" size={17} />
               </button>
             </div>
@@ -397,7 +645,13 @@ export default function InteriorDesignFlow() {
   /* -------------------------------------------------------------- DETAILS */
   if (stage === DETAILS) {
     return (
-      <div className="pnt-flow-shell">
+      <div
+        className={
+          modal
+            ? 'pnt-flow-shell !min-h-0 !bg-transparent !p-0'
+            : 'pnt-flow-shell'
+        }
+      >
         <div className="container container-narrow">
           <FlowTopBar project={project} onBack={goBack} plain />
           <div className="pnt-step-card">
@@ -494,10 +748,22 @@ export default function InteriorDesignFlow() {
   /* ------------------------------------------------------------ CUSTOMISE */
   const custTabs = ['style', 'materials', 'colours', 'layouts'];
   return (
-    <div className="pnt-flow-shell">
+    <div
+      className={
+        modal
+          ? 'pnt-flow-shell !min-h-0 !bg-transparent !p-0'
+          : 'pnt-flow-shell'
+      }
+    >
       <div className="container container-narrow">
         <FlowTopBar project={project} onBack={goBack} plain />
-        <div className="pnt-step-card">
+        <div
+          className={
+            modal
+              ? 'pnt-step-card !w-full !max-w-none !mx-auto !pb-4 md:!p-[18px]'
+              : 'pnt-step-card'
+          }
+        >
           <h2 className="pnt-step-title">Customise Your Design</h2>
 
           <div className="pnt-tabs" role="tablist">
@@ -510,9 +776,22 @@ export default function InteriorDesignFlow() {
 
           {customiseTab === 'style' && (
             <div className="id-tab-panel">
-              <div className="pnt-option-list">
+              <div
+                className={
+                  modal
+                    ? 'pnt-option-list !w-full md:!max-w-[520px] md:!mx-auto'
+                    : 'pnt-option-list'
+                }
+              >
                 {idStyles.map((s) => (
-                  <label key={s.key} className={`pnt-option ${style === s.key ? 'selected' : ''}`}>
+                  <label
+                    key={s.key}
+                    className={`pnt-option ${style === s.key ? 'selected' : ''
+                      } ${modal
+                        ? '!w-full md:!min-h-[48px] md:!px-3 md:!py-2'
+                        : ''
+                      }`}
+                  >
                     <input type="radio" name="style" checked={style === s.key} onChange={() => setStyle(s.key)} />
                     <span className="pnt-option-icon"><Icon name={s.icon} size={24} /></span>
                     <span className="pnt-option-body">
@@ -571,24 +850,62 @@ export default function InteriorDesignFlow() {
             />
           </div>
 
-          <div className="id-3d-actions">
-            <button type="button" className="btn btn-ghost" onClick={() => setPreviewOpen(true)}>
+          <div
+            className={
+              modal
+                ? 'id-3d-actions !flex !w-full !flex-col !gap-2 md:!flex-row'
+                : 'id-3d-actions'
+            }
+          >
+            <button type="button" className={
+              modal
+                ? 'btn btn-ghost !w-full !whitespace-normal !text-center md:!w-auto'
+                : 'btn btn-ghost'
+            } onClick={() => setPreviewOpen(true)}>
               <Icon name="eye" size={16} /> View Design Preview
             </button>
             <a
               href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I'd like a 3D design consultation for ${project.name} (${category.name}).`)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost"
+              className={
+                modal
+                  ? 'btn btn-ghost !w-full !whitespace-normal !text-center md:!w-auto'
+                  : 'btn btn-ghost'
+              }
             >
               <Icon name="chat" size={16} /> Request a 3D Design Consultation
             </a>
           </div>
 
-          <div className="pnt-step-actions">
-            <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-            <button type="button" className="btn btn-primary" onClick={() => jumpToStage(CONSULT_DETAILS)}>
-              Book Consultation ₹99 <Icon name="arrow-right" size={17} />
+          <div
+  className={
+    modal
+      ? 'pnt-step-actions !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      : 'pnt-step-actions'
+  }
+>
+            <button
+              type="button"
+              className={
+  modal
+    ? 'btn btn-ghost btn-back !w-[72px] !min-w-[72px] !px-2 md:!w-auto md:!min-w-0 md:!flex-none md:!px-4'
+    : 'btn btn-ghost btn-back'
+}
+              onClick={goBack}
+            >
+              BACK
+            </button>
+            <button
+              type="button"
+              className={
+  modal
+    ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-2 !text-[12px] !whitespace-nowrap !overflow-hidden md:!ml-auto md:!w-auto md:!max-w-none md:!flex-none md:!px-5 md:!text-sm'
+    : 'btn btn-primary'
+}
+              onClick={() => jumpToStage(CONSULT_DETAILS)}
+            >
+              Book Now ₹99 <Icon name="arrow-right" size={17} />
             </button>
           </div>
         </div>

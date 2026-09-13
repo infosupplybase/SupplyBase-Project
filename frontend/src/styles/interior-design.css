@@ -29,7 +29,10 @@
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 }
 
 .id-filter-pill.active {
@@ -54,7 +57,10 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
 
 .id-category-card:hover,
@@ -122,7 +128,9 @@
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
 }
 
 .id-project-card:hover,
@@ -158,7 +166,9 @@
   background: rgba(0, 0, 0, 0.45);
   color: var(--white);
   border: none;
-  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
 }
 
 .id-save-btn.saved {
@@ -214,7 +224,9 @@
   border: 2px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
 }
 
 .id-package-card input {
@@ -471,4 +483,26 @@
   .id-process-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/* Interior Design inside Services modal */
+.id-modal-flow,
+.id-modal-flow.wizard-shell,
+.id-modal-flow.pnt-flow-shell {
+  background: transparent !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+.id-modal-flow .wizard-container,
+.id-modal-flow .container,
+.id-modal-flow .container-narrow {
+  background: transparent !important;
+  min-height: 0 !important;
+}
+
+.id-modal-flow .wizard-card,
+.id-modal-flow .pnt-step-card,
+.id-modal-flow .confirmed {
+  background: #fff !important;
 }
