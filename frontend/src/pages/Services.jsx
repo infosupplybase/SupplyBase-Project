@@ -17,6 +17,13 @@ import InteriorDesignCatalogue from './InteriorDesignCatalogue';
 import InteriorDesignFlow from './InteriorDesignFlow';
 import PaintingCategory from './PaintingCategory';
 import PaintingFlow from './PaintingFlow';
+import PlumbingCategory from './PlumbingCategory';
+import PlumbingTab from './PlumbingTab';
+import PlumbingCart from './PlumbingCart';
+import PlumbingCheckout from './PlumbingCheckout';
+import PlumbingConsultationList from './PlumbingConsultationList';
+import PlumbingConsultationBook from './PlumbingConsultationBook';
+import OtherServicesCategory from './OtherServicesCategory';
 
 /**
  * The four services (RULE 1).
@@ -49,6 +56,10 @@ export default function Services() {
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useState(null);
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useState(null);
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useState(null);
+  const [selectedPlumbingTab, setSelectedPlumbingTab] = useState(null);
+  const [plumbingView, setPlumbingView] = useState('category');
+  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useState(null);
+  const [selectedOtherService, setSelectedOtherService] = useState(null);
 
   const modalScrollRef = useRef(null);
 
@@ -87,15 +98,19 @@ export default function Services() {
     });
   };
 
-const closeModal = () => {
-  setSelectedService(null);
-  setSelectedInteriorSpace(null);
-  setSelectedInteriorDesign(null);
-  setShowInteriorBooking(false);
-  setSelectedInteriorDesignCategory(null);
-  setSelectedInteriorDesignProject(null);
-  setSelectedPaintingFlow(null);
-};
+  const closeModal = () => {
+    setSelectedService(null);
+    setSelectedInteriorSpace(null);
+    setSelectedInteriorDesign(null);
+    setShowInteriorBooking(false);
+    setSelectedInteriorDesignCategory(null);
+    setSelectedInteriorDesignProject(null);
+    setSelectedPaintingFlow(null);
+    setSelectedPlumbingTab(null);
+    setPlumbingView('category');
+    setSelectedPlumbingConsultation(null);
+    setSelectedOtherService(null);
+  };
 
   return (
     <>
@@ -177,6 +192,10 @@ const closeModal = () => {
   setSelectedInteriorDesignCategory(null);
   setSelectedInteriorDesignProject(null);
   setSelectedPaintingFlow(null);
+  setSelectedPlumbingTab(null);
+  setPlumbingView('category');
+  setSelectedPlumbingConsultation(null);
+  setSelectedOtherService(null);
 }}
                       >
                         BOOK NOW
@@ -217,13 +236,12 @@ const closeModal = () => {
               relative
               w-full
 
-              ${
-  selectedService.slug === 'interior-by-choice'
-    ? 'max-w-[1000px]'
-    : selectedService.slug === 'interior-design'
-      ? 'max-w-[820px]'
-      : 'max-w-[760px]'
-}
+              ${selectedService.slug === 'interior-by-choice'
+                ? 'max-w-[1000px]'
+                : selectedService.slug === 'interior-design'
+                  ? 'max-w-[820px]'
+                  : 'max-w-[760px]'
+              }
 
               max-h-[88vh]
               h-auto
@@ -343,18 +361,18 @@ const closeModal = () => {
                   {/* ========================================= */}
 
                   {showInteriorBooking ? (
-  <InteriorBooking
-    modal={true}
-    spaceSlug={selectedInteriorSpace}
-    designSlug={selectedInteriorDesign}
-    onBack={() => {
-      setShowInteriorBooking(false);
-      scrollModalToTop();
-    }}
-    onStepChange={scrollModalToTop}
-  />
-) : selectedInteriorSpace &&
-selectedInteriorDesign ? (
+                    <InteriorBooking
+                      modal={true}
+                      spaceSlug={selectedInteriorSpace}
+                      designSlug={selectedInteriorDesign}
+                      onBack={() => {
+                        setShowInteriorBooking(false);
+                        scrollModalToTop();
+                      }}
+                      onStepChange={scrollModalToTop}
+                    />
+                  ) : selectedInteriorSpace &&
+                    selectedInteriorDesign ? (
                     <div className="pb-2 md:pb-8">
                       {(() => {
                         const design =
@@ -489,26 +507,26 @@ selectedInteriorDesign ? (
                                 )}
 
                                 <button
-  type="button"
-  className="
+                                  type="button"
+                                  className="
     btn
     btn-primary
     mt-6
     w-full
     md:w-auto
   "
-  onClick={() => {
-    setShowInteriorBooking(true);
-    scrollModalToTop();
-  }}
->
-  CUSTOMISE THIS DESIGN
+                                  onClick={() => {
+                                    setShowInteriorBooking(true);
+                                    scrollModalToTop();
+                                  }}
+                                >
+                                  CUSTOMISE THIS DESIGN
 
-  <Icon
-    name="arrow-right"
-    size={17}
-  />
-</button>
+                                  <Icon
+                                    name="arrow-right"
+                                    size={17}
+                                  />
+                                </button>
                               </div>
                             </div>
                           </>
@@ -548,12 +566,11 @@ selectedInteriorDesign ? (
                               <button
                                 key={space.slug}
                                 type="button"
-                                className={`ibc-filter-chip ${
-                                  space.slug ===
+                                className={`ibc-filter-chip ${space.slug ===
                                   selectedInteriorSpace
-                                    ? 'active'
-                                    : ''
-                                }`}
+                                  ? 'active'
+                                  : ''
+                                  }`}
                                 onClick={() => {
                                   setSelectedInteriorSpace(
                                     space.slug
@@ -647,25 +664,25 @@ selectedInteriorDesign ? (
                         )}
 
                         <button
-  type="button"
-  className="
+                          type="button"
+                          className="
     btn
     btn-primary
     ibc-customise-cta
   "
-  onClick={() => {
-    setSelectedInteriorDesign(null);
-    setShowInteriorBooking(true);
-    scrollModalToTop();
-  }}
->
-  Customise Your Design
+                          onClick={() => {
+                            setSelectedInteriorDesign(null);
+                            setShowInteriorBooking(true);
+                            scrollModalToTop();
+                          }}
+                        >
+                          Customise Your Design
 
-  <Icon
-    name="arrow-right"
-    size={17}
-  />
-</button>
+                          <Icon
+                            name="arrow-right"
+                            size={17}
+                          />
+                        </button>
                       </div>
                     </>
                   ) : (
@@ -802,74 +819,183 @@ selectedInteriorDesign ? (
                   )}
                 </>
               ) : selectedService.slug === 'interior-design' ? (
-  selectedInteriorDesignProject ? (
-    <InteriorDesignFlow
-      modal={true}
-      categorySlug={selectedInteriorDesignCategory}
-      projectSlug={selectedInteriorDesignProject}
-      onBackToCatalogue={() => {
-        setSelectedInteriorDesignProject(null);
-        scrollModalToTop();
-      }}
-      onStepChange={scrollModalToTop}
-    />
-  ) : selectedInteriorDesignCategory ? (
-    <InteriorDesignCatalogue
-      modal={true}
-      categorySlug={selectedInteriorDesignCategory}
-      onSelectProject={(projectSlug) => {
-        setSelectedInteriorDesignProject(projectSlug);
-        scrollModalToTop();
-      }}
-      onBack={() => {
-        setSelectedInteriorDesignCategory(null);
-        setSelectedInteriorDesignProject(null);
-        scrollModalToTop();
-      }}
-    />
-  ) : (
-    <InteriorDesignCategory
-      modal={true}
-      onSelectCategory={(categorySlug) => {
-        setSelectedInteriorDesignCategory(categorySlug);
-        setSelectedInteriorDesignProject(null);
-        scrollModalToTop();
-      }}
-      onCustom={() => {
-        console.log('Custom interior design');
-      }}
-    />
-  )
-) : selectedService.slug === 'painting' ? (
-  selectedPaintingFlow ? (
-    <div className="painting-modal-scope">
-  <PaintingFlow
-    modal={true}
-    flowSlug={selectedPaintingFlow}
-    onBackToCategories={() => {
-      setSelectedPaintingFlow(null);
-      scrollModalToTop();
-    }}
-    onStepChange={scrollModalToTop}
-  />
-</div>
-  ) : (
-    <PaintingCategory
-      modal={true}
-      onSelectFlow={(flowSlug) => {
-        setSelectedPaintingFlow(flowSlug);
-        scrollModalToTop();
-      }}
-    />
-  )
-) : (
-  <ServiceBooking
-    serviceSlug={selectedService.slug}
-    modal={true}
-    onClose={closeModal}
-    onStepChange={scrollModalToTop}
-  />
-)}
+                selectedInteriorDesignProject ? (
+                  <InteriorDesignFlow
+                    modal={true}
+                    categorySlug={selectedInteriorDesignCategory}
+                    projectSlug={selectedInteriorDesignProject}
+                    onBackToCatalogue={() => {
+                      setSelectedInteriorDesignProject(null);
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                  />
+                ) : selectedInteriorDesignCategory ? (
+                  <InteriorDesignCatalogue
+                    modal={true}
+                    categorySlug={selectedInteriorDesignCategory}
+                    onSelectProject={(projectSlug) => {
+                      setSelectedInteriorDesignProject(projectSlug);
+                      scrollModalToTop();
+                    }}
+                    onBack={() => {
+                      setSelectedInteriorDesignCategory(null);
+                      setSelectedInteriorDesignProject(null);
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : (
+                  <InteriorDesignCategory
+                    modal={true}
+                    onSelectCategory={(categorySlug) => {
+                      setSelectedInteriorDesignCategory(categorySlug);
+                      setSelectedInteriorDesignProject(null);
+                      scrollModalToTop();
+                    }}
+                    onCustom={() => {
+                      console.log('Custom interior design');
+                    }}
+                  />
+                )
+              ) : selectedService.slug === 'painting' ? (
+                selectedPaintingFlow ? (
+                  <div className="painting-modal-scope">
+                    <PaintingFlow
+                      modal={true}
+                      flowSlug={selectedPaintingFlow}
+                      onBackToCategories={() => {
+                        setSelectedPaintingFlow(null);
+                        scrollModalToTop();
+                      }}
+                      onStepChange={scrollModalToTop}
+                    />
+                  </div>
+                ) : (
+                  <PaintingCategory
+                    modal={true}
+                    onSelectFlow={(flowSlug) => {
+                      setSelectedPaintingFlow(flowSlug);
+                      scrollModalToTop();
+                    }}
+                  />
+                )
+              ) : selectedService.slug === 'plumbing' ? (
+                plumbingView === 'category' ? (
+                  <PlumbingCategory
+                    modal={true}
+                    onSelectTab={(tabSlug) => {
+                      setSelectedPlumbingTab(tabSlug);
+                      setPlumbingView('tab');
+                      scrollModalToTop();
+                    }}
+                    onSelectConsultation={() => {
+                      setSelectedPlumbingConsultation(null);
+                      setPlumbingView('consultations');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'tab' ? (
+                  <PlumbingTab
+                    modal={true}
+                    tabSlug={selectedPlumbingTab}
+                    onBackToCategories={() => {
+                      setSelectedPlumbingTab(null);
+                      setPlumbingView('category');
+                      scrollModalToTop();
+                    }}
+                    onOpenConsultation={() => {
+                      setSelectedPlumbingConsultation(null);
+                      setPlumbingView('consultations');
+                      scrollModalToTop();
+                    }}
+                    onViewCart={() => {
+                      setPlumbingView('cart');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'cart' ? (
+                  <PlumbingCart
+                    modal={true}
+                    onBackToServices={() => {
+                      setPlumbingView(
+                        selectedPlumbingTab ? 'tab' : 'category'
+                      );
+                      scrollModalToTop();
+                    }}
+                    onCheckout={() => {
+                      setPlumbingView('checkout');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'checkout' ? (
+                  <PlumbingCheckout
+                    modal={true}
+                    onBackToCart={() => {
+                      setPlumbingView('cart');
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                    onBackToServices={() => {
+                      setSelectedPlumbingTab(null);
+                      setPlumbingView('category');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'consultations' ? (
+                  <PlumbingConsultationList
+                    modal={true}
+                    onBackToCategories={() => {
+                      setPlumbingView('category');
+                      scrollModalToTop();
+                    }}
+                    onSelectConsultationType={(typeSlug) => {
+                      setSelectedPlumbingConsultation(typeSlug);
+                      setPlumbingView('consultation-book');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'consultation-book' ? (
+                  <PlumbingConsultationBook
+                    modal={true}
+                    typeSlug={selectedPlumbingConsultation}
+                    onBackToConsultations={() => {
+                      setSelectedPlumbingConsultation(null);
+                      setPlumbingView('consultations');
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                    onBackToServices={() => {
+                      setSelectedPlumbingConsultation(null);
+                      setPlumbingView('category');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : null
+              ) : selectedService.slug === 'other-services' ? (
+                selectedOtherService ? (
+                  <ServiceBooking
+                    serviceSlug={selectedOtherService}
+                    modal={true}
+                    onClose={closeModal}
+                    onStepChange={scrollModalToTop}
+                  />
+                ) : (
+                  <OtherServicesCategory
+                    modal={true}
+                    onSelectService={(serviceSlug) => {
+                      setSelectedOtherService(serviceSlug);
+                      scrollModalToTop();
+                    }}
+                  />
+                )
+              ) : (
+                <ServiceBooking
+                  serviceSlug={selectedService.slug}
+                  modal={true}
+                  onClose={closeModal}
+                  onStepChange={scrollModalToTop}
+                />
+              )}
             </div>
           </div>
         </div>

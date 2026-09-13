@@ -463,15 +463,11 @@ export default function ServiceBooking({
 
             {/* ---------------------------------------------- footer */}
             <div
-  className={`
-    wizard-foot
-    ${stage === 0 ? 'single' : ''}
-    ${
-      modal
-  ? 'max-md:!sticky max-md:!left-auto max-md:!right-auto max-md:!bottom-0 max-md:!z-20 max-md:!px-2 max-md:!py-2 max-md:!mt-4 max-md:!bg-white max-md:!border-0 max-md:!shadow-none max-md:!rounded-lg'
-  : ''
-    }
-  `}
+  className={
+    modal
+      ? 'wizard-foot !static !inset-auto !z-auto !mt-5 !mb-0 !flex !w-full !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+      : 'wizard-foot'
+  }
 >
               {(stage > 0 || modal) && (
   <button
@@ -496,7 +492,7 @@ export default function ServiceBooking({
 "
     disabled={busy}
   >
-    {busy ? 'BOOKING…' : 'PAY & CONFIRM BOOKING'}
+    {busy ? 'BOOKING…' : 'BOOK NOW'}
     <Icon name="arrow-right" size={15} />
   </button>
 ) : (
@@ -661,11 +657,11 @@ function Confirmation({ receipt, details, modal = false }) {
               </div>
             </dl>
 
-            <Link to="/dashboard" className="btn btn-primary btn-block">
+            <Link to="/dashboard" className="btn btn-primary w-full sm:w-auto sm:min-w-[250px]">
               GO TO DASHBOARD
             </Link>
 
-            <div className="btn-row" style={{ marginTop: 12 }}>
+            <div className="btn-row flex justify-center" style={{ marginTop: 12 }}>
               <a
                 href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
                 target="_blank"

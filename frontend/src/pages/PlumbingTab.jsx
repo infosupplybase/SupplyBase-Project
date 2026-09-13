@@ -18,8 +18,16 @@ function matchesFilter(item, filter) {
   return haystack.includes(needle);
 }
 
-export default function PlumbingTab() {
-  const { tabSlug } = useParams();
+export default function PlumbingTab({
+  modal = false,
+  tabSlug: propTabSlug,
+  onBackToCategories,
+  onOpenConsultation,
+  onViewCart,
+}) {
+  const params = useParams();
+
+  const tabSlug = propTabSlug || params.tabSlug;
   const { getTab, loading, error } = usePlumbingCatalogue();
   const [activeFilter, setActiveFilter] = useState(null);
   const [query, setQuery] = useState('');
@@ -61,14 +69,45 @@ export default function PlumbingTab() {
     );
   }
 
-  if (!tab) return <Navigate to="/services/plumbing" replace />;
+  if (!tab) {
+  if (modal) return null;
+
+  return <Navigate to="/services/plumbing" replace />;
+}
 
   return (
     <>
-      <PlumbingHero eyebrow="PROFESSIONAL" title={tab.name} tagline={tab.heroTagline} />
+      {!modal && (
+  <PlumbingHero
+    eyebrow="PROFESSIONAL"
+    title={tab.name}
+    tagline={tab.heroTagline}
+  />
+)}
 
-      <section className="plb-section">
-        <div className="container container-narrow">
+      <section
+  className={
+    modal
+      ? 'plb-section !py-0 !pb-4'
+      : 'plb-section'
+  }
+>
+        <div
+  className={
+    modal
+      ? 'container container-narrow !w-full !max-w-none !px-0'
+      : 'container container-narrow'
+  }
+>
+          {modal && (
+  <button
+    type="button"
+    className="btn btn-ghost btn-back !mb-4"
+    onClick={() => onBackToCategories?.()}
+  >
+    BACK
+  </button>
+)}
           <PricingBanner compact />
 
           <div className="plb-search">
@@ -96,20 +135,48 @@ export default function PlumbingTab() {
             </div>
           )}
 
-          <div className="plb-visit-banner">
+          <div
+  className="
+    plb-visit-banner
+    
+    md:!mb-6
+
+    max-sm:!flex-col
+    max-sm:!items-stretch
+    max-sm:!gap-3
+  "
+>
             <Icon name="calendar" size={22} />
-            <div>
+            <div className="max-sm:!w-full max-sm:!min-w-0">
               <strong>Need installation for multiple items?</strong>
               <p>Book a home visit for ₹99 (for projects above ₹5,000). Our expert will assess your requirement and provide a quotation.</p>
             </div>
-            <Link to="/services/plumbing/consultation" className="btn btn-primary btn-sm">
-              Book a Visit <Icon name="arrow-right" size={15} />
-            </Link>
+            {modal ? (
+  <button
+    type="button"
+    className="btn btn-primary btn-sm max-sm:!w-full max-sm:!justify-center"
+    onClick={() => onOpenConsultation?.()}
+  >
+    Book a Visit
+    <Icon name="arrow-right" size={15} />
+  </button>
+) : (
+  <Link
+    to="/services/plumbing/consultation"
+    className="btn btn-primary btn-sm"
+  >
+    Book a Visit
+    <Icon name="arrow-right" size={15} />
+  </Link>
+)}
           </div>
         </div>
       </section>
 
-      <StickyCartBar />
+      <StickyCartBar
+  modal={modal}
+  onViewCart={() => onViewCart?.()}
+/>
     </>
   );
 }
