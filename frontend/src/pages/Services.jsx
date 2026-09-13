@@ -12,11 +12,6 @@ import {
   getDesignBySlug,
   HOME_VISIT_FEE,
 } from '../data/interiorCatalog';
-import InteriorDesignCategory from './InteriorDesignCategory';
-import InteriorDesignCatalogue from './InteriorDesignCatalogue';
-import InteriorDesignFlow from './InteriorDesignFlow';
-import PaintingCategory from './PaintingCategory';
-import PaintingFlow from './PaintingFlow';
 
 /**
  * The four services (RULE 1).
@@ -34,9 +29,6 @@ export default function Services() {
   const [selectedInteriorSpace, setSelectedInteriorSpace] = useState(null);
   const [selectedInteriorDesign, setSelectedInteriorDesign] = useState(null);
   const [showInteriorBooking, setShowInteriorBooking] = useState(false);
-  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useState(null);
-  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useState(null);
-  const [selectedPaintingFlow, setSelectedPaintingFlow] = useState(null);
 
   const modalScrollRef = useRef(null);
 
@@ -75,14 +67,11 @@ export default function Services() {
     });
   };
 
-const closeModal = () => {
+  const closeModal = () => {
   setSelectedService(null);
   setSelectedInteriorSpace(null);
   setSelectedInteriorDesign(null);
   setShowInteriorBooking(false);
-  setSelectedInteriorDesignCategory(null);
-  setSelectedInteriorDesignProject(null);
-  setSelectedPaintingFlow(null);
 };
 
   return (
@@ -160,9 +149,6 @@ const closeModal = () => {
   setSelectedInteriorSpace(null);
   setSelectedInteriorDesign(null);
   setShowInteriorBooking(false);
-  setSelectedInteriorDesignCategory(null);
-  setSelectedInteriorDesignProject(null);
-  setSelectedPaintingFlow(null);
 }}
                     >
                       BOOK NOW
@@ -203,15 +189,12 @@ const closeModal = () => {
               w-full
 
               ${
-  selectedService.slug === 'interior-by-choice'
-    ? 'max-w-[1000px]'
-    : selectedService.slug === 'interior-design'
-      ? 'max-w-[820px]'
-      : 'max-w-[760px]'
-}
+                selectedService.slug === 'interior-by-choice'
+                  ? 'max-w-[1000px]'
+                  : 'max-w-[760px]'
+              }
 
               max-h-[88vh]
-              h-auto
               overflow-hidden
               rounded-2xl
               bg-white
@@ -306,7 +289,7 @@ const closeModal = () => {
             <div
               ref={modalScrollRef}
               className="
-                max-h-[calc(88vh-190px)]
+                max-h-[calc(88vh-170px)]
                 overflow-y-auto
 
                 px-6
@@ -786,75 +769,18 @@ selectedInteriorDesign ? (
                     </>
                   )}
                 </>
-              ) : selectedService.slug === 'interior-design' ? (
-  selectedInteriorDesignProject ? (
-    <InteriorDesignFlow
-      modal={true}
-      categorySlug={selectedInteriorDesignCategory}
-      projectSlug={selectedInteriorDesignProject}
-      onBackToCatalogue={() => {
-        setSelectedInteriorDesignProject(null);
-        scrollModalToTop();
-      }}
-      onStepChange={scrollModalToTop}
-    />
-  ) : selectedInteriorDesignCategory ? (
-    <InteriorDesignCatalogue
-      modal={true}
-      categorySlug={selectedInteriorDesignCategory}
-      onSelectProject={(projectSlug) => {
-        setSelectedInteriorDesignProject(projectSlug);
-        scrollModalToTop();
-      }}
-      onBack={() => {
-        setSelectedInteriorDesignCategory(null);
-        setSelectedInteriorDesignProject(null);
-        scrollModalToTop();
-      }}
-    />
-  ) : (
-    <InteriorDesignCategory
-      modal={true}
-      onSelectCategory={(categorySlug) => {
-        setSelectedInteriorDesignCategory(categorySlug);
-        setSelectedInteriorDesignProject(null);
-        scrollModalToTop();
-      }}
-      onCustom={() => {
-        console.log('Custom interior design');
-      }}
-    />
-  )
-) : selectedService.slug === 'painting' ? (
-  selectedPaintingFlow ? (
-    <div className="painting-modal-scope">
-  <PaintingFlow
-    modal={true}
-    flowSlug={selectedPaintingFlow}
-    onBackToCategories={() => {
-      setSelectedPaintingFlow(null);
-      scrollModalToTop();
-    }}
-    onStepChange={scrollModalToTop}
-  />
-</div>
-  ) : (
-    <PaintingCategory
-      modal={true}
-      onSelectFlow={(flowSlug) => {
-        setSelectedPaintingFlow(flowSlug);
-        scrollModalToTop();
-      }}
-    />
-  )
-) : (
-  <ServiceBooking
-    serviceSlug={selectedService.slug}
-    modal={true}
-    onClose={closeModal}
-    onStepChange={scrollModalToTop}
-  />
-)}
+              ) : (
+                /* ========================================= */
+                /* NORMAL SERVICE BOOKING */
+                /* ========================================= */
+
+                <ServiceBooking
+                  serviceSlug={selectedService.slug}
+                  modal={true}
+                  onClose={closeModal}
+                  onStepChange={scrollModalToTop}
+                />
+              )}
             </div>
           </div>
         </div>

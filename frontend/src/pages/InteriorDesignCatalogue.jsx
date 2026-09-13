@@ -42,15 +42,8 @@ function useSavedConcepts() {
  * "All (12)" pill always showed a fixed number; this counts the real,
  * currently-filtered array instead (per the brief).
  */
-export default function InteriorDesignCatalogue({
-  modal = false,
-  categorySlug: propCategorySlug,
-  onSelectProject,
-  onBack,
-}) {
-  const params = useParams();
-
-  const categorySlug = propCategorySlug || params.categorySlug;
+export default function InteriorDesignCatalogue() {
+  const { categorySlug } = useParams();
   const category = getCategoryBySlug(categorySlug);
   const [tier, setTier] = useState('all');
   const { saved, toggle } = useSavedConcepts();
@@ -58,44 +51,14 @@ export default function InteriorDesignCatalogue({
   const projects = useMemo(() => (category ? getProjectsByCategory(category.slug) : []), [category]);
   const visible = tier === 'all' ? projects : projects.filter((p) => p.tier === tier);
 
-  if (!category) {
-  if (modal) return null;
-
-  return (
-    <Navigate
-      to="/services/interior-design"
-      replace
-    />
-  );
-}
+  if (!category) return <Navigate to="/services/interior-design" replace />;
 
   return (
     <>
-      {!modal && (
-  <PaintingHero
-    eyebrow="INTERIOR DESIGN"
-    title={category.name}
-    tagline={category.tagline}
-    image={category.image}
-    trustPoints={[]}
-  />
-)}
+      <PaintingHero eyebrow="INTERIOR DESIGN" title={category.name} tagline={category.tagline} image={category.image} trustPoints={[]} />
 
-      <section className={modal ? 'w-full' : 'pnt-section'}>
-  <div className={modal ? 'w-full' : 'container container-narrow'}>
-    {modal && (
-  <button
-    type="button"
-    className="btn btn-ghost btn-sm mb-4"
-    onClick={onBack}
-  >
-    <Icon
-      name="arrow-left"
-      size={16}
-    />
-    BACK
-  </button>
-)}
+      <section className="pnt-section">
+        <div className="container container-narrow">
           <div className="id-filter-pills" role="tablist">
             <button type="button" role="tab" aria-selected={tier === 'all'} className={`id-filter-pill ${tier === 'all' ? 'active' : ''}`} onClick={() => setTier('all')}>
               All ({projects.length})
@@ -115,107 +78,25 @@ export default function InteriorDesignCatalogue({
           </div>
 
           <div className="id-project-grid">
-            {visible.map((p) =>
-  modal ? (
-    <button
-      key={p.slug}
-      type="button"
-      className="id-project-card !w-full !text-left"
-      onClick={() => onSelectProject?.(p.slug)}
-    >
-      <span className="id-project-photo">
-        <img
-          src={p.image}
-          alt=""
-          loading="lazy"
-        />
-
-        <span
-          role="button"
-          tabIndex={0}
-          className={`id-save-btn ${
-            saved.has(p.slug) ? 'saved' : ''
-          }`}
-          aria-label={
-            saved.has(p.slug)
-              ? 'Remove from saved concepts'
-              : 'Save this concept'
-          }
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggle(p.slug);
-          }}
-        >
-          <Icon
-            name="heart"
-            size={16}
-          />
-        </span>
-      </span>
-
-      <span className="id-project-body">
-        <strong>{p.name}</strong>
-
-        <span>
-          <Icon
-            name="map-pin"
-            size={13}
-          />
-          {p.location}
-        </span>
-      </span>
-    </button>
-  ) : (
-    <Link
-      key={p.slug}
-      to={`/services/interior-design/${category.slug}/${p.slug}`}
-      className="id-project-card"
-    >
-      <span className="id-project-photo">
-        <img
-          src={p.image}
-          alt=""
-          loading="lazy"
-        />
-
-        <button
-          type="button"
-          className={`id-save-btn ${
-            saved.has(p.slug) ? 'saved' : ''
-          }`}
-          aria-label={
-            saved.has(p.slug)
-              ? 'Remove from saved concepts'
-              : 'Save this concept'
-          }
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggle(p.slug);
-          }}
-        >
-          <Icon
-            name="heart"
-            size={16}
-          />
-        </button>
-      </span>
-
-      <span className="id-project-body">
-        <strong>{p.name}</strong>
-
-        <span>
-          <Icon
-            name="map-pin"
-            size={13}
-          />
-          {p.location}
-        </span>
-      </span>
-    </Link>
-  )
-)}
+            {visible.map((p) => (
+              <Link key={p.slug} to={`/services/interior-design/${category.slug}/${p.slug}`} className="id-project-card">
+                <span className="id-project-photo">
+                  <img src={p.image} alt="" loading="lazy" />
+                  <button
+                    type="button"
+                    className={`id-save-btn ${saved.has(p.slug) ? 'saved' : ''}`}
+                    aria-label={saved.has(p.slug) ? 'Remove from saved concepts' : 'Save this concept'}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(p.slug); }}
+                  >
+                    <Icon name="heart" size={16} />
+                  </button>
+                </span>
+                <span className="id-project-body">
+                  <strong>{p.name}</strong>
+                  <span><Icon name="map-pin" size={13} /> {p.location}</span>
+                </span>
+              </Link>
+            ))}
           </div>
 
           {visible.length === 0 && (

@@ -17,53 +17,16 @@ export default function EstimateSummary({ rows, whatsIncluded, itemsTotalPaise, 
     <div className="pnt-summary">
       <dl className="pnt-summary-rows">
         {rows.map((row) => (
-  <div
-    key={row.stepIndex}
-    className="
-      pnt-summary-row
-      !grid
-      !grid-cols-1
-      !gap-1
-
-      md:!flex
-      md:!items-baseline
-      md:!justify-between
-      md:!gap-3
-    "
-  >
-    <dt className="!w-full md:!w-auto">
-      {row.label}
-    </dt>
-
-    <dd
-      className="
-        !flex
-        !w-full
-        !min-w-0
-        !items-center
-        !justify-between
-        !gap-2
-        !text-left
-
-        md:!w-auto
-        md:!justify-end
-        md:!text-right
-      "
-    >
-      <span className="!min-w-0 !flex-1 !break-normal">
-        {row.value || '—'}
-      </span>
-
-      <button
-        type="button"
-        className="pnt-summary-edit !shrink-0"
-        onClick={() => onEditStep(row.stepIndex)}
-      >
-        Edit
-      </button>
-    </dd>
-  </div>
-))}
+          <div key={row.stepIndex} className="pnt-summary-row">
+            <dt>{row.label}</dt>
+            <dd>
+              <span>{row.value || '—'}</span>
+              <button type="button" className="pnt-summary-edit" onClick={() => onEditStep(row.stepIndex)}>
+                Edit
+              </button>
+            </dd>
+          </div>
+        ))}
       </dl>
 
       <div className="pnt-summary-total">
