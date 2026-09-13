@@ -8,7 +8,10 @@ import { formatRupees } from '../../lib/money';
  * screenshot's hard-coded "1 item added" state is never rendered here; count
  * and subtotal always reflect the actual CartContext state).
  */
-export default function StickyCartBar() {
+export default function StickyCartBar({
+  modal = false,
+  onViewCart,
+}) {
   const navigate = useNavigate();
   const { items, count, subtotalPaise } = useCart();
 
@@ -17,7 +20,13 @@ export default function StickyCartBar() {
   const lastItem = items[items.length - 1];
 
   return (
-    <div className="plb-cart-bar">
+    <div
+  className={
+    modal
+  ? 'plb-cart-bar !static !inset-auto !mx-0 !mt-5 md:!mb-[40px] !w-full !max-w-none'
+  : 'plb-cart-bar'
+  }
+>
       <span className="plb-cart-bar-icon">
         <Icon name="package" size={20} />
         <span className="plb-cart-bar-badge">{count}</span>
@@ -31,9 +40,19 @@ export default function StickyCartBar() {
           {items.length > 1 ? ` +${items.length - 1} more` : ''} · {formatRupees(subtotalPaise / 100)}
         </span>
       </span>
-      <button type="button" className="plb-cart-bar-btn" onClick={() => navigate('/services/plumbing/cart')}>
-        View Cart <Icon name="arrow-right" size={16} />
-      </button>
+      <button
+  type="button"
+  className="plb-cart-bar-btn"
+  onClick={() => {
+    if (modal) {
+      onViewCart?.();
+    } else {
+      navigate('/services/plumbing/cart');
+    }
+  }}
+>
+  View Cart <Icon name="arrow-right" size={16} />
+</button>
     </div>
   );
 }

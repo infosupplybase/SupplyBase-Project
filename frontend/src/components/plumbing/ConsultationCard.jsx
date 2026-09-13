@@ -5,7 +5,11 @@ import { formatRupees } from '../../lib/money';
 /** One consultation type — "Book →" opens the consultation booking flow
     directly for that type (not added to the item cart, matching the
     reference: consultation rows say "Book", not "Add +"). */
-export default function ConsultationCard({ type }) {
+export default function ConsultationCard({
+  type,
+  modal = false,
+  onSelect,
+}) {
   const navigate = useNavigate();
   const [minMins, maxMins] = (type.hint.split('|')[1] || '').split('-');
 
@@ -29,12 +33,18 @@ export default function ConsultationCard({ type }) {
         </div>
       </div>
       <button
-        type="button"
-        className="plb-consult-book"
-        onClick={() => navigate(`/services/plumbing/consultation/${type.value}`)}
-      >
-        Book <Icon name="arrow-right" size={15} />
-      </button>
+  type="button"
+  className="plb-consult-book"
+  onClick={() => {
+    if (modal) {
+      onSelect?.();
+    } else {
+      navigate(`/services/plumbing/consultation/${type.value}`);
+    }
+  }}
+>
+  Book <Icon name="arrow-right" size={15} />
+</button>
     </div>
   );
 }
