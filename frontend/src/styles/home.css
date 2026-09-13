@@ -17,7 +17,11 @@
   padding-bottom: 60px;
   background: #0c0e14;
   overflow: visible;
-  isolation: isolate;
+  /* No isolation/z-index here on purpose: .home-hero-inner's z-index:2
+     needs to keep winning against later normal-flow siblings (Popular
+     Services) at the root stacking context so the search-results dropdown,
+     which intentionally overflows past the hero's bottom edge, still
+     paints on top of that section instead of getting painted over by it. */
 }
 
 /* overflow:hidden lives here, not on .home-hero itself — this box is
