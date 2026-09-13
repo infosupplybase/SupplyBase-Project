@@ -1,0 +1,147 @@
+name: Team branch merge check
+
+# Team members push directly to their own personal branch (no PRs in this
+# workflow). This job checks every such branch for commits that aren't in
+# main yet, and merges them in automatically when it's safe to do so.
+on:
+  push:
+    branches-ignore:
+      - main
+      - 'claude/**'
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: team-branch-merge-check
+  cancel-in-progress: false
+
+jobs:
+  merge-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check and merge team branches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -uo pipefail
+
+          git fetch origin --prune '+refs/heads/*:refs/remotes/origin/*'
+
+          branches=$(git branch -r \
+            | sed -e 's/^[[:space:]]*origin\///' \
+            | grep -v -E '^(HEAD|main)$' \
+            | grep -v -E '^claude/')
+
+          close_issue_if_open() {
+            title="$1"
+            resolution="$2"
+            num=$(gh issue list --state open --json number,title \
+              --jq ".[] | select(.title==\"$title\") | .number" | head -n1)
+            if [ -n "$num" ]; then
+              gh issue comment "$num" --body "$resolution"
+              gh issue close "$num"
+            fi
+          }
+
+          open_or_update_issue() {
+            title="$1"
+            body="$2"
+            num=$(gh issue list --state open --json number,title \
+              --jq ".[] | select(.title==\"$title\") | .number" | head -n1)
+            if [ -n "$num" ]; then
+              gh issue comment "$num" --body "$body"
+            else
+              gh issue create --title "$title" --body "$body"
+            fi
+          }
+
+          for branch in $branches; do
+            echo "::group::Checking $branch"
+
+            ahead=$(git rev-list --count "origin/main..origin/$branch")
+            if [ "$ahead" -eq 0 ]; then
+              echo "No new commits on $branch"
+              echo "::endgroup::"
+              continue
+            fi
+
+            git checkout -B merge-tmp origin/main >/dev/null 2>&1
+
+            conflict_title="Merge conflict: $branch → main"
+            build_title="Build failed after merging $branch"
+
+            if ! git merge --no-edit "origin/$branch" > /tmp/merge.log 2>&1; then
+              conflicts=$(git diff --name-only --diff-filter=U)
+              git merge --abort
+              echo "Conflict merging $branch: $conflicts"
+              open_or_update_issue "$conflict_title" "Automated merge check found conflicts merging \`$branch\` into \`main\` (as of \`$(git rev-parse --short origin/$branch)\`).
+
+          **Conflicting files:**
+          \`\`\`
+          $conflicts
+          \`\`\`
+
+          This needs a human to resolve — please rebase \`$branch\` onto the latest \`main\` and push again. Run: $RUN_URL"
+              echo "::endgroup::"
+              continue
+            fi
+
+            build_ok=true
+            build_output=""
+            for pkg in frontend admin; do
+              if [ -f "$pkg/package.json" ]; then
+                if ! ( cd "$pkg" && npm install --no-audit --no-fund && npm run build ) > "/tmp/${pkg}-build.log" 2>&1; then
+                  build_ok=false
+                  build_output="$build_output
+
+          **$pkg build failed:**
+          \`\`\`
+          $(tail -n 60 "/tmp/${pkg}-build.log")
+          \`\`\`"
+                fi
+              fi
+            done
+
+            if [ "$build_ok" = false ]; then
+              echo "Build failed after merging $branch"
+              open_or_update_issue "$build_title" "Automated merge check merged \`$branch\` into \`main\` cleanly, but the build failed afterward, so it was NOT pushed.
+          $build_output
+
+          Full run: $RUN_URL"
+              echo "::endgroup::"
+              continue
+            fi
+
+            echo "Merging $branch cleanly into main"
+            if git push origin merge-tmp:main; then
+              close_issue_if_open "$conflict_title" "Resolved — \`$branch\` merged cleanly into \`main\` at \`$(git rev-parse --short HEAD)\`."
+              close_issue_if_open "$build_title" "Resolved — \`$branch\` merged into \`main\` at \`$(git rev-parse --short HEAD)\` and the build now passes."
+              echo "Merged $branch"
+            else
+              echo "Push to main failed for $branch (possibly a race with another run)"
+            fi
+
+            echo "::endgroup::"
+          done
