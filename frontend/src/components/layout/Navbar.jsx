@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import Icon from '../ui/Icon';
@@ -55,38 +54,11 @@ export default function Navbar() {
   return (
     <>
       <div onMouseLeave={() => setMegaOpen(false)}>
-      {/* <header
-  className={`
-    header
-    !top-0 !left-0 !right-0 !w-full !rounded-none
-    ${scrolled
-      ? '!bg-black/55 backdrop-blur-[20px] border border-white/10 shadow-[0_8px_24px_rgba(0,0,0,0.18)]'
-      : '!bg-white border-b border-gray-200 shadow-sm'
-    }
-    transition-all duration-300 ease-out
-    ${scrolled ? 'scrolled' : ''}
-  `}
-> */}
-
-<header
-  className={`
-    header
-    !top-0 !left-0 !right-0 !w-full !rounded-none
-    backdrop-blur-[20px]
-    border border-white/10
-    transition-all duration-300 ease-out
-    ${scrolled ? 'scrolled' : ''}
-  `}
->
-
+      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
         <div className="container">
           <div className="header-inner">
             <Link to="/" className="brand" aria-label={`${company.name} — home`}>
-             <img
-  src="/assets/brand/logo.png"
-  alt={`${company.name} logo`}
-  className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.18)]"
-/>
+              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
             </Link>
 
             <nav className="nav" aria-label="Main">
@@ -101,8 +73,8 @@ export default function Navbar() {
                     <NavLink
                       to={item.path}
                       className={({ isActive }) =>
-  `nav-link ${!scrolled ? 'light-nav' : ''} ${isActive ? 'active' : ''} ${megaOpen ? 'open' : ''}`
-}
+                        `nav-link ${isActive ? 'active' : ''} ${megaOpen ? 'open' : ''}`
+                      }
                       onClick={() => setMegaOpen(false)}
                       aria-expanded={megaOpen}
                     >
@@ -127,13 +99,10 @@ export default function Navbar() {
             <div className="header-actions">
               <LocationSelector />
               <NotificationBell />
-              <Link
-  to={user ? '/dashboard' : '/login'}
-  className="profile-icon"
-  aria-label={user ? 'My Account' : 'Login'}
->
-  <Icon name="user" size={21} />
-</Link>
+              <Link to={user ? '/dashboard' : '/login'} className="login-btn">
+                <Icon name="user" size={17} />
+                {user ? 'MY ACCOUNT' : 'LOGIN'}
+              </Link>
               <button
                 type="button"
                 className="burger"

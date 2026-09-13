@@ -78,7 +78,7 @@ export const processSteps = [
     number: '01',
     icon: 'chat',
     title: 'CONSULTATION',
-    text: 'Share your requirements with our experts and we assess the site, scope and budget.',
+    text: 'Share your requirements, and we assess the site, scope, and budget.',
   },
   {
     number: '02',
@@ -90,13 +90,13 @@ export const processSteps = [
     number: '03',
     icon: 'helmet',
     title: 'EXECUTION',
-    text: 'Our team executes the work with supervised quality control, on schedule and on budget.',
+    text: 'Supervised quality, on-time and on-budget delivery.',
   },
   {
     number: '04',
     icon: 'handover',
     title: 'HANDOVER',
-    text: 'We complete the finishing, clean the site and hand over a project ready to use.',
+    text: 'We finish, clean, and hand over a ready-to-use project.',
   },
 ];
 
@@ -104,36 +104,75 @@ export const processSteps = [
  * DIFFERENTIATORS — the reasons to choose us, shown on the home page and the
  * About page. (There is no longer a separate Why Us page.)
  */
+// export const whyUsPoints = [
+//   {
+//     icon: 'partners',
+//     title: 'One Partner For Everything',
+//     text: 'Design, civil work, interiors, electrical, plumbing and finishing handled by a single accountable team — no coordinating five different contractors.',
+//   },
+//   {
+//     icon: 'package',
+//     title: 'Labour + Material Supplied',
+//     text: 'We arrange skilled labour and quality materials together, so you get one clear rate instead of chasing suppliers yourself.',
+//   },
+//   {
+//     icon: 'blueprint',
+//     title: 'Design Before You Build',
+//     text: '2D plans, 3D exterior and 3D interior views let you see the finished result before the first brick is laid.',
+//   },
+//   {
+//     icon: 'shield',
+//     title: 'Quality You Can Trust',
+//     text: 'Supervised workmanship, standard materials and stage-wise checks on every project we take on.',
+//   },
+//   {
+//     icon: 'clock',
+//     title: 'On-Time Delivery',
+//     text: 'Clear timelines agreed at the start and a schedule that our site team is held to.',
+//   },
+//   {
+//     icon: 'rupee',
+//     title: 'Transparent Pricing',
+//     text: 'Itemised quotations with no hidden charges, so you always know what you are paying for.',
+//   },
+// ];
+
 export const whyUsPoints = [
   {
-    icon: 'partners',
     title: 'One Partner For Everything',
-    text: 'Design, civil work, interiors, electrical, plumbing and finishing handled by a single accountable team — no coordinating five different contractors.',
+    text: 'Design, construction, interiors, and finishing—all managed by one accountable team.',
+    icon: 'users',
+    image: '/assets/about/one-partner.jpeg',
   },
   {
-    icon: 'package',
     title: 'Labour + Material Supplied',
-    text: 'We arrange skilled labour and quality materials together, so you get one clear rate instead of chasing suppliers yourself.',
+    text: 'Skilled labour and quality materials, bundled into one clear rate—saving you time, hassle, and supplier chasing.',
+    icon: 'box',
+    image: '/assets/about/labour-material.jpeg',
   },
   {
-    icon: 'blueprint',
     title: 'Design Before You Build',
-    text: '2D plans, 3D exterior and 3D interior views let you see the finished result before the first brick is laid.',
+    text: '2D plans and 3D views help you visualize your project before construction begins.',
+    icon: 'layout',
+    image: '/assets/about/design-before-build.jpeg',
   },
   {
-    icon: 'shield',
     title: 'Quality You Can Trust',
     text: 'Supervised workmanship, standard materials and stage-wise checks on every project we take on.',
+    icon: 'shield',
+    image: '/assets/about/quality.jpeg',
   },
   {
-    icon: 'clock',
     title: 'On-Time Delivery',
-    text: 'Clear timelines agreed at the start and a schedule that our site team is held to.',
+    text: 'Clear timelines agreed at the start and a schedule that our site team sticks to.',
+    icon: 'clock',
+    image: '/assets/about/on-time.jpeg',
   },
   {
-    icon: 'rupee',
     title: 'Transparent Pricing',
     text: 'Itemised quotations with no hidden charges, so you always know what you are paying for.',
+    icon: 'circle-dollar',
+    image: '/assets/about/pricing.jpeg',
   },
 ];
 
@@ -143,6 +182,7 @@ export const whyUsPoints = [
 export const mainNav = [
   { label: 'HOME', path: '/' },
   { label: 'SERVICES', path: '/services', hasMegaMenu: true },
+  // Projects and Materials sections are disabled sitewide — see App.jsx.
   // { label: 'PROJECTS', path: '/projects' },
   // { label: 'MATERIALS', path: '/materials' },
   { label: 'ABOUT US', path: '/about' },
@@ -155,8 +195,9 @@ export const mainNav = [
 export const quickLinks = [
   { label: 'Home', path: '/' },
   { label: 'Services', path: '/services' },
-  { label: 'Projects', path: '/projects' },
-  { label: 'Materials', path: '/materials' },
+  // Projects and Materials sections are disabled sitewide — see App.jsx.
+  // { label: 'Projects', path: '/projects' },
+  // { label: 'Materials', path: '/materials' },
   { label: 'About Us', path: '/about' },
   { label: 'Contact Us', path: '/contact' },
   { label: 'Get a Quote', path: '/quote' },

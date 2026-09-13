@@ -1,4 +1,4 @@
-/* /* =========================================================================
+/* =========================================================================
    SUPPLYBASE PROJECTS — HEADER
    Dark bar, logo left, nav right, phone and login on the far right.
    ========================================================================= */
@@ -9,25 +9,15 @@
   left: 0;
   right: 0;
   z-index: var(--z-header);
-background: #ffffff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
   transition: box-shadow var(--t) var(--ease), background var(--t) var(--ease);
 }
 
 /* Solid, not translucent. A blurred header over a photographic hero turns
    the logo into mush at exactly the moment it matters most. */
-/* .header.scrolled {
-   box-shadow: 0 6px 26px rgba(0, 0, 0, 0.45); 
-    color: rgba(245, 245, 245, 0.86);
-
-} */
-
 .header.scrolled {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 6px 26px rgba(0, 0, 0, 0.12);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .header-inner {
@@ -49,9 +39,16 @@ background: #ffffff;
 
 .brand img {
   width: auto;
-  height: 54px;
-  max-width: 135px;
-  object-fit: contain;
+  /* The new mark is a compact badge (~1.3:1), not the old wide wordmark
+     banner (~6.3:1) — taller here reads far more clearly without the
+     header actually needing more width, since the badge's natural width
+     at any given height is a fraction of what the old logo needed. */
+  height: clamp(40px, 11vw, 56px);
+  /* 160px normally, but never wider than the flexed .brand actually has —
+     a fixed cap alone overflowed past the location/bell/burger cluster on
+     narrow phones (below ~360px) since .brand shrinks with the viewport
+     while a flat max-width does not. */
+  max-width: min(160px, 100%);
 }
 
 /* ------------------------------------------------------------------ nav */
@@ -67,21 +64,24 @@ background: #ffffff;
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   height: var(--tap-min);
-  padding: 0 13px;
+  padding: 0 14px;
   font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-color: #222; 
- transition: color var(--t-fast) var(--ease);
+  color: var(--ink-soft);
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease);
 }
 
 .nav-link:hover,
 .nav-link.active {
-  color: var(--gold);
+  /* --gold-deep, not --gold: --gold is only 2:1 contrast on white, fine as
+     a fill but unreadable as 15px type — see variables.css. */
+  color: var(--gold-deep);
 }
 
 /* The underline grows from the left rather than fading in — it reads as the
@@ -129,18 +129,18 @@ color: #222;
   height: var(--tap-min);
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-light);
+  color: var(--ink);
   white-space: nowrap;
   transition: color var(--t-fast) var(--ease);
 }
 
 .header-phone svg {
-  color: var(--gold);
+  color: var(--gold-deep);
   flex-shrink: 0;
 }
 
 .header-phone:hover {
-  color: var(--gold);
+  color: var(--gold-deep);
 }
 
 .login-btn {
@@ -152,7 +152,7 @@ color: #222;
   border: 1px solid var(--gold);
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--gold);
+  color: var(--gold-deep);
   font-family: var(--font-display);
   font-size: 14px;
   font-weight: 600;
@@ -182,21 +182,20 @@ color: #222;
   height: var(--tap-min);
   padding: 0 10px;
   border-radius: var(--radius-sm);
-  color: #222;
+  color: var(--ink);
   font-size: 13.5px;
   font-weight: 500;
   max-width: 150px;
-  transition: color var(--t-fast) var(--ease),
-              background var(--t-fast) var(--ease);
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
 
 .location-btn:hover {
-  color: var(--gold);
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--gold-deep);
+  background: var(--light-bg);
 }
 
 .location-btn svg:first-child {
-  color: var(--gold);
+  color: var(--gold-deep);
   flex-shrink: 0;
 }
 
@@ -259,14 +258,13 @@ color: #222;
   width: var(--tap-min);
   height: var(--tap-min);
   border-radius: var(--radius-sm);
-  color: #222;
-  transition: color var(--t-fast) var(--ease),
-              background var(--t-fast) var(--ease);
+  color: var(--ink);
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
 
 .notif-bell-btn:hover {
-  color: var(--gold);
-  background: rgba(255, 255, 255, 0.06);
+  color: var(--gold-deep);
+  background: var(--light-bg);
 }
 
 .notif-panel {
@@ -320,15 +318,15 @@ color: #222;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: #222 !important;
+  color: var(--ink);
   transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
 .burger:hover {
   border-color: var(--gold);
-  color: var(--gold);
+  color: var(--gold-deep);
 }
 
 /* ----------------------------------------------------------- mega menu */
@@ -598,23 +596,4 @@ color: #222;
     margin-left: 0;
     flex-shrink: 0;
   }
-}
-
-.profile-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  color: #222;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.profile-icon:hover {
-  color: var(--gold);
-  transform: scale(1.05);
-}
-
-.header.scrolled .profile-icon {
-  color: #222;
 }
