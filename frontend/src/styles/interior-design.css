@@ -29,10 +29,7 @@
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
 .id-filter-pill.active {
@@ -45,34 +42,31 @@
 
 .id-category-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 
 .id-category-card {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  transition:
-    border-color var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .id-category-card:hover,
 .id-category-card:focus-visible {
   border-color: var(--gold-a40);
-  box-shadow: var(--depth-inset-top), var(--shadow-lg);
-  transform: translateY(-8px);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .id-category-photo {
   display: block;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--light-bg);
 }
@@ -86,8 +80,8 @@
 .id-category-body {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: var(--space-2) var(--space-3) var(--space-3);
+  gap: 4px;
+  padding: var(--space-3) var(--space-4) var(--space-4);
   position: relative;
 }
 
@@ -123,28 +117,24 @@
 .id-project-card {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  transition:
-    border-color var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .id-project-card:hover,
 .id-project-card:focus-visible {
   border-color: var(--gold-a40);
-  box-shadow: var(--depth-inset-top), var(--shadow);
-  transform: translateY(-8px);
+  transform: translateY(-2px);
 }
 
 .id-project-photo {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--light-bg);
 }
@@ -168,15 +158,7 @@
   background: rgba(0, 0, 0, 0.45);
   color: var(--white);
   border: none;
-  box-shadow: var(--shadow-sm);
-  transition:
-    background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
-}
-
-.id-save-btn:hover {
-  transform: scale(1.1);
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
 .id-save-btn.saved {
@@ -231,18 +213,8 @@
   background: var(--white);
   border: 2px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
-}
-
-.id-package-card:hover {
-  box-shadow: var(--shadow);
-  transform: translateY(-4px);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
 
 .id-package-card input {
@@ -264,9 +236,8 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
+  background: var(--light-bg);
   color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .id-package-body {
@@ -301,9 +272,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+  background: var(--gold);
   color: var(--black);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 /* ------------------------------------------------------------- inclusions */
@@ -321,9 +291,8 @@
   text-align: center;
   gap: 6px;
   padding: var(--space-3);
-  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
+  background: var(--light-bg);
   border-radius: var(--radius-sm);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -347,77 +316,21 @@
 }
 
 .id-stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  width: 100%;
-  margin-top: var(--space-4);
-
-  background: transparent !important;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 10px;
-  overflow: hidden;
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
 }
 
 .id-stats-row > div {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-
-  min-height: 70px;
-  padding: 8px;
-
-  background: transparent !important;
-  border: 0;
-  border-right: 1px solid rgba(0, 0, 0, 0.10);
-
-  text-align: center;
-}
-
-.id-stats-row > div:last-child {
-  border-right: none;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
 }
 
 .id-stats-row svg {
   color: var(--gold-deep);
-  flex-shrink: 0;
-}
-
-.id-stat-value {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--ink);
-  line-height: 1.2;
-}
-
-.id-stat-label {
-  font-size: 0.7rem;
-  color: var(--ink-soft);
-  line-height: 1.2;
-}
-
-@media (max-width: 767px) {
-  .id-stats-row {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .id-stats-row > div {
-    min-height: 64px;
-    padding: 6px 3px;
-  }
-
-  .id-stats-row svg {
-    width: 17px;
-    height: 17px;
-  }
-
-  .id-stat-value {
-    font-size: 0.75rem;
-  }
-
-  .id-stat-label {
-    font-size: 0.62rem;
-  }
 }
 
 .id-gallery-thumb {
@@ -456,9 +369,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
+  background: var(--gold-a12);
   color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.75rem;
   font-weight: 700;
   margin-top: 2px;
@@ -481,9 +393,8 @@
   align-items: center;
   gap: 8px;
   padding: var(--space-3);
-  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
+  background: var(--light-bg);
   border-radius: var(--radius-sm);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -494,10 +405,9 @@
 }
 
 .id-support-card {
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: var(--space-5);
   margin-bottom: var(--space-6);
 }
@@ -561,26 +471,4 @@
   .id-process-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-
-/* Interior Design inside Services modal */
-.id-modal-flow,
-.id-modal-flow.wizard-shell,
-.id-modal-flow.pnt-flow-shell {
-  background: transparent !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-}
-
-.id-modal-flow .wizard-container,
-.id-modal-flow .container,
-.id-modal-flow .container-narrow {
-  background: transparent !important;
-  min-height: 0 !important;
-}
-
-.id-modal-flow .wizard-card,
-.id-modal-flow .pnt-step-card,
-.id-modal-flow .confirmed {
-  background: #fff !important;
 }
