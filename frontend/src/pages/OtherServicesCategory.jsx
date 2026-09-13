@@ -10,23 +10,52 @@ import { otherServiceTiles } from '../data/otherServices';
  * existing generic site-visit wizard at its own slug (all five kept their
  * full question sets in the database while deactivated).
  */
-export default function OtherServicesCategory() {
+export default function OtherServicesCategory({
+  modal = false,
+  onSelectService,
+}) {
   return (
     <>
-      <PageHero
-        eyebrow="OTHER SERVICES"
-        title="Other Services"
-        text="Everything else we do — architectural design, civil construction, furniture, fabrication and finishing work."
-        image="/assets/hero-house.svg"
-        breadcrumbs={[{ label: 'Services', to: '/services' }, { label: 'Other Services' }]}
-      />
+      {!modal && (
+  <PageHero
+    eyebrow="OTHER SERVICES"
+    title="Other Services"
+    text="Everything else we do — architectural design, civil construction, furniture, fabrication and finishing work."
+    image="/assets/hero-house.svg"
+    breadcrumbs={[
+      { label: 'Services', to: '/services' },
+      { label: 'Other Services' },
+    ]}
+  />
+)}
 
-      <section className="elc-section">
-        <div className="container container-narrow">
+      <section
+  className={
+    modal
+      ? 'elc-section !py-0'
+      : 'elc-section'
+  }
+>
+  <div
+    className={
+      modal
+        ? 'container container-narrow !max-w-none !px-0'
+        : 'container container-narrow'
+    }
+  >
           <div className="elc-list">
             {otherServiceTiles.map((tile, i) => (
               <Reveal key={tile.slug} delay={i * 30}>
-                <Link to={`/services/${tile.slug}`} className="elc-tile">
+                <Link
+  to={`/services/${tile.slug}`}
+  className="elc-tile"
+  onClick={(e) => {
+    if (modal) {
+      e.preventDefault();
+      onSelectService?.(tile.slug);
+    }
+  }}
+>
                   <span className="elc-tile-icon">
                     <Icon name={tile.icon} size={22} />
                   </span>

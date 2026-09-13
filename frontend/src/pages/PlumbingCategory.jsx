@@ -14,20 +14,38 @@ import { formatRupees } from '../lib/money';
  * drift out of sync with the detail pages the way the source PDF's own
  * overview screen had (see V14 migration's pricing-conflict notes).
  */
-export default function PlumbingCategory() {
+export default function PlumbingCategory({
+  modal = false,
+  onSelectTab,
+  onSelectConsultation,
+}) {
   const { tabs, loading, error } = usePlumbingCatalogue();
 
   return (
     <>
-      <PageHero
-        eyebrow="PLUMBING"
-        title="Plumbing Services"
-        text="Verified plumbers. Quality materials. Transparent pricing. On-time service."
-        breadcrumbs={[{ label: 'Services', to: '/services' }, { label: 'Plumbing' }]}
-      />
+      {!modal && (
+        <PageHero
+          eyebrow="PLUMBING"
+          title="Plumbing Services"
+          text="Verified plumbers. Quality materials. Transparent pricing. On-time service."
+          breadcrumbs={[{ label: 'Services', to: '/services' }, { label: 'Plumbing' }]}
+        />
+      )}
 
-      <section className="plb-section">
-        <div className="container container-narrow">
+      <section
+        className={
+          modal
+            ? 'plb-section !py-0 !pb-4'
+            : 'plb-section'
+        }
+      >
+        <div
+          className={
+            modal
+              ? 'container container-narrow !w-full !max-w-none !px-0'
+              : 'container container-narrow'
+          }
+        >
           <PricingBanner />
 
           {loading && <p className="question-hint">Loading services…</p>}
@@ -40,35 +58,135 @@ export default function PlumbingCategory() {
 
           {!loading && !error && (
             <div className="plb-overview-grid">
-              {tabs.map((tab) => (
-                <Link key={tab.slug} to={`/services/plumbing/${tab.slug}`} className="plb-overview-card">
+              {tabs.map((tab) =>
+                modal ? (
+                  <button
+                    key={tab.slug}
+                    type="button"
+                    className="plb-overview-card !w-full !text-left"
+                    onClick={() => onSelectTab?.(tab.slug)}
+                  >
+                    <span className="plb-overview-photo">
+                      <img
+                        src={tab.overviewImage}
+                        alt=""
+                        width={200}
+                        height={125}
+                        loading="lazy"
+                      />
+                    </span>
+
+                    <span className="plb-overview-name">
+                      {tab.name}
+                      <Icon name="chevron-right" size={16} />
+                    </span>
+
+                    {tab.fromPrice != null && (
+                      <>
+                        <span className="plb-overview-price">
+                          From {formatRupees(tab.fromPrice)}
+                        </span>
+
+                        <span className="plb-overview-price-note">
+                          (Actual pricing)
+                        </span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    key={tab.slug}
+                    to={`/services/plumbing/${tab.slug}`}
+                    className="plb-overview-card"
+                  >
+                    <span className="plb-overview-photo">
+                      <img
+                        src={tab.overviewImage}
+                        alt=""
+                        width={200}
+                        height={125}
+                        loading="lazy"
+                      />
+                    </span>
+
+                    <span className="plb-overview-name">
+                      {tab.name}
+                      <Icon name="chevron-right" size={16} />
+                    </span>
+
+                    {tab.fromPrice != null && (
+                      <>
+                        <span className="plb-overview-price">
+                          From {formatRupees(tab.fromPrice)}
+                        </span>
+
+                        <span className="plb-overview-price-note">
+                          (Actual pricing)
+                        </span>
+                      </>
+                    )}
+                  </Link>
+                )
+              )}
+
+              {modal ? (
+                <button
+                  type="button"
+                  className="plb-overview-card plb-overview-consult !w-full !text-left"
+                  onClick={() => onSelectConsultation?.()}
+                >
                   <span className="plb-overview-photo">
-                    <img src={tab.overviewImage} alt="" width={200} height={125} loading="lazy" />
+                    <img
+                      src={plumbingConsultationContent.overviewImage}
+                      alt=""
+                      width={200}
+                      height={125}
+                      loading="lazy"
+                    />
                   </span>
+
                   <span className="plb-overview-name">
-                    {tab.name}
+                    {plumbingConsultationContent.name}
                     <Icon name="chevron-right" size={16} />
                   </span>
-                  {tab.fromPrice != null && (
-                    <>
-                      <span className="plb-overview-price">From {formatRupees(tab.fromPrice)}</span>
-                      <span className="plb-overview-price-note">(Actual pricing)</span>
-                    </>
-                  )}
-                </Link>
-              ))}
 
-              <Link to="/services/plumbing/consultation" className="plb-overview-card plb-overview-consult">
-                <span className="plb-overview-photo">
-                  <img src={plumbingConsultationContent.overviewImage} alt="" width={200} height={125} loading="lazy" />
-                </span>
-                <span className="plb-overview-name">
-                  {plumbingConsultationContent.name}
-                  <Icon name="chevron-right" size={16} />
-                </span>
-                <span className="plb-overview-price">₹99 Home Visit</span>
-                <span className="plb-overview-price-note">For projects above ₹5,000 (adjusted in final bill)</span>
-              </Link>
+                  <span className="plb-overview-price">
+                    ₹99 Home Visit
+                  </span>
+
+                  <span className="plb-overview-price-note">
+                    For projects above ₹5,000 (adjusted in final bill)
+                  </span>
+                </button>
+              ) : (
+                <Link
+                  to="/services/plumbing/consultation"
+                  className="plb-overview-card plb-overview-consult"
+                >
+                  <span className="plb-overview-photo">
+                    <img
+                      src={plumbingConsultationContent.overviewImage}
+                      alt=""
+                      width={200}
+                      height={125}
+                      loading="lazy"
+                    />
+                  </span>
+
+                  <span className="plb-overview-name">
+                    {plumbingConsultationContent.name}
+                    <Icon name="chevron-right" size={16} />
+                  </span>
+
+                  <span className="plb-overview-price">
+                    ₹99 Home Visit
+                  </span>
+
+                  <span className="plb-overview-price-note">
+                    For projects above ₹5,000 (adjusted in final bill)
+                  </span>
+                </Link>
+              )}
             </div>
           )}
 

@@ -55,7 +55,7 @@ export default function ServiceMegaMenu({ open, scrolled, onNavigate }) {
             <p>See every service and everything we deliver under one contract.</p>
             <Link
               to="/services"
-              className="btn btn-primary btn-sm !w-[40%] self-center"
+              className="btn btn-primary btn-sm !w-[50%] self-center"
               onClick={onNavigate}
               tabIndex={open ? 0 : -1}
             >
