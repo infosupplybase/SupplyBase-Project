@@ -19,7 +19,12 @@ const CONFIRM = 2;
     (serviceSlug: 'plumbing', one `cart_item` answer per line with its
     quantity). The server looks up the real price for each item and computes
     the total; nothing the client sends here is trusted as a price. */
-export default function PlumbingCheckout() {
+export default function PlumbingCheckout({
+  modal = false,
+  onBackToCart,
+  onStepChange,
+  onBackToServices,
+}) {
   const { user } = useAuth();
   const { items, count, subtotalPaise, clear } = useCart();
 
@@ -50,6 +55,8 @@ export default function PlumbingCheckout() {
   };
 
   if (count === 0 && !receipt) {
+    if (modal) return null;
+
     return <Navigate to="/services/plumbing/cart" replace />;
   }
 
@@ -62,13 +69,29 @@ export default function PlumbingCheckout() {
       }
     }
     setStage((s) => Math.min(s + 1, CONFIRM));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const goBack = () => {
     setError('');
+
+    if (stage === SCHEDULE && modal) {
+      onBackToCart?.();
+      return;
+    }
+
     setStage((s) => Math.max(s - 1, SCHEDULE));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -100,7 +123,12 @@ export default function PlumbingCheckout() {
       });
       setReceipt(result);
       clear();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (modal) {
+        onStepChange?.();
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setError(friendlyError(err));
@@ -109,18 +137,48 @@ export default function PlumbingCheckout() {
     }
   };
 
-  if (receipt) return <CheckoutConfirmation receipt={receipt} details={details} />;
+  if (receipt) {
+    return (
+      <CheckoutConfirmation
+        receipt={receipt}
+        details={details}
+        modal={modal}
+        onBackToServices={onBackToServices}
+      />
+    );
+  }
 
   return (
-    <div className="wizard-shell">
-      <div className="wizard-container">
+    <div
+      className={
+        modal
+          ? 'wizard-shell !min-h-0 !bg-transparent !pt-0 !pb-0'
+          : 'wizard-shell'
+      }
+    >
+      <div
+        className={
+          modal
+  ? 'wizard-container !w-full !max-w-none !px-0 !pt-0 !pb-0 sm:!pb-6'
+  : 'wizard-container'
+        }
+      >
         <div className="wizard-top">
-          {stage > 0 ? (
-            <button type="button" className="wizard-back" onClick={goBack} aria-label="Go back">
+          {stage > 0 || modal ? (
+            <button
+              type="button"
+              className="wizard-back"
+              onClick={goBack}
+              aria-label="Go back"
+            >
               <Icon name="arrow-left" size={20} />
             </button>
           ) : (
-            <Link to="/services/plumbing/cart" className="wizard-back" aria-label="Back to cart">
+            <Link
+              to="/services/plumbing/cart"
+              className="wizard-back"
+              aria-label="Back to cart"
+            >
               <Icon name="arrow-left" size={20} />
             </Link>
           )}
@@ -136,7 +194,7 @@ export default function PlumbingCheckout() {
         <ol className="wizard-steps">
           {STAGES.map((label, i) => (
             <li key={label} className={`wstep ${i === stage ? 'current' : ''} ${i < stage ? 'done' : ''}`}
-                aria-current={i === stage ? 'step' : undefined}>
+              aria-current={i === stage ? 'step' : undefined}>
               <span className="wstep-num">{i < stage ? <Icon name="check" size={14} strokeWidth={3} /> : i + 1}</span>
               <span className="wstep-label">{label}</span>
             </li>
@@ -144,7 +202,13 @@ export default function PlumbingCheckout() {
         </ol>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="wizard-card">
+          <div
+  className={
+    modal
+      ? 'wizard-card sm:!mb-6'
+      : 'wizard-card'
+  }
+>
             {stage === SCHEDULE && (
               <>
                 <div className="wizard-card-head">
@@ -186,19 +250,33 @@ export default function PlumbingCheckout() {
               </div>
             )}
 
-            <div className={`wizard-foot ${stage === 0 ? 'single' : ''}`}>
-              {stage > 0 && (
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>
-                  BACK
-                </button>
-              )}
+            <div
+              className={
+                modal
+  ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-2 !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+                  : `wizard-foot ${stage === 0 ? 'single' : ''}`
+              }
+            >
+              {(stage > 0 || modal) && (
+  <button
+    type="button"
+    className="btn btn-ghost btn-back !m-0 !w-full !justify-center"
+    onClick={goBack}
+  >
+    BACK
+  </button>
+)}
               {stage === CONFIRM ? (
-                <button type="submit" className="btn btn-primary" disabled={busy}>
+                <button type="submit" className="btn btn-primary !m-0 !w-full !justify-center" disabled={busy}>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
-                <button type="button" className="btn btn-primary" onClick={goNext}>
+                <button
+  type="button"
+  className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center"
+  onClick={goNext}
+>
                   CONTINUE
                   <Icon name="arrow-right" size={17} />
                 </button>
@@ -257,11 +335,28 @@ function CartSummary({ items, subtotalPaise, date, time }) {
   );
 }
 
-function CheckoutConfirmation({ receipt, details }) {
+function CheckoutConfirmation({
+  receipt,
+  details,
+  modal = false,
+  onBackToServices,
+}) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
   return (
-    <div className="wizard-shell">
-      <div className="wizard-container">
+    <div
+      className={
+        modal
+          ? 'wizard-shell !min-h-0 !bg-transparent !pt-0 !pb-0'
+          : 'wizard-shell'
+      }
+    >
+      <div
+        className={
+          modal
+            ? 'wizard-container !min-h-0 !w-full !max-w-none !px-0 !pt-0 !pb-0'
+            : 'wizard-container'
+        }
+      >
         <div className="wizard-card">
           <div className="confirmed">
             <div className="confirmed-tick">
@@ -295,17 +390,45 @@ function CheckoutConfirmation({ receipt, details }) {
               </div>
             </dl>
 
-            <Link to="/dashboard" className="btn btn-primary btn-block">
-              GO TO DASHBOARD
-            </Link>
-            <div className="btn-row" style={{ marginTop: 12 }}>
-              <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+            {!modal && (
+              <Link to="/dashboard" className="btn btn-primary btn-block">
+                GO TO DASHBOARD
+              </Link>
+            )}
+            <div
+              className={
+                modal
+                  ? 'btn-row !mt-3 !flex !w-full !flex-wrap !items-center !justify-center !gap-3'
+                  : 'btn-row'
+              }
+            >
+              <a
+                href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={
+                  modal
+                    ? 'btn btn-whatsapp !w-auto !min-w-[190px] !justify-center'
+                    : 'btn btn-whatsapp'
+                }
+              >
                 <Icon name="whatsapp" size={17} />
                 CHAT ON WHATSAPP
               </a>
-              <Link to="/" className="btn btn-ghost btn-back">
-                BACK TO HOME
-              </Link>
+
+              {modal ? (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-back !w-auto !min-w-[190px] !justify-center"
+                  onClick={() => onBackToServices?.()}
+                >
+                  BACK TO PLUMBING
+                </button>
+              ) : (
+                <Link to="/" className="btn btn-ghost btn-back">
+                  BACK TO HOME
+                </Link>
+              )}
             </div>
           </div>
         </div>

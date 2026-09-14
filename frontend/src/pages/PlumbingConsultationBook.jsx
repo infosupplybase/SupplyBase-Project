@@ -19,8 +19,16 @@ const CONFIRM = 2;
     directly (not through the item cart), submitting a single
     `consultation_type` answer. The ₹99 fee shown here is real: the server
     applies it the same way for any booking carrying this answer. */
-export default function PlumbingConsultationBook() {
-  const { typeSlug } = useParams();
+export default function PlumbingConsultationBook({
+  modal = false,
+  typeSlug: propTypeSlug,
+  onBackToConsultations,
+  onStepChange,
+  onBackToServices,
+}) {
+  const params = useParams();
+
+  const typeSlug = propTypeSlug || params.typeSlug;
   const { user } = useAuth();
   const { consultationTypes, loading, error: loadError } = usePlumbingCatalogue();
 
@@ -53,18 +61,34 @@ export default function PlumbingConsultationBook() {
   };
 
   if (loading) {
-    return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
-          <p style={{ color: 'rgba(255,255,255,.6)' }}>Loading…</p>
-        </div>
+  return (
+    <div
+      className={
+        modal
+          ? 'wizard-shell !min-h-0 !bg-transparent !pt-0 !pb-0'
+          : 'wizard-shell'
+      }
+    >
+      <div
+        className={
+          modal
+            ? 'wizard-container !w-full !max-w-none !px-0 !pt-0'
+            : 'wizard-container'
+        }
+      >
+        <p className={modal ? '!text-black/60' : ''}>
+          Loading…
+        </p>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   if (loadError || (!type && !receipt)) {
-    return <Navigate to="/services/plumbing/consultation" replace />;
-  }
+  if (modal) return null;
+
+  return <Navigate to="/services/plumbing/consultation" replace />;
+}
 
   const goNext = () => {
     setError('');
@@ -75,14 +99,30 @@ export default function PlumbingConsultationBook() {
       }
     }
     setStage((s) => Math.min(s + 1, CONFIRM));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+if (modal) {
+  onStepChange?.();
+} else {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
   };
 
   const goBack = () => {
-    setError('');
-    setStage((s) => Math.max(s - 1, SCHEDULE));
+  setError('');
+
+  if (stage === SCHEDULE && modal) {
+    onBackToConsultations?.();
+    return;
+  }
+
+  setStage((s) => Math.max(s - 1, SCHEDULE));
+
+  if (modal) {
+    onStepChange?.();
+  } else {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -107,7 +147,12 @@ export default function PlumbingConsultationBook() {
         pincode: details.pincode || null,
       });
       setReceipt(result);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+if (modal) {
+  onStepChange?.();
+} else {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setError(friendlyError(err));
@@ -116,21 +161,51 @@ export default function PlumbingConsultationBook() {
     }
   };
 
-  if (receipt) return <ConsultationConfirmation receipt={receipt} details={details} />;
+if (receipt) {
+  return (
+    <ConsultationConfirmation
+      receipt={receipt}
+      details={details}
+      modal={modal}
+      onBackToServices={onBackToServices}
+    />
+  );
+}
 
   return (
-    <div className="wizard-shell">
-      <div className="wizard-container">
+    <div
+  className={
+    modal
+      ? 'wizard-shell !min-h-0 !bg-transparent !pt-0 !pb-0'
+      : 'wizard-shell'
+  }
+>
+  <div
+    className={
+      modal
+        ? 'wizard-container !w-full !max-w-none !px-0 !pt-0 !pb-0'
+        : 'wizard-container'
+    }
+  >
         <div className="wizard-top">
-          {stage > 0 ? (
-            <button type="button" className="wizard-back" onClick={goBack} aria-label="Go back">
-              <Icon name="arrow-left" size={20} />
-            </button>
-          ) : (
-            <Link to="/services/plumbing/consultation" className="wizard-back" aria-label="Back to consultations">
-              <Icon name="arrow-left" size={20} />
-            </Link>
-          )}
+          {stage > 0 || modal ? (
+  <button
+    type="button"
+    className="wizard-back"
+    onClick={goBack}
+    aria-label="Go back"
+  >
+    <Icon name="arrow-left" size={20} />
+  </button>
+) : (
+  <Link
+    to="/services/plumbing/consultation"
+    className="wizard-back"
+    aria-label="Back to consultations"
+  >
+    <Icon name="arrow-left" size={20} />
+  </Link>
+)}
           <h1 className="wizard-title">{type.label}</h1>
           <a
             href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking a ${type.label}.`)}`}
@@ -151,7 +226,13 @@ export default function PlumbingConsultationBook() {
         </ol>
 
         <form onSubmit={handleSubmit} noValidate>
-          <div className="wizard-card">
+          <div
+  className={
+    modal
+      ? 'wizard-card sm:!mb-[40px]'
+      : 'wizard-card'
+  }
+>
             {stage === SCHEDULE && (
               <>
                 <div className="wizard-card-head">
@@ -217,22 +298,36 @@ export default function PlumbingConsultationBook() {
               </div>
             )}
 
-            <div className={`wizard-foot ${stage === 0 ? 'single' : ''}`}>
-              {stage > 0 && (
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>
-                  BACK
-                </button>
-              )}
+            <div
+  className={
+    modal
+      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !flex !w-full !items-center !justify-end !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+      : `wizard-foot ${stage === 0 ? 'single' : ''}`
+  }
+>
+              {(stage > 0 || modal) && (
+  <button
+    type="button"
+    className="btn btn-ghost btn-back !m-0 !w-auto !min-w-[120px] !flex-none !justify-center max-sm:!min-w-[100px]"
+    onClick={goBack}
+  >
+    BACK
+  </button>
+)}
               {stage === CONFIRM ? (
                 <button type="submit" className="btn btn-primary" disabled={busy}>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
-                <button type="button" className="btn btn-primary" onClick={goNext}>
-                  CONTINUE
-                  <Icon name="arrow-right" size={17} />
-                </button>
+                <button
+  type="button"
+  className="btn btn-primary !w-auto !min-w-[150px] !flex-none !ml-auto !justify-center"
+  onClick={goNext}
+>
+  CONTINUE
+  <Icon name="arrow-right" size={17} />
+</button>
               )}
             </div>
           </div>
@@ -242,11 +337,28 @@ export default function PlumbingConsultationBook() {
   );
 }
 
-function ConsultationConfirmation({ receipt, details }) {
+function ConsultationConfirmation({
+  receipt,
+  details,
+  modal = false,
+  onBackToServices,
+}) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
   return (
-    <div className="wizard-shell">
-      <div className="wizard-container">
+    <div
+  className={
+    modal
+      ? 'wizard-shell !min-h-0 !bg-transparent !pt-0 !pb-0'
+      : 'wizard-shell'
+  }
+>
+  <div
+    className={
+      modal
+        ? 'wizard-container !min-h-0 !w-full !max-w-none !px-0 !pt-0 !pb-0'
+        : 'wizard-container'
+    }
+  >
         <div className="wizard-card">
           <div className="confirmed">
             <div className="confirmed-tick">
@@ -274,18 +386,55 @@ function ConsultationConfirmation({ receipt, details }) {
               </div>
             </dl>
 
-            <Link to="/dashboard" className="btn btn-primary btn-block">
-              GO TO DASHBOARD
-            </Link>
-            <div className="btn-row" style={{ marginTop: 12 }}>
-              <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
-                <Icon name="whatsapp" size={17} />
-                CHAT ON WHATSAPP
-              </a>
-              <Link to="/" className="btn btn-ghost btn-back">
-                BACK TO HOME
-              </Link>
-            </div>
+            {!modal && (
+  <Link to="/dashboard" className="btn btn-primary btn-block">
+    GO TO DASHBOARD
+  </Link>
+)}
+            <div
+  className={
+    modal
+      ? 'btn-row !mt-3 !flex !w-full !flex-wrap !items-center !justify-center !gap-3'
+      : 'btn-row'
+  }
+>
+  <a
+    href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={
+      modal
+        ? 'btn btn-whatsapp !w-auto !min-w-[190px] !justify-center'
+        : 'btn btn-whatsapp'
+    }
+  >
+    <Icon name="whatsapp" size={17} />
+    CHAT ON WHATSAPP
+  </a>
+
+  {modal ? (
+  <>
+    <button
+      type="button"
+      className="btn btn-ghost btn-back !w-auto !min-w-[190px] !justify-center max-sm:!w-full"
+      onClick={() => onBackToServices?.()}
+    >
+      BACK TO PLUMBING
+    </button>
+
+    <Link
+      to="/"
+      className="btn btn-ghost btn-back !w-auto !min-w-[190px] !justify-center max-sm:!w-full"
+    >
+      BACK TO HOME
+    </Link>
+  </>
+) : (
+  <Link to="/" className="btn btn-ghost btn-back">
+    BACK TO HOME
+  </Link>
+)}
+</div>
           </div>
         </div>
       </div>

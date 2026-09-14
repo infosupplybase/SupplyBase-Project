@@ -1200,6 +1200,29 @@
     width: 64px;
     top: calc(var(--header-h-mobile) + var(--space-3));
   }
+  /* Reserves room for the logo (64px + its right gutter) so a longer
+     heading, like POP Ceiling & Design's, wraps before reaching it
+     instead of running underneath — Painting's own shorter title never
+     surfaced this since it never got that close on its own.
+
+     Doubled-up selector (not just .pnt-hero-inner) so this reliably
+     beats components.css's own `.container { padding: 0 18px }` reset
+     at ≤420px — same specificity, but components.css loads later, so
+     the single-class version silently lost that fight.
+
+     padding-top is restated for the same reason: that .container reset
+     was already silently zeroing it (a pre-existing, previously-dormant
+     bug), which never showed up while every heading here fit on one
+     line inside the flex-end-aligned, min-height-floored .pnt-hero — but
+     the extra wrap this padding-right forces on longer titles grows the
+     content past that floor, and with no top clearance restated, the
+     grown box has nothing pushing it below the fixed header, so its
+     first line renders hidden behind it. Same clearance formula already
+     used for .pnt-hero-logo's own top offset, just above. */
+  .pnt-hero .pnt-hero-inner {
+    padding-top: calc(var(--header-h-mobile) + var(--space-3));
+    padding-right: 90px;
+  }
   .pnt-trust-row,
   .pnt-intro-trust {
     grid-template-columns: repeat(2, minmax(0, 1fr));
