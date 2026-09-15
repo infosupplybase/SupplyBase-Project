@@ -109,21 +109,21 @@ export default function Services() {
                   </div>
 
                   <div className="svc-card-body">
-                    <div className="svc-card-icon">
+                    {/* <div className="svc-card-icon">
                       <Icon
                         name={service.icon || 'tools'}
                         size={22}
                         strokeWidth={1.4}
                       />
-                    </div>
+                    </div> */}
 
                     <h3>
                       {service.name}
                     </h3>
-
+{/* 
                     <p>
                       {service.description}
-                    </p>
+                    </p> */}
 
                     <div className="svc-card-foot">
                       <button
