@@ -44,15 +44,46 @@ export const bookingServices = [
 ];
 
 export const propertyTypes = [
-  '1 BHK',
-  '2 BHK',
-  '3 BHK',
-  '4+ BHK',
-  'Office',
-  'Shop',
-  'Commercial',
-  'Building / Society',
-  'Other',
+  {
+    value: '1 BHK',
+    image: '/assets/waterproofing/hero/one.png',
+  },
+  {
+    value: '2 BHK',
+    image: '/assets/waterproofing/hero/two.png',
+  },
+  {
+    value: '3 BHK',
+    image: '/assets/waterproofing/hero/three.png',
+  },
+  {
+    value: '4 BHK+',
+    image: '/assets/waterproofing/hero/modern-house.jpg',
+  },
+  {
+    value: 'Villa / Bungalow',
+    image: '/assets/waterproofing/hero/Villa.png',
+  },
+  {
+    value: 'Office',
+    image: '/assets/waterproofing/hero/office.png',
+  },
+  {
+    value: 'Shop',
+    image: '/assets/waterproofing/hero/shop.png',
+  },
+  {
+    value: 'Commercial',
+    image: '/assets/waterproofing/hero/commercial.png',
+  },
+  {
+    value: 'Building / Society',
+    image: '/assets/waterproofing/hero/building.png',
+  },
+  {
+    value: 'Other',
+    image: '/assets/waterproofing/hero/other.png',
+  },
 ];
 
 export const workNatures = ['New construction', 'Renovation', 'Repair / maintenance'];
