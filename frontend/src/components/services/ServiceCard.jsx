@@ -12,7 +12,7 @@ import './ServiceCard.css';
  */
 export default function ServiceCard({ service }) {
   const {
-    number, title, description, route,
+    number, title, route,
     image, focus, alt, icon, badge,
   } = service;
 
@@ -46,13 +46,13 @@ backdrop-blur-xl
               {number}. {title}
             </Link>
           </h3>
-          <p className="sc-desc">{description}</p>
+          {/* <p className="sc-desc">{description}</p> */}
         </div>
       </div>
 
       <Link to={route} className="sc-book" aria-label={`Book ${title}`}>
         BOOK NOW
-        <Icon name="arrow-right" size={15} />
+        {/* <Icon name="arrow-right" size={15} /> */}
       </Link>
     </article>
   );

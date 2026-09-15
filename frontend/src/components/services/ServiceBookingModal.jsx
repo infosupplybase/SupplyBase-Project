@@ -96,12 +96,12 @@ export default function ServiceBookingModal({ service, onClose }) {
           relative
           w-full
 
-          ${service.slug === 'interior-by-choice'
-            ? 'max-w-[1000px]'
-            : service.slug === 'interior-design'
-              ? 'max-w-[820px]'
-              : 'max-w-[760px]'
-          }
+         ${service.slug === 'interior-by-choice'
+  ? 'max-w-[1000px]'
+  : service.slug === 'interior-design'
+    ? 'max-w-[1000px]'
+    : 'max-w-[500px]'
+}
 
           max-h-[88vh]
           h-auto
@@ -180,7 +180,7 @@ export default function ServiceBookingModal({ service, onClose }) {
             {service.name}
           </h2>
 
-          <p
+          {/* <p
             className="
               mt-2
               text-sm
@@ -189,7 +189,7 @@ export default function ServiceBookingModal({ service, onClose }) {
             "
           >
             {service.description}
-          </p>
+          </p> */}
         </div>
 
         <div className="my-6 h-px bg-gray-200" />
@@ -267,10 +267,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                             scrollModalToTop();
                           }}
                         >
-                          <Icon
+                          {/* <Icon
                             name="arrow-left"
                             size={16}
-                          />
+                          /> */}
 
                           BACK
                         </button>
@@ -382,10 +382,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                             >
                               CUSTOMISE THIS DESIGN
 
-                              <Icon
+                              {/* <Icon
                                 name="arrow-right"
                                 size={17}
-                              />
+                              /> */}
                             </button>
                           </div>
                         </div>
@@ -410,10 +410,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                         scrollModalToTop();
                       }}
                     >
-                      <Icon
+                      {/* <Icon
                         name="arrow-left"
                         size={16}
-                      />
+                      /> */}
 
                       BACK
                     </button>
@@ -538,10 +538,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                     >
                       Customise Your Design
 
-                      <Icon
+                      {/* <Icon
                         name="arrow-right"
                         size={17}
-                      />
+                      /> */}
                     </button>
                   </div>
                 </>
