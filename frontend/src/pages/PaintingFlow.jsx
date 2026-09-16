@@ -311,9 +311,6 @@ if (modal) {
   }
 >
           <div className="container container-narrow">
-            <h2 className="pnt-intro-heading">{flow.introHeading}</h2>
-            <p className="pnt-intro-text">{flow.introText}</p>
-
             <ul className="pnt-intro-trust">
               {flow.introTrustPoints.map((t) => (
                 <li key={t.label}>
