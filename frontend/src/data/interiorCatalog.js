@@ -15,32 +15,32 @@ export const interiorSpaces = [
   {
     slug: 'living-room',
     name: 'Living Room',
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/Living_room.jpeg',
   },
   {
     slug: 'bedroom',
     name: 'Bedroom',
-    image: '/assets/projects/painting-finishing.jpeg',
+    image: '/assets/projects/bedroom.jpeg',
   },
   {
     slug: 'tv-wall',
     name: 'TV Wall',
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/tv_wall.jpeg',
   },
   {
     slug: 'dining-area',
     name: 'Dining Area',
-    image: '/assets/projects/retail-showroom.jpeg',
+    image: '/assets/projects/Dining.jpeg',
   },
   {
     slug: 'home-entrance',
     name: 'Home Entrance',
-    image: '/assets/projects/hero-house.jpeg',
+    image: '/assets/projects/home_Entrance.jpeg',
   },
   {
     slug: 'office-commercial',
     name: 'Office / Commercial',
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/office_commercial.jpeg',
   },
 ];
 
@@ -61,7 +61,7 @@ export const interiorDesigns = [
     name: 'Modern Minimal',
     tagline: 'Clean lines. Timeless look.',
     pricePerSqft: 699,
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/tv_wall.jpeg',
     colours: ['#6b4a34', '#2e2e2e', '#d8c9b0', '#9a9a9a', '#a87c52', '#3b2a20'],
     features: ['waterproof', 'termite-resistant', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -77,7 +77,7 @@ export const interiorDesigns = [
     name: 'Marble Luxury',
     tagline: 'A statement stone finish.',
     pricePerSqft: 1199,
-    image: '/assets/projects/retail-showroom.jpeg',
+    image: '/assets/projects/marble_luxury.jpeg',
     colours: ['#efe9e2', '#c9c2b8', '#8a8478', '#3a3733'],
     features: ['easy-clean', 'warranty'],
     materialDetails: {
@@ -93,7 +93,7 @@ export const interiorDesigns = [
     name: 'Wood & White',
     tagline: 'Warm wood meets crisp white.',
     pricePerSqft: 899,
-    image: '/assets/projects/painting-finishing.jpeg',
+    image: '/assets/projects/Wood_White.jpeg',
     colours: ['#ffffff', '#c9a876', '#8a6a45', '#e8e4dc'],
     features: ['waterproof', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -109,7 +109,7 @@ export const interiorDesigns = [
     name: 'Stone Texture',
     tagline: 'Raw texture, refined edge.',
     pricePerSqft: 1099,
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/Stone_texture.jpeg',
     colours: ['#5a5650', '#8a8378', '#2b2924', '#b3ab9c'],
     features: ['waterproof', 'termite-resistant', 'warranty'],
     materialDetails: {
@@ -125,7 +125,7 @@ export const interiorDesigns = [
     name: 'Classic Elegant',
     tagline: 'Traditional panelling, elevated.',
     pricePerSqft: 899,
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/classic_elegant.jpeg',
     colours: ['#3b2a20', '#6b4a34', '#d8c9b0', '#1c1c1c'],
     features: ['termite-resistant', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -141,7 +141,7 @@ export const interiorDesigns = [
     name: 'Contemporary Colour',
     tagline: 'Bold tones for a modern room.',
     pricePerSqft: 999,
-    image: '/assets/projects/painting-finishing.jpeg',
+    image: '/assets/projects/Contemporary_Colour.jpeg',
     colours: ['#2b5ea6', '#9c3b5c', '#5f6b23', '#111111'],
     features: ['waterproof', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -159,7 +159,7 @@ export const interiorDesigns = [
     name: 'Warm Neutrals',
     tagline: 'Soft tones, easy to live in.',
     pricePerSqft: 749,
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/Warm_Neutral.jpeg',
     colours: ['#d8c9b0', '#a87c52', '#efe9e2', '#6b4a34'],
     features: ['waterproof', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -175,7 +175,7 @@ export const interiorDesigns = [
     name: 'Modern Luxe',
     tagline: 'A living room that feels curated.',
     pricePerSqft: 1099,
-    image: '/assets/projects/retail-showroom.jpeg',
+    image: '/assets/projects/modern_luxe.jpeg',
     colours: ['#2e2e2e', '#c9a876', '#3a3733', '#efe9e2'],
     features: ['termite-resistant', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -193,7 +193,7 @@ export const interiorDesigns = [
     name: 'Soft Minimal',
     tagline: 'Calm colours, restful room.',
     pricePerSqft: 799,
-    image: '/assets/projects/painting-finishing.jpeg',
+    image: '/assets/projects/soft_minimal.jpeg',
     colours: ['#efe9e2', '#c9c2b8', '#a87c52'],
     features: ['easy-clean', 'warranty'],
     materialDetails: {
@@ -209,7 +209,7 @@ export const interiorDesigns = [
     name: 'Classic Wood',
     tagline: 'A headboard wall that anchors the room.',
     pricePerSqft: 949,
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/Classic_Wood.jpeg',
     colours: ['#6b4a34', '#3b2a20', '#d8c9b0'],
     features: ['termite-resistant', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -227,7 +227,7 @@ export const interiorDesigns = [
     name: 'Elegant Oak',
     tagline: 'Warm wood for shared meals.',
     pricePerSqft: 849,
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/elegant_oak.jpeg',
     colours: ['#a87c52', '#6b4a34', '#efe9e2'],
     features: ['waterproof', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -243,7 +243,7 @@ export const interiorDesigns = [
     name: 'Contemporary Edge',
     tagline: 'A sharper, modern dining wall.',
     pricePerSqft: 999,
-    image: '/assets/projects/retail-showroom.jpeg',
+    image: '/assets/projects/Contemporary_Edge.jpeg',
     colours: ['#2e2e2e', '#9a9a9a', '#111111'],
     features: ['waterproof', 'termite-resistant', 'warranty'],
     materialDetails: {
@@ -261,7 +261,7 @@ export const interiorDesigns = [
     name: 'Grand Foyer',
     tagline: 'A welcome that sets the tone.',
     pricePerSqft: 899,
-    image: '/assets/projects/hero-house.jpeg',
+    image: '/assets/projects/grand_foyer.jpeg',
     colours: ['#3b2a20', '#a87c52', '#efe9e2'],
     features: ['termite-resistant', 'easy-clean', 'warranty'],
     materialDetails: {
@@ -277,7 +277,7 @@ export const interiorDesigns = [
     name: 'Minimal Welcome',
     tagline: 'Clean and low-maintenance.',
     pricePerSqft: 649,
-    image: '/assets/projects/luxury-bungalow.jpeg',
+    image: '/assets/projects/minimal_welcome.jpeg',
     colours: ['#efe9e2', '#c9c2b8', '#6b4a34'],
     features: ['waterproof', 'easy-clean'],
     materialDetails: {

@@ -32,9 +32,9 @@ export default function HowBookingWorks() {
             </li>
 
             {i < bookingSteps.length - 1 && (
-              // <li className="hbw-arrow" aria-hidden="true">
-              //   <Icon name="arrow-right" size={13} strokeWidth={2.4} />
-              // </li>
+              <li className="hbw-arrow" aria-hidden="true">
+                <Icon name="arrow-right" size={13} strokeWidth={2.4} />
+              </li>
             )}
           </Fragment>
         ))}
