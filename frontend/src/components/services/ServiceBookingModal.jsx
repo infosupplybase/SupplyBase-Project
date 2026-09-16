@@ -731,16 +731,19 @@ export default function ServiceBookingModal({ service, onClose }) {
                 />
               </div>
             ) : (
-              <PaintingCategory
-                modal={true}
-                onSelectFlow={(flowSlug) => {
-                  setSelectedPaintingFlow(flowSlug);
-                  scrollModalToTop();
-                }}
-              />
+              <div className="painting-modal-scope">
+                <PaintingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPaintingFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              </div>
             )
           ) : service.slug === 'plumbing' ? (
-            plumbingView === 'category' ? (
+            <div className="plumbing-modal-scope">
+            {plumbingView === 'category' ? (
               <PlumbingCategory
                 modal={true}
                 onSelectTab={(tabSlug) => {
@@ -830,7 +833,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                   scrollModalToTop();
                 }}
               />
-            ) : null
+            ) : null}
+            </div>
           ) : service.slug === 'other-services' ? (
             selectedOtherService ? (
               <ServiceBooking
