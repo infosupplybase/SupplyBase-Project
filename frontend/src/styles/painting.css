@@ -1241,6 +1241,14 @@
    Painting flow inside Services modal
    ========================================================= */
 
+.painting-modal-scope .pnt-section {
+  /* .pnt-section's own top padding (clamp 56-104px) is meant to clear a
+     full-page hero banner — the modal has no hero, just its own compact
+     header, so that padding was showing as a large blank gap above the
+     category list. */
+  padding-top: 0 !important;
+}
+
 .painting-modal-scope .pnt-flow-shell,
 .painting-modal-scope .wizard-shell {
   min-height: 0 !important;
