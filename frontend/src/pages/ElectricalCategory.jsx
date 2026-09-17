@@ -21,31 +21,64 @@ export default function ElectricalCategory() {
         eyebrow="ELECTRICIAN"
         title="Electrical Services"
         text="Certified electricians for wiring, fans, switches, repairs and more — pick a service to get started."
-        image="/assets/services/electrical.svg"
-        breadcrumbs={[{ label: 'Services', to: '/services' }, { label: 'Electrical' }]}
+        image="/assets/services/electrician/hero.jpeg"
+        breadcrumbs={[
+          { label: 'Services', to: '/services' },
+          { label: 'Electrical' },
+        ]}
       />
 
       <section className="elc-section">
         <div className="container container-narrow">
+
           <div className="elc-list">
+
             {electricianCategoryTiles.map((tile, i) => (
               <Reveal key={tile.slug} delay={i * 30}>
+
                 <Link
-                  to={tile.detailed ? `/services/electrical/${tile.slug}` : tile.route}
+                  to={
+                    tile.detailed
+                      ? `/services/electrical/${tile.slug}`
+                      : tile.route
+                  }
                   className="elc-tile"
                 >
+
+                  {/* IMAGE */}
+                  <span className="elc-tile-image">
+                    <img
+                      src={tile.image}
+                      alt={tile.name}
+                      loading="lazy"
+                    />
+                  </span>
+
+                  {/* ICON */}
                   <span className="elc-tile-icon">
                     <Icon name={tile.icon} size={22} />
                   </span>
+
+                  {/* TEXT */}
                   <span className="elc-tile-body">
                     <strong>{tile.name}</strong>
                     <span>{tile.blurb}</span>
                   </span>
-                  <Icon name="chevron-right" size={18} className="elc-tile-arrow" />
+
+                  {/* ARROW */}
+                  <Icon
+                    name="chevron-right"
+                    size={18}
+                    className="elc-tile-arrow"
+                  />
+
                 </Link>
+
               </Reveal>
             ))}
+
           </div>
+
         </div>
       </section>
     </>
