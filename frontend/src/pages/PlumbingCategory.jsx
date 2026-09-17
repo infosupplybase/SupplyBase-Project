@@ -46,7 +46,7 @@ export default function PlumbingCategory({
               : 'container container-narrow'
           }
         >
-          <PricingBanner />
+          {/* <PricingBanner /> */}
 
           {loading && <p className="question-hint">Loading services…</p>}
           {error && (
