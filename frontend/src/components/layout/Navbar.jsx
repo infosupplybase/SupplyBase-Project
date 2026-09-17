@@ -79,7 +79,7 @@ export default function Navbar() {
                       aria-expanded={megaOpen}
                     >
                       {item.label}
-                      <Icon name="chevron-down" size={15} className="nav-caret" />
+                      {/* <Icon name="chevron-down" size={15} className="nav-caret" /> */}
                     </NavLink>
                   </div>
                 ) : (
