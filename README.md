@@ -177,7 +177,7 @@ self-registered.)
 3. **APIs & Services → Credentials → Create credentials → OAuth client ID.**
    - Application type: **Web application**
    - **Authorised JavaScript origins:** `http://localhost:5173` for local work,
-     plus your live address (e.g. `https://supplybase.co.in`) when you deploy
+     plus your live address (e.g. `https://supplybase.in`) when you deploy
    - Leave "Authorised redirect URIs" empty — this sign-in method does not use one
 4. Copy the **Client ID**. It ends in `.apps.googleusercontent.com`.
 5. Put the *same* value in **both** files:
