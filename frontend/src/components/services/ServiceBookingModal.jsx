@@ -717,28 +717,28 @@ export default function ServiceBookingModal({ service, onClose }) {
                 }}
               />
             )
-          ) : service.slug === 'painting' ? (
-            selectedPaintingFlow ? (
-              <div className="painting-modal-scope">
-                <PaintingFlow
-                  modal={true}
-                  flowSlug={selectedPaintingFlow}
-                  onBackToCategories={() => {
-                    setSelectedPaintingFlow(null);
-                    scrollModalToTop();
-                  }}
-                  onStepChange={scrollModalToTop}
-                />
-              </div>
-            ) : (
-              <PaintingCategory
-                modal={true}
-                onSelectFlow={(flowSlug) => {
-                  setSelectedPaintingFlow(flowSlug);
-                  scrollModalToTop();
-                }}
-              />
-            )
+         ) : service.slug === 'painting' ? (
+  <div className="painting-modal-scope">
+    {selectedPaintingFlow ? (
+      <PaintingFlow
+        modal={true}
+        flowSlug={selectedPaintingFlow}
+        onBackToCategories={() => {
+          setSelectedPaintingFlow(null);
+          scrollModalToTop();
+        }}
+        onStepChange={scrollModalToTop}
+      />
+    ) : (
+      <PaintingCategory
+        modal={true}
+        onSelectFlow={(flowSlug) => {
+          setSelectedPaintingFlow(flowSlug);
+          scrollModalToTop();
+        }}
+      />
+    )}
+  </div>
           ) : service.slug === 'plumbing' ? (
             plumbingView === 'category' ? (
               <PlumbingCategory
