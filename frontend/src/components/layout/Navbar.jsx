@@ -116,11 +116,11 @@ export default function Navbar() {
         </div>
 
       </header>
-      <ServiceMegaMenu
+      {/* <ServiceMegaMenu
   open={megaOpen}
   scrolled={scrolled}
   onNavigate={() => setMegaOpen(false)}
-/>
+/> */}
 </div>
 
       <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
