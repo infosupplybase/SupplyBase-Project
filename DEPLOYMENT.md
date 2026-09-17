@@ -58,7 +58,7 @@ database password and mail password on the API host only.
 Set production CORS to the exact origins **of both frontend apps**, for example:
 
 ```text
-CORS_ORIGINS=https://supplybase-projects.vercel.app,https://admin.supplybase.co.in,https://www.supplybase.co.in,https://supplybase.co.in
+CORS_ORIGINS=https://supplybase-projects.vercel.app,https://admin.supplybase.in,https://www.supplybase.in,https://supplybase.in
 ```
 
 Do not include `localhost` or wildcard origins in production.
@@ -102,7 +102,7 @@ as the website; they're different apps with different builds.
 5. Add this app's final Vercel URL to the API's `CORS_ORIGINS` value
    (alongside the website's) and redeploy the API once.
 6. Consider restricting who can even load this URL — a custom subdomain like
-   `admin.supplybase.co.in` kept out of search engines (`admin/index.html`
+   `admin.supplybase.in` kept out of search engines (`admin/index.html`
    already sets `robots: noindex, nofollow`) is enough for most teams; add IP
    allow-listing or Vercel's password protection if you want more.
 
@@ -181,8 +181,8 @@ nano .env   # fill in real values — see the table below
 | `DB_PASSWORD` | a strong password you generate — this is the app's own database login |
 | `DB_ROOT_PASSWORD` | a *different* strong password — MySQL's root account, only ever used by Docker to initialise the database |
 | `JWT_SECRET` | generate with `openssl rand -base64 48` |
-| `CORS_ORIGINS` | your deployed frontend/admin origins, e.g. `https://www.supplybase.co.in,https://admin.supplybase.co.in` |
-| `FRONTEND_URL` | `https://www.supplybase.co.in` |
+| `CORS_ORIGINS` | your deployed frontend/admin origins, e.g. `https://www.supplybase.in,https://admin.supplybase.in` |
+| `FRONTEND_URL` | `https://www.supplybase.in` |
 | `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` | your own admin login — creates that account automatically on first boot |
 
 Leave `GOOGLE_CLIENT_ID`, `RAZORPAY_*`, `MAIL_*`, `ENQUIRY_EMAIL` blank until
