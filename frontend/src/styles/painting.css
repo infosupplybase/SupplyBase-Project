@@ -1259,6 +1259,12 @@
   padding-top: 0 !important;
 }
 
+.painting-modal-scope .pnt-section {
+  padding-top: 0 !important;
+  padding-bottom: 12px !important;
+  margin-top: 0 !important;
+}
+
 /* =========================================================
    Painting modal — mobile product card layout
    ========================================================= */
