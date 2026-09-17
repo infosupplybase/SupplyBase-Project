@@ -333,7 +333,7 @@ export const services = [
     summary:
       'Electrical work is a safety job first and a convenience job second. We carry out complete concealed wiring, new installations, DB and panel work, lighting circuits and switch points — planned around how you will actually use the space, and executed with proper earthing and protection.',
     heroImage: '/assets/services/electrician/hero.jpeg',
-    gallery: ['/assets/services/electrician/home-electrical-services.jpeg', '/assets/services/electrician/fan-installation.jpeg', '/assets/services/electrician/led-lighting-installation.jpeg', '/assets/services/electrician/lighting-installation.jpeg', '/assets/services/electrician/switch-socket-installation.jpeg', '/assets/services/electrician/wiring-installation.jpeg'],
+    gallery: ['/assets/services/electrician/home-electrical-services.jpeg', '/assets/services/electrician/fan-installation.jpeg', '/assets/services/electrician/light-installation.jpeg', '/assets/services/electrician/switch-socket-installation.jpeg', '/assets/services/electrician/wiring-rewiring-services.jpeg', '/assets/services/electrician/mcb-db-installation.jpeg'],
     subServices: [
       { name: 'Complete Wiring', text: 'Full concealed wiring for new homes, offices and shops.' },
       { name: 'New Installation', text: 'New points, circuits and load planning for renovations and extensions.' },

@@ -1242,11 +1242,14 @@
    ========================================================= */
 
 .painting-modal-scope .pnt-section {
-  /* .pnt-section's own top padding (clamp 56-104px) is meant to clear a
-     full-page hero banner — the modal has no hero, just its own compact
-     header, so that padding was showing as a large blank gap above the
+  /* .pnt-section's own top/bottom padding (clamp 56-104px each) is meant to
+     clear a full-page hero banner above and give breathing room below —
+     the modal has no hero, just its own compact header and scroll area, so
+     that padding was showing as large blank gaps above and below the
      category list. */
   padding-top: 0 !important;
+  padding-bottom: 12px !important;
+  margin-top: 0 !important;
 }
 
 .painting-modal-scope .pnt-flow-shell,
