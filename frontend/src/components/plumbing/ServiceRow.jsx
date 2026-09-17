@@ -1,7 +1,7 @@
 import Icon from '../ui/Icon';
 import { formatRupees } from '../../lib/money';
 import { useCart } from '../../context/CartContext';
-import { ITEM_ICON_OVERRIDES } from '../../data/plumbingContent';
+import { ITEM_ICON_OVERRIDES, ITEM_IMAGES } from '../../data/plumbingContent';
 
 /**
  * One priced line item — thumbnail, name, description, price, and either an
@@ -28,8 +28,16 @@ export default function ServiceRow({ item, group }) {
   return (
     <div className="plb-row">
       <span className="plb-row-thumb" aria-hidden="true">
-        <Icon name={icon} size={26} />
-      </span>
+  {ITEM_IMAGES[item.value] ? (
+  <img
+    src={ITEM_IMAGES[item.value]}
+    alt=""
+    className="h-full w-full object-cover"
+  />
+) : (
+    <Icon name={icon} size={26} />
+)}
+</span>
 
       <div className="plb-row-body">
         <span className="plb-row-name">{item.label}</span>
