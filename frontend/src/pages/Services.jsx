@@ -31,6 +31,18 @@ import OtherServicesCategory from './OtherServicesCategory';
  * Fetched, not hard-coded: this and the booking form read the same catalogue,
  * so they cannot drift apart.
  */
+
+const serviceImages = {
+  'interior-design': '/assets/services/interior-design.webp',
+  'interior-by-choice': '/assets/services/interior-by-choice.png',
+  painting: '/assets/services/painting.jpg',
+  waterproofing: '/assets/services/waterproofing.avif',
+  'pop-ceiling-design': '/assets/services/pop-ceiling-design.jpg',
+  plumbing: '/assets/services/plumber.jpg',
+  electrical: '/assets/services/electrician.avif',
+  'other-services': '/assets/services/other-services.webp',
+};
+
 export default function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,14 +111,13 @@ export default function Services() {
     setSelectedPlumbingConsultation(null);
     setSelectedOtherService(null);
   };
-
   return (
     <>
       <PageHero
         eyebrow="OUR SERVICES"
         title="WHAT WE DO"
         text="Four services, one accountable team. Book a site visit and we will assess the work and send you a written quotation."
-        image="/assets/hero-house.svg"
+        image="/assets/services/service-hero.jpg"
         breadcrumbs={[{ label: 'Services' }]}
       />
 
@@ -141,56 +152,59 @@ export default function Services() {
                 delay={i * 70}
               >
                 <article
-                  className="
-                    svc-card
-                    !bg-black/5
-                    backdrop-blur-xl
-                    !border-white/40
-                    !shadow-[0_8px_28px_rgba(0,0,0,0.10)]
-                  "
+                  className="svc-card"
                   data-service={service.slug}
                 >
-                  <div className="svc-card-icon">
-                    <Icon
-                      name={service.icon || 'tools'}
-                      size={30}
-                      strokeWidth={1.4}
+                  <div className="svc-card-media">
+                    <img
+                      src={serviceImages[service.slug]}
+                      alt={service.name}
                     />
                   </div>
 
-                  <h2>
-                    {service.name}
-                  </h2>
-
-                  <p>
-                    {service.description}
-                  </p>
-
-                  <div className="svc-card-foot">
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      onClick={() => {
-                        setSelectedService(service);
-                        setSelectedInteriorSpace(null);
-                        setSelectedInteriorDesign(null);
-                        setShowInteriorBooking(false);
-                        setSelectedInteriorDesignCategory(null);
-                        setSelectedInteriorDesignProject(null);
-                        setSelectedPaintingFlow(null);
-                        setSelectedPlumbingTab(null);
-                        setPlumbingView('category');
-                        setSelectedPlumbingConsultation(null);
-                        setSelectedOtherService(null);
-                      }}
-                    >
-                      BOOK NOW
-
+                  <div className="svc-card-body">
+                    {/* <div className="svc-card-icon">
                       <Icon
-                        name="arrow-right"
-                        size={15}
+                        name={service.icon || 'tools'}
+                        size={22}
+                        strokeWidth={1.4}
                       />
-                    </button>
+                    </div> */}
+
+                    <h3>
+                      {service.name}
+                    </h3>
+{/* 
+                    <p>
+                      {service.description}
+                    </p> */}
+
+                    <div className="svc-card-foot">
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() => {
+  setSelectedService(service);
+  setSelectedInteriorSpace(null);
+  setSelectedInteriorDesign(null);
+  setShowInteriorBooking(false);
+  setSelectedInteriorDesignCategory(null);
+  setSelectedInteriorDesignProject(null);
+  setSelectedPaintingFlow(null);
+  setSelectedPlumbingTab(null);
+  setPlumbingView('category');
+  setSelectedPlumbingConsultation(null);
+  setSelectedOtherService(null);
+}}
+                      >
+                        BOOK NOW
+
+                        <Icon
+                          name="arrow-right"
+                          size={15}
+                        />
+                      </button>
+                    </div>
                   </div>
                 </article>
               </Reveal>

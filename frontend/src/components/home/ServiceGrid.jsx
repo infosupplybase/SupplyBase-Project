@@ -37,7 +37,7 @@ export default function ServiceGrid() {
               <Icon name={service.icon || 'tools'} size={30} strokeWidth={1.4} />
             </div>
             <h3>{service.name}</h3>
-            <p>{service.description}</p>
+            {/* <p>{service.description}</p> */}
             <div className="svc-card-foot">
               <Link to={`/services/${service.slug}`} className="btn btn-primary btn-sm">
                 BOOK NOW

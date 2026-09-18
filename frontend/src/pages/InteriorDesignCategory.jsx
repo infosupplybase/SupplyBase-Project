@@ -93,11 +93,11 @@ export default function InteriorDesignCategory({
         </span>
       </span>
 
-      <Icon
+      {/* <Icon
         name="chevron-right"
         size={18}
         className="pnt-overview-arrow"
-      />
+      /> */}
     </button>
   ) : (
     <Link
@@ -121,11 +121,11 @@ export default function InteriorDesignCategory({
         </span>
       </span>
 
-      <Icon
+      {/* <Icon
         name="chevron-right"
         size={18}
         className="pnt-overview-arrow"
-      />
+      /> */}
     </Link>
   )
 )}

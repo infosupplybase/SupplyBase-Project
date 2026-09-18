@@ -11,6 +11,27 @@
   padding: var(--section-y) 0 calc(var(--section-y) + 70px);
 }
 
+/* =========================================================
+   Plumbing flow inside Services modal — same fix as
+   .painting-modal-scope: the page's own top padding (meant to
+   clear a full-page hero) becomes a blank gap under the modal's
+   own compact header, so it's zeroed for every plumbing screen
+   reachable from the modal (category/tab/cart/consultation list
+   use .plb-section directly; checkout/consultation-book reuse
+   the shared .wizard-shell). */
+.plumbing-modal-scope .plb-section,
+.plumbing-modal-scope .wizard-shell {
+  padding-top: 0 !important;
+}
+
+/* .plb-pricing-banner is the first element in .plb-section on the category
+   screen — its own top margin (meant to clear the hero) collapses straight
+   through the padding-less wrappers above and reappears as the same blank
+   gap under the modal header, so it needs its own override too. */
+.plumbing-modal-scope .plb-pricing-banner {
+  margin-top: 0 !important;
+}
+
 /* ------------------------------------------------------------------ hero */
 
 .plb-hero {

@@ -15,7 +15,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-2);
 }
 
 .ibc-highlight {
@@ -205,9 +205,9 @@
 
 .ibc-design-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
 }
 
 .ibc-design-card {
@@ -220,7 +220,7 @@
 
 .ibc-design-media {
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
 }
 
 .ibc-design-media img {
@@ -250,7 +250,7 @@
 
 .ibc-design-body {
   display: block;
-  padding: 12px 14px 14px;
+  padding: 8px 12px 10px;
 }
 
 .ibc-design-name {
@@ -414,7 +414,7 @@
   justify-content: center;
   gap: var(--space-6);
   list-style: none;
-  margin: 0 0 var(--space-6);
+  margin: 0 0 var(--space-4);
   padding: 0;
 }
 
@@ -462,7 +462,7 @@
   padding: var(--space-3);
   background: var(--light-bg);
   border-radius: var(--radius);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-4);
 }
 
 .ibc-selected-service img {
@@ -516,7 +516,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  margin: var(--space-5) 0 var(--space-3);
+  margin: var(--space-4) 0 var(--space-2);
 }
 
 .ibc-form-panel h3:first-child {
@@ -526,7 +526,7 @@
 .ibc-form-submit {
   width: 100%;
   justify-content: center;
-  margin-top: var(--space-5);
+  margin-top: var(--space-4);
 }
 
 .ibc-secure-note {
