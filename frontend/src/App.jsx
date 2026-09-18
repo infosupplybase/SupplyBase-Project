@@ -37,7 +37,8 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Quote from './pages/Quote';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import MyBookings from './pages/MyBookings';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
 
@@ -75,7 +76,9 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /quote                  Get a quote  (?service=<slug> pre-selects a service)
  * /login                  Sign in       (no header/footer)
  * /register               Create account (same page, other tab)
- * /dashboard              Client account page — only visible once signed in
+ * /dashboard              Redirects to /dashboard/bookings
+ * /dashboard/bookings     Every booking the signed-in client has made, with real status
+ * /dashboard/profile      Edit name/phone, verify email, reset password, sign out
  * /privacy-policy, /terms Legal pages
  */
 export default function App() {
@@ -181,7 +184,7 @@ export default function App() {
             Routes commented out rather than removed so this is a quick
             revert; every Link that pointed here is also commented out
             (siteConfig.js's mainNav/quickLinks, Home.jsx, About.jsx,
-            Dashboard.jsx). */}
+            AccountSidebar.jsx). */}
         {/* <Route path="projects" element={<Projects />} /> */}
         {/* <Route path="projects/:slug" element={<ProjectDetail />} /> */}
         {/* <Route path="materials" element={<Materials />} /> */}
@@ -199,11 +202,25 @@ export default function App() {
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="quote" element={<Quote />} />
+        {/* /dashboard has no page of its own — Bookings and Profile are
+            separate pages (own routes, own content), each reachable directly
+            from the bottom nav; a bare /dashboard visit (the desktop header's
+            "MY ACCOUNT" link) lands on Bookings, the more actionable of the
+            two. */}
+        <Route path="dashboard" element={<Navigate to="/dashboard/bookings" replace />} />
         <Route
-          path="dashboard"
+          path="dashboard/bookings"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <MyBookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="dashboard/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />
