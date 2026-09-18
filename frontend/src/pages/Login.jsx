@@ -179,7 +179,7 @@ export default function Login() {
     <div className="auth-screen">
       <div className="auth-glow" aria-hidden="true" />
 
-      <div className="auth-card-wrap">
+      <div className="auth-card-wrap !bg-black/55 backdrop-blur-sm border border-yellow-400/20 shadow-xl">
         <div className="auth-card">
           <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
             <Icon name="close" size={18} />

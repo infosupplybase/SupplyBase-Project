@@ -660,7 +660,14 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  background: var(--auth-bg);
+  background-color: #05070a;
+background-image:
+  linear-gradient(rgba(54, 52, 52, 0.38), rgba(87, 82, 82, 0.38)),
+  url('/assets/hero-house2.jpeg');
+background-position: center;
+background-attachment: fixed;
+background-size: auto;
+background-repeat: no-repeat;
   overflow: hidden;
 }
 
@@ -703,8 +710,8 @@
 .auth-card {
   position: relative;
   background: var(--auth-card);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  /* backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%); */
   border-radius: 21px;
   clip-path: polygon(41px 0, 100% 0, 100% 100%, 0 100%, 0 41px);
   padding: 38px 32px 30px;
