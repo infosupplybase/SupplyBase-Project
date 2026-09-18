@@ -4,11 +4,12 @@ import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.auth.User;
 
 public record UserResponse(Long id, String fullName, String email, String phone, Role role,
-                           String pictureUrl, boolean hasPassword, boolean enabled) {
+                           String pictureUrl, boolean hasPassword, boolean enabled,
+                           boolean emailVerified) {
 
     public static UserResponse from(User user) {
         return new UserResponse(user.getId(), user.getFullName(), user.getEmail(),
                 user.getPhone(), user.getRole(), user.getPictureUrl(), user.hasPassword(),
-                user.isEnabled());
+                user.isEnabled(), user.isEmailVerified());
     }
 }

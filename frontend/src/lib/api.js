@@ -182,6 +182,17 @@ export const api = {
 
   me: () => request('/api/auth/me'),
 
+  /** Self-service — name and phone only. */
+  updateProfile: (fullName, phone) =>
+    request('/api/auth/me', { method: 'PATCH', body: { fullName: fullName.trim(), phone } }),
+
+  /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
+  forgotPassword: (identifier) =>
+    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+
+  /** Re-sends the sign-up verification email to the signed-in user's own address. */
+  sendVerificationEmail: () => request('/api/auth/send-verification', { method: 'POST' }),
+
   myProjects: () => request('/api/projects/mine'),
   myPayments: () => request('/api/payments/mine'),
 
