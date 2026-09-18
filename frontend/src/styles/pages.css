@@ -661,13 +661,13 @@
   justify-content: center;
   padding: 40px 20px;
   background-color: #05070a;
-background-image:
-  linear-gradient(rgba(54, 52, 52, 0.38), rgba(87, 82, 82, 0.38)),
-  url('/assets/hero-house2.jpeg');
-background-position: center;
-background-attachment: fixed;
-background-size: auto;
-background-repeat: no-repeat;
+  background-image:
+    linear-gradient(rgba(54, 52, 52, 0.38), rgba(87, 82, 82, 0.38)),
+    url('/assets/hero-house2.jpeg');
+  background-position: center;
+  background-attachment: fixed;
+  background-size: auto;
+  background-repeat: no-repeat;
   overflow: hidden;
 }
 

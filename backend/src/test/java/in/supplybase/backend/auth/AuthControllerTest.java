@@ -86,7 +86,7 @@ class AuthControllerTest {
     }
 
     private UserResponse sampleUser() {
-        return new UserResponse(1L, "Jane Doe", "jane@example.com", "9820011223", Role.CUSTOMER, null, true, true);
+        return new UserResponse(1L, "Jane Doe", "jane@example.com", "9820011223", Role.CUSTOMER, null, true, true, true);
     }
 
     private AuthResponse sampleAuthResponse() {
@@ -200,6 +200,66 @@ class AuthControllerTest {
             mockMvc.perform(get("/api/auth/me"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.email").value("jane@example.com"));
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /api/auth/me")
+    class UpdateMe {
+
+        @Test
+        @DisplayName("401s for an anonymous caller")
+        void anonymousIsUnauthorized() throws Exception {
+            mockMvc.perform(patch("/api/auth/me")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"fullName":"Jane Doe","phone":"9820011223"}
+                                    """))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("200s and returns the updated profile when signed in")
+        @WithMockUser(roles = "CUSTOMER")
+        void signedInUpdatesProfile() throws Exception {
+            when(currentUser.require()).thenReturn(new AuthenticatedUser(1L, "jane@example.com", Role.CUSTOMER));
+            when(authService.updateProfile(eq(1L), any())).thenReturn(sampleUser());
+
+            mockMvc.perform(patch("/api/auth/me")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"fullName":"Jane Doe","phone":"9820011223"}
+                                    """))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.email").value("jane@example.com"));
+        }
+
+        @Test
+        @DisplayName("400s when the name is blank")
+        @WithMockUser(roles = "CUSTOMER")
+        void blankNameReturns400() throws Exception {
+            mockMvc.perform(patch("/api/auth/me")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"fullName":"","phone":"9820011223"}
+                                    """))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("409s when another account already has that phone number")
+        @WithMockUser(roles = "CUSTOMER")
+        void duplicatePhoneReturns409() throws Exception {
+            when(currentUser.require()).thenReturn(new AuthenticatedUser(1L, "jane@example.com", Role.CUSTOMER));
+            when(authService.updateProfile(eq(1L), any()))
+                    .thenThrow(ApiException.conflict("Another account already uses that phone number."));
+
+            mockMvc.perform(patch("/api/auth/me")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"fullName":"Jane Doe","phone":"9820099999"}
+                                    """))
+                    .andExpect(status().isConflict());
         }
     }
 

@@ -1,0 +1,213 @@
+/* =========================================================================
+   SUPPLYBASE — MY ACCOUNT (Bookings / Profile)
+   Bookings and Profile are separate pages, each with a small tab switcher
+   (AccountTabs) so desktop visitors have the same way to move between them
+   the bottom nav already gives mobile visitors. Prefixed `acct-` so nothing
+   collides with the rest of the site.
+   ========================================================================= */
+
+/* ------------------------------------------------------------------ tabs */
+
+.acct-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.acct-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 4px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.acct-tab + .acct-tab {
+  margin-left: var(--space-4);
+}
+
+.acct-tab svg {
+  color: var(--ink-muted);
+}
+
+.acct-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+}
+
+.acct-tab.active svg {
+  color: var(--gold-deep);
+}
+
+/* --------------------------------------------------------------- empty */
+
+.acct-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: var(--space-7) var(--space-4);
+  background: var(--light-bg);
+  border-radius: var(--radius-lg);
+}
+
+.acct-empty svg {
+  color: var(--gold-deep);
+  margin-bottom: 4px;
+}
+
+.acct-empty h3 {
+  margin: 0;
+}
+
+.acct-empty p {
+  color: var(--ink-muted);
+  max-width: 380px;
+  margin-bottom: 6px;
+}
+
+/* -------------------------------------------------------------- bookings */
+
+.acct-booking-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.acct-booking-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+
+.acct-booking-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--gold-a40);
+}
+
+.acct-booking-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.acct-booking-number {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold-deep);
+  text-transform: uppercase;
+}
+
+.acct-booking-top h3 {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+}
+
+.acct-booking-meta {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acct-booking-meta li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.87rem;
+  color: var(--ink-soft);
+}
+
+.acct-booking-meta svg {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+/* --------------------------------------------------------- status badge */
+
+.acct-status {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.acct-status-accent {
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.acct-status-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.acct-status-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.acct-status-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* ------------------------------------------------------- profile / security */
+
+.acct-security-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4) var(--space-5);
+  margin-top: var(--space-4);
+}
+
+.acct-security-card h4 {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  margin-bottom: 4px;
+}
+
+.acct-security-card p {
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+  margin-bottom: 10px;
+}
+
+.acct-verified {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------- responsive */
+
+@media (max-width: 640px) {
+  .acct-booking-top {
+    flex-direction: column;
+  }
+}
