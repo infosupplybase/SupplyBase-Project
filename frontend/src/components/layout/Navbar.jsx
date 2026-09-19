@@ -79,7 +79,7 @@ export default function Navbar() {
                       aria-expanded={megaOpen}
                     >
                       {item.label}
-                      <Icon name="chevron-down" size={15} className="nav-caret" />
+                      {/* <Icon name="chevron-down" size={15} className="nav-caret" /> */}
                     </NavLink>
                   </div>
                 ) : (
@@ -116,11 +116,11 @@ export default function Navbar() {
         </div>
 
       </header>
-      <ServiceMegaMenu
+      {/* <ServiceMegaMenu
   open={megaOpen}
   scrolled={scrolled}
   onNavigate={() => setMegaOpen(false)}
-/>
+/> */}
 </div>
 
       <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />

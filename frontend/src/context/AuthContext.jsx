@@ -18,6 +18,7 @@ const AuthContext = createContext({
   loginWithGoogle: async () => {},
   register: async () => {},
   logout: async () => {},
+  refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }) {
@@ -55,6 +56,14 @@ export function AuthProvider({ children }) {
     return auth.user;
   }, []);
 
+  /** Re-fetches /api/auth/me — used after a profile edit so the name shown
+      in the header and bottom nav updates without a full page reload. */
+  const refreshUser = useCallback(async () => {
+    const me = await api.me();
+    setUser(me);
+    return me;
+  }, []);
+
   const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
     // Clear locally first. If the network call fails the person is still
@@ -84,8 +93,9 @@ export function AuthProvider({ children }) {
       register: async (name, email, password, phone) =>
         adopt(await api.register(name.trim(), email.trim(), password, phone)),
       logout,
+      refreshUser,
     }),
-    [user, loading, adopt, logout]
+    [user, loading, adopt, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -160,6 +160,11 @@
   font-family: var(--font-display);
   font-size: 1.3rem;
   margin-bottom: 6px;
+  /* global.css's bare `h3` selector sets --ink (near-black) directly on
+     this element, which beats the inherited --white from .ibc-custom-band
+     no matter how much less specific it is — inheritance always loses to
+     a direct match. Needs its own color here, not on the parent. */
+  color: var(--white);
 }
 
 .ibc-custom-copy p {
