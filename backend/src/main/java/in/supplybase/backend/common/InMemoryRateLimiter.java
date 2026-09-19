@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.Deque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,6 +21,11 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class InMemoryRateLimiter {
+
+    // Comfortably longer than every window any caller currently uses (the
+    // longest today is one hour). A key untouched for this long is done
+    // being rate-limited and is just sitting in memory doing nothing.
+    private static final Duration MAX_KEY_AGE = Duration.ofHours(6);
 
     private final ConcurrentHashMap<String, Deque<Instant>> hits = new ConcurrentHashMap<>();
 
@@ -41,5 +48,33 @@ public class InMemoryRateLimiter {
             attempts.addLast(now);
             return true;
         }
+    }
+
+    /**
+     * Removes keys nobody has touched in a long while.
+     *
+     * The sliding-window eviction inside {@link #tryAcquire} only ever runs
+     * when a key is queried again — fine for something hit repeatedly
+     * (login, register), but a key that is only ever queried once, such as
+     * AuthService.refresh's key (the refresh token itself, which dies after
+     * one use since refresh tokens rotate), would otherwise sit in this map
+     * forever. This sweep is what actually bounds the map's size on a
+     * long-running instance.
+     */
+    @Scheduled(fixedRate = 30, initialDelay = 30, timeUnit = TimeUnit.MINUTES)
+    void evictStaleKeys() {
+        Instant cutoff = Instant.now().minus(MAX_KEY_AGE);
+        hits.entrySet().removeIf(entry -> {
+            Deque<Instant> attempts = entry.getValue();
+            synchronized (attempts) {
+                Instant last = attempts.peekLast();
+                return last == null || last.isBefore(cutoff);
+            }
+        });
+    }
+
+    /** Test-only visibility into how many keys are currently tracked. */
+    int trackedKeyCount() {
+        return hits.size();
     }
 }
