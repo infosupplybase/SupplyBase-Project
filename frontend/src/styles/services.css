@@ -14,13 +14,13 @@
   display: flex;
   flex-direction: column;
 
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
 
   border: 1px solid #e5e5e5 !important;
   border-top: 1px solid #e5e5e5 !important;
 
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 
   overflow: hidden;
 
@@ -30,8 +30,8 @@
 }
 
 .svc-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-8px);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
 
   border: 1px solid #d5d5d5 !important;
   border-top: 1px solid #d5d5d5 !important;
@@ -74,10 +74,10 @@
   box-sizing: border-box;
   border-radius: 8px;
 
-  background: #eef9fb;
+  background: linear-gradient(160deg, #f2fcfd 0%, #dcf3f5 60%, #c7e9ec 100%);
   color: #0b7285;
 
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(11, 114, 133, 0.14), var(--shadow-sm);
 }
 
 .svc-card-body {
@@ -168,6 +168,9 @@
   background: var(--gold-a40);
 }
 
+/* On the dark "how it works" band an outer drop-shadow would vanish into
+   the background, so the raised feel comes entirely from inset light —
+   a highlight along the top-left rim, a shadow along the bottom-right. */
 .how-icon {
   position: relative;
   width: 68px;
@@ -178,8 +181,9 @@
   justify-content: center;
   border-radius: 50%;
   border: 1px solid var(--gold-a40);
-  background: var(--gold-a12);
+  background: radial-gradient(circle at 32% 28%, rgba(223, 175, 53, 0.22) 0%, rgba(223, 175, 53, 0.12) 100%);
   color: var(--gold);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.22), inset 0 -5px 9px rgba(0, 0, 0, 0.35);
 }
 
 .how-num {
@@ -230,29 +234,31 @@
 .stat {
   text-align: center;
   padding: var(--space-6) var(--space-4);
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease),
               border-color var(--t) var(--ease);
 }
 
 .stat:hover {
-  transform: translateY(-4px);
+  transform: translateY(-8px);
   border-color: var(--gold);
-  box-shadow: var(--shadow);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
 }
 
 .stat-icon {
-  width: 52px;
-  height: 52px;
+  width: 68px;
+  height: 68px;
   margin: 0 auto var(--space-3);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--gold-a12);
+  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -5px 8px rgba(180, 130, 20, 0.16), var(--shadow-sm);
 }
 
 .stat-value {
@@ -278,15 +284,16 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-5);
-  background: #fdfaf1;
+  background: linear-gradient(180deg, #fffdf5 0%, #fdfaf1 100%);
   border: 1px solid var(--gold-a24);
   border-radius: var(--radius-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
 .whatsapp-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow);
+  transform: translateY(-6px);
+  box-shadow: var(--depth-inset-top), var(--shadow);
 }
 
 .whatsapp-icon {
@@ -297,8 +304,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--whatsapp);
+  background: linear-gradient(180deg, #34e57a 0%, var(--whatsapp) 100%);
   color: var(--white);
+  box-shadow: var(--depth-inset-top), inset 0 -4px 8px rgba(6, 48, 26, 0.2), var(--shadow-sm);
 }
 
 .whatsapp-body {
@@ -533,8 +541,9 @@
   border: 0;
   border-radius: 8px;
 
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 
   font-family: var(--font-display);
   font-size: 13px;
@@ -546,12 +555,15 @@
 
   position: relative;
   top: -3px;
+
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), background var(--t) var(--ease);
 }
 
 .svc-book:hover {
-  background: var(--gold-deep);
-  color: var(--white);
-  transform: translateY(-1px);
+  background: linear-gradient(180deg, #f5d878 0%, var(--gold-light) 100%);
+  color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-3px);
 }
 
 .svc-book svg {

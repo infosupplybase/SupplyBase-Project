@@ -12,6 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--light-bg);
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }

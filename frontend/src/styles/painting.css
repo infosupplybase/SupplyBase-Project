@@ -117,8 +117,9 @@
   text-align: center;
   gap: 8px;
   padding: var(--space-3);
-  background: var(--light-bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -142,18 +143,18 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3);
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .pnt-overview-card:hover,
 .pnt-overview-card:focus-visible {
   border-color: var(--gold-a40);
-  box-shadow: var(--shadow);
-  transform: translateY(-2px);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-6px);
 }
 
 .pnt-overview-photo {
@@ -254,8 +255,9 @@
   text-align: center;
   gap: 8px;
   padding: var(--space-3);
-  background: var(--light-bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -266,9 +268,10 @@
 }
 
 .pnt-included {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: var(--space-5);
   margin-bottom: var(--space-6);
 }
@@ -380,11 +383,13 @@
   color: var(--on-dark-muted);
   font-size: 0.72rem;
   font-weight: 700;
+  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-step.current .pnt-step-num {
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .pnt-step.done .pnt-step-num {
@@ -406,10 +411,10 @@
 /* --------------------------------------------------------------- card */
 
 .pnt-step-card {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border-radius: var(--radius-lg);
   padding: clamp(20px, 3vw, 28px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--depth-inset-top), 0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
 .pnt-step-title {
@@ -444,8 +449,13 @@
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.pnt-option:hover {
+  box-shadow: var(--shadow);
 }
 
 .pnt-option input {
@@ -469,8 +479,9 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: var(--gold-a12);
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-option-body {
@@ -545,8 +556,14 @@
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.pnt-brand-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-4px);
 }
 
 .pnt-brand-card input {
@@ -675,8 +692,13 @@
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.pnt-product:hover {
+  box-shadow: var(--shadow);
 }
 
 .pnt-product input {
@@ -700,8 +722,9 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: var(--gold-a12);
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-product-body {
@@ -932,8 +955,13 @@
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.pnt-addon:hover {
+  box-shadow: var(--shadow);
 }
 
 .pnt-addon input {
@@ -956,8 +984,9 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: var(--gold-a12);
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-addon-body {
@@ -1051,9 +1080,10 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  background: var(--gold-a08);
+  background: linear-gradient(180deg, #fffdf5 0%, var(--gold-a08) 100%);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   margin-bottom: var(--space-5);
 }
 
@@ -1113,8 +1143,9 @@
   justify-content: space-between;
   margin-top: var(--space-5);
   padding: 14px 18px;
-  background: var(--black);
+  background: linear-gradient(180deg, #262626 0%, var(--black) 100%);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   color: var(--white);
 }
 
@@ -1157,6 +1188,7 @@
   padding: var(--space-7) var(--space-5);
   background: var(--black) url('/assets/projects/modern-interior.jpeg') center/cover;
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
   text-align: center;
   overflow: hidden;
 }

@@ -583,138 +583,48 @@
 }
 
 /* =========================================================================
-   "ELEVATED DEPTH" 3D PREVIEW — HOME PAGE ONLY
+   "ELEVATED DEPTH" 3D — HOME PAGE'S OWN ELEMENTS
 
-   A trial of a site-wide direction: layered ambient shadows and subtle
-   surface gradients that read as physical elevation, plus a firmer lift on
-   hover and a press-down on click. Deliberately scoped under .page-home so
-   it previews here without changing CtaBand, WhySupplybaseStats or the
-   shared .btn-* classes on every other page that also renders them — once
-   the look is approved, the same rules get un-scoped and carried across
-   the rest of the site.
+   The site-wide half of this look (buttons, WhySupplybaseStats, CtaBand)
+   now lives unscoped in buttons.css / WhySupplybaseStats.css and the
+   --shadow-* tokens in variables.css. What's left here is only the styling
+   for elements that are exclusive to the home page (HomeHero, PopularServices,
+   ConsultationBanner aren't imported anywhere else), restated as a raised
+   surface: layered ambient shadows, a soft inset top highlight, and a
+   firmer hover lift than the rest of the site's cards get.
    ========================================================================= */
-
-.page-home {
-  --depth-shadow-sm: 0 1px 2px rgba(15, 15, 15, 0.05), 0 3px 6px rgba(15, 15, 15, 0.05);
-  --depth-shadow-md:
-    0 2px 4px rgba(15, 15, 15, 0.05),
-    0 8px 16px rgba(15, 15, 15, 0.07),
-    0 20px 36px rgba(15, 15, 15, 0.06);
-  --depth-shadow-lg:
-    0 4px 8px rgba(15, 15, 15, 0.06),
-    0 16px 32px rgba(15, 15, 15, 0.1),
-    0 36px 64px rgba(15, 15, 15, 0.09);
-  --depth-shadow-gold: 0 8px 20px rgba(223, 175, 53, 0.32), 0 2px 6px rgba(223, 175, 53, 0.24);
-  --depth-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-  --depth-t: 0.32s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
 
 /* ------------------------------------------------------- popular services */
 
-.page-home .service-tile {
+.service-tile {
   background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border-color: rgba(15, 15, 15, 0.06);
-  box-shadow: var(--depth-inset-top), var(--depth-shadow-sm);
-  transition: transform var(--depth-t), box-shadow var(--depth-t), border-color var(--depth-t);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
-.page-home .service-tile:hover,
-.page-home .service-tile:focus-visible {
+.service-tile:hover,
+.service-tile:focus-visible {
   transform: translateY(-8px) scale(1.015);
-  box-shadow: var(--depth-inset-top), var(--depth-shadow-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
   border-color: var(--gold-a40);
 }
 
-.page-home .service-tile-photo {
-  box-shadow: var(--depth-shadow-sm);
+.service-tile-photo {
+  box-shadow: var(--shadow-sm);
 }
 
 /* ------------------------------------------------------------------ hero */
 
-.page-home .home-hero-eyebrow {
+.home-hero-eyebrow {
   box-shadow: var(--depth-inset-top), 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
-.page-home .home-search input {
-  box-shadow: var(--depth-inset-top), var(--depth-shadow-lg);
+.home-search input {
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
 }
 
 /* ------------------------------------------------------- consultation cta */
 
-.page-home .consult-banner-cta.btn {
-  box-shadow: var(--depth-inset-top), var(--depth-shadow-gold);
-}
-
-/* -------------------------------------------------------------- why us */
-
-.page-home .wss-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
-  box-shadow: var(--depth-inset-top), var(--depth-shadow-sm);
-  transition: transform var(--depth-t), box-shadow var(--depth-t), border-color var(--depth-t);
-}
-
-.page-home .wss-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--depth-inset-top), var(--depth-shadow-lg);
-}
-
-.page-home .wss-card:not(.is-visible):hover {
-  transform: translateY(22px);
-}
-
-/* The icon becomes a small raised disc — a light gold gradient lit from the
-   top-left, with an inner shadow along its bottom edge to sell the curve. */
-.page-home .wss-icon {
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  color: var(--gold-deep);
-  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
-  box-shadow:
-    var(--depth-inset-top),
-    inset 0 -6px 10px rgba(180, 130, 20, 0.16),
-    var(--depth-shadow-sm);
-}
-
-/* -------------------------------------------------------------- buttons */
-/* Same three variants as buttons.css, restated here as a raised surface:
-   a soft gradient face, an inner top highlight, a deeper hover lift, and a
-   press-down on click instead of the site-wide 1px nudge. */
-
-.page-home .btn-primary {
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
-  box-shadow: var(--depth-inset-top), var(--depth-shadow-gold);
-}
-
-.page-home .btn-primary:hover {
-  background: linear-gradient(180deg, #f5d878 0%, var(--gold-light) 100%);
-  box-shadow: var(--depth-inset-top), 0 12px 26px rgba(223, 175, 53, 0.4), 0 3px 8px rgba(223, 175, 53, 0.3);
-  transform: translateY(-3px);
-}
-
-.page-home .btn-outline {
-  background: var(--white);
-  box-shadow: var(--depth-shadow-sm);
-}
-
-.page-home .btn-outline:hover {
-  background: var(--gold);
-  box-shadow: var(--depth-shadow-md);
-  transform: translateY(-3px);
-}
-
-.page-home .btn-dark {
-  background: linear-gradient(180deg, #262626 0%, var(--black) 100%);
-  box-shadow: var(--depth-shadow-md);
-}
-
-.page-home .btn-dark:hover {
-  box-shadow: var(--depth-shadow-lg);
-  transform: translateY(-3px);
-}
-
-.page-home .btn:active {
-  transform: translateY(0);
-  box-shadow: var(--depth-shadow-sm);
-  transition-duration: 0.08s;
+.consult-banner-cta.btn {
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
