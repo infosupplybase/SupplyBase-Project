@@ -114,7 +114,7 @@
   background: var(--dark-card);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius-xl);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 24px 60px rgba(0, 0, 0, 0.55);
   padding: var(--space-5);
   width: 100%;
   max-width: 460px;
@@ -154,13 +154,14 @@
   border-radius: var(--radius);
   text-align: left;
   transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease),
-              transform var(--t-fast) var(--ease);
+              transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .hero-service:hover {
   border-color: var(--gold);
   background: rgba(255, 255, 255, 0.08);
   transform: translateX(4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .hero-service-icon {
@@ -171,8 +172,9 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: var(--gold-a12);
-  color: var(--gold);
+  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
+  color: var(--gold-deep);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), inset 0 -3px 6px rgba(180, 130, 20, 0.2);
 }
 
 .hero-service-body {
