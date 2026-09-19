@@ -482,6 +482,18 @@ body:has(.wizard-shell) .floating-actions {
   background: var(--gold-a12);
 }
 
+.tile-image.has-image-error::after {
+  content: 'Image unavailable';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 
 /* ========================================================================
    SERVICE NAME AREA

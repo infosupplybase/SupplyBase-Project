@@ -1,178 +1,26 @@
 import Icon from '../ui/Icon';
 
-/**
- * ============================================================
- * WATERPROOFING SERVICE IMAGES
- * ============================================================
- */
-const waterproofingImages = {
-  'Terrace Waterproofing':
-    '/assets/waterproofing/Terrace.png',
+import {
+  waterproofingImages,
+  propertyImages,
+  problemImages,
+  problemLocationImages,
+} from '../../data/waterproofingImages';
 
-  'Bathroom Waterproofing':
-    '/assets/waterproofing/bathroom.png',
+import {
+  popHomeTypeImages,
+  popRoomTypeImages,
+  popDesignStyleImages,
+  popAddonImages,
+  popCeilingImages,
+} from '../../data/popCeilingImages';
 
-  'Toilet Waterproofing':
-    '/assets/waterproofing/toilet.png',
-
-  'Balcony Waterproofing':
-    '/assets/waterproofing/balcony.png',
-
-  'Kitchen Waterproofing':
-    '/assets/waterproofing/kitchen.png',
-
-  'Basement Waterproofing':
-    '/assets/waterproofing/basement.png',
-
-  'Podium Waterproofing':
-    '/assets/waterproofing/podium.png',
-
-  'Wall Waterproofing':
-    '/assets/waterproofing/wall.png',
-
-  'External Waterproofing':
-    '/assets/waterproofing/external.png',
-
-  'Water Tank Waterproofing':
-    '/assets/waterproofing/watertank.png',
-
-  'Bathroom Wall Waterproofing':
-    '/assets/waterproofing/bathroom.png',
-
-  'Bathroom Corner & Joint Sealing':
-    '/assets/waterproofing/bathroom joint.png',
-
-  'Bathroom Shower Area Waterproofing':
-    '/assets/waterproofing/Shower.png',
-
-  'Bathroom Pipeline & Fixture Sealing':
-    '/assets/waterproofing/Pipeline.png',
-
-  'Bathroom Tile Re-sealing':
-    '/assets/waterproofing/Re-sealing.png',
-};
-
-/**
- * ============================================================
- * PROPERTY TYPE IMAGES
- * ============================================================
- */
-const propertyImages = {
-  '1 BHK':
-    '/assets/waterproofing/hero/one.png',
-
-  '2 BHK':
-    '/assets/waterproofing/hero/two.png',
-
-  '3 BHK':
-    '/assets/waterproofing/hero/three.png',
-
-  '4 BHK+':
-    '/assets/waterproofing/hero/modern-house.jpg',
-
-  'Villa / Bungalow':
-    '/assets/waterproofing/hero/Villa.png',
-
-  'Office':
-    '/assets/waterproofing/hero/office.png',
-
-  'Shop':
-    '/assets/waterproofing/hero/shop.png',
-
-  'Commercial':
-    '/assets/waterproofing/hero/commercial.png',
-
-  'Building / Society':
-    '/assets/waterproofing/hero/building.png',
-
-  'Other':
-    '/assets/waterproofing/hero/other.png',
-};
-
-/**
- * ============================================================
- * WATERPROOFING PROBLEM TYPE IMAGES
- * ============================================================
- */
-const problemImages = {
-  'Water leakage':
-    '/assets/waterproofing/hero/water-leakage.png',
-
-  'Dampness':
-    '/assets/waterproofing/hero/Dampness.png',
-
-  'Seepage':
-    '/assets/waterproofing/hero/Seepage.png',
-
-  'Cracks':
-    '/assets/waterproofing/hero/Cracks.png',
-
-  'Water coming through ceiling':
-    '/assets/waterproofing/hero/WaterLeakage.png',
-
-  'Water coming through wall':
-    '/assets/waterproofing/hero/wall-Leakage.png',
-
-  'Bathroom leakage':
-    '/assets/waterproofing/hero/Bathroom.png',
-
-  'Terrace leakage':
-    '/assets/waterproofing/hero/Terrace-leakage.png',
-
-  'Preventive waterproofing':
-    '/assets/waterproofing/hero/Preventive-waterproofing.png',
-
-  'Not sure':
-    '/assets/waterproofing/hero/notsure.png',
-};
-
-/**
- * ============================================================
- * WATERPROOFING PROBLEM LOCATION IMAGES
- * ============================================================
- */
-const problemLocationImages = {
-  Terrace:
-    '/assets/waterproofing/hero/terrace.png',
-
-  Bathroom:
-    '/assets/waterproofing/hero/bath.png',
-
-  Toilet:
-    '/assets/waterproofing/hero/toilet.png',
-
-  Balcony:
-    '/assets/waterproofing/hero/balcony.png',
-
-  Kitchen:
-    '/assets/waterproofing/hero/kitchen.png',
-
-  Basement:
-    '/assets/waterproofing/hero/basement.png',
-
-  Wall:
-    '/assets/waterproofing/hero/wall.png',
-
-  Podium:
-    '/assets/waterproofing/podium.png',
-
-  'External area':
-    '/assets/waterproofing/hero/area.png',
-
-  Other:
-    '/assets/waterproofing/hero/other1.png',
-};
-
-/**
- * ============================================================
- * QUESTION FIELD
- * ============================================================
- */
 export default function QuestionField({
   question,
   value,
   onChange,
   error,
+  serviceSlug,
 }) {
   const {
     key,
@@ -185,18 +33,17 @@ export default function QuestionField({
   const isMulti = inputType === 'MULTI';
 
   /**
-   * Convert current value into an array.
-   * Used for tile/check selections.
+   * ==========================================================
+   * SELECTED VALUES
+   * ==========================================================
    */
+
   const selected = Array.isArray(value)
     ? value
     : value
       ? [value]
       : [];
 
-  /**
-   * Check whether an option is selected.
-   */
   const isChosen = (optionValue) =>
     selected.includes(optionValue);
 
@@ -205,10 +52,8 @@ export default function QuestionField({
    * TOGGLE / SELECT OPTION
    * ==========================================================
    */
+
   const toggle = (optionValue) => {
-    /**
-     * MULTI selection
-     */
     if (isMulti) {
       onChange((prev) => {
         const list = Array.isArray(prev)
@@ -223,18 +68,12 @@ export default function QuestionField({
           );
         }
 
-        return [
-          ...list,
-          optionValue,
-        ];
+        return [...list, optionValue];
       });
 
       return;
     }
 
-    /**
-     * SINGLE selection
-     */
     onChange(optionValue);
   };
 
@@ -243,6 +82,7 @@ export default function QuestionField({
    * GROUP OPTIONS
    * ==========================================================
    */
+
   const groups = [];
 
   (options || []).forEach((option) => {
@@ -266,49 +106,157 @@ export default function QuestionField({
 
   /**
    * ==========================================================
-   * GET OPTION IMAGE
+   * HELPER
    * ==========================================================
+   *
+   * Try both option.value and option.label.
+   * This is important because catalogue values can be different
+   * from the displayed labels.
    */
-  const getOptionImage = (option) => {
-    if (key === 'property_type') {
-      return (
-        propertyImages[option.label] ||
-        propertyImages[option.value]
-      );
-    }
 
-    if (key === 'problem_type') {
-      return (
-        problemImages[option.label] ||
-        problemImages[option.value]
-      );
-    }
-
-    if (key === 'problem_location') {
-      return (
-        problemLocationImages[option.label] ||
-        problemLocationImages[option.value]
-      );
+  const findImage = (imageMap, option) => {
+    if (!imageMap || !option) {
+      return undefined;
     }
 
     return (
-      waterproofingImages[option.label] ||
-      waterproofingImages[option.value]
+      imageMap[option.value] ||
+      imageMap[option.label]
     );
   };
 
   /**
    * ==========================================================
-   * CHECK WHETHER QUESTION USES SIMPLE RADIO STYLE
+   * GET OPTION IMAGE
    * ==========================================================
-   *
-   * Only these two questions use simple radio buttons:
-   *
-   * 1. previous_waterproofing
-   * 2. previous_when
-   *
-   * Everything else keeps the tile/card UI.
    */
+
+  const getOptionImage = (option) => {
+    /**
+     * ========================================================
+     * WATERPROOFING
+     * ========================================================
+     */
+
+    if (
+      serviceSlug === 'waterproofing' ||
+      serviceSlug === 'water-proofing'
+    ) {
+      if (key === 'property_type') {
+        return findImage(
+          propertyImages,
+          option
+        );
+      }
+
+      if (key === 'problem_type') {
+        return findImage(
+          problemImages,
+          option
+        );
+      }
+
+      if (key === 'problem_location') {
+        return findImage(
+          problemLocationImages,
+          option
+        );
+      }
+
+      return findImage(
+        waterproofingImages,
+        option
+      );
+    }
+
+    /**
+     * ========================================================
+     * POP CEILING & DESIGN
+     * ========================================================
+     */
+
+    if (
+      serviceSlug === 'pop-ceiling-design' ||
+      serviceSlug === 'pop_ceiling_design' ||
+      serviceSlug === 'pop-false-ceiling'
+    ) {
+      /**
+       * POP HOME TYPE
+       */
+
+      if (
+        key === 'pop_home_type' ||
+        key === 'home_type' ||
+        key === 'property_type'
+      ) {
+        return findImage(
+          popHomeTypeImages,
+          option
+        );
+      }
+
+      if (key === 'service_needed') {
+        return findImage(
+          popCeilingImages,
+          option
+        );
+      }
+
+      /**
+       * POP ROOM TYPE
+       */
+
+      if (
+        key === 'pop_room_type' ||
+        key === 'room_type' ||
+        key === 'rooms'
+      ) {
+        return findImage(
+          popRoomTypeImages,
+          option
+        );
+      }
+
+      /**
+       * POP DESIGN STYLE
+       */
+
+      if (
+        key === 'pop_design_style' ||
+        key === 'design_style' ||
+        key === 'pop_home_design_style' ||
+        key === 'pop_room_design_style'
+      ) {
+        return findImage(
+          popDesignStyleImages,
+          option
+        );
+      }
+
+      /**
+       * POP ADD-ON
+       */
+
+      if (
+        key === 'pop_addon' ||
+        key === 'addon'
+      ) {
+        return findImage(
+          popAddonImages,
+          option
+        );
+      }
+    }
+
+    return undefined;
+  };
+
+  /**
+   * ==========================================================
+   * SIMPLE RADIO QUESTIONS
+   * ==========================================================
+   */
+
   const isSimpleRadioQuestion =
     key === 'previous_waterproofing' ||
     key === 'previous_when';
@@ -318,12 +266,9 @@ export default function QuestionField({
    * RENDER
    * ==========================================================
    */
+
   return (
     <fieldset className="question">
-
-      {/* ======================================================
-          QUESTION HEADER
-      ====================================================== */}
 
       <legend className="sr-only">
         {text}
@@ -358,10 +303,6 @@ export default function QuestionField({
             key={`${group.name || 'ungrouped'}-${groupIndex}`}
             className="choice-group"
           >
-
-            {/* ==================================================
-                GROUP TITLE
-            ================================================== */}
 
             {group.name && (
               <p className="choice-group-title">
@@ -424,8 +365,7 @@ export default function QuestionField({
             ) : (
 
               /* ==================================================
-                 ALL OTHER QUESTIONS
-                 KEEP EXISTING TILE DESIGN
+                 TILE / CARD OPTIONS
               ================================================== */
 
               <div className="tile-grid">
@@ -450,9 +390,7 @@ export default function QuestionField({
                         }`}
                       >
 
-                        {/* ==================================================
-                            RADIO / CHECKBOX
-                        ================================================== */}
+                        {/* RADIO / CHECKBOX */}
 
                         <input
                           type={
@@ -472,9 +410,7 @@ export default function QuestionField({
                           }
                         />
 
-                        {/* ==================================================
-                            IMAGE
-                        ================================================== */}
+                        {/* IMAGE */}
 
                         <span
                           className="tile-image"
@@ -486,7 +422,20 @@ export default function QuestionField({
                             <img
                               src={image}
                               alt=""
-                              loading="lazy"
+                              loading="eager"
+                              decoding="async"
+                              onError={(e) => {
+                                console.error(
+                                  'POP/WATERPROOFING IMAGE NOT FOUND:',
+                                  image
+                                );
+
+                                e.currentTarget.style.display =
+                                  'none';
+                                e.currentTarget.parentElement.classList.add(
+                                  'has-image-error'
+                                );
+                              }}
                             />
 
                           ) : (
@@ -508,9 +457,7 @@ export default function QuestionField({
 
                         </span>
 
-                        {/* ==================================================
-                            TEXT
-                        ================================================== */}
+                        {/* TEXT */}
 
                         <span className="tile-body">
 
@@ -526,9 +473,7 @@ export default function QuestionField({
 
                         </span>
 
-                        {/* ==================================================
-                            CHECK ICON
-                        ================================================== */}
+                        {/* CHECK ICON */}
 
                         <span
                           className="tile-check"
@@ -600,7 +545,8 @@ export default function QuestionField({
 
       {/* ======================================================
           ERROR
-      ====================================================== */}
+      ======================================================
+      */}
 
       {error && (
         <span className="field-error">
