@@ -1,16 +1,6 @@
 import Icon from '../ui/Icon';
 
 import {
-  electricianImages,
-  electricianPropertyImages,
-  electricianLocationImages,
-  electricianIssueImages,
-  electricianLoadImages,
-  electricianUrgencyImages,
-  electricianRequirementImages,
-} from '../../data/electricianImages';
-
-import {
   waterproofingImages,
   propertyImages,
   problemImages,
@@ -24,6 +14,16 @@ import {
   popAddonImages,
   popCeilingImages,
 } from '../../data/popCeilingImages';
+
+import {
+  electricianImages,
+  electricianPropertyImages,
+  electricianLocationImages,
+  electricianIssueImages,
+  electricianLoadImages,
+  electricianUrgencyImages,
+  electricianRequirementImages,
+} from '../../data/electricianImages';
 
 export default function QuestionField({
   question,
@@ -258,64 +258,66 @@ export default function QuestionField({
       }
     }
 
-// ========================================================
-// ELECTRICIAN
-// ========================================================
+    /**
+     * ========================================================
+     * ELECTRICIAN
+     * ========================================================
+     */
 
-if (
-  serviceSlug === 'electrician' ||
-  serviceSlug === 'electrical-services' ||
-  serviceSlug === 'electrical'
-) {
-  if (key === 'service_needed') {
-    return findImage(
-      electricianImages,
-      option
-    );
-  }
+    if (
+      serviceSlug === 'electrician' ||
+      serviceSlug === 'electrical-services' ||
+      serviceSlug === 'electrical'
+    ) {
+      if (key === 'service_needed') {
+        return findImage(
+          electricianImages,
+          option
+        );
+      }
 
-  if (key === 'property_type') {
-    return findImage(
-      electricianPropertyImages,
-      option
-    );
-  }
+      if (key === 'property_type') {
+        return findImage(
+          electricianPropertyImages,
+          option
+        );
+      }
 
-  if (key === 'service_location') {
-    return findImage(
-      electricianLocationImages,
-      option
-    );
-  }
+      if (key === 'service_location') {
+        return findImage(
+          electricianLocationImages,
+          option
+        );
+      }
 
-  if (key === 'current_issue') {
-    return findImage(
-      electricianIssueImages,
-      option
-    );
-  }
+      if (key === 'current_issue') {
+        return findImage(
+          electricianIssueImages,
+          option
+        );
+      }
 
-  if (key === 'load_requirement') {
-    return findImage(
-      electricianLoadImages,
-      option
-    );
-  }
+      if (key === 'load_requirement') {
+        return findImage(
+          electricianLoadImages,
+          option
+        );
+      }
 
-  if (key === 'urgency') {
-    return findImage(
-      electricianUrgencyImages,
-      option
-    );
-  }
+      if (key === 'urgency') {
+        return findImage(
+          electricianUrgencyImages,
+          option
+        );
+      }
 
-  if (key === 'requirement_type') {
-    return findImage(
-      electricianRequirementImages,
-      option
-    );
-  }
-}
+      if (key === 'requirement_type') {
+        return findImage(
+          electricianRequirementImages,
+          option
+        );
+      }
+    }
 
     return undefined;
   };
@@ -329,10 +331,6 @@ if (
   const isSimpleRadioQuestion =
     key === 'previous_waterproofing' ||
     key === 'previous_when';
-
-
-
-    
 
   /**
    * ==========================================================

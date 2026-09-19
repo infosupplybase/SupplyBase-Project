@@ -43,7 +43,7 @@ export const electricianImages = {
     '/assets/services/electrician/inverter-ups-connection.jpeg',
 
   'Kitchen Electrical Installation':
-    '/assets/services/electrician/kitchen.jpeg',
+    '/assets/services/electrician/location-kitchen.jpeg',
 
   'Bedroom Electrical Installation':
     '/assets/services/electrician/bedroom.jpeg',
