@@ -1,0 +1,7 @@
+ALTER TABLE users
+    ADD COLUMN gender VARCHAR(20) NULL,
+    ADD COLUMN address_line_1 VARCHAR(200) NULL,
+    ADD COLUMN address_line_2 VARCHAR(200) NULL,
+    ADD COLUMN city VARCHAR(100) NULL,
+    ADD COLUMN pin_code VARCHAR(6) NULL,
+    ADD COLUMN landmark VARCHAR(150) NULL;

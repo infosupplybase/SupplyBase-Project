@@ -25,7 +25,16 @@ export default function Profile() {
   const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ fullName: user?.fullName || '', phone: user?.phone || '' });
+  const [form, setForm] = useState({
+    fullName: user?.fullName || '',
+    phone: user?.phone || '',
+    gender: user?.gender || '',
+    addressLine1: user?.addressLine1 || '',
+    addressLine2: user?.addressLine2 || '',
+    city: user?.city || '',
+    pinCode: user?.pinCode || '',
+    landmark: user?.landmark || '',
+  });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
@@ -45,15 +54,36 @@ export default function Profile() {
     setSaveError('');
 
     const nextErrors = {};
-    if (!form.fullName.trim()) nextErrors.fullName = 'Please enter your name';
-    if (!form.phone.trim()) nextErrors.phone = 'Please enter your phone number';
-    else if (!isValidPhone(form.phone)) nextErrors.phone = 'Enter a 10-digit mobile number';
+
+    if (!form.fullName.trim()) {
+      nextErrors.fullName = 'Please enter your name';
+    }
+
+    if (!form.phone.trim()) {
+      nextErrors.phone = 'Please enter your phone number';
+    } else if (!isValidPhone(form.phone)) {
+      nextErrors.phone = 'Enter a 10-digit mobile number';
+    }
+
+    if (!form.addressLine1.trim()) {
+      nextErrors.addressLine1 = 'Please enter your address';
+    }
+
+    if (!form.city.trim()) {
+      nextErrors.city = 'Please enter your city';
+    }
+
+    if (!form.pinCode.trim()) {
+      nextErrors.pinCode = 'Please enter your PIN code';
+    } else if (!/^\d{6}$/.test(form.pinCode.trim())) {
+      nextErrors.pinCode = 'Enter a valid 6-digit PIN code';
+    }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     setSaving(true);
     try {
-      await api.updateProfile(form.fullName, form.phone.trim());
+      await api.updateProfile(form);
       await refreshUser();
       setSaveMessage('Your profile has been updated.');
     } catch (err) {
@@ -135,6 +165,92 @@ export default function Profile() {
                   </div>
 
                   <div className="field">
+                    <label htmlFor="p-gender">Gender</label>
+                    <select
+                      id="p-gender"
+                      value={form.gender}
+                      onChange={update('gender')}
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+
+                  <div className={`field full ${errors.addressLine1 ? 'error' : ''}`}>
+                    <label htmlFor="p-address-line1">
+                      Address Line 1 <span className="req">*</span>
+                    </label>
+                    <input
+                      id="p-address-line1"
+                      type="text"
+                      placeholder="Building / House No. and Street Name"
+                      value={form.addressLine1}
+                      onChange={update('addressLine1')}
+                    />
+                    {errors.addressLine1 && (
+                      <span className="field-error">{errors.addressLine1}</span>
+                    )}
+                  </div>
+
+                  <div className="field full">
+                    <label htmlFor="p-address-line2">Address Line 2</label>
+                    <input
+                      id="p-address-line2"
+                      type="text"
+                      placeholder="Apartment, Suite or Unit Number"
+                      value={form.addressLine2}
+                      onChange={update('addressLine2')}
+                    />
+                  </div>
+
+                  <div className={`field ${errors.city ? 'error' : ''}`}>
+                    <label htmlFor="p-city">
+                      City <span className="req">*</span>
+                    </label>
+                    <input
+                      id="p-city"
+                      type="text"
+                      placeholder="Enter City"
+                      value={form.city}
+                      onChange={update('city')}
+                    />
+                    {errors.city && (
+                      <span className="field-error">{errors.city}</span>
+                    )}
+                  </div>
+
+                  <div className={`field ${errors.pinCode ? 'error' : ''}`}>
+                    <label htmlFor="p-pin">
+                      PIN Code <span className="req">*</span>
+                    </label>
+                    <input
+                      id="p-pin"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="Enter 6-digit PIN Code"
+                      value={form.pinCode}
+                      onChange={update('pinCode')}
+                    />
+                    {errors.pinCode && (
+                      <span className="field-error">{errors.pinCode}</span>
+                    )}
+                  </div>
+
+                  <div className="field full">
+                    <label htmlFor="p-landmark">Landmark (Optional)</label>
+                    <input
+                      id="p-landmark"
+                      type="text"
+                      placeholder="Nearby landmark"
+                      value={form.landmark}
+                      onChange={update('landmark')}
+                    />
+                  </div>
+
+                  <div className="field">
                     <label htmlFor="p-email">Email</label>
                     <input id="p-email" type="email" value={user.email} disabled />
                     <span className="field-hint">Email cannot be changed here — contact us if it needs to change.</span>
@@ -198,9 +314,9 @@ export default function Profile() {
                   </div>
                 )}
 
-                <button type="button" className="btn btn-outline btn-block" onClick={handleLogout}>
+                <button type="button" className="btn btn-outline btn-block !mt-6 !w-auto sm:!px-8" onClick={handleLogout}>
                   <Icon name="lock" size={16} />
-                  SIGN OUT
+                  LOG OUT
                 </button>
               </Reveal>
             </div>

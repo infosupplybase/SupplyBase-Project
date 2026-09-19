@@ -183,8 +183,21 @@ export const api = {
   me: () => request('/api/auth/me'),
 
   /** Self-service — name and phone only. */
-  updateProfile: (fullName, phone) =>
-    request('/api/auth/me', { method: 'PATCH', body: { fullName: fullName.trim(), phone } }),
+  /** Self-service profile update. */
+updateProfile: (profile) =>
+  request('/api/auth/me', {
+    method: 'PATCH',
+    body: {
+      fullName: profile.fullName.trim(),
+      phone: profile.phone.trim(),
+      gender: profile.gender,
+      addressLine1: profile.addressLine1.trim(),
+      addressLine2: profile.addressLine2.trim(),
+      city: profile.city.trim(),
+      pinCode: profile.pinCode.trim(),
+      landmark: profile.landmark.trim(),
+    },
+  }),
 
   /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
   forgotPassword: (identifier) =>
