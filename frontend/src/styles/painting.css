@@ -1336,3 +1336,49 @@
     align-self: center;
   }
 }
+
+/* =========================================================
+   Painting modal — progress indicator colours
+   ========================================================= */
+
+.painting-modal-scope .pnt-step-num {
+  background: #000000;
+  color: #f1f1f3;
+  border: 1px solid #d1d5db;
+}
+
+.painting-modal-scope .pnt-step-line {
+  background: #000000;
+}
+
+.painting-modal-scope .pnt-step.current .pnt-step-num {
+  background: var(--gold);
+  color: var(--on-gold);
+  border-color: var(--gold);
+}
+
+.painting-modal-scope .pnt-step.done .pnt-step-num {
+  background: var(--gold);
+  color: var(--on-gold);
+  border-color: var(--gold);
+}
+
+.painting-modal-scope .pnt-step.done .pnt-step-line {
+  background: var(--gold);
+}
+
+/* =========================================================
+   Painting modal — top heading and help link colours
+   ========================================================= */
+
+.painting-modal-scope .pnt-top-title {
+  color: var(--ink) !important;
+}
+
+.painting-modal-scope .pnt-help {
+  color: var(--ink-muted) !important;
+}
+
+.painting-modal-scope .pnt-help:hover {
+  color: var(--gold-deep) !important;
+}
