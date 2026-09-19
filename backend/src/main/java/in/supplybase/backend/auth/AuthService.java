@@ -253,20 +253,29 @@ public class AuthService {
                 .orElseThrow(() -> ApiException.notFound("That account"));
     }
 
-    /** Self-service edit — name and phone only. See {@link UpdateProfileRequest}. */
-    @Transactional
-    public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
-        User user = users.findById(userId).orElseThrow(() -> ApiException.notFound("That account"));
+    /** Self-service edit — name, phone, gender, address. See {@link UpdateProfileRequest}. */
+    /** Self-service profile edit. See {@link UpdateProfileRequest}. */
+@Transactional
+public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+    User user = users.findById(userId)
+            .orElseThrow(() -> ApiException.notFound("That account"));
 
-        String phone = PhoneNumbers.normalise(request.phone());
-        if (phone != null && !phone.equals(user.getPhone()) && users.existsByPhone(phone)) {
-            throw ApiException.conflict("Another account already uses that phone number.");
-        }
-
-        user.setFullName(request.fullName().trim());
-        user.setPhone(phone);
-        return UserResponse.from(users.save(user));
+    String phone = PhoneNumbers.normalise(request.phone());
+    if (phone != null && !phone.equals(user.getPhone()) && users.existsByPhone(phone)) {
+        throw ApiException.conflict("Another account already uses that phone number.");
     }
+
+    user.setFullName(request.fullName().trim());
+    user.setPhone(phone);
+    user.setGender(blankToNull(request.gender()));
+    user.setAddressLine1(request.addressLine1().trim());
+    user.setAddressLine2(blankToNull(request.addressLine2()));
+    user.setCity(request.city().trim());
+    user.setPinCode(request.pinCode().trim());
+    user.setLandmark(blankToNull(request.landmark()));
+
+    return UserResponse.from(users.save(user));
+}
 
     /* ---------------------------------------------------------- password reset */
 
