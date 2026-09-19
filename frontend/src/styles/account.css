@@ -55,8 +55,9 @@
   text-align: center;
   gap: 10px;
   padding: var(--space-7) var(--space-4);
-  background: var(--light-bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .acct-empty svg {
@@ -83,17 +84,18 @@
 }
 
 .acct-booking-card {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: var(--space-4) var(--space-5);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  transition: box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .acct-booking-card:hover {
-  box-shadow: var(--shadow);
+  box-shadow: var(--depth-inset-top), var(--shadow);
   border-color: var(--gold-a40);
+  transform: translateY(-4px);
 }
 
 .acct-booking-top {
@@ -147,6 +149,7 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -177,9 +180,10 @@
 /* ------------------------------------------------------- profile / security */
 
 .acct-security-card {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: var(--space-4) var(--space-5);
   margin-top: var(--space-4);
 }
