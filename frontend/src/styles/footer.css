@@ -307,11 +307,14 @@
 
   text-decoration: none;
 
+  box-shadow: var(--shadow-sm);
+
   transition:
     border-color 0.2s ease,
     color 0.2s ease,
     background 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .ft-social a:hover {
@@ -322,6 +325,8 @@
   color: #000000;
 
   transform: translateY(-2px);
+
+  box-shadow: var(--shadow);
 }
 
 

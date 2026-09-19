@@ -34,14 +34,18 @@
   transform: translateX(3px);
 }
 
-/* A 1px lift, not a jump. Enough to feel responsive, small enough that a
-   grid of cards does not appear to twitch. */
+/* A firmer lift than a grid of cards gets — a button is meant to look
+   pressable, raised clear of the page, not just nudged. */
 .btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-3px);
 }
 
+/* Sinks back down and loses most of its shadow on click, like a real key
+   being pressed rather than just released. */
 .btn:active {
   transform: translateY(0);
+  box-shadow: var(--shadow-sm) !important;
+  transition-duration: 0.08s;
 }
 
 .btn:disabled,
@@ -54,27 +58,30 @@
 /* ----------------------------------------------------------- variants */
 
 .btn-primary {
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
   border-color: var(--gold);
   font-weight: 700;
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 .btn-primary:hover {
-  background: var(--gold-light);
+  background: linear-gradient(180deg, #f5d878 0%, var(--gold-light) 100%);
   border-color: var(--gold-light);
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 .btn-outline {
   background: transparent;
   color: var(--gold-deep);
   border-color: var(--gold);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-outline:hover {
   background: var(--gold);
   color: var(--on-gold);
+  box-shadow: var(--shadow);
 }
 
 /* On a dark ground the outline button needs full-strength gold, not the
@@ -86,13 +93,14 @@
 }
 
 .btn-dark {
-  background: var(--black);
+  background: linear-gradient(180deg, #2a2a2a 0%, var(--black) 100%);
   color: var(--white);
   border-color: var(--black);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-dark:hover {
-  background: var(--dark-card);
+  background: linear-gradient(180deg, #333333 0%, var(--dark-card) 100%);
   box-shadow: var(--shadow);
 }
 
@@ -100,22 +108,25 @@
   background: var(--white);
   color: var(--gold-deep);
   border-color: var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-ghost:hover {
   border-color: var(--gold);
   background: var(--gold-a08);
+  box-shadow: var(--shadow);
 }
 
 .btn-whatsapp {
-  background: var(--whatsapp);
+  background: linear-gradient(180deg, #34e57a 0%, var(--whatsapp) 100%);
   color: #06301a;
   border-color: var(--whatsapp);
   font-weight: 700;
+  box-shadow: var(--depth-inset-top), 0 8px 20px rgba(37, 211, 102, 0.32), 0 2px 6px rgba(37, 211, 102, 0.24);
 }
 
 .btn-whatsapp:hover {
-  background: #34e57a;
+  background: linear-gradient(180deg, #4fef8f 0%, #34e57a 100%);
   border-color: #34e57a;
 }
 
