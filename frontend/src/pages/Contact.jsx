@@ -12,7 +12,7 @@ export default function Contact() {
     <PageHero
   eyebrow="CONTACT US"
   title="LET'S DISCUSS YOUR PROJECT"
-  image="/assets/projects/office-fitout.svg"
+  image="/assets/hero-contact.png"
   breadcrumbs={[{ label: 'Contact Us' }]}
   className="contact-page-hero"
 />

@@ -999,69 +999,71 @@
 }
 
 
-/* ===== PAGE HERO HEIGHT FIX ===== */
+/* ===== PAGE HERO — TALLER, REPOSITIONED (DESKTOP/TABLET ONLY) =====
+   Scoped to min-width: 721px, matching the mobile breakpoint in
+   pages.css — this block used to apply at every width with !important,
+   which silenced that file's own mobile .page-hero-inner rules and
+   pushed the "WHAT WE DO" box off the left edge of narrow screens
+   (left: 33% + translateX(-50%) only makes sense against a wide box). */
 
-/* ===== PAGE HERO ===== */
+@media (min-width: 721px) {
+  .page-hero {
+    position: relative;
+    height: 520px;
+    min-height: 520px;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
 
-/* ===== PAGE HERO ===== */
+  /* Background image */
+  .page-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+  }
 
-.page-hero {
-  position: relative;
-  height: 520px !important;
-  min-height: 520px !important;
-  padding: 0 !important;
-  overflow: hidden;
-  box-sizing: border-box;
-}
+  .page-hero-bg img {
+    width: 100%;
+    height: 100%;
+    display: block;
 
-/* Background image */
-.page-hero-bg {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  overflow: hidden;
-  z-index: 0;
-}
+    object-fit: cover;
 
-.page-hero-bg img {
-  width: 100% !important;
-  height: 100% !important;
-  display: block !important;
+    /* TOP PART OF IMAGE WILL STAY VISIBLE */
+    object-position: center 28%;
 
-  object-fit: cover !important;
+    opacity: 0.60;
+  }
 
-  /* TOP PART OF IMAGE WILL STAY VISIBLE */
-  object-position: center 28% !important;
+  /* Moves the "WHAT WE DO" box down and left-of-center over the photo */
+  .page-hero-inner {
+    position: absolute;
 
-  opacity: 0.55;
-}
+    left: 33%;
+    bottom: 45px;
 
-/* ===== MOVE WHAT WE DO BOX DOWN ===== */
+    transform: translateX(-50%);
 
-.page-hero-inner {
-  position: absolute !important;
+    z-index: 2;
 
-  left: 33% !important;
-  bottom: 45px !important;
+    width: min(780px, calc(100% - 40px));
+    max-width: 780px;
 
-  transform: translateX(-50%) !important;
+    padding: 30px;
 
-  z-index: 2;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 
-  width: min(780px, calc(100% - 40px));
-  max-width: 780px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 18px;
 
-  padding: 30px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 18px;
-
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-
-  box-sizing: border-box;
+    box-sizing: border-box;
+  }
 }
