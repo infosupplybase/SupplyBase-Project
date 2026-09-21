@@ -256,6 +256,21 @@ updateProfile: (profile) =>
 
   /** One booking in full, including the real answers given in the wizard. */
   booking: (id) => request(`/api/bookings/${id}`),
+
+  /** A customer editing their own booking's contact details or address. */
+  updateBooking: (id, details) =>
+    request(`/api/bookings/${id}`, {
+      method: 'PATCH',
+      body: {
+        name: details.name.trim(),
+        phone: details.phone.trim(),
+        whatsapp: details.whatsapp.trim(),
+        email: details.email.trim(),
+        address: details.address.trim(),
+        city: details.city.trim(),
+        pincode: details.pincode.trim(),
+      },
+    }),
 };
 
 export default api;

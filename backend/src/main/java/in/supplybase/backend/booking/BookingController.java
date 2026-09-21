@@ -31,6 +31,7 @@ import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -77,6 +78,17 @@ public class BookingController {
     @GetMapping("/api/bookings/{id}")
     public BookingResponse get(@PathVariable Long id) {
         return service.get(id, currentUser.require());
+    }
+
+    /**
+     * A customer editing their own booking's contact details or address —
+     * not the service items, which are locked in at booking time. Same
+     * owner-or-staff check as get() (see BookingService.checkAccess).
+     */
+    @PatchMapping("/api/bookings/{id}")
+    public BookingResponse updateMine(@PathVariable Long id,
+            @Valid @RequestBody UpdateMyBookingRequest request) {
+        return service.updateMine(id, request, currentUser.require());
     }
 
     @GetMapping("/api/bookings/{id}/files")

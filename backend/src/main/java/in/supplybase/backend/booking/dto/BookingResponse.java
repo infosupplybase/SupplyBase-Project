@@ -17,7 +17,7 @@ public record BookingResponse(
         MaterialSupplier materialSupplier, String budgetRange,
         LocalDate preferredDate, String preferredSlot,
         String name, String phone, String whatsapp, String email,
-        String address, String location,
+        String address, String location, String pincode,
         boolean attachmentsPending, String adminNotes, Instant createdAt,
         Long assignedProfessionalId, String assignedProfessionalName, String assignedProfessionalPhone,
         // Empty for the /mine list (no reason to pay for the extra query for
@@ -43,7 +43,7 @@ public record BookingResponse(
                 b.getPreferredDate(),
                 b.getPreferredSlot() == null ? null : b.getPreferredSlot().label(),
                 b.getName(), b.getPhone(), b.getWhatsapp(), b.getEmail(),
-                b.getAddress(), b.getLocation(),
+                b.getAddress(), b.getLocation(), b.getPincode(),
                 b.isAttachmentsPending(), b.getAdminNotes(), b.getCreatedAt(),
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getId(),
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getFullName(),

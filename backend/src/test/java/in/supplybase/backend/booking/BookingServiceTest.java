@@ -45,6 +45,7 @@ import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import in.supplybase.backend.catalogue.CatalogueService;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceOption;
@@ -695,6 +696,94 @@ class BookingServiceTest {
             assertThat(response.answers()).hasSize(1);
             assertThat(response.answers().get(0).questionText()).isEqualTo("What do you need?");
             assertThat(response.answers().get(0).answerLabel()).isEqualTo("Leak Repair");
+        }
+    }
+
+    @Nested
+    @DisplayName("updateMine")
+    class UpdateMine {
+
+        private final AuthenticatedUser admin = new AuthenticatedUser(1L, "admin@supplybase.in", Role.ADMIN);
+        private final AuthenticatedUser owner = new AuthenticatedUser(7L, "owner@example.com", Role.CUSTOMER);
+        private final AuthenticatedUser stranger = new AuthenticatedUser(8L, "stranger@example.com", Role.CUSTOMER);
+
+        private final UpdateMyBookingRequest request = new UpdateMyBookingRequest(
+                "Asha Rao", "+91 98200 11223", null, "asha@example.com",
+                "New House, 2nd Cross", "Pune", "411001");
+
+        @Test
+        void ownerCanEditTheirOwnContactAndAddress() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.PAYMENT_PENDING).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            BookingResponse response = service.updateMine(1L, request, owner);
+
+            assertThat(response.name()).isEqualTo("Asha Rao");
+            assertThat(response.phone()).isEqualTo("9820011223");
+            assertThat(response.whatsapp()).isEqualTo("9820011223");
+            assertThat(response.email()).isEqualTo("asha@example.com");
+            assertThat(response.address()).isEqualTo("New House, 2nd Cross");
+            assertThat(response.location()).isEqualTo("Pune");
+            assertThat(response.pincode()).isEqualTo("411001");
+        }
+
+        @Test
+        void staffCanEditAnyBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.PAYMENT_PENDING).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            assertThat(service.updateMine(1L, request, admin).name()).isEqualTo("Asha Rao");
+        }
+
+        @Test
+        @DisplayName("a stranger gets 404, not 403 — same as get()")
+        void strangerGetsNotFoundNotForbidden() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.PAYMENT_PENDING).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.updateMine(1L, request, stranger))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("a cancelled or completed booking can no longer be edited")
+        void rejectsEditingAFinalBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.CANCELLED).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.updateMine(1L, request, owner))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("an empty whatsapp falls back to the (normalised) phone, like create() does")
+        void blankWhatsappFallsBackToPhone() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.CONFIRMED).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            UpdateMyBookingRequest noWhatsapp = new UpdateMyBookingRequest(
+                    "Asha Rao", "9820011223", "  ", null, "Address", "Pune", null);
+
+            assertThat(service.updateMine(1L, noWhatsapp, owner).whatsapp()).isEqualTo("9820011223");
         }
     }
 }
