@@ -4,6 +4,7 @@ import Icon from '../ui/Icon';
 import {
   company,
   contact,
+  partnersUrl,
   quickLinks,
   social,
 } from '../../data/siteConfig';
@@ -445,19 +446,24 @@ export default function Footer() {
             </button>
 
 
-            <span aria-hidden="true">
-              |
-            </span>
-
-
             {/* For professionals, not customers — kept in the legal strip so it is
-                findable without competing with the customer-facing links above. */}
-            <Link
-              to="/partner/login"
-              className="ft-legal-btn"
-            >
-              Partner Login
-            </Link>
+                findable without competing with the customer-facing links above.
+                It leads to the separate partners app, so it only shows once that
+                app's address is configured (VITE_PARTNERS_URL). */}
+            {partnersUrl && (
+              <>
+                <span aria-hidden="true">
+                  |
+                </span>
+
+                <a
+                  href={`${partnersUrl}/login`}
+                  className="ft-legal-btn"
+                >
+                  Partner Login
+                </a>
+              </>
+            )}
 
           </nav>
 

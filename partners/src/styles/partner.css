@@ -1,9 +1,189 @@
 /* =========================================================================
-   SUPPLYBASE PARTNERS — sign-in, apply, and the partner dashboard
-   The sign-in and apply screens reuse the dark auth card from pages.css; only
-   what that card does not already cover lives here (a select, a few notes).
-   The dashboard reuses the acct-* look from account.css.
+   SUPPLYBASE PARTNERS — app shell, sign-in/apply extras, and the dashboard
+   The sign-in and apply screens use the dark auth card in auth.css; this file
+   holds what that card does not cover (a select, a note), the page shell, and
+   the dashboard itself.
    ========================================================================= */
+
+/* Tokens the copied base styles do not define. */
+:root {
+  --depth-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* ------------------------------------------------------------ page shell */
+
+.partner-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--light-bg);
+}
+
+.partner-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.partner-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 64px;
+}
+
+.partner-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+}
+
+.partner-brand img {
+  height: 38px;
+  width: auto;
+}
+
+.partner-brand span {
+  padding-left: 12px;
+  border-left: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+
+.partner-header-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.partner-header-user strong {
+  color: var(--ink);
+}
+
+/* The brand keeps its size; a long name is what gives way, with an ellipsis. */
+.partner-brand {
+  flex-shrink: 0;
+}
+
+.partner-header-user {
+  min-width: 0;
+}
+
+.partner-header-user > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.partner-header-user .btn {
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .partner-header-inner {
+    gap: 10px;
+  }
+
+  .partner-brand {
+    gap: 8px;
+  }
+
+  .partner-brand img {
+    height: 32px;
+  }
+
+  .partner-brand span {
+    padding-left: 8px;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+  }
+
+  .partner-header-user {
+    gap: 10px;
+  }
+}
+
+.partner-content {
+  flex: 1;
+}
+
+.partner-hero {
+  padding: 34px 0 30px;
+  background: var(--dark);
+  color: var(--white);
+}
+
+.partner-hero-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.partner-hero h1 {
+  margin: 0 0 6px;
+  color: var(--white);
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+}
+
+.partner-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 560px;
+}
+
+.partner-body {
+  padding: 30px 0 56px;
+}
+
+.partner-footer {
+  padding: 18px 0;
+  border-top: 1px solid var(--border);
+  background: var(--white);
+  font-size: 0.84rem;
+  color: var(--ink-muted);
+}
+
+.partner-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 20px;
+}
+
+.partner-footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.partner-loading {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-muted);
+}
+
+.question-hint {
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+}
+
 
 /* ---------------------------------------------------------- auth extras */
 
@@ -261,4 +441,105 @@
     width: 100%;
     justify-content: center;
   }
+}
+
+/* ---------------------------------------------- job cards and status badge */
+
+.partner-job-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.partner-job-number {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold-deep);
+  text-transform: uppercase;
+}
+
+.partner-job-top h3 {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+}
+
+.partner-job-meta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.partner-job-meta li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.87rem;
+  color: var(--ink-soft);
+}
+
+.partner-job-meta svg {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+.partner-status {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.partner-status-accent {
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.partner-status-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.partner-status-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.partner-status-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.partner-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: var(--space-7) var(--space-4);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+}
+
+.partner-empty h3 {
+  margin: 0;
+}
+
+.partner-empty p {
+  color: var(--ink-muted);
+  max-width: 380px;
+  margin: 0 0 6px;
 }

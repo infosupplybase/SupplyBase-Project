@@ -1,29 +1,28 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
-import { company } from '../data/siteConfig';
+import { COMPANY_NAME, SITE_URL } from '../config';
 import { useAuth, friendlyError } from '../context/AuthContext';
 import api from '../lib/api';
 
 /**
- * /partner/login — where SupplyBase's professionals sign in.
+ * /login — where Supplybase's professionals sign in.
  *
  * It is the same account system as the customer login (same API, same
- * tokens); what differs is where it leads. Signing in here always lands on
- * /partner, which shows the right thing for the account: an application
- * that is still being reviewed, a rejection or suspension with its reason,
- * or — once approved — the jobs assigned to them. Being a partner is decided
- * by an admin, never by which login page someone used, so a customer who
- * signs in here simply sees that they have no partner application.
+ * accounts); what differs is where it leads. Signing in always lands on the
+ * dashboard, which shows the right thing for the account: an application that
+ * is still being reviewed, a rejection or suspension with its reason, or —
+ * once approved — the jobs assigned to them. Being a partner is decided by an
+ * admin, never by which login page someone used, so a customer who signs in
+ * here simply sees that they have no partner application.
  *
- * No Google button on purpose: a partner needs a password we can reset, and
- * an approved professional's account should not hang off a personal Google
- * login they might lose.
+ * No Google button on purpose: a partner needs a password we can reset, and an
+ * approved professional's account should not hang off a personal Google login
+ * they might lose.
  */
-export default function PartnerLogin() {
+export default function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -32,14 +31,10 @@ export default function PartnerLogin() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Only ever go back to somewhere inside the partner area.
-  const from = location.state && location.state.from;
-  const goTo = from && from.startsWith('/partner') ? from : '/partner';
-
   // already signed in? go straight through
   useEffect(() => {
-    if (user) navigate(goTo, { replace: true });
-  }, [user, goTo, navigate]);
+    if (user) navigate('/', { replace: true });
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,7 +49,7 @@ export default function PartnerLogin() {
     setBusy(true);
     try {
       await login(identifier, password);
-      navigate(goTo, { replace: true });
+      navigate('/', { replace: true });
     } catch (err) {
       setError(friendlyError(err));
     } finally {
@@ -63,8 +58,8 @@ export default function PartnerLogin() {
   };
 
   /**
-   * The API answers the same whether or not the account exists, so the
-   * message says "if" — it must not confirm that an account is there.
+   * The API answers the same whether or not the account exists, so the message
+   * says "if" — it must not confirm that an account is there.
    */
   const handleForgot = async () => {
     setError('');
@@ -84,39 +79,21 @@ export default function PartnerLogin() {
     }
   };
 
-  const handleClose = () => {
-    if (location.key !== 'default') navigate(-1);
-    else navigate('/');
-  };
-
-  // Escape closes it, like the customer login
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  });
-
   return (
     <div className="auth-screen">
       <div className="auth-glow" aria-hidden="true" />
 
       <div className="auth-card-wrap">
         <div className="auth-card">
-          <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
-            <Icon name="close" size={18} />
-          </button>
-
-          <Link to="/" className="auth-logo">
-            <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
-          </Link>
+          <a href={SITE_URL} className="auth-logo">
+            <img src="/assets/brand/logo.png" alt={`${COMPANY_NAME} logo`} />
+          </a>
 
           <h1 className="auth-heading">
             Partner <span className="auth-accent">Login</span>
           </h1>
           <p className="auth-intro">
-            For SupplyBase professionals. Sign in to check your application and see your jobs.
+            For Supplybase professionals. Sign in to check your application and see your jobs.
           </p>
 
           <form onSubmit={handleSubmit} noValidate className="auth-form">
@@ -197,10 +174,10 @@ export default function PartnerLogin() {
           </form>
 
           <p className="auth-switch">
-            New to SupplyBase Partners? <Link to="/partner/join">Apply to join</Link>
+            New to Supplybase Partners? <Link to="/join">Apply to join</Link>
           </p>
           <p className="auth-switch">
-            Looking to book a service? <Link to="/login">Customer login</Link>
+            Looking to book a service? <a href={`${SITE_URL}/login`}>Customer login</a>
           </p>
         </div>
       </div>
