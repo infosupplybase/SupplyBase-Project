@@ -34,6 +34,7 @@ import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import in.supplybase.backend.catalogue.CatalogueService;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceOption;
@@ -320,6 +321,43 @@ public class BookingService {
                 .map(BookingAnswerResponse::from)
                 .toList();
         return BookingResponse.from(booking, answerResponses);
+    }
+
+    /**
+     * A customer's own edit to their booking — contact details and the visit
+     * address only. The service items and price are locked in at booking
+     * time (see storeAnswers); changing those here would leave a reserved or
+     * paid amount out of sync with the cart, so that stays a "call us" change.
+     *
+     * Same 404-not-403 access check as get(): a booking that isn't the
+     * caller's own does not confirm its existence, let alone let them edit it.
+     */
+    @Transactional
+    public BookingResponse updateMine(Long id, UpdateMyBookingRequest request, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+        if (booking.getStatus().isFinal()) {
+            throw ApiException.badRequest(
+                    "That booking is already " + booking.getStatus().name().toLowerCase()
+                            + " and can no longer be edited.");
+        }
+
+        String phone = PhoneNumbers.normalise(request.phone());
+        booking.setName(request.name().trim());
+        booking.setPhone(phone);
+        booking.setWhatsapp(request.whatsapp() == null || request.whatsapp().isBlank()
+                ? phone : PhoneNumbers.normalise(request.whatsapp()));
+        booking.setEmail(blankToNull(request.email()));
+        booking.setAddress(request.address().trim());
+        booking.setCity(request.city().trim());
+        booking.setPincode(blankToNull(request.pincode()));
+        booking.setLocation(request.city().trim());
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(bookings.save(booking), answerResponses);
     }
 
     @Transactional

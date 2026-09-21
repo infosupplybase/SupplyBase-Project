@@ -156,7 +156,7 @@ class BookingControllerTest {
                             BookingType.SERVICE, BookingStatus.CONFIRMED,
                             "plumbing", "Plumbing", null, null, null, null, null, null, null,
                             LocalDate.now().plusDays(3), "10:00 AM",
-                            "Asha Rao", "9820011223", null, null, null, null,
+                            "Asha Rao", "9820011223", null, null, null, null, null,
                             false, null, null, null, null, null, List.of()));
 
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
@@ -172,6 +172,70 @@ class BookingControllerTest {
 
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /api/bookings/{id} — a customer editing their own contact/address")
+    class UpdateMine {
+
+        private static final String VALID_BODY = """
+                {"name": "Asha Rao", "phone": "9820011223", "email": "asha@example.com",
+                 "address": "New House", "city": "Pune", "pincode": "411001"}
+                """;
+
+        @Test
+        void anonymousIsUnauthorized() throws Exception {
+            mockMvc.perform(patch("/api/bookings/9")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(VALID_BODY))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void authenticatedCustomerCanEditTheirOwnBooking() throws Exception {
+            when(service.updateMine(eq(9L), any(), any())).thenReturn(
+                    new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
+                            BookingType.SERVICE, BookingStatus.CONFIRMED,
+                            "plumbing", "Plumbing", null, null, null, null, null, null, null,
+                            LocalDate.now().plusDays(3), "10:00 AM",
+                            "Asha Rao", "9820011223", "9820011223", "asha@example.com",
+                            "New House", "Pune", "411001",
+                            false, null, null, null, null, null, List.of()));
+
+            mockMvc.perform(patch("/api/bookings/9")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(VALID_BODY)
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.name").value("Asha Rao"))
+                    .andExpect(jsonPath("$.pincode").value("411001"));
+        }
+
+        @Test
+        @DisplayName("a booking that isn't this customer's own comes back 404")
+        void nonOwnerBookingIsNotFound() throws Exception {
+            when(service.updateMine(eq(9L), any(), any()))
+                    .thenThrow(in.supplybase.backend.common.ApiException.notFound("That booking"));
+
+            mockMvc.perform(patch("/api/bookings/9")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(VALID_BODY)
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("a blank name is rejected before it ever reaches the service")
+        void blankNameIsRejected() throws Exception {
+            mockMvc.perform(patch("/api/bookings/9")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"name": "", "phone": "9820011223",
+                                     "address": "New House", "city": "Pune"}
+                                    """)
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -281,7 +345,7 @@ class BookingControllerTest {
                     BookingType.SERVICE, BookingStatus.CONFIRMED,
                     "plumbing", "Plumbing", null, null, null, null, null, null, null,
                     LocalDate.now().plusDays(3), "10:00 AM",
-                    "Asha Rao", "9820011223", null, null, null, null,
+                    "Asha Rao", "9820011223", null, null, null, null, null,
                     false, null, null, null, null, null, List.of());
         }
     }
