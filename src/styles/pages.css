@@ -375,6 +375,15 @@
 
 /* ------------------------------------------------------- contact page */
 
+@media (max-width: 720px) {
+  /* hero-contact.png's contact icons sit right-of-centre — the shared
+     mobile .page-hero-bg rule above crops on the image's plain left
+     half, cutting the icons off at the edge instead of showing them. */
+  .contact-page-hero .page-hero-bg img {
+    object-position: 68% center;
+  }
+}
+
 .contact-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
