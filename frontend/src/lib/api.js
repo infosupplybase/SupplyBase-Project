@@ -253,6 +253,9 @@ updateProfile: (profile) =>
   },
 
   myBookings: () => request('/api/bookings/mine'),
+
+  /** One booking in full, including the real answers given in the wizard. */
+  booking: (id) => request(`/api/bookings/${id}`),
 };
 
 export default api;

@@ -625,4 +625,76 @@ class BookingServiceTest {
             verifyNoInteractions(storage);
         }
     }
+
+    @Nested
+    @DisplayName("get")
+    class Get {
+
+        private final AuthenticatedUser admin = new AuthenticatedUser(1L, "admin@supplybase.in", Role.ADMIN);
+        private final AuthenticatedUser owner = new AuthenticatedUser(7L, "owner@example.com", Role.CUSTOMER);
+        private final AuthenticatedUser stranger = new AuthenticatedUser(8L, "stranger@example.com", Role.CUSTOMER);
+
+        @Test
+        void ownerCanReadTheirOwnBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            assertThat(service.get(1L, owner).id()).isEqualTo(1L);
+        }
+
+        @Test
+        void staffCanReadAnyBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            assertThat(service.get(1L, admin).id()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("a stranger gets 404, not 403 — existence is not theirs to know")
+        void strangerGetsNotFoundNotForbidden() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.get(1L, stranger))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("a visitor booking with no user is staff-only")
+        void bookingWithNoUserIsStaffOnly() {
+            Booking booking = Booking.builder().id(1L).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.get(1L, owner))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("the booking's real answers come back, not the unused workNature/workOption/workDetail fields")
+        void includesTheActualAnswersGivenInTheWizard() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            BookingAnswer answer = BookingAnswer.builder()
+                    .bookingId(1L)
+                    .questionKey("service_needed")
+                    .questionText("What do you need?")
+                    .answerValue("leak_repair")
+                    .answerLabel("Leak Repair")
+                    .build();
+            when(answers.findByBookingId(1L)).thenReturn(List.of(answer));
+
+            var response = service.get(1L, owner);
+
+            assertThat(response.answers()).hasSize(1);
+            assertThat(response.answers().get(0).questionText()).isEqualTo("What do you need?");
+            assertThat(response.answers().get(0).answerLabel()).isEqualTo("Leak Repair");
+        }
+    }
 }

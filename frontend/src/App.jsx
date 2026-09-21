@@ -38,6 +38,7 @@ import Contact from './pages/Contact';
 import Quote from './pages/Quote';
 import Login from './pages/Login';
 import MyBookings from './pages/MyBookings';
+import BookingDetail from './pages/BookingDetail';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
@@ -213,6 +214,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <MyBookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="dashboard/bookings/:id"
+          element={
+            <ProtectedRoute>
+              <BookingDetail />
             </ProtectedRoute>
           }
         />

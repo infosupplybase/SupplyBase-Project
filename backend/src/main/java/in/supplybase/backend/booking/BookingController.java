@@ -69,6 +69,16 @@ public class BookingController {
         return service.myBookings(currentUser.require().id());
     }
 
+    /**
+     * One booking in full — the dashboard's "view booking" page. Staff, or
+     * the client who made it; anyone else gets a 404 (see
+     * BookingService.checkAccess).
+     */
+    @GetMapping("/api/bookings/{id}")
+    public BookingResponse get(@PathVariable Long id) {
+        return service.get(id, currentUser.require());
+    }
+
     @GetMapping("/api/bookings/{id}/files")
     public List<BookingFileResponse> files(@PathVariable Long id) {
         return service.listFiles(id, currentUser.require());

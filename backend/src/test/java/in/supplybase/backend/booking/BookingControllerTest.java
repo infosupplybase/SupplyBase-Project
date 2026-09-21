@@ -140,6 +140,42 @@ class BookingControllerTest {
     }
 
     @Nested
+    @DisplayName("GET /api/bookings/{id}")
+    class Get {
+
+        @Test
+        void anonymousIsUnauthorized() throws Exception {
+            mockMvc.perform(get("/api/bookings/9"))
+                    .andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        void authenticatedCustomerSeesTheBookingReturnedByTheService() throws Exception {
+            when(service.get(eq(9L), any())).thenReturn(
+                    new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
+                            BookingType.SERVICE, BookingStatus.CONFIRMED,
+                            "plumbing", "Plumbing", null, null, null, null, null, null, null,
+                            LocalDate.now().plusDays(3), "10:00 AM",
+                            "Asha Rao", "9820011223", null, null, null, null,
+                            false, null, null, null, null, null, List.of()));
+
+            mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.bookingNumber").value("SB-20260906-000001"));
+        }
+
+        @Test
+        @DisplayName("a booking that isn't this customer's own comes back 404, per BookingService.checkAccess")
+        void nonOwnerBookingIsNotFound() throws Exception {
+            when(service.get(eq(9L), any()))
+                    .thenThrow(in.supplybase.backend.common.ApiException.notFound("That booking"));
+
+            mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
     @DisplayName("/api/admin/bookings/** — staff only")
     class AdminBookings {
 
@@ -246,7 +282,7 @@ class BookingControllerTest {
                     "plumbing", "Plumbing", null, null, null, null, null, null, null,
                     LocalDate.now().plusDays(3), "10:00 AM",
                     "Asha Rao", "9820011223", null, null, null, null,
-                    false, null, null, null, null, null);
+                    false, null, null, null, null, null, List.of());
         }
     }
 
