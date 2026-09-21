@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
-import { company } from '../data/siteConfig';
+import { COMPANY_NAME, SITE_URL } from '../config';
 import { useAuth, friendlyError } from '../context/AuthContext';
 import api from '../lib/api';
 
 /**
- * /partner/join — a professional applying to work with SupplyBase.
+ * /join — a professional applying to work with Supplybase.
  *
  * One form creates the login and the application together. The person is
- * signed in straight away and lands on /partner, which tells them their
+ * signed in straight away and lands on the dashboard, which tells them their
  * application is being reviewed. Nothing here grants any access to jobs:
  * only an admin approving the application does that, so the form has no
  * "role" of any kind to fill in or tamper with.
@@ -56,10 +56,9 @@ function Field({ id, label, icon, required, hint, error, children }) {
   );
 }
 
-export default function PartnerJoin() {
+export default function Join() {
   const { user, applyAsPartner } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [form, setForm] = useState(emptyForm);
   const [trades, setTrades] = useState(null);
@@ -70,9 +69,9 @@ export default function PartnerJoin() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // already signed in? /partner explains what that means for them
+  // already signed in? the dashboard explains what that means for them
   useEffect(() => {
-    if (user) navigate('/partner', { replace: true });
+    if (user) navigate('/', { replace: true });
   }, [user, navigate]);
 
   useEffect(() => {
@@ -136,7 +135,7 @@ export default function PartnerJoin() {
     setBusy(true);
     try {
       await applyAsPartner(form);
-      navigate('/partner', { replace: true });
+      navigate('/', { replace: true });
     } catch (err) {
       // The API can reject what the browser cannot know (an email already in
       // use) — put those back on the fields they belong to.
@@ -147,32 +146,15 @@ export default function PartnerJoin() {
     }
   };
 
-  const handleClose = () => {
-    if (location.key !== 'default') navigate(-1);
-    else navigate('/');
-  };
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  });
-
   return (
     <div className="auth-screen">
       <div className="auth-glow" aria-hidden="true" />
 
       <div className="auth-card-wrap">
         <div className="auth-card auth-card-tall">
-          <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
-            <Icon name="close" size={18} />
-          </button>
-
-          <Link to="/" className="auth-logo">
-            <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
-          </Link>
+          <a href={SITE_URL} className="auth-logo">
+            <img src="/assets/brand/logo.png" alt={`${COMPANY_NAME} logo`} />
+          </a>
 
           <h1 className="auth-heading">
             Join as a <span className="auth-accent">Partner</span>
@@ -325,13 +307,13 @@ export default function PartnerJoin() {
                 <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
                 <span>
                   I agree to the{' '}
-                  <Link to="/terms" className="auth-inline-link">
+                  <a href={`${SITE_URL}/terms`} target="_blank" rel="noreferrer" className="auth-inline-link">
                     Terms
-                  </Link>{' '}
+                  </a>{' '}
                   &amp;{' '}
-                  <Link to="/privacy-policy" className="auth-inline-link">
+                  <a href={`${SITE_URL}/privacy-policy`} target="_blank" rel="noreferrer" className="auth-inline-link">
                     Privacy Policy
-                  </Link>
+                  </a>
                 </span>
               </label>
             </div>
@@ -355,7 +337,7 @@ export default function PartnerJoin() {
           </form>
 
           <p className="auth-switch">
-            Already applied? <Link to="/partner/login">Partner Login</Link>
+            Already applied? <Link to="/login">Partner Login</Link>
           </p>
         </div>
       </div>

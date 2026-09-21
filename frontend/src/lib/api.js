@@ -271,40 +271,6 @@ updateProfile: (profile) =>
         pincode: details.pincode.trim(),
       },
     }),
-
-  /* ---------------------------------------------------------- partners */
-
-  /**
-   * A professional applying to join. Creates the login and a PENDING
-   * application, and returns tokens like register() does. Nobody can ask for
-   * a role here — an admin approving the application is what grants it.
-   */
-  partnerApply: (form) =>
-    request('/api/partners/apply', {
-      method: 'POST',
-      auth: false,
-      body: {
-        fullName: form.fullName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        password: form.password,
-        primaryTrade: form.primaryTrade,
-        experienceYears: Number(form.experienceYears),
-        city: form.city.trim(),
-        serviceAreas: form.serviceAreas.trim(),
-        languages: form.languages.trim(),
-      },
-    }),
-
-  /** The signed-in user's own application. 404 (ApiError.status) if they never applied. */
-  partnerMe: () => request('/api/partners/me'),
-
-  /** Jobs assigned to the signed-in professional. */
-  partnerJobs: () => request('/api/professional/bookings/mine'),
-
-  /** Move one of the professional's own jobs to its next status. */
-  partnerAdvanceJob: (id, status) =>
-    request(`/api/professional/bookings/${id}/status`, { method: 'PATCH', body: { status } }),
 };
 
 export default api;

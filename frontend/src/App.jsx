@@ -40,9 +40,7 @@ import Login from './pages/Login';
 import MyBookings from './pages/MyBookings';
 import BookingDetail from './pages/BookingDetail';
 import Profile from './pages/Profile';
-import PartnerLogin from './pages/PartnerLogin';
-import PartnerJoin from './pages/PartnerJoin';
-import PartnerDashboard from './pages/PartnerDashboard';
+import PartnerRedirect from './pages/PartnerRedirect';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
 
@@ -83,9 +81,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /dashboard              Redirects to /dashboard/bookings
  * /dashboard/bookings     Every booking the signed-in client has made, with real status
  * /dashboard/profile      Edit name/phone, verify email, reset password, sign out
- * /partner/login          Partner (professional) sign in  (no header/footer)
- * /partner/join           Apply to become a partner       (no header/footer)
- * /partner                Partner dashboard: application status, then assigned jobs
+ * /partner/*              Forwards to the separate partners app (see partners/)
  * /privacy-policy, /terms Legal pages
  */
 export default function App() {
@@ -95,9 +91,9 @@ export default function App() {
           both paths render it; the tab that opens is taken from the URL. */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
-      {/* same idea for professionals: their own sign-in and application screens */}
-      <Route path="/partner/login" element={<PartnerLogin />} />
-      <Route path="/partner/join" element={<PartnerJoin />} />
+      {/* Professionals have their own app now (partners/). Old /partner links
+          forward there once VITE_PARTNERS_URL is set; until then they go home. */}
+      <Route path="/partner/*" element={<PartnerRedirect />} />
 
       <Route element={<Layout />}>
         <Route index element={<Home />} />
@@ -239,16 +235,6 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Profile />
-            </ProtectedRoute>
-          }
-        />
-        {/* Partner (professional) area. Signed-out visitors go to the partner
-            login, not the customer one. */}
-        <Route
-          path="partner"
-          element={
-            <ProtectedRoute loginPath="/partner/login">
-              <PartnerDashboard />
             </ProtectedRoute>
           }
         />

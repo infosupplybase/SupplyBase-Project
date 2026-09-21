@@ -2,28 +2,26 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import api, { clearTokens, getAccessToken, getRefreshToken, storeTokens } from '../lib/api';
 
 /**
- * Keeps track of who is signed in, everywhere on the site.
+ * Keeps track of who is signed in, for the partners app only.
  *
- * Identity is owned by the Supplybase API, not by the browser. On load we ask
- * /api/auth/me rather than decoding the stored token: the token says what was
- * true when it was issued, and the server says what is true now — which is
- * what matters if an account has been disabled or a role changed since.
+ * Trimmed from the customer site's AuthContext: no Google sign-in, and the
+ * only way to create an account here is applying as a partner. Identity is
+ * owned by the API: on load we ask /api/auth/me rather than decoding the
+ * stored token, so an approval, suspension or disabled account is seen as it
+ * is now, not as it was when the token was issued.
  */
 const AuthContext = createContext({
   user: null,
   loading: true,
-  configured: true,
-  googleEnabled: false,
   login: async () => {},
-  loginWithGoogle: async () => {},
-  register: async () => {},
+  applyAsPartner: async () => {},
   logout: async () => {},
   refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(Boolean(getAccessToken()));
+  const [loading, setLoading] = useState(() => Boolean(getAccessToken()));
 
   useEffect(() => {
     if (!getAccessToken()) {
@@ -38,7 +36,6 @@ export function AuthProvider({ children }) {
       })
       .catch(() => {
         // The token is gone or rejected — including after a failed refresh.
-        // Drop it rather than leaving the app in a half-signed-in state.
         clearTokens();
         if (!cancelled) setUser(null);
       })
@@ -56,8 +53,7 @@ export function AuthProvider({ children }) {
     return auth.user;
   }, []);
 
-  /** Re-fetches /api/auth/me — used after a profile edit so the name shown
-      in the header and bottom nav updates without a full page reload. */
+  /** Re-reads /api/auth/me — approval changes the role, so "check status" needs it. */
   const refreshUser = useCallback(async () => {
     const me = await api.me();
     setUser(me);
@@ -66,9 +62,8 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     const refreshToken = getRefreshToken();
-    // Clear locally first. If the network call fails the person is still
-    // signed out here, which is the half that matters to them; the server
-    // token expires on its own.
+    // Clear locally first: if the network call fails the person is still
+    // signed out here, which is the half that matters to them.
     clearTokens();
     setUser(null);
     if (refreshToken) {
@@ -84,14 +79,9 @@ export function AuthProvider({ children }) {
     () => ({
       user,
       loading,
-      // The API needs no client-side keys, so unlike the old Firebase setup
-      // there is no "not configured yet" state for password sign-in.
-      configured: true,
-      googleEnabled: Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID),
       login: async (identifier, password) => adopt(await api.login(identifier.trim(), password)),
-      loginWithGoogle: async (credential) => adopt(await api.loginWithGoogle(credential)),
-      register: async (name, email, password, phone) =>
-        adopt(await api.register(name.trim(), email.trim(), password, phone)),
+      /** Creates the login and the PENDING application together, and signs in. */
+      applyAsPartner: async (form) => adopt(await api.apply(form)),
       logout,
       refreshUser,
     }),
@@ -103,7 +93,6 @@ export function AuthProvider({ children }) {
 
 export const useAuth = () => useContext(AuthContext);
 
-/** Re-exported so pages keep importing their error formatter from one place. */
 export { friendlyError } from '../lib/api';
 
 export default AuthContext;

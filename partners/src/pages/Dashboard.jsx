@@ -1,18 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import PageHero from '../components/ui/PageHero';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
-import { contact } from '../data/siteConfig';
+import { SITE_URL, SUPPORT_PHONE } from '../config';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
-import { bookingStatusLabel, bookingStatusTone } from '../lib/bookingStatus';
+import { isFinished, jobStatusLabel, jobStatusTone } from '../lib/bookingStatus';
 
 /**
  * The next step a partner may take on their own job, keyed by its current
  * status. This mirrors BookingService.SELF_SERVICE_TRANSITIONS on the server,
  * which is what actually enforces it — the buttons here are only the honest
  * way to offer what the API will accept. Everything before the visit is
- * scheduled (assignment, quotes, approvals) stays with SupplyBase staff.
+ * scheduled (assignment, quotes, approvals) stays with Supplybase staff.
  */
 const NEXT_STEP = {
   SITE_VISIT_SCHEDULED: { status: 'SITE_VISIT_COMPLETED', label: 'Mark site visit done' },
@@ -20,15 +19,9 @@ const NEXT_STEP = {
   WORK_IN_PROGRESS: {
     status: 'WORK_COMPLETED',
     label: 'Mark work completed',
-    confirm: 'Mark this job as completed? This tells SupplyBase the work is finished.',
+    confirm: 'Mark this job as completed? This tells Supplybase the work is finished.',
   },
 };
-
-/** The booking labels are written for customers; a partner reads a couple of them differently. */
-const PARTNER_LABEL = { PROFESSIONAL_ASSIGNED: 'Assigned to you' };
-const jobStatusLabel = (status) => PARTNER_LABEL[status] || bookingStatusLabel(status);
-
-const isFinished = (status) => status === 'WORK_COMPLETED' || status === 'CANCELLED';
 
 const formatDate = (value) =>
   value
@@ -36,20 +29,20 @@ const formatDate = (value) =>
     : null;
 
 /**
- * /partner — the professional's home.
+ * The partner's home.
  *
  * What it shows depends on where their application stands, all read from the
  * server: still under review, turned down, suspended (with the reason each
  * time), or approved — in which case their assigned jobs, with the next
  * step they are allowed to take on each one.
  *
- * "Approved" is decided by the account's role, not by the page: an admin
+ * "Approved" is decided by the account's role, not by this page: an admin
  * approving an application is what grants the PROFESSIONAL role, and the API
- * rejects the jobs endpoints for anyone without it. An admin who made
- * someone a professional through the Users page (with no application on
- * file) therefore still gets their jobs here.
+ * rejects the jobs endpoints for anyone without it. An admin who made someone
+ * a professional through the Users page (with no application on file)
+ * therefore still gets their jobs here.
  */
-export default function PartnerDashboard() {
+export default function Dashboard() {
   const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
 
@@ -66,7 +59,7 @@ export default function PartnerDashboard() {
 
   const loadProfile = useCallback(async () => {
     try {
-      setProfile(await api.partnerMe());
+      setProfile(await api.application());
       setError('');
     } catch (err) {
       if (err && err.status === 404) setProfile(null);
@@ -85,7 +78,7 @@ export default function PartnerDashboard() {
 
   const loadJobs = useCallback(async () => {
     try {
-      setJobs(await api.partnerJobs());
+      setJobs(await api.jobs());
     } catch (err) {
       setError(friendlyError(err));
     }
@@ -95,7 +88,7 @@ export default function PartnerDashboard() {
     if (isProfessional) loadJobs();
   }, [isProfessional, loadJobs]);
 
-  /** "Check again" — approval changes the role, so both need re-reading. */
+  /** "Check status" — approval changes the role, so both need re-reading. */
   const handleCheckAgain = async () => {
     setChecking(true);
     try {
@@ -116,7 +109,7 @@ export default function PartnerDashboard() {
     setBusyJob(job.id);
     setJobError((e) => ({ ...e, [job.id]: '' }));
     try {
-      const updated = await api.partnerAdvanceJob(job.id, step.status);
+      const updated = await api.advanceJob(job.id, step.status);
       setJobs((list) => list.map((j) => (j.id === updated.id ? updated : j)));
     } catch (err) {
       setJobError((e) => ({ ...e, [job.id]: friendlyError(err) }));
@@ -127,12 +120,12 @@ export default function PartnerDashboard() {
 
   const handleSignOut = async () => {
     await logout();
-    navigate('/partner/login', { replace: true });
+    navigate('/login', { replace: true });
   };
 
   const handleSignOutAndApply = async () => {
     await logout();
-    navigate('/partner/join', { replace: true });
+    navigate('/join', { replace: true });
   };
 
   const firstName = (user.fullName || '').split(' ')[0];
@@ -147,8 +140,8 @@ export default function PartnerDashboard() {
     body = (
       <StatusCard icon="shield" title="This is an admin account">
         <p>
-          Admin accounts manage partners from the admin portal rather than working jobs here. Sign
-          in with a partner account to see the partner dashboard.
+          Admin accounts manage partners from the admin portal rather than working jobs here. Sign in
+          with a partner account to see the partner dashboard.
         </p>
         <div className="partner-actions">
           <button type="button" className="btn btn-outline" onClick={handleSignOut}>
@@ -163,16 +156,16 @@ export default function PartnerDashboard() {
     body = (
       <StatusCard icon="user" title="No partner application on this account">
         <p>
-          You&apos;re signed in as a customer. To work with SupplyBase, sign out and apply with your
+          You&apos;re signed in as a customer. To work with Supplybase, sign out and apply with your
           professional details.
         </p>
         <div className="partner-actions">
           <button type="button" className="btn btn-primary" onClick={handleSignOutAndApply}>
             Sign out and apply
           </button>
-          <Link to="/dashboard/bookings" className="btn btn-outline">
+          <a href={`${SITE_URL}/dashboard/bookings`} className="btn btn-outline">
             Go to my bookings
-          </Link>
+          </a>
         </div>
       </StatusCard>
     );
@@ -180,9 +173,9 @@ export default function PartnerDashboard() {
     body = (
       <StatusCard icon="clock" title="Your application is under review">
         <p>
-          Thanks{firstName ? `, ${firstName}` : ''}. We&apos;ve received your application and our
-          team reviews every one by hand. Once it&apos;s approved, the jobs assigned to you will
-          appear on this page.
+          Thanks{firstName ? `, ${firstName}` : ''}. We&apos;ve received your application and our team
+          reviews every one by hand. Once it&apos;s approved, the jobs assigned to you will appear on
+          this page.
         </p>
         <div className="partner-actions">
           <button type="button" className="btn btn-outline" onClick={handleCheckAgain} disabled={checking}>
@@ -196,8 +189,7 @@ export default function PartnerDashboard() {
       <StatusCard icon="info" tone="danger" title="Your application wasn't approved">
         {profile.reviewNote && <p className="partner-reason">{profile.reviewNote}</p>}
         <p>
-          If you think this is a mistake or you&apos;d like to talk it through, call us on{' '}
-          {contact.phoneDisplay}.
+          If you think this is a mistake or you&apos;d like to talk it through, call us on {SUPPORT_PHONE}.
         </p>
       </StatusCard>
     );
@@ -205,7 +197,7 @@ export default function PartnerDashboard() {
     body = (
       <StatusCard icon="info" tone="danger" title="Your partner access is paused">
         {profile.reviewNote && <p className="partner-reason">{profile.reviewNote}</p>}
-        <p>Call us on {contact.phoneDisplay} to talk about getting back to work.</p>
+        <p>Call us on {SUPPORT_PHONE} to talk about getting back to work.</p>
       </StatusCard>
     );
   } else {
@@ -215,15 +207,15 @@ export default function PartnerDashboard() {
 
   return (
     <>
-      <PageHero
-        eyebrow="SUPPLYBASE PARTNERS"
-        title="PARTNER DASHBOARD"
-        text="Your application, your jobs and your next steps in one place."
-        image="/assets/services/service-hero.jpg"
-        breadcrumbs={[{ label: 'Partners' }, { label: 'Dashboard' }]}
-      />
+      <section className="partner-hero">
+        <div className="container">
+          <span className="partner-hero-eyebrow">Supplybase Partners</span>
+          <h1>Partner dashboard</h1>
+          <p>Your application, your jobs and your next steps in one place.</p>
+        </div>
+      </section>
 
-      <section className="section">
+      <div className="partner-body">
         <div className="container">
           <div className="partner-layout">
             <div className="partner-main">
@@ -294,14 +286,10 @@ export default function PartnerDashboard() {
                   </dl>
                 </div>
               )}
-
-              <button type="button" className="btn btn-outline" onClick={handleSignOut}>
-                Sign out
-              </button>
             </aside>
           </div>
         </div>
-      </section>
+      </div>
     </>
   );
 }
@@ -328,10 +316,10 @@ function JobsSection({ jobs, busyJob, jobError, onAdvance }) {
 
   if (jobs.length === 0) {
     return (
-      <div className="acct-empty">
+      <div className="partner-empty">
         <Icon name="calendar" size={32} />
         <h3>No jobs assigned yet</h3>
-        <p>When SupplyBase assigns you a job, it will appear here with the customer&apos;s details.</p>
+        <p>When Supplybase assigns you a job, it will appear here with the customer&apos;s details.</p>
       </div>
     );
   }
@@ -374,17 +362,17 @@ function JobCard({ job, done, busy, error, onAdvance }) {
 
   return (
     <div className={`partner-job-card ${done ? 'done' : ''}`}>
-      <div className="acct-booking-top">
+      <div className="partner-job-top">
         <div>
-          <span className="acct-booking-number">{job.bookingNumber || job.reference}</span>
+          <span className="partner-job-number">{job.bookingNumber || job.reference}</span>
           <h3>{job.serviceLabel || 'Service'}</h3>
         </div>
-        <span className={`acct-status acct-status-${bookingStatusTone(job.status)}`}>
+        <span className={`partner-status partner-status-${jobStatusTone(job.status)}`}>
           {jobStatusLabel(job.status)}
         </span>
       </div>
 
-      <ul className="acct-booking-meta">
+      <ul className="partner-job-meta">
         {job.preferredDate && (
           <li>
             <Icon name="calendar" size={15} />
@@ -426,7 +414,7 @@ function JobCard({ job, done, busy, error, onAdvance }) {
               {busy ? 'Saving…' : step.label}
             </button>
           ) : (
-            <span className="partner-job-wait">Waiting on SupplyBase for the next step.</span>
+            <span className="partner-job-wait">Waiting on Supplybase for the next step.</span>
           )}
         </div>
       )}
