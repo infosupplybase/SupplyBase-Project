@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import Icon from '../ui/Icon';
+import ProblemLocationModal from './ProblemLocationModal';
 
 import {
   waterproofingImages,
@@ -331,6 +333,42 @@ export default function QuestionField({
   const isSimpleRadioQuestion =
     key === 'previous_waterproofing' ||
     key === 'previous_when';
+
+  const [isProblemLocationOpen, setProblemLocationOpen] = useState(false);
+
+  if (key === 'problem_location') {
+    return (
+      <fieldset className="question">
+        <legend className="sr-only">{text}</legend>
+        <div className="wizard-card-head">
+          <h2>{text}{required && <span className="req"> *</span>}</h2>
+          <p>Select one or more areas where you notice the issue.</p>
+        </div>
+        <button
+          type="button"
+          className={`wp-problem-location-trigger ${selected.length ? 'has-selection' : ''}`}
+          onClick={() => setProblemLocationOpen(true)}
+          aria-haspopup="dialog"
+        >
+          <span className="wp-problem-location-trigger-icon"><Icon name="map-pin" size={23} /></span>
+          <span>
+            <strong>{selected.length ? `${selected.length} area${selected.length === 1 ? '' : 's'} selected` : 'Choose the affected area'}</strong>
+            <small>{selected.length ? selected.join(', ') : 'Tap to select from the list'}</small>
+          </span>
+          <Icon name="chevron-right" size={18} />
+        </button>
+        {error && <span className="field-error">{error}</span>}
+        {isProblemLocationOpen && (
+          <ProblemLocationModal
+            options={options || []}
+            selected={selected}
+            onToggle={toggle}
+            onClose={() => setProblemLocationOpen(false)}
+          />
+        )}
+      </fieldset>
+    );
+  }
 
   /**
    * ==========================================================
