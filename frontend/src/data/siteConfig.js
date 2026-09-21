@@ -33,8 +33,8 @@ export const contact = {
  * SOCIAL LINKS — leave a url empty ('') to hide that icon from the footer.
  */
 export const social = [
+  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/supplybase_official/?hl=en' },
   { id: 'facebook', label: 'Facebook', url: '' },
-  { id: 'instagram', label: 'Instagram', url: '' },
   { id: 'linkedin', label: 'LinkedIn', url: '' },
   { id: 'youtube', label: 'YouTube', url: '' },
 ];
