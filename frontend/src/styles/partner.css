@@ -1,0 +1,264 @@
+/* =========================================================================
+   SUPPLYBASE PARTNERS — sign-in, apply, and the partner dashboard
+   The sign-in and apply screens reuse the dark auth card from pages.css; only
+   what that card does not already cover lives here (a select, a few notes).
+   The dashboard reuses the acct-* look from account.css.
+   ========================================================================= */
+
+/* ---------------------------------------------------------- auth extras */
+
+/* pages.css styles .auth-field input for the dark card; a <select> in the
+   same wrapper needs the same treatment or it renders as a light native box. */
+.auth-card .auth-field select {
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 44px;
+  border: 1px solid var(--auth-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 15px;
+  color: var(--auth-text);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.auth-card .auth-field select:focus {
+  outline: none;
+  border-color: var(--auth-gold);
+  background: rgba(245, 208, 51, 0.05);
+  box-shadow: 0 0 0 3px rgba(245, 208, 51, 0.16);
+}
+
+.auth-card .auth-field.error select {
+  border-color: #c24545;
+}
+
+/* the option list is drawn by the OS on a light surface, so keep its text dark */
+.auth-card .auth-field select option {
+  color: #1a1a1a;
+  background: #fff;
+}
+
+.auth-select-caret {
+  position: absolute;
+  right: 15px;
+  color: var(--auth-text-mute);
+  pointer-events: none;
+}
+
+/* The apply form is longer than sign-in, so let the card scroll on short
+   screens instead of running off the bottom edge. */
+.auth-card-tall {
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.partner-auth-note {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--auth-text-mute);
+}
+
+/* ------------------------------------------------------------ dashboard */
+
+.partner-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
+  align-items: start;
+}
+
+.partner-main {
+  min-width: 0;
+}
+
+.partner-status-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+}
+
+.partner-status-card h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.partner-status-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.partner-status-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold-a08);
+  color: var(--gold-deep);
+}
+
+.partner-status-icon.danger {
+  background: rgba(194, 69, 69, 0.1);
+  color: var(--danger);
+}
+
+.partner-reason {
+  padding: 12px 14px;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--light-bg);
+  color: var(--ink);
+  font-size: 0.94rem;
+}
+
+.partner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.partner-summary {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin: 0;
+}
+
+.partner-summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.partner-summary div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.partner-summary dt {
+  color: var(--ink-muted);
+}
+
+.partner-summary dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.partner-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.partner-side-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+}
+
+.partner-side-card h3 {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 14px;
+}
+
+.partner-section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 28px 0 14px;
+}
+
+.partner-section-title:first-child {
+  margin-top: 0;
+}
+
+.partner-section-title h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.partner-section-title span {
+  font-size: 0.84rem;
+  color: var(--ink-muted);
+}
+
+.partner-job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.partner-job-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+}
+
+.partner-job-card.done {
+  opacity: 0.82;
+}
+
+.partner-job-contact a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.partner-job-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.partner-job-wait {
+  font-size: 0.86rem;
+  color: var(--ink-muted);
+}
+
+/* One column on tablets and phones. The jobs/status stay first — that is what a
+   partner opens the app for — with their account details underneath. */
+@media (max-width: 900px) {
+  .partner-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .partner-job-foot .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

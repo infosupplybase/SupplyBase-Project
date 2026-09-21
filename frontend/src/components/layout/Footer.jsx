@@ -444,6 +444,21 @@ export default function Footer() {
               Terms &amp; Conditions
             </button>
 
+
+            <span aria-hidden="true">
+              |
+            </span>
+
+
+            {/* For professionals, not customers — kept in the legal strip so it is
+                findable without competing with the customer-facing links above. */}
+            <Link
+              to="/partner/login"
+              className="ft-legal-btn"
+            >
+              Partner Login
+            </Link>
+
           </nav>
 
         </div>

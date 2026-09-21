@@ -17,6 +17,7 @@ const AuthContext = createContext({
   login: async () => {},
   loginWithGoogle: async () => {},
   register: async () => {},
+  applyAsPartner: async () => {},
   logout: async () => {},
   refreshUser: async () => {},
 });
@@ -92,6 +93,8 @@ export function AuthProvider({ children }) {
       loginWithGoogle: async (credential) => adopt(await api.loginWithGoogle(credential)),
       register: async (name, email, password, phone) =>
         adopt(await api.register(name.trim(), email.trim(), password, phone)),
+      /** A partner application: same sign-in as register(), plus the PENDING application. */
+      applyAsPartner: async (form) => adopt(await api.partnerApply(form)),
       logout,
       refreshUser,
     }),
