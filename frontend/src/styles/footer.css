@@ -664,6 +664,11 @@
    PRIVACY POLICY MODAL
    ========================================================================= */
 
+/* also styles the plain <Link> in the legal strip, so it needs no underline */
+a.ft-legal-btn {
+  text-decoration: none;
+}
+
 .ft-legal-btn {
   padding: 0;
   border: none;

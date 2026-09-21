@@ -4,8 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 /**
  * Wraps any page that should only be visible after signing in.
  * Not signed in -> sent to the login page.
+ *
+ * `loginPath` is where "not signed in" goes. Customer pages use the default;
+ * the partner area passes '/partner/login' so a professional lands on their
+ * own sign-in instead of the customer one.
  */
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, loginPath = '/login' }) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
@@ -18,7 +22,7 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to={loginPath} replace state={{ from: location.pathname }} />;
   }
 
   return children;
