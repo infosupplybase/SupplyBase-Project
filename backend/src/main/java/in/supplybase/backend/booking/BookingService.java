@@ -27,6 +27,7 @@ import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.auth.User;
 import in.supplybase.backend.auth.UserRepository;
+import in.supplybase.backend.booking.dto.BookingAnswerResponse;
 import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
@@ -303,6 +304,24 @@ public class BookingService {
                 .toList();
     }
 
+    /**
+     * One booking in full, including the answers actually given in the
+     * booking wizard — the /mine list above deliberately skips these (an
+     * extra query per row nobody's looking at yet), so this is the only
+     * place they're fetched.
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse get(Long id, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(booking, answerResponses);
+    }
+
     @Transactional
     public BookingResponse update(Long id, UpdateBookingRequest request) {
         Booking booking = bookings.findById(id)
@@ -451,7 +470,7 @@ public class BookingService {
     public List<BookingFileResponse> listFiles(Long bookingId, AuthenticatedUser viewer) {
         Booking booking = bookings.findById(bookingId)
                 .orElseThrow(() -> ApiException.notFound("That booking"));
-        checkFileAccess(booking, viewer);
+        checkAccess(booking, viewer);
 
         return files.findByBookingIdOrderByCreatedAtDesc(bookingId).stream()
                 .map(BookingFileResponse::from)
@@ -462,7 +481,7 @@ public class BookingService {
     public DownloadedFile downloadFile(Long bookingId, Long fileId, AuthenticatedUser viewer) {
         Booking booking = bookings.findById(bookingId)
                 .orElseThrow(() -> ApiException.notFound("That booking"));
-        checkFileAccess(booking, viewer);
+        checkAccess(booking, viewer);
 
         BookingFile file = files.findById(fileId)
                 .filter(f -> f.getBooking().getId().equals(bookingId))
@@ -473,11 +492,13 @@ public class BookingService {
     }
 
     /**
-     * Staff sees any booking's files; the booking's own signed-in user (most
+     * Staff sees any booking; the booking's own signed-in user (most
      * bookings are from visitors and have none) sees only their own. Anyone
-     * else gets 404, not 403 — same reasoning as ProjectService.get.
+     * else gets 404, not 403 — same reasoning as ProjectService.get. Shared
+     * by get() and the file endpoints below — a booking's files are never
+     * visible to someone who can't see the booking itself.
      */
-    private void checkFileAccess(Booking booking, AuthenticatedUser viewer) {
+    private void checkAccess(Booking booking, AuthenticatedUser viewer) {
         if (!viewer.isStaff()
                 && (booking.getUser() == null || !booking.getUser().getId().equals(viewer.id()))) {
             throw ApiException.notFound("That booking");
