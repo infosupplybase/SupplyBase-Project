@@ -80,12 +80,20 @@
   --radius-xl: 24px;
   --radius-pill: 999px;
 
-  /* ----------------------------------------------------------- shadows */
-  --shadow-sm: 0 1px 2px rgba(5, 5, 5, 0.06), 0 1px 3px rgba(5, 5, 5, 0.04);
-  --shadow: 0 4px 16px rgba(5, 5, 5, 0.08);
-  --shadow-lg: 0 18px 45px rgba(5, 5, 5, 0.12);
-  --shadow-gold: 0 10px 26px rgba(223, 175, 53, 0.28);
+  /* ------------------------------------------------- shadows (elevated depth)
+     Each is layered — a tight contact shadow plus one or two soft ambient
+     ones — rather than a single flat blur, so anything using them reads as
+     physically raised off the page instead of just faintly outlined.
+     Every card/button already written against these three names picks the
+     richer look up with no further changes; --depth-inset-top is new and
+     opt-in, for a glossy top-edge highlight on the most prominent surfaces
+     (primary buttons, icon badges, the home page's raised cards). */
+  --shadow-sm: 0 1px 2px rgba(15, 15, 15, 0.05), 0 3px 6px rgba(15, 15, 15, 0.05);
+  --shadow: 0 2px 4px rgba(15, 15, 15, 0.05), 0 8px 16px rgba(15, 15, 15, 0.07), 0 20px 36px rgba(15, 15, 15, 0.06);
+  --shadow-lg: 0 4px 8px rgba(15, 15, 15, 0.06), 0 16px 32px rgba(15, 15, 15, 0.1), 0 36px 64px rgba(15, 15, 15, 0.09);
+  --shadow-gold: 0 8px 20px rgba(223, 175, 53, 0.32), 0 2px 6px rgba(223, 175, 53, 0.24);
   --shadow-up: 0 -6px 22px rgba(5, 5, 5, 0.1);
+  --depth-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.65);
 
   /* --------------------------------------------------------- motion */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);

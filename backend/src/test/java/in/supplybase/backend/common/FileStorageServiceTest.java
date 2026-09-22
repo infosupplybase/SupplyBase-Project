@@ -90,6 +90,35 @@ class FileStorageServiceTest {
     }
 
     @Test
+    @DisplayName("a file name with an embedded quote is refused")
+    void rejectsAFileNameWithAQuote() {
+        FileStorageService storage = newService();
+        // The original name is later echoed into a Content-Disposition
+        // header on download; an unescaped quote could break out of that
+        // header's quoted filename parameter.
+        MockMultipartFile malicious =
+                new MockMultipartFile("file", "photo\".jpg", "image/jpeg", new byte[] { 1 });
+
+        assertThatThrownBy(() -> storage.store(malicious, "bookings/1"))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("not allowed");
+    }
+
+    @Test
+    @DisplayName("a file name with an embedded control character is refused")
+    void rejectsAFileNameWithAControlCharacter() {
+        FileStorageService storage = newService();
+        // CR/LF in particular could inject extra header lines if it ever
+        // reached a raw header value unescaped.
+        MockMultipartFile malicious =
+                new MockMultipartFile("file", "photo.jpg\r\nX-Injected: 1", "image/jpeg", new byte[] { 1 });
+
+        assertThatThrownBy(() -> storage.store(malicious, "bookings/1"))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("not allowed");
+    }
+
+    @Test
     @DisplayName("a storage key that resolves outside the storage root is refused on read")
     void rejectsLoadingOutsideTheStorageRoot() {
         FileStorageService storage = newService();

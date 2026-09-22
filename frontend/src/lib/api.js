@@ -183,8 +183,21 @@ export const api = {
   me: () => request('/api/auth/me'),
 
   /** Self-service — name and phone only. */
-  updateProfile: (fullName, phone) =>
-    request('/api/auth/me', { method: 'PATCH', body: { fullName: fullName.trim(), phone } }),
+  /** Self-service profile update. */
+updateProfile: (profile) =>
+  request('/api/auth/me', {
+    method: 'PATCH',
+    body: {
+      fullName: profile.fullName.trim(),
+      phone: profile.phone.trim(),
+      gender: profile.gender,
+      addressLine1: profile.addressLine1.trim(),
+      addressLine2: profile.addressLine2.trim(),
+      city: profile.city.trim(),
+      pinCode: profile.pinCode.trim(),
+      landmark: profile.landmark.trim(),
+    },
+  }),
 
   /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
   forgotPassword: (identifier) =>
@@ -240,6 +253,24 @@ export const api = {
   },
 
   myBookings: () => request('/api/bookings/mine'),
+
+  /** One booking in full, including the real answers given in the wizard. */
+  booking: (id) => request(`/api/bookings/${id}`),
+
+  /** A customer editing their own booking's contact details or address. */
+  updateBooking: (id, details) =>
+    request(`/api/bookings/${id}`, {
+      method: 'PATCH',
+      body: {
+        name: details.name.trim(),
+        phone: details.phone.trim(),
+        whatsapp: details.whatsapp.trim(),
+        email: details.email.trim(),
+        address: details.address.trim(),
+        city: details.city.trim(),
+        pincode: details.pincode.trim(),
+      },
+    }),
 };
 
 export default api;

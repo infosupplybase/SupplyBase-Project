@@ -1,0 +1,12 @@
+/* =========================================================================
+   SUPPLYBASE PARTNERS — STYLESHEET ENTRY POINT
+   Same lean foundation as the admin app (tokens, reset, buttons, form
+   controls), then the dark auth card and the partner portal's own rules.
+   ========================================================================= */
+
+@import './variables.css';
+@import './global.css';
+@import './buttons.css';
+@import './forms.css';
+@import './auth.css';
+@import './partner.css';

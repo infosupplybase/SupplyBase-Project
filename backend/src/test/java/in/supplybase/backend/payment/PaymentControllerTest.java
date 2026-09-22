@@ -196,8 +196,13 @@ class PaymentControllerTest {
             mockMvc.perform(get("/api/payments/1/invoice").with(asCustomer()))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                    // Both the plain and the RFC 5987 UTF-8-encoded filename
+                    // parameters are present — ContentDisposition.filename(name,
+                    // charset) always emits both, so a non-ASCII name degrades
+                    // gracefully on a client that only understands the plain one.
                     .andExpect(header().string("Content-Disposition",
-                            "attachment; filename=\"invoice-PAY-260101-ABCD.pdf\""));
+                            "attachment; filename=\"invoice-PAY-260101-ABCD.pdf\"; "
+                                    + "filename*=UTF-8''invoice-PAY-260101-ABCD.pdf"));
         }
     }
 

@@ -424,13 +424,13 @@ export default function ElectricianService() {
           <div className="wizard-card">
             {stage === TYPE &&
               typeQuestions.map((q) => (
-                <QuestionField key={q.key} question={q} value={answers[q.key]} onChange={setAnswer(q.key)} error={errors[q.key]} />
+                <QuestionField key={q.key} question={q} value={answers[q.key]} onChange={setAnswer(q.key)} error={errors[q.key]} serviceSlug="electrician" />
               ))}
 
             {stage === DETAILS && (
               <>
                 {detailQuestions.map((q) => (
-                  <QuestionField key={q.key} question={q} value={answers[q.key]} onChange={setAnswer(q.key)} error={errors[q.key]} />
+                  <QuestionField key={q.key} question={q} value={answers[q.key]} onChange={setAnswer(q.key)} error={errors[q.key]} serviceSlug="electrician" />
                 ))}
                 {fileQuestions.map((q) => (
                   <FileField
@@ -448,7 +448,7 @@ export default function ElectricianService() {
             {stage === ADDONS && (
               <>
                 {addOnQuestions.map((q) => (
-                  <QuestionField key={q.key} question={q} value={answers[q.key]} onChange={setAnswer(q.key)} error={errors[q.key]} />
+                  <QuestionField key={q.key} question={q} value={answers[q.key]} onChange={setAnswer(q.key)} error={errors[q.key]} serviceSlug="electrician" />
                 ))}
                 {addOnQuestions.length === 0 && (
                   <p className="question-hint">No optional add-ons for this service.</p>

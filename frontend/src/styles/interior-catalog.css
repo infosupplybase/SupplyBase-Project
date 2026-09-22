@@ -25,12 +25,19 @@
   text-align: center;
   gap: 10px;
   padding: var(--space-4);
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.86rem;
   font-weight: 600;
   color: var(--ink);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.ibc-highlight:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--depth-inset-top), var(--shadow);
 }
 
 .ibc-highlight-icon {
@@ -40,8 +47,9 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--gold-a12);
+  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -4px 7px rgba(180, 130, 20, 0.16);
 }
 
 /* --------------------------------------------------------- home-visit cta */
@@ -52,15 +60,17 @@
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-5);
-  background: var(--dark);
+  background: linear-gradient(180deg, #262626 0%, var(--dark) 100%);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--white);
   margin-bottom: var(--space-7);
-  transition: transform var(--t) var(--ease);
+  transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
 .ibc-visit-cta:hover {
-  transform: translateY(-2px);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
 }
 
 .ibc-visit-cta strong {
@@ -85,8 +95,9 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 /* ------------------------------------------------------------- sections */
@@ -112,6 +123,13 @@
   aspect-ratio: 4 / 3;
   border-radius: var(--radius);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.ibc-space-tile:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
 }
 
 .ibc-space-tile img {
@@ -153,6 +171,7 @@
   padding: var(--space-6);
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, var(--dark), var(--dark-card));
+  box-shadow: var(--shadow);
   color: var(--white);
 }
 
@@ -160,6 +179,11 @@
   font-family: var(--font-display);
   font-size: 1.3rem;
   margin-bottom: 6px;
+  /* global.css's bare `h3` selector sets --ink (near-black) directly on
+     this element, which beats the inherited --white from .ibc-custom-band
+     no matter how much less specific it is — inheritance always loses to
+     a direct match. Needs its own color here, not on the parent. */
+  color: var(--white);
 }
 
 .ibc-custom-copy p {
@@ -212,10 +236,17 @@
 
 .ibc-design-card {
   position: relative;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.ibc-design-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
 }
 
 .ibc-design-media {
@@ -359,8 +390,9 @@
   text-align: center;
   gap: 8px;
   padding: var(--space-3);
-  background: var(--light-bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -437,12 +469,14 @@
   border: 1.5px solid var(--border);
   font-weight: 600;
   color: var(--ink-muted);
+  transition: box-shadow var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
 
 .ibc-step.current .ibc-step-num {
   border-color: var(--gold);
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .ibc-step.current {
@@ -587,8 +621,9 @@
   height: 64px;
   margin: 0 auto var(--space-4);
   border-radius: 50%;
-  background: var(--success-soft);
+  background: linear-gradient(180deg, #f3fbf7 0%, var(--success-soft) 100%);
   color: var(--success);
+  box-shadow: var(--depth-inset-top), inset 0 -4px 8px rgba(22, 121, 74, 0.14), var(--shadow-sm);
 }
 
 .ibc-confirm-panel h2 {

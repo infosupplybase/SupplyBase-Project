@@ -86,8 +86,23 @@ class AuthControllerTest {
     }
 
     private UserResponse sampleUser() {
-        return new UserResponse(1L, "Jane Doe", "jane@example.com", "9820011223", Role.CUSTOMER, null, true, true, true);
-    }
+    return new UserResponse(
+            1L,
+            "Jane Doe",
+            "jane@example.com",
+            "9820011223",
+            "FEMALE",
+            "101 MG Road",
+            "Apartment 2A",
+            "Mumbai",
+            "400001",
+            "Near Central Park",
+            Role.CUSTOMER,
+            null,
+            true,
+            true,
+            true);
+}
 
     private AuthResponse sampleAuthResponse() {
         return AuthResponse.of("access-token", "refresh-token", 900, sampleUser());
@@ -228,8 +243,17 @@ class AuthControllerTest {
             mockMvc.perform(patch("/api/auth/me")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("""
-                                    {"fullName":"Jane Doe","phone":"9820011223"}
-                                    """))
+        {
+          "fullName":"Jane Doe",
+          "phone":"9820011223",
+          "gender":"FEMALE",
+          "addressLine1":"101 MG Road",
+          "addressLine2":"Apartment 2A",
+          "city":"Mumbai",
+          "pinCode":"400001",
+          "landmark":"Near Central Park"
+        }
+        """))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.email").value("jane@example.com"));
         }

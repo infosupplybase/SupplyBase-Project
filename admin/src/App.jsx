@@ -9,6 +9,7 @@ import AdminProjects from './pages/AdminProjects';
 import AdminProjectDetail from './pages/AdminProjectDetail';
 import AdminPayments from './pages/AdminPayments';
 import AdminUsers from './pages/AdminUsers';
+import AdminPartners from './pages/AdminPartners';
 
 /**
  * ROUTES
@@ -20,6 +21,7 @@ import AdminUsers from './pages/AdminUsers';
  * /projects             Client projects list + create
  * /projects/:id         One project — stages, status
  * /payments             Advances/milestones/invoices
+ * /partners             Professionals: applications, approval, and their jobs
  * /users                Staff/customer accounts — role and enabled status
  *
  * Everything except /login sits behind AdminRoute, which both guards
@@ -37,6 +39,7 @@ export default function App() {
         <Route path="projects" element={<AdminProjects />} />
         <Route path="projects/:id" element={<AdminProjectDetail />} />
         <Route path="payments" element={<AdminPayments />} />
+        <Route path="partners" element={<AdminPartners />} />
         <Route path="users" element={<AdminUsers />} />
       </Route>
     </Routes>

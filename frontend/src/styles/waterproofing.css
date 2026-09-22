@@ -21,9 +21,10 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .wp-stage-icon {
@@ -34,8 +35,9 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: var(--light-bg);
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .wp-stage-body {
@@ -72,8 +74,14 @@
   background: var(--white);
   border: 2px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.wp-brand-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-4px);
 }
 
 .wp-brand-card input {
@@ -124,8 +132,9 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--black);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 /* ---------------------------------------------------------- rate table */
@@ -146,6 +155,7 @@
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   font-size: 0.88rem;
 }

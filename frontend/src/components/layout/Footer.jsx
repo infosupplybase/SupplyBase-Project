@@ -4,6 +4,7 @@ import Icon from '../ui/Icon';
 import {
   company,
   contact,
+  partnersUrl,
   quickLinks,
   social,
 } from '../../data/siteConfig';
@@ -165,6 +166,21 @@ export default function Footer() {
             from start to finish.
           </p>
 
+          {/* Always visible, not tucked inside a collapsed accordion — this
+              is the footer's one job that matters most. */}
+          <Link
+            to="/quote"
+            className="ft-quote-glass"
+          >
+            REQUEST A QUOTE
+
+            <Icon
+              name="arrow-right"
+              size={17}
+            />
+
+          </Link>
+
         </div>
 
 
@@ -319,11 +335,13 @@ export default function Footer() {
 
             <ul className="ft-social">
 
-              {/* WhatsApp */}
+              {/* WhatsApp — the channel most of this business's customers
+                  actually reach for; pre-filled so they don't have to think
+                  of an opening line. */}
               <li>
 
                 <a
-                  href="https://wa.me/917709588422"
+                  href={whatsappHref(WHATSAPP_MESSAGE)}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp"
@@ -337,25 +355,8 @@ export default function Footer() {
               </li>
 
 
-              {/* Instagram */}
-              <li>
-
-                <a
-                  href="https://www.instagram.com/supplybase_official/?hl=en"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                >
-                  <Icon
-                    name="instagram"
-                    size={18}
-                  />
-                </a>
-
-              </li>
-
-
-              {/* Call */}
+              {/* Call — one tap to dial, which reading the number in
+                  Contact Us doesn't give a phone user. */}
               <li>
 
                 <a
@@ -371,37 +372,29 @@ export default function Footer() {
               </li>
 
 
-              {/* Email */}
-              <li>
+              {/* Real social platforms, driven by siteConfig's `social`
+                  list — only the ones with a url actually configured show
+                  up here, so adding or removing a platform never needs a
+                  code change. */}
+              {activeSocial.map((platform) => (
+                <li key={platform.id}>
 
-                <Link
-                  to="/contact"
-                  aria-label="Email"
-                >
-                  <Icon
-                    name="mail"
-                    size={18}
-                  />
-                </Link>
+                  <a
+                    href={platform.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={platform.label}
+                  >
+                    <Icon
+                      name={platform.id}
+                      size={18}
+                    />
+                  </a>
 
-              </li>
+                </li>
+              ))}
 
             </ul>
-
-
-            {/* Request a Quote */}
-            <Link
-              to="/quote"
-              className="ft-quote-glass"
-            >
-              REQUEST A QUOTE
-
-              <Icon
-                name="arrow-right"
-                size={17}
-              />
-
-            </Link>
 
           </FooterColumn>
 
@@ -451,6 +444,26 @@ export default function Footer() {
             >
               Terms &amp; Conditions
             </button>
+
+
+            {/* For professionals, not customers — kept in the legal strip so it is
+                findable without competing with the customer-facing links above.
+                It leads to the separate partners app, so it only shows once that
+                app's address is configured (VITE_PARTNERS_URL). */}
+            {partnersUrl && (
+              <>
+                <span aria-hidden="true">
+                  |
+                </span>
+
+                <a
+                  href={`${partnersUrl}/login`}
+                  className="ft-legal-btn"
+                >
+                  Partner Login
+                </a>
+              </>
+            )}
 
           </nav>
 

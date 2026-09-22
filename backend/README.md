@@ -231,7 +231,10 @@ only class that imports the SDK, so changing or adding a gateway is one file.
 
 ## 6. Notes before going live
 
-- [ ] Set a real `JWT_SECRET` — the development fallback is in source control
+- [ ] Set a real `JWT_SECRET` — left unset, the app generates a random one on
+      every restart instead of using a fixed fallback, which is safe but
+      means every session (and every other instance, if you run more than
+      one) gets logged out each time it happens
 - [ ] Switch Razorpay from test keys to live keys
 - [ ] Point `CORS_ORIGINS` at the real domain and drop `localhost`
 - [ ] Give the app's MySQL user only the privileges it needs, not `ALL`

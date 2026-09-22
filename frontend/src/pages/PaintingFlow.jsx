@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
-import PaintingHero from '../components/painting/PaintingHero';
 import StepIndicator from '../components/painting/StepIndicator';
 import OptionCard from '../components/painting/OptionCard';
 import BrandPicker from '../components/painting/BrandPicker';
@@ -12,7 +11,7 @@ import EstimateSummary from '../components/painting/EstimateSummary';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import usePaintingCatalogue from '../hooks/usePaintingCatalogue';
-import { paintingFlows, WALL_PROBLEMS } from '../data/paintingContent';
+import { paintingFlows } from '../data/paintingContent';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { formatRupees } from '../lib/money';
 import { useAuth } from '../context/AuthContext';
@@ -22,10 +21,11 @@ import { contact } from '../data/siteConfig';
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
  * entirely by paintingFlows[flowSlug] (see paintingContent.js) and the live
- * catalogue (usePaintingCatalogue). Stage 0 is the flow's own intro splash;
- * stages 1..N are the flow's configured steps (the last of which is always
- * "summary"); then Details, Schedule and Confirm, the same three-stage tail
- * ServiceBooking.jsx already uses for every other category.
+ * catalogue (usePaintingCatalogue). Stages 1..N are the flow's configured
+ * steps (the last of which is always "summary"), starting straight on the
+ * first question rather than an intro splash; then Details, Schedule and
+ * Confirm, the same three-stage tail ServiceBooking.jsx already uses for
+ * every other category.
  */
 export default function PaintingFlow({
   modal = false,
@@ -34,6 +34,7 @@ export default function PaintingFlow({
   onStepChange,
 }) {
   const params = useParams();
+  const navigate = useNavigate();
 
   const flowSlug = propFlowSlug || params.flowSlug;
   const flow = paintingFlows[flowSlug];
@@ -41,7 +42,7 @@ export default function PaintingFlow({
   const { category, loading, error: loadError, optionsFor, productsByTier, coloursByTab } =
     usePaintingCatalogue();
 
-  const [stage, setStage] = useState(0);
+  const [stage, setStage] = useState(1);
   const [answers, setAnswers] = useState({});
   const [details, setDetails] = useState(user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
@@ -186,12 +187,16 @@ export default function PaintingFlow({
   const goBack = () => {
   setSubmitError('');
 
-  if (stage === 0 && modal) {
-    onBackToCategories?.();
+  if (stage === 1) {
+    if (modal) {
+      onBackToCategories?.();
+    } else {
+      navigate('/services/painting');
+    }
     return;
   }
 
-  setStage((s) => Math.max(s - 1, 0));
+  setStage((s) => Math.max(s - 1, 1));
 
   if (modal) {
     onStepChange?.();
@@ -293,72 +298,6 @@ if (modal) {
           </div>
         </div>
       </div>
-    );
-  }
-
-  /* -------------------------------------------------------------- intro */
-  if (stage === 0) {
-    return (
-      <>
-        <PaintingHero eyebrow="PROFESSIONAL" title={flow.name} tagline={flow.heroTagline} image={
-          flow.slug === 'renovation' ? undefined : flow.introImage
-        } />
-        <section
-  className={
-    modal
-      ? 'pnt-section pnt-modal-flow !pb-1 md:!pb-6'
-      : 'pnt-section'
-  }
->
-          <div className="container container-narrow">
-            <ul className="pnt-intro-trust">
-              {flow.introTrustPoints.map((t) => (
-                <li key={t.label}>
-                  <Icon name={t.icon} size={22} />
-                  <span>{t.label}</span>
-                </li>
-              ))}
-            </ul>
-
-            {flow.slug === 'renovation' && (
-              <div className="pnt-problems">
-                <h3>Common Wall Problems We Solve</h3>
-                <div className="pnt-problems-grid">
-                  {WALL_PROBLEMS.map((p) => (
-                    <div key={p.label} className="pnt-problem-card">
-                      <Icon name={p.icon} size={26} />
-                      <span>{p.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="pnt-included">
-              <h3>What&rsquo;s Included?</h3>
-              <ul>
-                {flow.whatsIncluded.map((item) => (
-                  <li key={item}>
-                    <Icon name="check" size={14} strokeWidth={3} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <button type="button" className="
-  btn
-  btn-primary
-  !w-full
-  md:!w-[250px]
-  md:!mx-auto
-  md:!flex
-" onClick={() => jumpToStep(1)}>
-              Get Started <Icon name="arrow-right" size={17} />
-            </button>
-          </div>
-        </section>
-      </>
     );
   }
 

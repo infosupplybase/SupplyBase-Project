@@ -245,8 +245,9 @@ button {
   display: inline-block;
   padding: 5px 12px;
   border-radius: 4px;
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 700;

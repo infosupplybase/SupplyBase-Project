@@ -3,12 +3,13 @@
 **ONE PARTNER. COMPLETE PROJECT.**
 
 
-Construction, architectural design, interior design and turnkey project execution — as three independent apps:
+Construction, architectural design, interior design and turnkey project execution — as four independent apps:
 
 | Folder | What it is | Stack |
 |---|---|---|
 | [`frontend/`](frontend) | The public website and client dashboard | React + Vite |
 | [`admin/`](admin) | The staff back-office — enquiries, bookings, projects, payments | React + Vite |
+| [`partners/`](partners) | The professionals' portal — apply to join, sign in, work assigned jobs | React + Vite |
 | [`backend/`](backend) | The API both of the above talk to | Java 21, Spring Boot |
 
 Each one has its own `package.json` (or `pom.xml`) and runs independently — there is no monorepo tooling tying them together, and no folder needs the others present to `npm install` and start.
@@ -34,7 +35,7 @@ cd admin && npm install && npm run dev      # http://localhost:3001
 
 ## 2. Deploy it
 
-For the production setup, follow [`DEPLOYMENT.md`](DEPLOYMENT.md). It covers deploying `frontend/` and `admin/` as two separate static-site projects on Vercel, and `backend/` (with its MySQL database) self-hosted on a Hostinger VPS, including every environment variable each needs.
+For the production setup, follow [`DEPLOYMENT.md`](DEPLOYMENT.md). It covers deploying `frontend/`, `admin/` and `partners/` as three separate static-site projects on Vercel, and `backend/` (with its MySQL database) self-hosted on a Hostinger VPS, including every environment variable each needs.
 
 ---
 
@@ -124,6 +125,17 @@ You should almost never need to touch a component to change content on the websi
 | `/bookings` | Site-visit bookings, plus a day-sheet view |
 | `/projects`, `/projects/:id` | Projects and their stage timeline |
 | `/payments` | Advances, milestones and invoices |
+| `/partners` | Professionals ("labour"): applications, approve / reject / suspend, and the jobs each one has |
+
+### `partners/` (the professionals' portal)
+
+Runs on port 3002 in development. Anyone can apply; nobody can give themselves access to jobs — an admin approving the application (in the admin app's **Partners** page) is what makes the account a professional.
+
+| Path | Page |
+|---|---|
+| `/login` | Partner sign in |
+| `/join` | Apply to become a partner |
+| `/` | Dashboard — application status, then assigned jobs with the next step you can take on each |
 
 ---
 
@@ -145,7 +157,7 @@ Login is real and secure, and it is handled by **our own backend** in
 `backend/` — not by any third party. Start that first: see
 [backend/README.md](backend/README.md).
 
-### Step 1 — Point both frontend apps at the API (1 min)
+### Step 1 — Point the frontend apps at the API (1 min)
 
 In `frontend/`, copy `.env.example` to `.env`. For local work the defaults are already right:
 
@@ -158,6 +170,14 @@ In `admin/`, `.env` is the same, one value:
 ```
 VITE_API_URL=http://localhost:8080
 ```
+
+`partners/` needs the same one value (copy its `.env.example` to `.env`):
+
+```
+VITE_API_URL=http://localhost:8080
+```
+
+To have the website's footer link to the partner portal, also set `VITE_PARTNERS_URL` in `frontend/.env` (for local work: `http://localhost:3002`). Left blank, the "Partner Login" link is simply hidden.
 
 Everything prefixed `VITE_` is compiled into the JavaScript a browser
 downloads, so treat it as public. Nothing secret belongs in either file —

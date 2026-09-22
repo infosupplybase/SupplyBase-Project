@@ -1,0 +1,180 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — BUTTONS
+   Three weights: gold fill for the action, gold outline for the alternative,
+   dark fill for a call to action on a light ground.
+   ========================================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: var(--control-h);
+  padding: 0 26px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background var(--t) var(--ease), border-color var(--t) var(--ease),
+              color var(--t) var(--ease), transform var(--t) var(--ease),
+              box-shadow var(--t) var(--ease);
+}
+
+.btn svg {
+  flex-shrink: 0;
+  transition: transform var(--t) var(--ease);
+}
+
+.btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* A 1px lift, not a jump. Enough to feel responsive, small enough that a
+   grid of cards does not appear to twitch. */
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ----------------------------------------------------------- variants */
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--on-gold);
+  border-color: var(--gold);
+  font-weight: 700;
+}
+
+.btn-primary:hover {
+  background: var(--gold-light);
+  border-color: var(--gold-light);
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--gold-deep);
+  border-color: var(--gold);
+}
+
+.btn-outline:hover {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+/* On a dark ground the outline button needs full-strength gold, not the
+   deepened text colour, or it disappears into the background. */
+.section-dark .btn-outline,
+.section-darker .btn-outline,
+.on-dark .btn-outline {
+  color: var(--gold);
+}
+
+.btn-dark {
+  background: var(--black);
+  color: var(--white);
+  border-color: var(--black);
+}
+
+.btn-dark:hover {
+  background: var(--dark-card);
+  box-shadow: var(--shadow);
+}
+
+.btn-ghost {
+  background: var(--white);
+  color: var(--gold-deep);
+  border-color: var(--border);
+}
+
+.btn-ghost:hover {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+}
+
+.btn-whatsapp {
+  background: var(--whatsapp);
+  color: #06301a;
+  border-color: var(--whatsapp);
+  font-weight: 700;
+}
+
+.btn-whatsapp:hover {
+  background: #34e57a;
+  border-color: #34e57a;
+}
+
+/* -------------------------------------------------------------- sizes */
+
+/* 44px, not 42: the small button still has to be a comfortable thumb target.
+   It reads smaller through its padding and type size, not its tap area. */
+.btn-sm {
+  height: var(--tap-min);
+  padding: 0 18px;
+  font-size: 13px;
+}
+
+.btn-lg {
+  height: 58px;
+  padding: 0 34px;
+  font-size: 16px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* ---------------------------------------------------------- text link */
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  transition: gap var(--t) var(--ease), color var(--t) var(--ease);
+}
+
+.link-arrow:hover {
+  gap: 13px;
+  color: var(--gold-dark);
+}
+
+.section-dark .link-arrow,
+.section-darker .link-arrow,
+.on-dark .link-arrow {
+  color: var(--gold);
+}
+
+@media (max-width: 767px) {
+  /* Full-width buttons on a phone: the whole row becomes one big target
+     instead of something to aim at. */
+  .btn-row > .btn {
+    flex: 1 1 100%;
+  }
+}

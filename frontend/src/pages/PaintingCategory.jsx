@@ -20,9 +20,9 @@ export default function PaintingCategory({
   />
 )}
 
-      <section className="pnt-section">
-        <div className="container container-narrow">
-          <div className="pnt-overview-list">
+      <section className={`pnt-section ${modal ? '!m-0 !p-0' : ''}`}>
+  <div className={`container container-narrow ${modal ? '!m-0 !p-0 !max-w-none' : ''}`}>
+    <div className={`pnt-overview-list ${modal ? '!mt-0' : ''}`}>
             {paintingCategories.map((cat) =>
   modal ? (
     <button

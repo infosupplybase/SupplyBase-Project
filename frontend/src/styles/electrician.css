@@ -22,16 +22,17 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4);
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .elc-tile:hover {
   border-color: var(--gold);
-  box-shadow: var(--shadow);
-  transform: translateY(-1px);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-6px);
 }
 
 .elc-tile-icon {
@@ -110,8 +111,9 @@
   text-align: center;
   gap: 8px;
   padding: var(--space-3);
-  background: var(--light-bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -122,9 +124,10 @@
 }
 
 .elc-included {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: var(--space-5);
   margin-bottom: var(--space-6);
 }
@@ -182,9 +185,10 @@
   gap: 4px;
   padding: var(--space-5);
   margin: var(--space-5) 0;
-  background: var(--gold-a08);
+  background: linear-gradient(180deg, #fffdf5 0%, var(--gold-a08) 100%);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .elc-estimate-label {

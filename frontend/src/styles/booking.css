@@ -35,10 +35,10 @@
   grid-template-columns: auto 1fr;
   gap: 24px;
   align-items: start;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--line-gold);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  box-shadow: var(--depth-inset-top), var(--shadow);
   padding: 26px 28px;
 }
 
@@ -46,8 +46,9 @@
   text-align: center;
   padding: 16px 22px;
   border-radius: var(--radius);
-  background: var(--bg-band);
+  background: linear-gradient(180deg, var(--bg-band) 0%, var(--gold-a12) 100%);
   border: 1px solid var(--line-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .fee-value {
@@ -159,12 +160,14 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--white);
+  box-shadow: var(--shadow-sm);
 }
 
 .stage.current .stage-num {
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   border-color: var(--gold);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 .stage.current .stage-label {
@@ -175,9 +178,10 @@
 /* ------------------------------------------------------------- questions */
 
 .wizard-panel {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: 26px 24px;
 }
 
@@ -242,12 +246,15 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   transition: all 0.18s var(--ease);
 }
 
 .option-card:hover {
   border-color: var(--gold);
   background: rgba(214, 165, 68, 0.05);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .option-mark {
@@ -267,7 +274,7 @@
 .option-card.chosen {
   border-color: var(--gold);
   background: rgba(214, 165, 68, 0.12);
-  box-shadow: inset 0 0 0 1px var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold), var(--shadow-sm);
 }
 
 .option-card.chosen .option-mark {
@@ -332,22 +339,27 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   transition: all 0.18s var(--ease);
 }
 
 .day-chip:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .day-chip:not(:disabled):hover {
   border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .day-chip.chosen {
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   border-color: var(--gold);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 .day-name {
@@ -381,6 +393,7 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   font-size: 0.94rem;
   color: var(--ink);
   transition: all 0.18s var(--ease);
@@ -392,17 +405,21 @@
   opacity: 0.38;
   cursor: not-allowed;
   text-decoration: line-through;
+  box-shadow: none;
 }
 
 .slot-chip:not(:disabled):hover {
   border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .slot-chip.chosen {
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   border-color: var(--gold);
   color: var(--on-gold);
   font-weight: 600;
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 /* ----------------------------------------------------------------- summary */
@@ -440,9 +457,10 @@
   gap: 14px;
   margin-top: 18px;
   padding: 16px 18px;
-  background: var(--bg-band);
+  background: linear-gradient(180deg, var(--bg-band) 0%, var(--gold-a12) 100%);
   border: 1px solid var(--line-gold);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-family: var(--font-display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -459,132 +477,6 @@
   justify-content: space-between;
   gap: 14px;
   margin-top: 24px;
-}
-
-/* ----------------------------------------------------------- service cards */
-
-.svc-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.svc-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--gold);
-  border-radius: var(--radius);
-  padding: 24px 22px 20px;
-  transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease);
-}
-
-.svc-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-}
-
-.svc-card[data-service="painting-waterproofing"] { border-top-color: var(--svc-painting); }
-.svc-card[data-service="plumbing"]               { border-top-color: var(--svc-plumbing); }
-.svc-card[data-service="electrician"]            { border-top-color: var(--svc-fabrication); }
-.svc-card[data-service="interior-work"]          { border-top-color: var(--svc-interior-design); }
-
-.svc-card-icon {
-  width: 54px;
-  height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  color: var(--accent);
-  margin-bottom: 14px;
-}
-
-.svc-card h2,
-.svc-card h3 {
-  font-family: var(--font-display);
-  font-size: 1.18rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.svc-card p {
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-  flex: 1;
-}
-
-.svc-card-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
-
-.svc-fee {
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold-deep);
-}
-
-/* ------------------------------------------------------------ how it works */
-
-.how-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.how-step {
-  position: relative;
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 22px 20px;
-}
-
-.how-num {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--line-gold);
-}
-
-.how-icon {
-  width: 46px;
-  height: 46px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  background: var(--accent-soft);
-  color: var(--accent);
-  margin-bottom: 12px;
-}
-
-.how-step h3 {
-  font-size: 1rem;
-  margin-bottom: 5px;
-}
-
-.how-step p {
-  font-size: 0.87rem;
-  color: var(--ink-soft);
-  margin: 0;
 }
 
 /* -------------------------------------------- sticky mobile book button */

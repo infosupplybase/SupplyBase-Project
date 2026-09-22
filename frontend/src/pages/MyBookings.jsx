@@ -48,7 +48,7 @@ export default function MyBookings() {
         eyebrow="YOUR ACCOUNT"
         title="MY BOOKINGS"
         text="Every site visit and service request you've made with Supplybase, in one place."
-        image="/assets/hero-house.svg"
+        image="/assets/services/service-hero.jpg"
         breadcrumbs={[{ label: 'My Account', to: '/dashboard' }, { label: 'Bookings' }]}
       />
 
@@ -82,7 +82,7 @@ export default function MyBookings() {
                 <div className="acct-booking-list">
                   {sorted.map((b, i) => (
                     <Reveal key={b.id} delay={i * 40}>
-                      <div className="acct-booking-card">
+                      <Link to={`/dashboard/bookings/${b.id}`} className="acct-booking-card acct-booking-card-link">
                         <div className="acct-booking-top">
                           <div>
                             <span className="acct-booking-number">{b.bookingNumber || b.reference}</span>
@@ -115,7 +115,12 @@ export default function MyBookings() {
                             </li>
                           )}
                         </ul>
-                      </div>
+
+                        <span className="acct-booking-view">
+                          View details
+                          <Icon name="arrow-right" size={15} />
+                        </span>
+                      </Link>
                     </Reveal>
                   ))}
                 </div>

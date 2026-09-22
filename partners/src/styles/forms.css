@@ -1,0 +1,415 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — FORM CONTROLS
+   Inputs, selectable cards, radios, checkboxes, upload area.
+   Every control is at least 44px tall: these forms are filled in on a phone,
+   often on site, sometimes one-handed.
+   ========================================================================= */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field label,
+.form-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.req {
+  color: var(--danger);
+}
+
+.field-hint,
+.form-hint {
+  font-size: 13px;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.field-error {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--danger);
+}
+
+/* ---------------------------------------------------------------- input */
+
+.field input,
+.field select,
+.field textarea,
+.input {
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 16px;
+  border: 1px solid #dadada;
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-size: 16px;
+  color: var(--ink);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.field textarea,
+textarea.input {
+  height: auto;
+  min-height: 120px;
+  padding: 14px 16px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.field input::placeholder,
+.field textarea::placeholder,
+.input::placeholder {
+  color: #999999;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-a24);
+}
+
+.field.error input,
+.field.error select,
+.field.error textarea {
+  border-color: var(--danger);
+}
+
+.field.error input:focus,
+.field.error textarea:focus {
+  box-shadow: 0 0 0 3px var(--danger-line);
+}
+
+.field select {
+  appearance: none;
+  /* the arrow is drawn here so the control looks the same in every browser */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23777' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+  padding-right: 42px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ---------------------------------------------------------- form section */
+
+.form-section {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.form-section + .form-section {
+  margin-top: var(--space-5);
+}
+
+.form-section-head {
+  margin-bottom: var(--space-5);
+}
+
+.form-section-head h2,
+.form-section-head h3 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  margin: 0 0 4px;
+  text-transform: none;
+}
+
+/* -------------------------------------------------- selectable cards */
+
+/*
+ * A real radio or checkbox sits inside each card, visually hidden but fully
+ * present: the whole card is a <label>, so it is keyboard reachable, screen
+ * readers announce it correctly, and the browser handles grouping.
+ *
+ * Selection is shown with a border, a tint AND a tick — never colour alone,
+ * which would leave a colour-blind customer guessing.
+ */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--space-3);
+}
+
+.choice-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 56px;
+  padding: 14px 16px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease);
+}
+
+.choice-card:hover {
+  border-color: var(--gold);
+}
+
+.choice-card input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+}
+
+/* The focus ring has to follow the hidden input onto the visible card. */
+.choice-card:focus-within {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.choice-mark {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #c9c9c9;
+  background: var(--white);
+  color: var(--on-gold);
+  transition: all var(--t-fast) var(--ease);
+}
+
+/* A radio reads as a circle, a checkbox as a square — the shape tells you
+   whether you may pick one or several before you try. */
+.choice-card[data-type='radio'] .choice-mark {
+  border-radius: 50%;
+}
+
+.choice-card[data-type='checkbox'] .choice-mark {
+  border-radius: 5px;
+}
+
+.choice-card input:checked ~ .choice-mark {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+
+.choice-card[data-type='radio'] input:checked ~ .choice-mark {
+  background: var(--white);
+  box-shadow: inset 0 0 0 4px var(--gold);
+}
+
+.choice-card:has(input:checked) {
+  border-color: var(--gold);
+  background: var(--gold-a12);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.choice-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.choice-hint {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.choice-group + .choice-group {
+  margin-top: var(--space-5);
+}
+
+.choice-group-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+  margin: 0 0 10px;
+}
+
+/* ------------------------------------------------- standalone controls */
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap-min);
+  font-size: 15px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.checkbox-row input[type='checkbox'],
+.checkbox-row input[type='radio'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--gold);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------- upload */
+
+.upload-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 170px;
+  padding: var(--space-6) var(--space-5);
+  border: 2px dashed #cfcfcf;
+  border-radius: var(--radius-lg);
+  background: var(--light-bg);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.upload-box:hover,
+.upload-box:focus-within,
+.upload-box.dragging {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+}
+
+.upload-box input[type='file'] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.upload-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+  margin-bottom: 4px;
+}
+
+.upload-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.upload-title span {
+  color: var(--gold-deep);
+  text-decoration: underline;
+}
+
+.upload-note {
+  font-size: 13px;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+.upload-list {
+  display: grid;
+  gap: 8px;
+  margin-top: var(--space-3);
+}
+
+.upload-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-size: 14px;
+}
+
+.upload-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-item-size {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* ------------------------------------------------------------- alerts */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 15px;
+  margin-bottom: var(--space-4);
+  border: 1px solid;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.alert svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alert-error {
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+
+.alert-success {
+  background: var(--success-soft);
+  border-color: var(--success-line);
+  color: var(--success);
+}
+
+.alert-warning {
+  background: var(--warning-soft);
+  border-color: var(--warning-line);
+  color: var(--warning);
+}
+
+.alert-info {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+}

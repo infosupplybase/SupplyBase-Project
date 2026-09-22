@@ -27,12 +27,14 @@ import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.auth.User;
 import in.supplybase.backend.auth.UserRepository;
+import in.supplybase.backend.booking.dto.BookingAnswerResponse;
 import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import in.supplybase.backend.catalogue.CatalogueService;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceOption;
@@ -303,6 +305,61 @@ public class BookingService {
                 .toList();
     }
 
+    /**
+     * One booking in full, including the answers actually given in the
+     * booking wizard — the /mine list above deliberately skips these (an
+     * extra query per row nobody's looking at yet), so this is the only
+     * place they're fetched.
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse get(Long id, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(booking, answerResponses);
+    }
+
+    /**
+     * A customer's own edit to their booking — contact details and the visit
+     * address only. The service items and price are locked in at booking
+     * time (see storeAnswers); changing those here would leave a reserved or
+     * paid amount out of sync with the cart, so that stays a "call us" change.
+     *
+     * Same 404-not-403 access check as get(): a booking that isn't the
+     * caller's own does not confirm its existence, let alone let them edit it.
+     */
+    @Transactional
+    public BookingResponse updateMine(Long id, UpdateMyBookingRequest request, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+        if (booking.getStatus().isFinal()) {
+            throw ApiException.badRequest(
+                    "That booking is already " + booking.getStatus().name().toLowerCase()
+                            + " and can no longer be edited.");
+        }
+
+        String phone = PhoneNumbers.normalise(request.phone());
+        booking.setName(request.name().trim());
+        booking.setPhone(phone);
+        booking.setWhatsapp(request.whatsapp() == null || request.whatsapp().isBlank()
+                ? phone : PhoneNumbers.normalise(request.whatsapp()));
+        booking.setEmail(blankToNull(request.email()));
+        booking.setAddress(request.address().trim());
+        booking.setCity(request.city().trim());
+        booking.setPincode(blankToNull(request.pincode()));
+        booking.setLocation(request.city().trim());
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(bookings.save(booking), answerResponses);
+    }
+
     @Transactional
     public BookingResponse update(Long id, UpdateBookingRequest request) {
         Booking booking = bookings.findById(id)
@@ -451,7 +508,7 @@ public class BookingService {
     public List<BookingFileResponse> listFiles(Long bookingId, AuthenticatedUser viewer) {
         Booking booking = bookings.findById(bookingId)
                 .orElseThrow(() -> ApiException.notFound("That booking"));
-        checkFileAccess(booking, viewer);
+        checkAccess(booking, viewer);
 
         return files.findByBookingIdOrderByCreatedAtDesc(bookingId).stream()
                 .map(BookingFileResponse::from)
@@ -462,7 +519,7 @@ public class BookingService {
     public DownloadedFile downloadFile(Long bookingId, Long fileId, AuthenticatedUser viewer) {
         Booking booking = bookings.findById(bookingId)
                 .orElseThrow(() -> ApiException.notFound("That booking"));
-        checkFileAccess(booking, viewer);
+        checkAccess(booking, viewer);
 
         BookingFile file = files.findById(fileId)
                 .filter(f -> f.getBooking().getId().equals(bookingId))
@@ -473,11 +530,13 @@ public class BookingService {
     }
 
     /**
-     * Staff sees any booking's files; the booking's own signed-in user (most
+     * Staff sees any booking; the booking's own signed-in user (most
      * bookings are from visitors and have none) sees only their own. Anyone
-     * else gets 404, not 403 — same reasoning as ProjectService.get.
+     * else gets 404, not 403 — same reasoning as ProjectService.get. Shared
+     * by get() and the file endpoints below — a booking's files are never
+     * visible to someone who can't see the booking itself.
      */
-    private void checkFileAccess(Booking booking, AuthenticatedUser viewer) {
+    private void checkAccess(Booking booking, AuthenticatedUser viewer) {
         if (!viewer.isStaff()
                 && (booking.getUser() == null || !booking.getUser().getId().equals(viewer.id()))) {
             throw ApiException.notFound("That booking");

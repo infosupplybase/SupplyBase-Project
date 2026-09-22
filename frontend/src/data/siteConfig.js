@@ -30,11 +30,20 @@ export const contact = {
 };
 
 /**
+ * PARTNER PORTAL — the address of the separate partners app (partners/), where
+ * professionals apply and sign in. Set VITE_PARTNERS_URL (no trailing slash) once
+ * it is deployed. Left empty, the footer's "Partner Login" link is hidden and any
+ * old /partner link goes to the home page, so the site never points at something
+ * that is not there yet.
+ */
+export const partnersUrl = (import.meta.env.VITE_PARTNERS_URL || '').replace(/\/$/, '');
+
+/**
  * SOCIAL LINKS — leave a url empty ('') to hide that icon from the footer.
  */
 export const social = [
+  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/supplybase_official/?hl=en' },
   { id: 'facebook', label: 'Facebook', url: '' },
-  { id: 'instagram', label: 'Instagram', url: '' },
   { id: 'linkedin', label: 'LinkedIn', url: '' },
   { id: 'youtube', label: 'YouTube', url: '' },
 ];

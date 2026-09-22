@@ -52,11 +52,11 @@
 .id-category-card {
   display: flex;
   flex-direction: column;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   transition:
     border-color var(--t-fast) var(--ease),
     box-shadow var(--t-fast) var(--ease),
@@ -66,8 +66,8 @@
 .id-category-card:hover,
 .id-category-card:focus-visible {
   border-color: var(--gold-a40);
-  box-shadow: var(--shadow);
-  transform: translateY(-2px);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
+  transform: translateY(-8px);
 }
 
 .id-category-photo {
@@ -134,20 +134,22 @@
 .id-project-card {
   display: flex;
   flex-direction: column;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   transition:
     border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
     transform var(--t-fast) var(--ease);
 }
 
 .id-project-card:hover,
 .id-project-card:focus-visible {
   border-color: var(--gold-a40);
-  transform: translateY(-2px);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-8px);
 }
 
 .id-project-photo {
@@ -177,9 +179,15 @@
   background: rgba(0, 0, 0, 0.45);
   color: var(--white);
   border: none;
+  box-shadow: var(--shadow-sm);
   transition:
     background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
+    color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.id-save-btn:hover {
+  transform: scale(1.1);
 }
 
 .id-save-btn.saved {
@@ -234,10 +242,18 @@
   background: var(--white);
   border: 2px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition:
     border-color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease);
+    background var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.id-package-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-4px);
 }
 
 .id-package-card input {
@@ -259,8 +275,9 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: var(--light-bg);
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .id-package-body {
@@ -295,8 +312,9 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--black);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 /* ------------------------------------------------------------- inclusions */
@@ -314,8 +332,9 @@
   text-align: center;
   gap: 6px;
   padding: var(--space-3);
-  background: var(--light-bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -392,8 +411,9 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--gold-a12);
+  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.75rem;
   font-weight: 700;
   margin-top: 2px;
@@ -416,8 +436,9 @@
   align-items: center;
   gap: 8px;
   padding: var(--space-3);
-  background: var(--light-bg);
+  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-soft);
@@ -428,9 +449,10 @@
 }
 
 .id-support-card {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: var(--space-5);
   margin-bottom: var(--space-6);
 }

@@ -48,10 +48,13 @@ public class FileStorageService {
 
         String originalName = file.getOriginalFilename();
         // The generated name is what is actually used on disk, but the
-        // original name is stored and shown back to users later — validate
-        // it anyway as defense in depth against directory traversal.
+        // original name is stored and shown back to users later — including
+        // in a Content-Disposition header on download — so it is validated
+        // as defense in depth against both directory traversal and a quote
+        // or control character (e.g. CR/LF) breaking out of that header.
         if (originalName != null
-                && (originalName.contains("..") || originalName.contains("/") || originalName.contains("\\"))) {
+                && (originalName.contains("..") || originalName.contains("/") || originalName.contains("\\")
+                        || originalName.contains("\"") || containsControlCharacter(originalName))) {
             throw ApiException.badRequest("That file name is not allowed.");
         }
 
@@ -91,6 +94,11 @@ public class FileStorageService {
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read stored file " + storageKey, e);
         }
+    }
+
+    /** True for any ASCII control character, CR and LF included. */
+    private static boolean containsControlCharacter(String name) {
+        return name.chars().anyMatch(Character::isISOControl);
     }
 
     private static String extensionOf(String originalName) {

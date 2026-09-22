@@ -2,6 +2,8 @@
 
 - `frontend/` (the public website) → **Vercel**
 - `admin/` (the staff back-office) → **Vercel**, as a second, separate project
+- `partners/` (the professionals' portal) → **Vercel**, as a third, separate
+  project — see **section 4b**
 - `backend/` (Java/Spring Boot API) **and its MySQL database** → **self-hosted
   on a Hostinger VPS** — see **section 6**, the actual deployment path this
   project uses. Sections 1–5 describe an alternative managed-hosting path
@@ -55,10 +57,11 @@ Optional variables are documented in [`backend/.env.example`](backend/.env.examp
 Google sign-in, Razorpay, and email. Keep `RAZORPAY_KEY_SECRET`, webhook secret,
 database password and mail password on the API host only.
 
-Set production CORS to the exact origins **of both frontend apps**, for example:
+Set production CORS to the exact origins **of every frontend app** (website,
+admin and partners), for example:
 
 ```text
-CORS_ORIGINS=https://supplybase-projects.vercel.app,https://admin.supplybase.co.in,https://www.supplybase.co.in,https://supplybase.co.in
+CORS_ORIGINS=https://supplybase-projects.vercel.app,https://admin.supplybase.co.in,https://partners.supplybase.co.in,https://www.supplybase.co.in,https://supplybase.co.in
 ```
 
 Do not include `localhost` or wildcard origins in production.
@@ -106,13 +109,42 @@ as the website; they're different apps with different builds.
    already sets `robots: noindex, nofollow`) is enough for most teams; add IP
    allow-listing or Vercel's password protection if you want more.
 
-`VITE_` values (in either app) are bundled into public browser JavaScript.
+## 4b. Deploy the partner portal (`partners/`) to Vercel
+
+A **third, separate** Vercel project, the same way as the admin panel.
+
+1. In Vercel, import the same GitHub repository again as another new project.
+2. Set the project's **Root Directory** to `partners`. Framework preset:
+   **Vite**.
+3. Add its environment variables:
+
+| Name | Value |
+| --- | --- |
+| `VITE_API_URL` | `https://YOUR-API-HOST` — same value as the website's |
+| `VITE_SITE_URL` | *(optional)* the website's address, e.g. `https://www.supplybase.co.in`. Used for the Terms/Privacy links and the logo. It already defaults to that address. |
+
+4. Deploy. It has its own `vercel.json` rewrite rule, like the other two.
+5. Give it a domain such as `partners.supplybase.co.in`, and add that exact
+   origin to the API's `CORS_ORIGINS` (section 6 explains where that lives on
+   the VPS) and restart the API. **Without this, sign-in and the apply form
+   fail in the browser** with a "could not reach the server" message, even
+   though the API is up.
+6. Once it is live, set `VITE_PARTNERS_URL` on the **website's** Vercel project
+   to the portal's address (no trailing slash) and redeploy the website. That
+   turns on the footer's "Partner Login" link, and makes any old `/partner`
+   link forward to the new app. Until it is set the link stays hidden.
+
+Partners are approved in the **admin** app (Partners page); the portal itself
+never grants access to jobs.
+
+`VITE_` values (in any app) are bundled into public browser JavaScript.
 Never add database, JWT, Razorpay secret, webhook, or mail credentials to
-either Vercel project — those stay in the API's environment only.
+any Vercel project — those stay in the API's environment only.
 
 ## 5. Before going live
 
-- Add both Vercel (or custom) domains to `CORS_ORIGINS`.
+- Add all three Vercel (or custom) domains — website, admin and partners — to
+  `CORS_ORIGINS`.
 - Add the website's domain to the Google OAuth authorised JavaScript origins
   if Google sign-in is enabled (the admin app never shows a Google button, so
   it needs no entry there).
@@ -181,7 +213,7 @@ nano .env   # fill in real values — see the table below
 | `DB_PASSWORD` | a strong password you generate — this is the app's own database login |
 | `DB_ROOT_PASSWORD` | a *different* strong password — MySQL's root account, only ever used by Docker to initialise the database |
 | `JWT_SECRET` | generate with `openssl rand -base64 48` |
-| `CORS_ORIGINS` | your deployed frontend/admin origins, e.g. `https://www.supplybase.co.in,https://admin.supplybase.co.in` |
+| `CORS_ORIGINS` | your deployed website, admin and partners origins, e.g. `https://www.supplybase.co.in,https://admin.supplybase.co.in,https://partners.supplybase.co.in` |
 | `FRONTEND_URL` | `https://www.supplybase.co.in` |
 | `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` | your own admin login — creates that account automatically on first boot |
 

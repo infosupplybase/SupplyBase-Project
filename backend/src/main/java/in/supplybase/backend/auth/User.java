@@ -62,6 +62,24 @@ public class User {
     @Column(length = 20)
     private String phone;
 
+    @Column(length = 20)
+    private String gender;
+
+    @Column(name = "address_line_1", length = 200)
+    private String addressLine1;
+
+    @Column(name = "address_line_2", length = 200)
+    private String addressLine2;
+
+    @Column(length = 100)
+    private String city;
+
+    @Column(name = "pin_code", length = 6)
+    private String pinCode;
+
+    @Column(length = 150)
+    private String landmark;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

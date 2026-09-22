@@ -159,12 +159,14 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space: nowrap;
-  transition: background var(--t) var(--ease), color var(--t) var(--ease);
+  box-shadow: var(--shadow-sm);
+  transition: background var(--t) var(--ease), color var(--t) var(--ease), box-shadow var(--t) var(--ease);
 }
 
 .login-btn:hover {
   background: var(--gold);
   color: var(--on-gold);
+  box-shadow: var(--shadow-gold);
 }
 
 /* ------------------------------------------------- location + notifications */

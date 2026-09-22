@@ -1,9 +1,11 @@
 package in.supplybase.backend.project;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +59,8 @@ public class ProjectController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(
                         file.contentType() != null ? file.contentType() : "application/octet-stream"))
-                .header("Content-Disposition", "attachment; filename=\"" + file.filename() + "\"")
+                .header("Content-Disposition", ContentDisposition.attachment()
+                        .filename(file.filename(), StandardCharsets.UTF_8).build().toString())
                 .body(file.content());
     }
 
