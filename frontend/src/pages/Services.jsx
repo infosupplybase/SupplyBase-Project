@@ -100,6 +100,7 @@ export default function Services() {
                 <article
                   className="svc-card"
                   data-service={service.slug}
+                  onClick={() => booking.open(service)}
                 >
                   <div className="svc-card-media">
                     <img
@@ -126,11 +127,10 @@ export default function Services() {
                     </p> */}
 
                     <div className="svc-card-foot">
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-sm"
-                        onClick={() => booking.open(service)}
-                      >
+                      {/* No onClick here — the click bubbles up to the card's own
+                          handler above (a real <button>'s keyboard activation
+                          dispatches a bubbling click too, so Tab+Enter still works). */}
+                      <button type="button" className="btn btn-primary btn-sm">
                         BOOK NOW
 
                         <Icon
