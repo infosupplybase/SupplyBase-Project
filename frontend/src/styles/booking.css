@@ -465,19 +465,29 @@
 
 .svc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
 }
+
+
 
 .svc-card {
   display: flex;
   flex-direction: column;
+
   background: var(--white);
-  border: 1px solid var(--line);
-  border-top: 3px solid var(--gold);
-  border-radius: var(--radius);
-  padding: 24px 22px 20px;
-  transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease);
+
+  border: 1px solid #e5e5e5 !important;
+  border-top: 1px solid #e5e5e5 !important;
+
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+
+  overflow: hidden;
+
+  transition:
+    transform var(--t) var(--ease),
+    box-shadow var(--t) var(--ease);
 }
 
 .svc-card:hover {
@@ -505,25 +515,27 @@
 .svc-card h2,
 .svc-card h3 {
   font-family: var(--font-display);
-  font-size: 1.18rem;
+  font-size: 1.05rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-.svc-card p {
-  font-size: 0.9rem;
-  color: var(--ink-soft);
+.svc-card-body p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-muted);
   flex: 1;
+  margin-bottom: 10px;
 }
 
 .svc-card-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-top: 16px;
-  padding-top: 14px;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
 }
 
@@ -662,4 +674,71 @@
   .floating-actions {
     bottom: 82px;
   }
+}
+
+@media (max-width: 767px) {
+  .svc-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .svc-card-media {
+  aspect-ratio: 16 / 9;
+}
+
+  .svc-card-body {
+    padding: 10px 12px 12px;
+  }
+
+  .svc-card h2,
+  .svc-card h3 {
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+
+  .svc-card p {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .svc-card-foot {
+    gap: 8px;
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+
+  .svc-card-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .svc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    
+  }
+
+  .svc-card-media {
+    aspect-ratio: 16 / 8.5;
+  }
+    
+  
+}
+
+@media (min-width: 1200px) {
+  .svc-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+    .svc-card-media {
+  aspect-ratio: 16 / 9;
+}
+}
+
+.svc-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 14px 16px 14px;
 }
