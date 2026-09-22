@@ -1,16 +1,36 @@
 /* =========================================================================
-   SUPPLYBASE PARTNERS — app shell, sign-in/apply extras, and the dashboard
-   The sign-in and apply screens use the dark auth card in auth.css; this file
-   holds what that card does not cover (a select, a note), the page shell, and
-   the dashboard itself.
+   SUPPLYBASE PARTNERS — COMPLETE CSS
+   Updated:
+   - Compact hero height
+   - Smaller hero typography
+   - Purple replaced with SupplyBase gold
+   - Hero circle/background removed
+   - Transparent partner-hero.png supported
+   - Responsive desktop/tablet/mobile
    ========================================================================= */
 
-/* Tokens the copied base styles do not define. */
+
+/* ============================================================
+   TOKENS
+   ============================================================ */
+
 :root {
   --depth-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* SupplyBase Gold */
+  --partner-gold: #c89b3c;
+  --partner-gold-dark: #a77b20;
+  --partner-gold-light: #f4e6bd;
+  --partner-gold-soft: #fbf5e6;
+
+  --partner-text: #111827;
+  --partner-text-soft: #455468;
 }
 
-/* ------------------------------------------------------------ page shell */
+
+/* ============================================================
+   PAGE SHELL
+   ============================================================ */
 
 .partner-shell {
   min-height: 100vh;
@@ -41,6 +61,7 @@
   align-items: center;
   gap: 12px;
   color: var(--ink);
+  flex-shrink: 0;
 }
 
 .partner-brand img {
@@ -62,21 +83,13 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
   font-size: 0.9rem;
   color: var(--ink-soft);
 }
 
 .partner-header-user strong {
   color: var(--ink);
-}
-
-/* The brand keeps its size; a long name is what gives way, with an ellipsis. */
-.partner-brand {
-  flex-shrink: 0;
-}
-
-.partner-header-user {
-  min-width: 0;
 }
 
 .partner-header-user > span {
@@ -90,7 +103,13 @@
   flex-shrink: 0;
 }
 
+
+/* ============================================================
+   HEADER MOBILE
+   ============================================================ */
+
 @media (max-width: 480px) {
+
   .partner-header-inner {
     gap: 10px;
   }
@@ -114,9 +133,10 @@
   }
 }
 
-.partner-content {
-  flex: 1;
-}
+
+/* ============================================================
+   ORIGINAL PARTNER HERO
+   ============================================================ */
 
 .partner-hero {
   padding: 34px 0 30px;
@@ -145,6 +165,11 @@
   color: rgba(255, 255, 255, 0.72);
   max-width: 560px;
 }
+
+
+/* ============================================================
+   PARTNER BODY
+   ============================================================ */
 
 .partner-body {
   padding: 30px 0 56px;
@@ -185,10 +210,10 @@
 }
 
 
-/* ---------------------------------------------------------- auth extras */
+/* ============================================================
+   AUTH EXTRAS
+   ============================================================ */
 
-/* pages.css styles .auth-field input for the dark card; a <select> in the
-   same wrapper needs the same treatment or it renders as a light native box. */
 .auth-card .auth-field select {
   width: 100%;
   height: var(--control-h);
@@ -201,7 +226,9 @@
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
 }
 
 .auth-card .auth-field select:focus {
@@ -215,7 +242,6 @@
   border-color: #c24545;
 }
 
-/* the option list is drawn by the OS on a light surface, so keep its text dark */
 .auth-card .auth-field select option {
   color: #1a1a1a;
   background: #fff;
@@ -228,8 +254,6 @@
   pointer-events: none;
 }
 
-/* The apply form is longer than sign-in, so let the card scroll on short
-   screens instead of running off the bottom edge. */
 .auth-card-tall {
   max-height: calc(100vh - 32px);
   overflow-y: auto;
@@ -242,7 +266,10 @@
   color: var(--auth-text-mute);
 }
 
-/* ------------------------------------------------------------ dashboard */
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
 
 .partner-layout {
   display: grid;
@@ -255,6 +282,13 @@
   min-width: 0;
 }
 
+
+
+
+/* ============================================================
+   STATUS CARD
+   ============================================================ */
+
 .partner-status-card {
   display: flex;
   flex-direction: column;
@@ -262,8 +296,14 @@
   padding: 26px 24px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #faf9f6 100%
+  );
+  box-shadow:
+    var(--depth-inset-top),
+    var(--shadow-sm);
 }
 
 .partner-status-card h2 {
@@ -309,6 +349,11 @@
   margin-top: 4px;
 }
 
+
+/* ============================================================
+   ACCOUNT SUMMARY
+   ============================================================ */
+
 .partner-summary {
   display: grid;
   grid-template-columns: 1fr;
@@ -352,7 +397,9 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: #fff;
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  box-shadow:
+    var(--depth-inset-top),
+    var(--shadow-sm);
 }
 
 .partner-side-card h3 {
@@ -362,6 +409,11 @@
   color: var(--ink-muted);
   margin: 0 0 14px;
 }
+
+
+/* ============================================================
+   SECTION TITLE
+   ============================================================ */
 
 .partner-section-title {
   display: flex;
@@ -385,6 +437,11 @@
   color: var(--ink-muted);
 }
 
+
+/* ============================================================
+   JOB CARDS
+   ============================================================ */
+
 .partner-job-list {
   display: flex;
   flex-direction: column;
@@ -398,8 +455,14 @@
   padding: 18px 18px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #faf9f6 100%
+  );
+  box-shadow:
+    var(--depth-inset-top),
+    var(--shadow-sm);
 }
 
 .partner-job-card.done {
@@ -428,22 +491,10 @@
   color: var(--ink-muted);
 }
 
-/* One column on tablets and phones. The jobs/status stay first — that is what a
-   partner opens the app for — with their account details underneath. */
-@media (max-width: 900px) {
-  .partner-layout {
-    grid-template-columns: 1fr;
-  }
-}
 
-@media (max-width: 480px) {
-  .partner-job-foot .btn {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* ---------------------------------------------- job cards and status badge */
+/* ============================================================
+   JOB CARD TOP
+   ============================================================ */
 
 .partner-job-top {
   display: flex;
@@ -488,6 +539,11 @@
   color: var(--ink-muted);
 }
 
+
+/* ============================================================
+   STATUS BADGES
+   ============================================================ */
+
 .partner-status {
   flex-shrink: 0;
   display: inline-flex;
@@ -522,6 +578,11 @@
   color: var(--danger);
 }
 
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
 .partner-empty {
   display: flex;
   flex-direction: column;
@@ -529,9 +590,15 @@
   text-align: center;
   gap: 10px;
   padding: var(--space-7) var(--space-4);
-  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    var(--light-bg) 100%
+  );
   border-radius: var(--radius-lg);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  box-shadow:
+    var(--depth-inset-top),
+    var(--shadow-sm);
 }
 
 .partner-empty h3 {
@@ -542,4 +609,679 @@
   color: var(--ink-muted);
   max-width: 380px;
   margin: 0 0 6px;
+}
+
+
+/* ============================================================
+   SUPPLYBASE PARTNER HERO
+   NEW HERO DESIGN
+   ============================================================ */
+
+.partner-hero-section {
+  position: relative;
+  background: #f5faff;
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   MAIN HERO
+   ============================================================ */
+
+.partner-hero-main {
+  position: relative;
+
+  /* REDUCED HEIGHT */
+  min-height: 390px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eef7ff 0%,
+      #f7fbff 55%,
+      #ffffff 100%
+    );
+
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   HERO CONTAINER
+   ============================================================ */
+
+.partner-hero-container {
+  min-height: 390px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: relative;
+}
+
+
+/* ============================================================
+   HERO LEFT CONTENT
+   ============================================================ */
+
+.partner-hero-content {
+  width: 52%;
+
+  position: relative;
+  z-index: 3;
+
+  /* REDUCED PADDING */
+  padding: 38px 0;
+}
+
+
+/* Small heading */
+
+.partner-hero-small {
+  display: inline-block;
+
+  margin-bottom: 12px;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+
+  /* GOLD */
+  color: var(--partner-gold-dark);
+}
+
+
+/* ============================================================
+   HERO MAIN HEADING
+   ============================================================ */
+
+.partner-hero-content h1 {
+  margin: 0;
+
+  /* SMALLER THAN BEFORE */
+  font-size: clamp(36px, 4.2vw, 54px);
+
+  line-height: 1.02;
+
+  font-weight: 800;
+
+  color: var(--partner-text);
+}
+
+
+/* GOLD TEXT */
+
+.partner-hero-content h1 span {
+  color: var(--partner-gold-dark);
+}
+
+
+/* ============================================================
+   HERO DESCRIPTION
+   ============================================================ */
+
+.partner-hero-content p {
+  max-width: 580px;
+
+  margin: 18px 0 18px;
+
+  font-size: 16px;
+
+  line-height: 1.6;
+
+  color: var(--partner-text-soft);
+}
+
+
+/* ============================================================
+   HERO POINTS
+   ============================================================ */
+
+.partner-hero-points {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.partner-hero-points div {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #27364b;
+}
+
+
+/* GOLD CHECK CIRCLE */
+
+.partner-hero-points span {
+  width: 20px;
+  height: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--partner-gold);
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+/* ============================================================
+   HERO RIGHT IMAGE
+   ============================================================ */
+
+.partner-hero-image-wrap {
+  position: absolute;
+
+  right: 0;
+  bottom: 0;
+
+  width: 52%;
+  height: 100%;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+
+/* ============================================================
+   IMPORTANT:
+   REMOVE THE OLD CIRCLE
+   ============================================================ */
+
+.partner-hero-image-bg {
+  display: none !important;
+}
+
+
+/* ============================================================
+   TRANSPARENT PARTNER HERO IMAGE
+   ============================================================ */
+
+.partner-hero-image {
+  position: relative;
+  z-index: 2;
+  width: min(560px, 100%);
+  max-height: 420px;
+  object-fit: contain;
+  object-position: bottom center;
+  transform: translateY(-30px);
+}
+
+/* ============================================================
+   WHATSAPP / JOIN BOX
+   ============================================================ */
+
+.partner-whatsapp-container {
+  position: relative;
+
+  z-index: 10;
+
+  margin-top: -28px;
+
+  padding-bottom: 38px;
+}
+
+
+/* ============================================================
+   GOLD WHATSAPP BOX
+   ============================================================ */
+
+.partner-whatsapp-box {
+  min-height: 130px;
+
+  padding: 24px 30px;
+
+  border-radius: 14px;
+
+  /* GOLD GRADIENT */
+  background:
+    linear-gradient(
+      135deg,
+      #b88a2d,
+      #d2a94c
+    );
+
+  box-shadow:
+    0 15px 35px rgba(120, 88, 28, 0.25);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 26px;
+}
+
+
+/* ============================================================
+   WHATSAPP CONTENT
+   ============================================================ */
+
+.partner-whatsapp-content {
+  color: #ffffff;
+}
+
+.partner-whatsapp-content h2 {
+  margin: 0 0 6px;
+
+  font-size: 20px;
+
+  font-weight: 700;
+}
+
+.partner-whatsapp-content p {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.92);
+
+  font-size: 14px;
+}
+
+
+/* ============================================================
+   WHATSAPP FORM
+   ============================================================ */
+
+.partner-whatsapp-form {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   PHONE INPUT
+   ============================================================ */
+
+.partner-phone-input {
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  border: 1px solid rgba(255, 255, 255, 0.75);
+
+  border-radius: 7px;
+
+  overflow: hidden;
+}
+
+
+/* Country code */
+
+.partner-country-code {
+  height: 100%;
+
+  padding: 0 12px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #ffffff;
+
+  border-right: 1px solid rgba(255, 255, 255, 0.55);
+
+  font-size: 13px;
+
+  white-space: nowrap;
+}
+
+.partner-arrow {
+  margin-left: 2px;
+  font-size: 16px;
+}
+
+
+/* Phone input field */
+
+.partner-phone-input input {
+  width: 190px;
+
+  height: 100%;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  padding: 0 13px;
+
+  font-size: 14px;
+}
+
+.partner-phone-input input::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+
+/* ============================================================
+   JOIN BUTTON
+   ============================================================ */
+
+.partner-join-button {
+  height: 48px;
+
+  padding: 0 27px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  /* GOLD TEXT */
+  color: var(--partner-gold-dark);
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.partner-join-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+
+/* ============================================================
+   DASHBOARD HEADING
+   ============================================================ */
+
+.partner-dashboard-heading {
+  padding: 45px 0 20px;
+color: #e6c50f;
+  background: #050303;
+   font-size: 25px;
+}
+
+.partner-dashboard-heading h1 {
+  margin: 7px 0;
+  color: #eff3fa;
+  font-size: 50px;
+}
+
+.partner-dashboard-heading p {
+  margin: 0;
+
+  color: #64748b;
+}
+
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+  /* Dashboard */
+
+  .partner-layout {
+    grid-template-columns: 1fr;
+  }
+
+
+  /* Hero */
+
+  .partner-hero-main {
+    min-height: auto;
+  }
+
+  .partner-hero-container {
+    min-height: auto;
+
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .partner-hero-content {
+    width: 100%;
+
+    padding: 42px 0 18px;
+  }
+
+  .partner-hero-content h1 {
+    font-size: 42px;
+  }
+
+  .partner-hero-content p {
+    font-size: 16px;
+  }
+
+
+  /* Image */
+
+  .partner-hero-image-wrap {
+    position: relative;
+
+    width: 100%;
+
+    height: 300px;
+
+    right: auto;
+  }
+
+  .partner-hero-image {
+    width: 88%;
+
+    max-height: 300px;
+  }
+
+
+  /* WhatsApp */
+
+  .partner-whatsapp-container {
+    margin-top: 0;
+  }
+
+  .partner-whatsapp-box {
+    flex-direction: column;
+
+    align-items: stretch;
+
+    padding: 24px;
+  }
+
+  .partner-whatsapp-form {
+    width: 100%;
+  }
+
+  .partner-phone-input {
+    flex: 1;
+  }
+
+  .partner-phone-input input {
+    width: 100%;
+
+    min-width: 0;
+  }
+
+  .partner-join-button {
+    padding: 0 24px;
+  }
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+   .partner-dashboard-heading h1 {
+    font-size: 26px;
+    white-space: nowrap;
+  }
+  
+ 
+  .partner-dashboard-heading p {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+
+  /* Hero */
+
+  .partner-hero-content {
+    padding: 24px 20px 6px;
+  }
+
+  .partner-hero-small {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+
+  .partner-hero-content h1 {
+    font-size: 25px;
+    line-height: 1.05;
+  }
+
+  .partner-hero-content p {
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 12px 0 14px;
+  }
+
+
+  /* Points */
+
+  .partner-hero-points {
+    gap: 6px;
+  }
+
+  .partner-hero-points div {
+    font-size: 13px;
+  }
+
+  .partner-hero-points span {
+    width: 19px;
+    height: 19px;
+    font-size: 10px;
+  }
+
+
+  /* Image */
+
+  .partner-hero-image-wrap {
+    height: 220px;
+  }
+
+  .partner-hero-image {
+    width: 88%;
+    max-height: 220px;
+    transform: translateY(-5px);
+  }
+
+
+  /* WhatsApp */
+
+  .partner-whatsapp-container {
+    padding: 0 12px 24px;
+  }
+
+  .partner-whatsapp-box {
+    padding: 18px 16px;
+    border-radius: 12px;
+    gap: 18px;
+  }
+
+  .partner-whatsapp-content h2 {
+    font-size: 18px;
+  }
+
+  .partner-whatsapp-content p {
+    font-size: 13px;
+  }
+
+  .partner-whatsapp-form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+
+  .partner-phone-input {
+    width: 100%;
+  }
+
+  .partner-phone-input input {
+    width: 100%;
+  }
+
+  .partner-join-button {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   SMALL PHONES
+   ============================================================ */
+
+@media (max-width: 400px) {
+
+  .partner-hero-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .partner-hero-content h1 {
+    font-size: 30px;
+  }
+
+  .partner-hero-image-wrap {
+    height: 235px;
+  }
+
+  .partner-hero-image {
+    max-height: 235px;
+  }
+
+  .partner-whatsapp-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+
+/* ============================================================
+   JOB BUTTON MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+  .partner-job-foot .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
