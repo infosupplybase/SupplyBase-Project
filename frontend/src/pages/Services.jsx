@@ -154,6 +154,19 @@ export default function Services() {
                 <article
                   className="svc-card"
                   data-service={service.slug}
+                  onClick={() => {
+  setSelectedService(service);
+  setSelectedInteriorSpace(null);
+  setSelectedInteriorDesign(null);
+  setShowInteriorBooking(false);
+  setSelectedInteriorDesignCategory(null);
+  setSelectedInteriorDesignProject(null);
+  setSelectedPaintingFlow(null);
+  setSelectedPlumbingTab(null);
+  setPlumbingView('category');
+  setSelectedPlumbingConsultation(null);
+  setSelectedOtherService(null);
+}}
                 >
                   <div className="svc-card-media">
                     <img
@@ -180,23 +193,10 @@ export default function Services() {
                     </p> */}
 
                     <div className="svc-card-foot">
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-sm"
-                        onClick={() => {
-  setSelectedService(service);
-  setSelectedInteriorSpace(null);
-  setSelectedInteriorDesign(null);
-  setShowInteriorBooking(false);
-  setSelectedInteriorDesignCategory(null);
-  setSelectedInteriorDesignProject(null);
-  setSelectedPaintingFlow(null);
-  setSelectedPlumbingTab(null);
-  setPlumbingView('category');
-  setSelectedPlumbingConsultation(null);
-  setSelectedOtherService(null);
-}}
-                      >
+                      {/* No onClick here — the click bubbles up to the card's own
+                          handler above (a real <button>'s keyboard activation
+                          dispatches a bubbling click too, so Tab+Enter still works). */}
+                      <button type="button" className="btn btn-primary btn-sm">
                         BOOK NOW
 
                         <Icon

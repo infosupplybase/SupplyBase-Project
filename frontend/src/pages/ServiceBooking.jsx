@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from 'react';
 
 import { Link, useParams, useSearchParams } from 'react-router-dom';
@@ -13,6 +14,9 @@ import api, { friendlyError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
 import { contact } from '../data/siteConfig';
+
+
+
 
 /**
  * One booking page, four services.
@@ -30,7 +34,8 @@ const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
 const SCHEDULE = 3;
 const CONFIRM = 4;
 
-const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
+// const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
+const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
 const emptyDetails = {
   name: '',
@@ -801,13 +806,14 @@ const stageQuestions = useMemo(() => {
             {stage < SCHEDULE &&
               stageQuestions[stage].map(
                 (question, index) => (
-                <QuestionField
-  key={`${question.key}-${index}`}
-  question={question}
-  value={answers[question.key]}
-  onChange={setAnswer(question.key)}
-  error={errors[question.key]}
-/>
+              <QuestionField
+                key={question._questionId || `${question.key}-${index}`}
+                question={question}
+                value={answers[question.key]}
+                onChange={setAnswer(question.key)}
+                error={errors[question.key]}
+                serviceSlug={slug}
+              />
                 )
               )}
 

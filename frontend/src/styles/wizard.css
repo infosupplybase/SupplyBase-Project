@@ -236,12 +236,14 @@ body:has(.wizard-shell) .floating-actions {
 .wstep.current .wstep-num {
   border-color: var(--gold);
 
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
 
   color: var(--on-gold);
 
   box-shadow:
-    0 0 0 5px rgba(223, 175, 53, 0.16);
+    var(--depth-inset-top),
+    0 0 0 5px rgba(223, 175, 53, 0.16),
+    var(--shadow-sm);
 }
 
 
@@ -288,6 +290,7 @@ body:has(.wizard-shell) .floating-actions {
   padding: clamp(16px, 3vw, 24px);
 
   box-shadow:
+    var(--depth-inset-top),
     0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
@@ -361,6 +364,8 @@ body:has(.wizard-shell) .floating-actions {
 
   border-radius: var(--radius-sm);
 
+  box-shadow: var(--shadow-sm);
+
   cursor: pointer;
 
   transition:
@@ -378,10 +383,9 @@ body:has(.wizard-shell) .floating-actions {
 .tile:hover {
   border-color: var(--gold);
 
-  transform: translateY(-2px);
+  transform: translateY(-6px);
 
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 }
 
 
@@ -480,6 +484,18 @@ body:has(.wizard-shell) .floating-actions {
   color: var(--gold-deep);
 
   background: var(--gold-a12);
+}
+
+.tile-image.has-image-error::after {
+  content: 'Image unavailable';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 
@@ -647,11 +663,12 @@ body:has(.wizard-shell) .floating-actions {
 
   border-radius: 50%;
 
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
 
   color: var(--on-gold);
 
   box-shadow:
+    var(--depth-inset-top),
     0 2px 7px rgba(0, 0, 0, 0.20);
 
   z-index: 2;
@@ -893,7 +910,9 @@ body:has(.wizard-shell) .floating-actions {
 
   border-radius: var(--radius);
 
-  background: var(--gold-a08);
+  background: linear-gradient(180deg, var(--gold-a08) 0%, var(--gold-a12) 100%);
+
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 
@@ -998,12 +1017,14 @@ body:has(.wizard-shell) .floating-actions {
 
   border-radius: 50%;
 
-  background: #22c55e;
+  background: linear-gradient(180deg, #34d873 0%, #22c55e 100%);
 
   color: var(--white);
 
   box-shadow:
-    0 0 0 10px rgba(34, 197, 94, 0.14);
+    var(--depth-inset-top),
+    0 0 0 10px rgba(34, 197, 94, 0.14),
+    var(--shadow-sm);
 }
 
 
@@ -1047,6 +1068,8 @@ body:has(.wizard-shell) .floating-actions {
   border-radius: var(--radius);
 
   background: var(--dark-card);
+
+  box-shadow: var(--shadow-sm);
 
   text-align: left;
 }
@@ -1380,6 +1403,208 @@ body:has(.wizard-shell) .floating-actions {
 .problem-location-tile .tile-icon-fallback {
   display: none;
 }
+
+/* Waterproofing problem-location chooser */
+.wp-problem-location-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  color: var(--ink);
+  text-align: left;
+  background: #fffaf0;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.wp-problem-location-trigger:hover {
+  background: #fff5d9;
+}
+
+.wp-problem-location-trigger > span:nth-child(2) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wp-problem-location-trigger small {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.wp-problem-location-trigger-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  color: var(--gold-dark);
+  background: #fff1c7;
+  border-radius: 50%;
+}
+
+.wp-problem-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(10, 12, 15, 0.68);
+  backdrop-filter: blur(3px);
+}
+
+.wp-problem-modal {
+  width: min(680px, 100%);
+  max-height: min(780px, 90vh);
+  overflow: auto;
+  padding: clamp(18px, 4vw, 28px);
+  color: var(--ink);
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.wp-problem-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.wp-problem-modal-eyebrow {
+  margin: 0 0 5px;
+  color: var(--gold-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.wp-problem-modal-head h3 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.wp-problem-modal-head p:last-child {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+.wp-problem-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  color: var(--ink-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+
+.wp-problem-modal-close:hover {
+  color: var(--ink);
+  background: var(--surface-alt);
+}
+
+.wp-problem-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wp-problem-location-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 9px;
+  padding: 0 0 12px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.wp-problem-location-option:hover,
+.wp-problem-location-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(223, 175, 53, 0.18);
+  transform: translateY(-2px);
+}
+
+.wp-problem-location-option > span:not(.wp-problem-location-image) {
+  padding: 0 12px;
+}
+
+.wp-problem-location-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 108px;
+  overflow: hidden;
+  color: var(--gold-dark);
+  background: #f4f1e9;
+}
+
+.wp-problem-location-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wp-problem-location-option > svg {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px;
+  box-sizing: content-box;
+  color: var(--on-gold);
+  background: var(--gold);
+  border-radius: 50%;
+}
+
+.wp-problem-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .wp-problem-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .wp-problem-modal {
+    max-height: 92vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .wp-problem-modal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Simple Yes / No / Not Sure options */
 .simple-radio-options {
   display: flex;

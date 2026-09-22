@@ -16,19 +16,20 @@ public record UpdateProfileRequest(
 
         String gender,
 
-        @NotBlank(message = "Please enter your address")
+        // Address is optional at this layer — someone with none on file must still be
+        // able to save an unrelated change (their phone number, say) without first
+        // being forced through a full address. The profile form itself still asks for
+        // all of it together when it asks at all; format is still checked when given.
         @Size(max = 200, message = "Address Line 1 is too long")
         String addressLine1,
 
         @Size(max = 200, message = "Address Line 2 is too long")
         String addressLine2,
 
-        @NotBlank(message = "Please enter your city")
         @Size(max = 100, message = "City name is too long")
         String city,
 
-        @NotBlank(message = "Please enter your PIN code")
-        @Pattern(regexp = "^[0-9]{6}$", message = "Enter a valid 6-digit PIN code")
+        @Pattern(regexp = "^$|^[0-9]{6}$", message = "Enter a valid 6-digit PIN code")
         String pinCode,
 
         @Size(max = 150, message = "Landmark is too long")

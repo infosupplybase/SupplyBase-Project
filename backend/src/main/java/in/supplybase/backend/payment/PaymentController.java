@@ -1,5 +1,6 @@
 package in.supplybase.backend.payment;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -7,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -61,7 +63,9 @@ public class PaymentController {
     public ResponseEntity<byte[]> invoice(@PathVariable Long id) {
         InvoiceFile invoice = service.getInvoicePdf(id, currentUser.require());
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"invoice-" + invoice.reference() + ".pdf\"")
+                .header("Content-Disposition", ContentDisposition.attachment()
+                        .filename("invoice-" + invoice.reference() + ".pdf", StandardCharsets.UTF_8)
+                        .build().toString())
                 .body(invoice.content());
     }
 

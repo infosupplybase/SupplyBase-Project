@@ -82,7 +82,7 @@ export default function MyBookings() {
                 <div className="acct-booking-list">
                   {sorted.map((b, i) => (
                     <Reveal key={b.id} delay={i * 40}>
-                      <div className="acct-booking-card">
+                      <Link to={`/dashboard/bookings/${b.id}`} className="acct-booking-card acct-booking-card-link">
                         <div className="acct-booking-top">
                           <div>
                             <span className="acct-booking-number">{b.bookingNumber || b.reference}</span>
@@ -115,7 +115,12 @@ export default function MyBookings() {
                             </li>
                           )}
                         </ul>
-                      </div>
+
+                        <span className="acct-booking-view">
+                          View details
+                          <Icon name="arrow-right" size={15} />
+                        </span>
+                      </Link>
                     </Reveal>
                   ))}
                 </div>

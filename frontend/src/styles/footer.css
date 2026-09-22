@@ -307,11 +307,14 @@
 
   text-decoration: none;
 
+  box-shadow: var(--shadow-sm);
+
   transition:
     border-color 0.2s ease,
     color 0.2s ease,
     background 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .ft-social a:hover {
@@ -322,6 +325,8 @@
   color: #000000;
 
   transform: translateY(-2px);
+
+  box-shadow: var(--shadow);
 }
 
 
@@ -338,10 +343,11 @@
   gap: 10px;
 
   width: 100%;
+  max-width: 320px;
 
   min-height: 44px;
 
-  margin-top: 50px;
+  margin-top: 24px;
 
   padding: 11px 18px;
 
@@ -574,8 +580,14 @@
 
   /* Contact and Social */
 
+  /* Contact Us isn't an accordion (nothing to collapse), so unlike the
+     sections around it, it gets no border-bottom of its own — without its
+     own bottom spacing, Social Links' heading right after it ends up
+     jammed straight under the working-hours line with no visible gap. */
   .ft-col:not(.ft-accordion) {
     padding-top: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e5e5e5;
   }
 
 
@@ -642,6 +654,11 @@
 /* =========================================================================
    PRIVACY POLICY MODAL
    ========================================================================= */
+
+/* also styles the plain <Link> in the legal strip, so it needs no underline */
+a.ft-legal-btn {
+  text-decoration: none;
+}
 
 .ft-legal-btn {
   padding: 0;

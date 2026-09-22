@@ -65,17 +65,10 @@ export default function Profile() {
       nextErrors.phone = 'Enter a 10-digit mobile number';
     }
 
-    if (!form.addressLine1.trim()) {
-      nextErrors.addressLine1 = 'Please enter your address';
-    }
-
-    if (!form.city.trim()) {
-      nextErrors.city = 'Please enter your city';
-    }
-
-    if (!form.pinCode.trim()) {
-      nextErrors.pinCode = 'Please enter your PIN code';
-    } else if (!/^\d{6}$/.test(form.pinCode.trim())) {
+    // Address is optional — someone with none on file yet must still be able to save
+    // an unrelated change, like fixing a typo in their name, without filling in an
+    // address they may not be ready to give. PIN code is still checked when given.
+    if (form.pinCode.trim() && !/^\d{6}$/.test(form.pinCode.trim())) {
       nextErrors.pinCode = 'Enter a valid 6-digit PIN code';
     }
     setErrors(nextErrors);
@@ -178,10 +171,8 @@ export default function Profile() {
                     </select>
                   </div>
 
-                  <div className={`field full ${errors.addressLine1 ? 'error' : ''}`}>
-                    <label htmlFor="p-address-line1">
-                      Address Line 1 <span className="req">*</span>
-                    </label>
+                  <div className="field full">
+                    <label htmlFor="p-address-line1">Address Line 1</label>
                     <input
                       id="p-address-line1"
                       type="text"
@@ -189,9 +180,6 @@ export default function Profile() {
                       value={form.addressLine1}
                       onChange={update('addressLine1')}
                     />
-                    {errors.addressLine1 && (
-                      <span className="field-error">{errors.addressLine1}</span>
-                    )}
                   </div>
 
                   <div className="field full">
@@ -205,10 +193,8 @@ export default function Profile() {
                     />
                   </div>
 
-                  <div className={`field ${errors.city ? 'error' : ''}`}>
-                    <label htmlFor="p-city">
-                      City <span className="req">*</span>
-                    </label>
+                  <div className="field">
+                    <label htmlFor="p-city">City</label>
                     <input
                       id="p-city"
                       type="text"
@@ -216,15 +202,10 @@ export default function Profile() {
                       value={form.city}
                       onChange={update('city')}
                     />
-                    {errors.city && (
-                      <span className="field-error">{errors.city}</span>
-                    )}
                   </div>
 
                   <div className={`field ${errors.pinCode ? 'error' : ''}`}>
-                    <label htmlFor="p-pin">
-                      PIN Code <span className="req">*</span>
-                    </label>
+                    <label htmlFor="p-pin">PIN Code</label>
                     <input
                       id="p-pin"
                       type="text"

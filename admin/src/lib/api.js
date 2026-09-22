@@ -158,6 +158,21 @@ export const api = {
         request(`/api/admin/bookings/${id}/assign`, { method: 'PATCH', body: { professionalId } }),
     },
 
+    /**
+     * Partners (professionals): applications and their jobs. `review` is the
+     * only way a partner becomes a PROFESSIONAL — approving grants the role,
+     * rejecting or suspending takes it away. A note is required for those two
+     * and is shown to the partner.
+     */
+    partners: {
+      list: ({ status, q, page = 0, size = 20 } = {}) =>
+        request(`/api/admin/partners${qs({ status, q, page, size })}`),
+      counts: () => request('/api/admin/partners/counts'),
+      get: (userId) => request(`/api/admin/partners/${userId}`),
+      review: (userId, status, note) =>
+        request(`/api/admin/partners/${userId}/status`, { method: 'PATCH', body: { status, note } }),
+    },
+
     users: {
       list: ({ role, q, page = 0, size = 20 } = {}) =>
         request(`/api/admin/users${qs({ role, q, page, size })}`),
