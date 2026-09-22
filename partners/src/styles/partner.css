@@ -32,11 +32,49 @@
    PAGE SHELL
    ============================================================ */
 
+/* ============================================================
+   PARTNERS PAGE BACKGROUND
+   ============================================================ */
+
 .partner-shell {
   min-height: 100vh;
+  position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--light-bg);
+
+  background: transparent;
+
+  overflow: hidden;
+}
+
+/* Blurred background image */
+.partner-shell::before {
+  content: "";
+  position: fixed;
+  inset: -25px;
+
+  background-image: url("/assets/partners/partner-background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  filter: blur(10px);
+  transform: scale(1.05);
+
+  opacity: 0.30;
+
+  z-index: -2;
+}
+
+/* Light transparent overlay */
+.partner-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+
+  background: rgba(255, 255, 255, 0.58);
+
+  z-index: -1;
 }
 
 .partner-header {
@@ -170,9 +208,73 @@
 /* ============================================================
    PARTNER BODY
    ============================================================ */
+/* ============================================================
+   DASHBOARD CONTENT BACKGROUND
+   Hero + Dashboard Heading यांना affect करणार नाही
+   ============================================================ */
 
 .partner-body {
+  position: relative;
+
   padding: 30px 0 56px;
+
+  /* Transparent base */
+  background: transparent;
+
+  isolation: isolate;
+
+  overflow: hidden;
+}
+
+
+/* ------------------------------------------------------------
+   BLURRED BACKGROUND IMAGE
+   ------------------------------------------------------------ */
+
+.partner-body::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0px;
+
+  background-image: url("/assets/partners/partner-background.png");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  /* Blur */
+  /* filter: blur(1px); */
+
+  /* Image transparency */
+  opacity: 1;
+
+  /* Blur edges hide करण्यासाठी */
+  transform: scale(1.06);
+
+  z-index: -2;
+
+  pointer-events: none;
+}
+
+
+/* ------------------------------------------------------------
+   WHITE TRANSPARENT OVERLAY
+   ------------------------------------------------------------ */
+
+.partner-body::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background: rgba(255, 255, 255, 0.58);
+
+  z-index: -1;
+
+  pointer-events: none;
 }
 
 .partner-footer {
@@ -207,6 +309,17 @@
 .question-hint {
   color: var(--ink-muted);
   font-size: 0.92rem;
+}
+
+
+.partner-status-card,
+.partner-side-card,
+.partner-job-card,
+.partner-empty {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid #04abf8;
+  backdrop-filter: blur(6px);
+  color: #eef7ff;
 }
 
 
