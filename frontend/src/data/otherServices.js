@@ -1,0 +1,51 @@
+/**
+ * SUPPLYBASE — OTHER SERVICES
+ * ---------------------------
+ * The category list shown at /services/other-services: everything outside
+ * the seven main services, reactivated on request after being scoped out
+ * earlier. Each tile opens the existing generic site-visit wizard at its
+ * own slug — these five categories kept their full question sets in the
+ * database the whole time; only their `active` flag changed.
+ */
+export const otherServiceTiles = [
+  {
+    slug: 'architectural-design',
+    name: 'Architectural & Design',
+    blurb: '2D drawings and 3D architectural visualisation',
+    icon: 'building',
+    image: '/assets/services/architectural-design.jpeg',
+    Image: '/assets/services/other-services/architectural-design.jpg',
+  },
+  {
+    slug: 'civil-construction',
+    name: 'Civil Construction',
+    blurb: 'New construction, RCC work, brickwork and plaster',
+    icon: 'crane',
+    image: '/assets/services/construction.jpeg',
+    Image: '/assets/services/other-services/civil-construction.jpg',
+  },
+  {
+    slug: 'furniture',
+    name: 'Furniture Work',
+    blurb: 'Modular kitchens, wardrobes, TV units and beds',
+    icon: 'wardrobe',
+    image: '/assets/services/otherservicesimage/furniture.png',
+    Image: '/assets/services/other-services/furniture.png',
+  },
+  {
+    slug: 'fabrication',
+    name: 'Fabrication',
+    blurb: 'MS and SS gates, railings, grills and staircases',
+    icon: 'welding',
+    image: '/assets/services/otherservicesimage/fabrication.png',
+    Image: '/assets/services/other-services/fabrication.jpg',
+  },
+  {
+    slug: 'finishing',
+    name: 'Finishing Work',
+    blurb: 'Flooring, marble and granite, tiling and touch-up',
+    icon: 'trowel',
+    image: '/assets/services/otherservicesimage/finishing.png',
+    Image: '/assets/services/other-services/finishing.jpg',
+  },
+];
