@@ -1,11 +1,13 @@
 package in.supplybase.backend.booking;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,7 @@ import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -67,6 +70,27 @@ public class BookingController {
         return service.myBookings(currentUser.require().id());
     }
 
+    /**
+     * One booking in full — the dashboard's "view booking" page. Staff, or
+     * the client who made it; anyone else gets a 404 (see
+     * BookingService.checkAccess).
+     */
+    @GetMapping("/api/bookings/{id}")
+    public BookingResponse get(@PathVariable Long id) {
+        return service.get(id, currentUser.require());
+    }
+
+    /**
+     * A customer editing their own booking's contact details or address —
+     * not the service items, which are locked in at booking time. Same
+     * owner-or-staff check as get() (see BookingService.checkAccess).
+     */
+    @PatchMapping("/api/bookings/{id}")
+    public BookingResponse updateMine(@PathVariable Long id,
+            @Valid @RequestBody UpdateMyBookingRequest request) {
+        return service.updateMine(id, request, currentUser.require());
+    }
+
     @GetMapping("/api/bookings/{id}/files")
     public List<BookingFileResponse> files(@PathVariable Long id) {
         return service.listFiles(id, currentUser.require());
@@ -93,7 +117,8 @@ public class BookingController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(
                         file.contentType() != null ? file.contentType() : "application/octet-stream"))
-                .header("Content-Disposition", "attachment; filename=\"" + file.filename() + "\"")
+                .header("Content-Disposition", ContentDisposition.attachment()
+                        .filename(file.filename(), StandardCharsets.UTF_8).build().toString())
                 .body(file.content());
     }
 

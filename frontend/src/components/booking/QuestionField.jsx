@@ -1,14 +1,6 @@
+import { useState } from 'react';
 import Icon from '../ui/Icon';
-
-import {
-  electricianImages,
-  electricianPropertyImages,
-  electricianLocationImages,
-  electricianIssueImages,
-  electricianLoadImages,
-  electricianUrgencyImages,
-  electricianRequirementImages,
-} from '../../data/electricianImages';
+import ProblemLocationModal from './ProblemLocationModal';
 
 import {
   waterproofingImages,
@@ -24,6 +16,16 @@ import {
   popAddonImages,
   popCeilingImages,
 } from '../../data/popCeilingImages';
+
+import {
+  electricianImages,
+  electricianPropertyImages,
+  electricianLocationImages,
+  electricianIssueImages,
+  electricianLoadImages,
+  electricianUrgencyImages,
+  electricianRequirementImages,
+} from '../../data/electricianImages';
 
 export default function QuestionField({
   question,
@@ -258,64 +260,66 @@ export default function QuestionField({
       }
     }
 
-// ========================================================
-// ELECTRICIAN
-// ========================================================
+    /**
+     * ========================================================
+     * ELECTRICIAN
+     * ========================================================
+     */
 
-if (
-  serviceSlug === 'electrician' ||
-  serviceSlug === 'electrical-services' ||
-  serviceSlug === 'electrical'
-) {
-  if (key === 'service_needed') {
-    return findImage(
-      electricianImages,
-      option
-    );
-  }
+    if (
+      serviceSlug === 'electrician' ||
+      serviceSlug === 'electrical-services' ||
+      serviceSlug === 'electrical'
+    ) {
+      if (key === 'service_needed') {
+        return findImage(
+          electricianImages,
+          option
+        );
+      }
 
-  if (key === 'property_type') {
-    return findImage(
-      electricianPropertyImages,
-      option
-    );
-  }
+      if (key === 'property_type') {
+        return findImage(
+          electricianPropertyImages,
+          option
+        );
+      }
 
-  if (key === 'service_location') {
-    return findImage(
-      electricianLocationImages,
-      option
-    );
-  }
+      if (key === 'service_location') {
+        return findImage(
+          electricianLocationImages,
+          option
+        );
+      }
 
-  if (key === 'current_issue') {
-    return findImage(
-      electricianIssueImages,
-      option
-    );
-  }
+      if (key === 'current_issue') {
+        return findImage(
+          electricianIssueImages,
+          option
+        );
+      }
 
-  if (key === 'load_requirement') {
-    return findImage(
-      electricianLoadImages,
-      option
-    );
-  }
+      if (key === 'load_requirement') {
+        return findImage(
+          electricianLoadImages,
+          option
+        );
+      }
 
-  if (key === 'urgency') {
-    return findImage(
-      electricianUrgencyImages,
-      option
-    );
-  }
+      if (key === 'urgency') {
+        return findImage(
+          electricianUrgencyImages,
+          option
+        );
+      }
 
-  if (key === 'requirement_type') {
-    return findImage(
-      electricianRequirementImages,
-      option
-    );
-  }
-}
+      if (key === 'requirement_type') {
+        return findImage(
+          electricianRequirementImages,
+          option
+        );
+      }
+    }
 
     return undefined;
   };
@@ -330,9 +334,41 @@ if (
     key === 'previous_waterproofing' ||
     key === 'previous_when';
 
+  const [isProblemLocationOpen, setProblemLocationOpen] = useState(false);
 
-
-    
+  if (key === 'problem_location') {
+    return (
+      <fieldset className="question">
+        <legend className="sr-only">{text}</legend>
+        <div className="wizard-card-head">
+          <h2>{text}{required && <span className="req"> *</span>}</h2>
+          <p>Select one or more areas where you notice the issue.</p>
+        </div>
+        <button
+          type="button"
+          className={`wp-problem-location-trigger ${selected.length ? 'has-selection' : ''}`}
+          onClick={() => setProblemLocationOpen(true)}
+          aria-haspopup="dialog"
+        >
+          <span className="wp-problem-location-trigger-icon"><Icon name="map-pin" size={23} /></span>
+          <span>
+            <strong>{selected.length ? `${selected.length} area${selected.length === 1 ? '' : 's'} selected` : 'Choose the affected area'}</strong>
+            <small>{selected.length ? selected.join(', ') : 'Tap to select from the list'}</small>
+          </span>
+          <Icon name="chevron-right" size={18} />
+        </button>
+        {error && <span className="field-error">{error}</span>}
+        {isProblemLocationOpen && (
+          <ProblemLocationModal
+            options={options || []}
+            selected={selected}
+            onToggle={toggle}
+            onClose={() => setProblemLocationOpen(false)}
+          />
+        )}
+      </fieldset>
+    );
+  }
 
   /**
    * ==========================================================

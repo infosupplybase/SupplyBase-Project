@@ -131,9 +131,10 @@
   display: flex;
   gap: var(--space-3);
   align-items: flex-start;
-  background: #fdf7e9;
+  background: linear-gradient(180deg, #fffdf5 0%, #fdf7e9 100%);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: var(--space-4);
   margin: var(--space-6) 0 var(--space-5);
 }
@@ -146,8 +147,9 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--gold-a24);
+  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.16);
 }
 
 .plb-pricing-banner h3 {
@@ -182,18 +184,18 @@
 .plb-overview-card {
   display: flex;
   flex-direction: column;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .plb-overview-card:hover {
   border-color: var(--gold);
-  box-shadow: var(--shadow);
-  transform: translateY(-2px);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
+  transform: translateY(-8px);
 }
 
 .plb-overview-photo {
@@ -367,7 +369,13 @@
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.plb-row:hover {
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-3px);
 }
 
 .plb-row-thumb {
@@ -378,8 +386,9 @@
   width: 52px;
   height: 52px;
   border-radius: var(--radius-sm);
-  background: var(--svc-plumbing-soft);
+  background: linear-gradient(160deg, #f2fcfd 0%, var(--svc-plumbing-soft) 100%);
   color: var(--svc-plumbing);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .plb-row-body {
@@ -428,15 +437,18 @@
   gap: 6px;
   padding: 9px 16px;
   border-radius: var(--radius-pill);
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.85rem;
   font-weight: 700;
-  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .plb-add-btn:hover {
-  background: var(--gold-dark);
+  background: linear-gradient(180deg, #f5d878 0%, var(--gold-light) 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-2px);
 }
 
 .plb-qty {
@@ -479,8 +491,9 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background: var(--dark);
+  background: linear-gradient(180deg, #262626 0%, var(--dark) 100%);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   color: var(--on-dark);
 }
 
@@ -524,10 +537,16 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+}
+
+.plb-consult-card:hover {
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-4px);
 }
 
 .plb-consult-icon {
@@ -538,8 +557,9 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--gold-a12);
+  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
   color: var(--gold-deep);
+  box-shadow: var(--depth-inset-top), inset 0 -4px 7px rgba(180, 130, 20, 0.16);
 }
 
 .plb-consult-body {
@@ -596,14 +616,18 @@
   gap: 6px;
   padding: 10px 18px;
   border-radius: var(--radius-pill);
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.85rem;
   font-weight: 700;
+  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .plb-consult-book:hover {
-  background: var(--gold-dark);
+  background: linear-gradient(180deg, #f5d878 0%, var(--gold-light) 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-2px);
 }
 
 /* --------------------------------------------------------------- sticky cart */
@@ -636,6 +660,7 @@
   border-radius: 50%;
   background: var(--gold-a24);
   color: var(--gold-light);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 6px rgba(0, 0, 0, 0.2);
 }
 
 .plb-cart-bar-badge {
@@ -683,15 +708,18 @@
   gap: 6px;
   padding: 10px 16px;
   border-radius: var(--radius-pill);
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top);
   font-size: 0.84rem;
   font-weight: 700;
   white-space: nowrap;
+  transition: background var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .plb-cart-bar-btn:hover {
-  background: var(--gold-dark);
+  background: linear-gradient(180deg, #f5d878 0%, var(--gold-light) 100%);
+  transform: translateY(-2px);
 }
 
 /* -------------------------------------------------------------------- cart */
@@ -778,9 +806,10 @@
 }
 
 .plb-cart-summary {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: var(--space-5);
 }
 

@@ -38,7 +38,9 @@ import Contact from './pages/Contact';
 import Quote from './pages/Quote';
 import Login from './pages/Login';
 import MyBookings from './pages/MyBookings';
+import BookingDetail from './pages/BookingDetail';
 import Profile from './pages/Profile';
+import PartnerRedirect from './pages/PartnerRedirect';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
 
@@ -79,6 +81,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * /dashboard              Redirects to /dashboard/bookings
  * /dashboard/bookings     Every booking the signed-in client has made, with real status
  * /dashboard/profile      Edit name/phone, verify email, reset password, sign out
+ * /partner/*              Forwards to the separate partners app (see partners/)
  * /privacy-policy, /terms Legal pages
  */
 export default function App() {
@@ -88,6 +91,9 @@ export default function App() {
           both paths render it; the tab that opens is taken from the URL. */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
+      {/* Professionals have their own app now (partners/). Old /partner links
+          forward there once VITE_PARTNERS_URL is set; until then they go home. */}
+      <Route path="/partner/*" element={<PartnerRedirect />} />
 
       <Route element={<Layout />}>
         <Route index element={<Home />} />
@@ -213,6 +219,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <MyBookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="dashboard/bookings/:id"
+          element={
+            <ProtectedRoute>
+              <BookingDetail />
             </ProtectedRoute>
           }
         />

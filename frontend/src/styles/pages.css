@@ -113,6 +113,7 @@
   border: 1px solid var(--grey-200);
   border-left: 3px solid var(--accent);
   border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   padding: 20px 22px;
   transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease);
 }
@@ -202,7 +203,8 @@
   border: 1px solid var(--grey-200);
   border-radius: var(--radius);
   padding: 22px;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .sidebar-card h4 {
@@ -270,6 +272,7 @@
   background: var(--grey-200);
   border: 1px solid var(--grey-200);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
   margin-bottom: 34px;
 }
@@ -321,6 +324,8 @@
   padding: 9px 16px;
   border: 1px solid var(--grey-300);
   border-radius: 40px;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
   font-size: 0.87rem;
   color: var(--grey-700);
   transition: all 0.22s var(--ease);
@@ -330,6 +335,8 @@
   border-color: var(--gold);
   color: var(--gold-dark);
   background: rgba(214, 165, 68, 0.06);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 /* --------------------------------------------------------- about page */
@@ -364,6 +371,13 @@
   border-color: rgba(214, 165, 68, 0.4);
 }
 
+/* Excludes the .service-card combo (About.jsx's photo-tile variant), which
+   already gets its own layered shadow from components.css and would have
+   that overridden by a plainer one here since this file loads later. */
+.value-card:not(.service-card) {
+  box-shadow: var(--shadow-sm);
+}
+
 .value-icon {
   width: 50px;
   height: 50px;
@@ -373,6 +387,7 @@
   border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   margin-bottom: 15px;
 }
 
@@ -549,6 +564,15 @@
 
 /* ------------------------------------------------------- contact page */
 
+@media (max-width: 720px) {
+  /* hero-contact.png's contact icons sit right-of-centre — the shared
+     mobile .page-hero-bg rule above crops on the image's plain left
+     half, cutting the icons off at the edge instead of showing them. */
+  .contact-page-hero .page-hero-bg img {
+    object-position: 68% center;
+  }
+}
+
 .contact-layout {
   display: grid;
   grid-template-columns: 1fr 380px;
@@ -569,12 +593,14 @@
   border: 1px solid var(--grey-200);
   border-radius: var(--radius);
   background: var(--white);
-  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.25s var(--ease), transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
 }
 
 .contact-card:hover {
   border-color: var(--gold);
   transform: translateY(-3px);
+  box-shadow: var(--shadow);
 }
 
 .contact-card-icon {
@@ -587,6 +613,7 @@
   border-radius: var(--radius-sm);
   background: rgba(214, 165, 68, 0.12);
   color: var(--gold-dark);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .contact-card h4 {
@@ -1091,9 +1118,10 @@
 }
 
 .material-group {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--grey-200);
   border-radius: var(--radius-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: 24px;
   transition: border-color 0.28s var(--ease), box-shadow 0.28s var(--ease);
 }
@@ -1122,6 +1150,7 @@
   border-radius: var(--radius-sm);
   background: rgba(214, 165, 68, 0.12);
   color: var(--gold-dark);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .material-group-head h3 {
@@ -1151,6 +1180,7 @@
   border: 1px solid var(--grey-200);
   border-radius: var(--radius-sm);
   background: var(--grey-50);
+  box-shadow: var(--shadow-sm);
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--grey-700);
@@ -1247,6 +1277,7 @@
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
   transition: all 0.22s var(--ease);
 }
 
@@ -1265,12 +1296,14 @@
 
 .booking-lane:hover {
   border-color: var(--gold);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .booking-lane.active {
   border-color: var(--gold);
   background: rgba(214, 165, 68, 0.08);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--depth-inset-top), var(--shadow);
 }
 
 /* ------------------------------------------------------------- progress */
@@ -1324,12 +1357,14 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--white);
+  box-shadow: var(--shadow-sm);
 }
 
 .booking-step.current .booking-step-num {
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   border-color: var(--gold);
   color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 .booking-step.current .booking-step-label {
@@ -1344,7 +1379,8 @@
   border-radius: var(--radius);
   padding: 26px 24px;
   margin: 0;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .booking-panel legend {
@@ -1374,6 +1410,7 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--white);
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-body);
   font-size: 0.94rem;
   color: var(--ink);
@@ -1384,13 +1421,16 @@
 .choice:hover {
   border-color: var(--gold);
   background: rgba(214, 165, 68, 0.06);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .choice.active {
   border-color: var(--gold);
-  background: var(--gold);
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
   font-weight: 600;
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 .booking-slot-label {
@@ -1419,8 +1459,8 @@
   padding: 40px 24px;
   border: 1px solid var(--line-gold);
   border-radius: var(--radius-lg);
-  background: var(--white);
-  box-shadow: var(--shadow);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow);
 }
 
 .booking-done-icon {
@@ -1433,6 +1473,7 @@
   border-radius: 50%;
   background: var(--success-soft);
   color: var(--success);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .booking-done h2 {

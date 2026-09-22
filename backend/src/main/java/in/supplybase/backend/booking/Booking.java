@@ -133,7 +133,7 @@ public class Booking {
     private String location;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     @Builder.Default
     private BookingStatus status = BookingStatus.PAYMENT_PENDING;
 

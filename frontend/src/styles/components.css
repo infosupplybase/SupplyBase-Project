@@ -80,9 +80,10 @@
   --svc-soft: rgba(214, 165, 68, 0.11);
   display: flex;
   flex-direction: column;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--grey-200);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: 26px 24px 20px;
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
   position: relative;
@@ -103,8 +104,8 @@
 }
 
 .service-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-8px);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
   border-color: rgba(214, 165, 68, 0.4);
 }
 
@@ -121,8 +122,9 @@
   border-radius: var(--radius-sm);
   background: var(--svc-soft);
   color: var(--svc);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   margin-bottom: 16px;
-  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  transition: background 0.3s var(--ease), color 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
 
 .service-card:hover .service-card-icon {
@@ -253,6 +255,7 @@
   border: 1px solid var(--accent-line);
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   position: relative;
 }
 
@@ -310,6 +313,15 @@
   background: var(--charcoal);
   aspect-ratio: 4 / 3.1;
   box-shadow: var(--shadow);
+}
+
+.project-card {
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
 }
 
 .project-card img {
@@ -397,6 +409,7 @@
   border: 1px solid var(--grey-300);
   border-radius: 40px;
   background: var(--white);
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-display);
   font-size: 0.88rem;
   font-weight: 600;
@@ -409,6 +422,8 @@
 .filter-btn:hover {
   border-color: var(--gold);
   color: var(--gold-deep);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .filter-btn {
@@ -420,6 +435,7 @@
   background: var(--cat);
   border-color: var(--cat);
   color: var(--on-cat);
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 /* ----------------------------------------------------------- cta band */
@@ -505,7 +521,7 @@
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 18px;
   padding: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .page-hero h1 {
@@ -583,10 +599,10 @@
 /* -------------------------------------------------------------- form */
 
 .form-card {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--grey-200);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  box-shadow: var(--depth-inset-top), var(--shadow);
   padding: clamp(24px, 4vw, 38px);
 }
 
@@ -675,6 +691,7 @@
 .file-drop:hover {
   border-color: var(--gold);
   background: rgba(214, 165, 68, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .file-drop svg {
@@ -702,6 +719,7 @@
   border-radius: 50%;
   background: rgba(37, 211, 102, 0.12);
   color: #1ba750;
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1036,7 +1054,7 @@
     /* TOP PART OF IMAGE WILL STAY VISIBLE */
     object-position: center 28%;
 
-    opacity: 0.55;
+    opacity: 0.60;
   }
 
   /* Moves the "WHAT WE DO" box down and left-of-center over the photo */
@@ -1062,7 +1080,7 @@
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 18px;
 
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.12);
 
     box-sizing: border-box;
   }
