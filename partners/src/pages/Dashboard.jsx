@@ -182,7 +182,7 @@ function PartnerHero() {
                 <span>+91</span>
 
                 <span className="partner-arrow">
-                  ⌄
+                  
                 </span>
 
               </div>
