@@ -1,0 +1,23 @@
+{
+  "name": "supplybase-projects",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Supplybase — One Partner. Complete Project. Construction, architectural design, interior design and turnkey project execution.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.8"
+  }
+}

@@ -89,6 +89,29 @@ public class RazorpayService {
         }
     }
 
+    /**
+     * Initiates a refund. Razorpay confirms it asynchronously via the
+     * refund.processed webhook — this call does not itself change any
+     * Payment row.
+     */
+    public String refund(String razorpayPaymentId, Long amountPaise) {
+        requireConfigured();
+        try {
+            JSONObject request = new JSONObject();
+            if (amountPaise != null) {
+                // Omit for a full refund — Razorpay refunds the full
+                // captured amount when "amount" is absent.
+                request.put("amount", amountPaise);
+            }
+            com.razorpay.Refund refund = clientOrCreate().payments.refund(razorpayPaymentId, request);
+            return refund.get("id");
+        } catch (Exception ex) {
+            log.error("Razorpay refund failed for payment {}", razorpayPaymentId, ex);
+            throw new ApiException(org.springframework.http.HttpStatus.BAD_GATEWAY,
+                    "We could not reach the payment gateway. Please try again in a moment.");
+        }
+    }
+
     /** Same idea for webhooks, signed with the separate webhook secret. */
     public boolean verifyWebhookSignature(String rawBody, String signature) {
         String secret = config.webhookSecret();

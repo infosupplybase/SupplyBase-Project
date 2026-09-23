@@ -1,0 +1,189 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — DESIGN TOKENS
+   The single place any colour, space, radius, shadow or duration is decided.
+   Change a value here and it changes everywhere; no component owns a hex.
+   ========================================================================= */
+
+:root {
+  /* ------------------------------------------------------------- brand */
+  --black: #050505;
+  --dark: #0b0b0b;
+  --dark-card: #151515;
+  --gold: #dfaf35;
+  --gold-light: #f2c14e;
+  --white: #ffffff;
+  --text-dark: #111111;
+  --text-light: #f5f5f5;
+  --gray: #777777;
+  --light-bg: #f7f7f7;
+  --border: #e5e5e5;
+
+  /* Deeper gold for small text on white.
+     --gold is 2.0:1 on white — fine as a fill or a rule, unreadable as 14px
+     type. This is 4.9:1 and still unmistakably the brand colour. Rule of
+     thumb: --gold for fills and borders, --gold-deep for text under 18px. */
+  --gold-deep: #8a6410;
+  --gold-dark: #b8871c;
+
+  /* Gold at low opacity, for tints and hairlines. Written out rather than
+     computed so a colour-mix fallback is never needed. */
+  --gold-a08: rgba(223, 175, 53, 0.08);
+  --gold-a12: rgba(223, 175, 53, 0.12);
+  --gold-a24: rgba(223, 175, 53, 0.24);
+  --gold-a40: rgba(223, 175, 53, 0.4);
+
+  /* ------------------------------------------------------------ surface */
+  --surface: var(--white);
+  --surface-alt: var(--light-bg);
+  --surface-dark: var(--dark);
+  --on-dark: var(--text-light);
+  --on-dark-muted: rgba(245, 245, 245, 0.66);
+  --on-gold: var(--black);
+
+  /* --------------------------------------------------------------- text */
+  --ink: var(--text-dark);
+  --ink-soft: #444444;
+  --ink-muted: var(--gray);
+
+  /* --------------------------------------------------------------- type */
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Oswald', 'Inter', sans-serif;
+
+  /* ------------------------------------------------------------ layout */
+  --container: 1440px;
+  --container-narrow: 900px;
+
+  /* Horizontal padding: 16px phone -> 64px desktop, fluid in between, so
+     there is no snap at a breakpoint. */
+  --gutter: clamp(16px, 4vw, 64px);
+
+  /* A 4px spacing scale. Everything lines up because everything is a
+     multiple of the same unit. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  --section-y: clamp(56px, 8vw, 104px);
+  --header-h: 88px;
+  --header-h-mobile: 68px;
+
+  /* ------------------------------------------------------------ radius */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* ----------------------------------------------------------- shadows */
+  --shadow-sm: 0 1px 2px rgba(5, 5, 5, 0.06), 0 1px 3px rgba(5, 5, 5, 0.04);
+  --shadow: 0 4px 16px rgba(5, 5, 5, 0.08);
+  --shadow-lg: 0 18px 45px rgba(5, 5, 5, 0.12);
+  --shadow-gold: 0 10px 26px rgba(223, 175, 53, 0.28);
+  --shadow-up: 0 -6px 22px rgba(5, 5, 5, 0.1);
+
+  /* --------------------------------------------------------- motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --t-fast: 0.18s;
+  --t: 0.25s;
+  --t-slow: 0.4s;
+
+  /* ------------------------------------------------------------- misc */
+  --control-h: 52px;   /* inputs and buttons share one height */
+  --tap-min: 44px;     /* the smallest thing a thumb should have to hit */
+  --z-header: 100;
+  --z-drawer: 200;
+  --z-sticky-cta: 95;
+  --z-float: 90;
+}
+
+/* One accent kept from the previous system: teal marks things that inform
+   rather than invite a click, so gold never has to mean two things at once. */
+:root {
+  --accent: #16606d;
+  --accent-soft: #e8f2f3;
+  --accent-line: rgba(22, 96, 109, 0.32);
+
+  --success: #16794a;
+  --success-soft: #e7f4ed;
+  --success-line: rgba(22, 121, 74, 0.34);
+  --danger: #a92f2f;
+  --danger-soft: #fbecec;
+  --danger-line: rgba(169, 47, 47, 0.34);
+  --warning: #8a5a12;
+  --warning-soft: #fbf1e3;
+  --warning-line: rgba(138, 90, 18, 0.34);
+
+  --whatsapp: #25d366;
+  --whatsapp-dark: #128c7e;
+}
+
+/* =========================================================================
+   COMPATIBILITY ALIASES
+   components.css and pages.css were written against the previous token
+   names. Rather than rewrite 2,800 lines in one pass and risk breaking
+   pages nobody has looked at yet, the old names are re-pointed at the new
+   palette here. They are a migration shim, not part of the system: as each
+   old stylesheet is rewritten against the tokens above, delete its aliases.
+   ========================================================================= */
+
+:root {
+  --bg: var(--white);
+  --bg-soft: var(--light-bg);
+  --bg-band: #fdf7e9;
+  --line: var(--border);
+  --line-gold: var(--gold-a40);
+  --charcoal: var(--dark-card);
+
+  --grey-50: #fafafa;
+  --grey-100: #f2f2f2;
+  --grey-200: var(--border);
+  --grey-300: #d6d6d6;
+  --grey-400: #aaaaaa;
+  --grey-500: #8a8a8a;
+  --grey-600: var(--gray);
+  --grey-700: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------------------------
+   IDENTITY COLOURS
+   One hue per service and per project category, used on icons, card rules and
+   page headers — never on a button. Gold means "you can act on this"; these
+   mean "this is which thing you are looking at". Every value clears 4.5:1 on
+   white, so all of it is safe as text.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --svc-painting: #b04430;
+  --svc-painting-soft: #fbeeeb;
+  --svc-plumbing: #12735a;
+  --svc-plumbing-soft: #e8f3ef;
+  --svc-electrical: #0b6e80;
+  --svc-electrical-soft: #e7f3f5;
+  --svc-interior-design: #8c4a72;
+  --svc-interior-design-soft: #f7ecf3;
+
+  --svc-architectural-design: #2b5ea6;
+  --svc-architectural-design-soft: #eaf0f9;
+  --svc-civil-construction: #7a5230;
+  --svc-civil-construction-soft: #f5efe9;
+  --svc-pop-false-ceiling: #6a5ba6;
+  --svc-pop-false-ceiling-soft: #f0eef8;
+  --svc-furniture: #5f6b23;
+  --svc-furniture-soft: #f1f3e6;
+  --svc-fabrication: #4d5a6b;
+  --svc-fabrication-soft: #eef0f3;
+  --svc-finishing: #9c3b5c;
+  --svc-finishing-soft: #f9ebf0;
+
+  --cat-residential: var(--svc-architectural-design);
+  --cat-commercial: var(--svc-interior-design);
+  --cat-interior: var(--svc-painting);
+  --cat-civil: var(--svc-civil-construction);
+  --cat-finishing: var(--svc-plumbing);
+}

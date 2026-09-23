@@ -1,5 +1,6 @@
 package in.supplybase.backend.catalogue.dto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -10,6 +11,8 @@ public record QuestionResponse(
         int stepNo, String key, String text, String inputType, boolean required,
         List<OptionResponse> options) {
 
-    public record OptionResponse(String value, String label, String hint, String group) {
+    /** `price` is null for the vast majority of options — only an add-on
+        question's choices carry one. */
+    public record OptionResponse(String value, String label, String hint, String group, BigDecimal price) {
     }
 }

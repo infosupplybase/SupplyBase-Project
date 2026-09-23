@@ -4,8 +4,7 @@ import Icon from '../components/ui/Icon';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import api, { friendlyError } from '../lib/api';
-import ServiceBookingModal from '../components/services/ServiceBookingModal';
-import useServiceBookingModal from '../components/services/useServiceBookingModal';
+import ServiceBookingModal, { useServiceBookingModal } from '../components/services/ServiceBookingModal';
 
 /**
  * The four services (RULE 1).
@@ -101,7 +100,6 @@ export default function Services() {
                 <article
                   className="svc-card"
                   data-service={service.slug}
-                  onClick={() => booking.open(service)}
                 >
                   <div className="svc-card-media">
                     <img
@@ -128,10 +126,11 @@ export default function Services() {
                     </p> */}
 
                     <div className="svc-card-foot">
-                      {/* No onClick here — the click bubbles up to the card's own
-                          handler above (a real <button>'s keyboard activation
-                          dispatches a bubbling click too, so Tab+Enter still works). */}
-                      <button type="button" className="btn btn-primary btn-sm">
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() => booking.open(service)}
+                      >
                         BOOK NOW
 
                         <Icon

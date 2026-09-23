@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -63,6 +65,23 @@ public class GlobalExceptionHandler {
                         request.getRequestURI()));
     }
 
+    /**
+     * Two writers touched the same @Version-ed row (Booking, Payment,
+     * AppointmentSlot) at once. This is a real conflict, not a bug — the loser
+     * needs to re-read and retry, which is what 409 tells a client to do,
+     * rather than falling through to the generic 500 handler and looking like
+     * our fault.
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleOptimisticLock(ObjectOptimisticLockingFailureException ex,
+                                                          HttpServletRequest request) {
+        log.info("Optimistic lock conflict on {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiError.of(409, "Conflict",
+                        "This was just updated by someone else. Please refresh and try again.",
+                        request.getRequestURI()));
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleIntegrity(DataIntegrityViolationException ex,
                                                     HttpServletRequest request) {
@@ -71,6 +90,19 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(409, "Conflict",
                         "That record conflicts with one that already exists.",
                         request.getRequestURI()));
+    }
+
+    /**
+     * Spring throws this for any request matching no controller and no static
+     * resource — a typo'd or removed endpoint. Without this handler it falls
+     * through to the catch-all below and reports a client's bad URL as our
+     * server failing, which is both wrong and confusing to debug.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(NoResourceFoundException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiError.of(404, "Not Found",
+                        "Nothing here.", request.getRequestURI()));
     }
 
     @ExceptionHandler(Exception.class)

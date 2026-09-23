@@ -68,16 +68,16 @@ export default function InteriorDesignCategory({
             ))}
           </div>
 
-          <div className={modal ? 'pnt-overview-list' : 'id-category-grid'}>
+          <div className="id-category-grid">
             {visible.map((cat) =>
   modal ? (
     <button
       key={cat.slug}
       type="button"
-      className="pnt-overview-card !w-full !text-left"
+      className="id-category-card !w-full !text-left"
       onClick={() => onSelectCategory?.(cat.slug)}
     >
-      <span className="pnt-overview-photo">
+      <span className="id-category-photo">
         <img
           src={cat.image}
           alt=""
@@ -85,19 +85,19 @@ export default function InteriorDesignCategory({
         />
       </span>
 
-      <span className="pnt-overview-body">
-        <span className="pnt-overview-name">{cat.name}</span>
-        <span className="pnt-overview-tagline">{cat.tagline}</span>
-        <span className="pnt-overview-tagline id-category-area">
+      <span className="id-category-body">
+        <strong>{cat.name}</strong>
+        <span>{cat.tagline}</span>
+        <span className="id-category-area">
           {cat.areaNote}
         </span>
       </span>
 
-      <Icon
+      {/* <Icon
         name="chevron-right"
         size={18}
         className="pnt-overview-arrow"
-      />
+      /> */}
     </button>
   ) : (
     <Link

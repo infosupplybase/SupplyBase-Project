@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon';
 import api, { friendlyError } from '../../lib/api';
-import ServiceBookingModal from '../services/ServiceBookingModal';
-import useServiceBookingModal from '../services/useServiceBookingModal';
+import ServiceBookingModal, { useServiceBookingModal } from '../services/ServiceBookingModal';
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
     key in components/ui/Icon.jsx — used only as a placeholder if a category

@@ -1,0 +1,998 @@
+/* =========================================================================
+   SUPPLYBASE FOOTER
+   Clean layout inspired by the provided Urban Company reference
+   ========================================================================= */
+
+/* .ft {
+  width: 100%;
+  background: #ffffff;
+  color: #666666;
+  font-size: 15px;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+/* =========================================================================
+   MAIN CONTAINER
+   ========================================================================= */
+
+/* .ft-inner {
+  width: min(1380px, calc(100% - 80px));
+
+  /* Center footer content */
+  /* margin: 0 auto !important; */
+
+  /* Control vertical spacing here */
+  /* padding: 50px 0 30px !important; */
+
+  /* box-sizing: border-box; }*/
+
+
+
+/* =========================================================================
+   LOGO + TAGLINE
+   ========================================================================= */
+
+/* .ft-brand {
+   margin: 0 !important;
+  padding: 0 !important;
+}*/
+
+/*.ft-logo {
+  display: block;
+
+  width: 170px;
+  max-width: 170px;
+  height: auto;
+
+  object-fit: contain;
+
+  margin: 0 !important;
+  padding: 0 !important;
+} */
+
+.ft {
+  width: 100%;
+  background: #ffffff;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ft-inner {
+  width: min(1380px, calc(100% - 80px));
+  margin: 0 auto !important;
+
+  /* Remove white space above logo */
+  padding-top: 0 !important;
+  padding-bottom: 30px !important;
+}
+
+.ft-brand {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ft-logo {
+  display: block;
+  width: 170px;
+  height: auto;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ft-intro {
+  max-width: 500px;
+
+  /* Space between logo and description */
+  margin: 20px 0 0 !important;
+  padding: 0 !important;
+
+  color: #666666;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+ 
+
+/* =========================================================================
+   FOUR COLUMN LAYOUT
+   ========================================================================= */
+
+.ft-grid {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr
+    1fr
+    1fr;
+
+  gap: clamp(45px, 6vw, 110px);
+
+  align-items: start;
+
+  margin: 40px 0 0 !important;
+  padding: 0 !important;
+}
+ .ft-col {
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================================================================
+   HEADINGS
+   ========================================================================= */
+
+.ft-heading {
+  /* margin: 0 0 28px;
+  padding: 0; */
+
+  margin: 0 0 22px !important;
+  padding: 0 !important;
+
+  color: #202020;
+
+  font-size: 20px;
+  font-weight: 600;
+
+  line-height: 1.3;
+}
+
+
+/* Remove old gold heading underline */
+
+.ft-heading::after {
+  display: none !important;
+}
+
+
+/* =========================================================================
+   LINK LIST
+   ========================================================================= */
+
+.ft-list {
+  list-style: none;
+
+  /* padding: 0;
+  margin: 0; */
+   margin: 0 !important;
+  padding: 0 !important;
+}
+
+.ft-list li {
+  margin: 0 0 14px !important;
+  padding: 0 !important;
+}
+
+.ft-list li:last-child {
+  margin-bottom: 0 !important;
+}
+
+
+/* =========================================================================
+   LINKS
+   ========================================================================= */
+
+.ft-list a {
+  display: inline-block;
+
+   margin: 0;
+  padding: 0;
+
+  color: #666666;
+
+  font-size: 16px;
+  font-weight: 400;
+
+  line-height: 1.5;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.ft-list a:hover {
+  color: #111111;
+}
+
+
+/* =========================================================================
+   REMOVE OLD SERVICE ICONS
+   ========================================================================= */
+
+.ft-service-icon {
+  display: none !important;
+}
+
+
+/* =========================================================================
+   REMOVE OLD ARROWS
+   ========================================================================= */
+
+.ft-arrow {
+  display: none !important;
+}
+
+
+/* =========================================================================
+   CONTACT US
+   ========================================================================= */
+
+.ft-contact {
+  list-style: none;
+
+  padding: 0;
+  margin: 0;
+}
+
+.ft-contact li {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 11px;
+
+  margin: 0 0 17px;
+
+  color: #666666;
+
+  font-size: 16px;
+
+  line-height: 1.55;
+}
+
+.ft-contact li:last-child {
+  margin-bottom: 0;
+}
+
+.ft-contact svg {
+  flex-shrink: 0;
+
+  margin-top: 2px;
+
+  color: #555555;
+}
+
+.ft-contact a {
+  color: #666666;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.ft-contact a:hover {
+  color: #111111;
+}
+
+
+/* =========================================================================
+   SOCIAL LINKS
+   ========================================================================= */
+
+.ft-social {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  list-style: none;
+
+  padding: 0;
+  margin: 0;
+}
+
+.ft-social li {
+  margin: 0;
+}
+
+.ft-social a {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+
+  border: 1px solid #dddddd;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  color: #222222;
+
+  text-decoration: none;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ft-social a:hover {
+  border-color: #222222;
+
+  background: #f8f8f8;
+
+  color: #000000;
+
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow);
+}
+
+
+/* =========================================================================
+   REQUEST A QUOTE - GLASS BUTTON
+   ========================================================================= */
+
+.ft-quote-glass {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  width: 100%;
+  max-width: 320px;
+
+  min-height: 44px;
+
+  margin-top: 24px;
+
+  padding: 11px 18px;
+
+  border: 1px solid rgba(213, 157, 22, 0.45);
+
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.45);
+
+  backdrop-filter: blur(10px);
+
+  -webkit-backdrop-filter: blur(10px);
+
+  color: #b8860b;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.3px;
+
+  text-decoration: none;
+
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.ft-quote-glass:hover {
+  background: rgba(229, 177, 44, 0.15);
+
+  border-color: #d5a01d;
+
+  color: #8f6800;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 7px 20px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+
+/* =========================================================================
+   BOTTOM DIVIDER
+   ========================================================================= */
+
+.ft-bottom {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-top: 70px;
+
+  padding-top: 30px;
+
+  border-top: 1px solid #e3e3e3;
+}
+
+
+/* =========================================================================
+   COPYRIGHT
+   ========================================================================= */
+
+.ft-bottom p {
+  margin: 0;
+
+  color: #666666;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+.ft-gold {
+  color: #d59d16;
+}
+
+
+/* =========================================================================
+   LEGAL LINKS
+   ========================================================================= */
+
+.ft-legal {
+  display: flex;
+
+  align-items: center;
+
+  gap: 15px;
+
+  white-space: nowrap;
+}
+
+.ft-legal a {
+  color: #666666;
+
+  font-size: 14px;
+
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.ft-legal a:hover {
+  color: #111111;
+}
+
+
+/* =========================================================================
+   TABLET
+   ========================================================================= */
+
+@media (max-width: 1100px) {
+
+  .ft-inner {
+    width: min(100% - 60px, 1000px);
+  }
+
+  .ft-grid {
+    gap: 30px;
+  }
+
+}
+
+
+/* =========================================================================
+   SMALL TABLET
+   ========================================================================= */
+
+@media (max-width: 850px) {
+
+  .ft-inner {
+    width: calc(100% - 50px);
+  }
+
+  .ft-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    row-gap: 45px;
+  }
+
+}
+
+
+/* =========================================================================
+   MOBILE
+   ========================================================================= */
+
+@media (max-width: 767px) {
+
+  .ft-inner {
+    width: calc(100% - 36px);
+
+    padding: 40px 0 20px;
+  }
+
+
+  /* Logo */
+
+  .ft-brand {
+    margin-bottom: 35px;
+  }
+
+  .ft-logo {
+    width: 140px;
+
+    max-width: 140px;
+  }
+
+  .ft-intro {
+    font-size: 14px;
+  }
+
+
+  /* Columns */
+
+  .ft-grid {
+    display: block;
+  }
+
+
+  /* Accordion */
+
+  .ft-accordion {
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .ft-accordion .ft-heading {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin: 0;
+
+    padding: 18px 0;
+
+    cursor: pointer;
+  }
+
+  .ft-accordion-chevron {
+    transition: transform 0.2s ease;
+  }
+
+  .ft-accordion[open] .ft-accordion-chevron {
+    transform: rotate(180deg);
+  }
+
+  .ft-accordion .ft-list {
+    padding-bottom: 18px;
+  }
+
+  .ft-accordion .ft-list li {
+    margin-bottom: 12px;
+  }
+
+
+  /* Contact and Social */
+
+  /* Contact Us isn't an accordion (nothing to collapse), so unlike the
+     sections around it, it gets no border-bottom of its own — without its
+     own bottom spacing, Social Links' heading right after it ends up
+     jammed straight under the working-hours line with no visible gap. */
+  .ft-col:not(.ft-accordion) {
+    padding-top: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+
+  /* Social */
+
+  .ft-social {
+    margin-bottom: 0;
+  }
+
+
+  /* Glass Quote Button */
+
+  .ft-quote-glass {
+    margin-top: 30px;
+  }
+
+
+  /* Bottom */
+
+  .ft-bottom {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 15px;
+
+    margin-top: 40px;
+  }
+
+  .ft-legal {
+    flex-wrap: wrap;
+  }
+
+}
+
+
+/* =========================================================================
+   SMALL PHONE
+   ========================================================================= */
+
+@media (max-width: 480px) {
+
+  .ft-inner {
+    width: calc(100% - 30px);
+  }
+
+  .ft-logo {
+    width: 130px;
+
+    max-width: 130px;
+  }
+
+  .ft-bottom p,
+  .ft-legal a {
+    font-size: 13px;
+  }
+
+}
+
+/* =========================================================================
+   PRIVACY POLICY MODAL
+   ========================================================================= */
+
+/* =========================================================================
+   PRIVACY POLICY MODAL
+   ========================================================================= */
+
+/* also styles the plain <Link> in the legal strip, so it needs no underline */
+a.ft-legal-btn {
+  text-decoration: none;
+}
+
+.ft-legal-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #666666;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ft-legal-btn:hover {
+  color: #111111;
+}
+
+/* Modal background overlay */
+.privacy-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+/* Main modal */
+.privacy-modal {
+  position: relative;
+  width: min(700px, 100%);
+  max-height: 80vh;
+  padding: 35px;
+
+  /* Modal itself should NOT scroll */
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+/* Modal main heading */
+.privacy-modal h2 {
+  margin: 0 0 25px;
+  color: #202020;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+/* Scrollable content */
+.privacy-modal-content {
+  max-height: calc(80vh - 110px);
+  overflow-y: auto;
+
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  color: #666666;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* Chrome / Edge / Safari */
+.privacy-modal-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Content heading */
+.privacy-modal-content h3 {
+  margin: 0 0 18px;
+  color: #202020;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+/* Section headings */
+.privacy-modal-content h4 {
+  margin: 24px 0 10px;
+  color: #202020;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* Paragraphs */
+.privacy-modal-content p {
+  margin: 0 0 14px;
+  color: #666666;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* Bullet lists */
+.privacy-modal-content ul {
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+
+.privacy-modal-content li {
+  margin-bottom: 8px;
+  color: #666666;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Close button */
+.privacy-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: #f5f5f5;
+  color: #333333;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.privacy-modal-close:hover {
+  background: #eeeeee;
+  color: #000000;
+}
+
+
+/* =========================================================================
+   MOBILE
+   ========================================================================= */
+
+@media (max-width: 767px) {
+
+  .privacy-modal-overlay {
+    padding: 18px;
+  }
+
+  .privacy-modal {
+    width: 100%;
+    max-height: 85vh;
+    padding: 30px;
+
+    overflow: hidden;
+  }
+
+  .privacy-modal-content {
+    max-height: calc(85vh - 100px);
+    overflow-y: auto;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .privacy-modal-content::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+
+  .privacy-modal h2 {
+    font-size: 22px;
+  }
+
+  .privacy-modal-content h3 {
+    font-size: 22px;
+  }
+
+  .privacy-modal-content h4 {
+    font-size: 16px;
+  }
+
+  .privacy-modal-content p,
+  .privacy-modal-content li {
+    font-size: 14px;
+  }
+}
+
+/* =========================================================================
+   TERMS & CONDITIONS MODAL
+   ========================================================================= */
+
+.terms-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.terms-modal {
+  position: relative;
+  width: min(700px, 100%);
+  max-height: 80vh;
+  padding: 35px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.terms-modal > h2 {
+  margin: 0 0 25px;
+  color: #202020;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.terms-modal-content {
+  max-height: calc(80vh - 110px);
+  overflow-y: auto;
+
+  color: #666666;
+  font-size: 15px;
+  line-height: 1.7;
+
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.terms-modal-content::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.terms-modal-content h3 {
+  margin: 24px 0 10px;
+  color: #202020;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.terms-modal-content p {
+  margin: 0 0 15px;
+  color: #666666;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.terms-modal-content ul {
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+
+.terms-modal-content li {
+  margin-bottom: 8px;
+  color: #666666;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.terms-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #f5f5f5;
+  color: #333333;
+
+  font-size: 25px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.terms-modal-close:hover {
+  background: #eeeeee;
+  color: #000000;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 767px) {
+
+  .terms-modal-overlay {
+    padding: 18px;
+  }
+
+  .terms-modal {
+    width: 100%;
+    max-height: 85vh;
+    padding: 30px;
+    overflow: hidden;
+  }
+
+  .terms-modal-content {
+    max-height: calc(85vh - 100px);
+    overflow-y: auto;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .terms-modal-content::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .terms-modal > h2 {
+    font-size: 22px;
+  }
+
+  .terms-modal-content h3 {
+    font-size: 17px;
+  }
+
+  .terms-modal-content p,
+  .terms-modal-content li {
+    font-size: 14px;
+  }
+}

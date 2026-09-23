@@ -133,13 +133,24 @@ public class Booking {
     private String location;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     @Builder.Default
     private BookingStatus status = BookingStatus.PAYMENT_PENDING;
 
     @Column(name = "visit_fee_paise", nullable = false)
     @Builder.Default
     private long visitFeePaise = 2500L;
+
+    /**
+     * Sum of this booking's cart line items (see BookingAnswer.lineTotalPaise),
+     * for a cart-style checkout — null for a booking with no priced items
+     * (the generic wizard, or a pure consultation booking). Distinct from
+     * visitFeePaise, which is the amount actually payable now: the real
+     * items total when it's at or under the ₹5,000 actual-pricing threshold,
+     * or the flat ₹99 home-visit fee when it's over — see BookingService.create.
+     */
+    @Column(name = "items_total_paise")
+    private Long itemsTotalPaise;
 
     @Column(name = "paid_at")
     private java.time.Instant paidAt;

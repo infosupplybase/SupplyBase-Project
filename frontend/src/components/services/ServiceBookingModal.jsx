@@ -21,6 +21,38 @@ import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
 import OtherServicesCategory from '../../pages/OtherServicesCategory';
 
+/**
+ * Opens the "Book a service" modal, shared by every page that lets someone
+ * pick a service and book it: the Services page's own grid and the
+ * homepage's Popular Services tiles both render this component so the
+ * booking flow is identical (same catalogue, same steps) no matter which
+ * page you started from.
+ *
+ * Usage: const booking = useServiceBookingModal(); ... onClick={() =>
+ * booking.open(service)} ... {booking.service && <ServiceBookingModal
+ * key={booking.openToken} service={booking.service} onClose={booking.close}
+ * />}
+ *
+ * The `key={booking.openToken}` remounts the modal fresh on every open —
+ * including reopening the same service right after closing it — so a
+ * half-finished sub-flow (a picked interior space, a plumbing tab, a cart)
+ * never leaks into the next booking.
+ */
+export function useServiceBookingModal() {
+  const [service, setService] = useState(null);
+  const [openToken, setOpenToken] = useState(0);
+
+  return {
+    service,
+    openToken,
+    open: (nextService) => {
+      setService(nextService);
+      setOpenToken((token) => token + 1);
+    },
+    close: () => setService(null),
+  };
+}
+
 export default function ServiceBookingModal({ service, onClose }) {
   const [selectedInteriorSpace, setSelectedInteriorSpace] = useState(null);
   const [selectedInteriorDesign, setSelectedInteriorDesign] = useState(null);
@@ -64,7 +96,12 @@ export default function ServiceBookingModal({ service, onClose }) {
           relative
           w-full
 
-         ${service.slug === 'interior-by-choice' ? 'max-w-[500px]' : 'max-w-[500px]'}
+         ${service.slug === 'interior-by-choice'
+  ? 'max-w-[1000px]'
+  : service.slug === 'interior-design'
+    ? 'max-w-[1000px]'
+    : 'max-w-[500px]'
+}
 
           max-h-[88vh]
           h-auto
@@ -362,7 +399,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                   {/* DESIGN GALLERY */}
                   {/* ========================================= */}
 
-                  <div className="painting-modal-scope pb-2 md:pb-8">
+                  <div className="pb-2 md:pb-8">
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm mb-4"
@@ -561,7 +598,14 @@ export default function ServiceBookingModal({ service, onClose }) {
                       Choose Your Space
                     </h3>
 
-                    <div className="pnt-overview-list">
+                    <div
+                      className="
+                        grid
+                        grid-cols-1
+                        gap-4
+                        sm:grid-cols-2
+                      "
+                    >
                       {interiorSpaces.map(
                         (space) => (
                           <button
@@ -578,27 +622,54 @@ export default function ServiceBookingModal({ service, onClose }) {
 
                               scrollModalToTop();
                             }}
-                            className="pnt-overview-card !w-full !text-left"
+                            className="
+                              group
+                              relative
+                              overflow-hidden
+                              rounded-xl
+                              text-left
+                            "
                           >
-                            <span className="pnt-overview-photo">
-                              <img
-                                src={space.image}
-                                alt={space.name}
-                                loading="lazy"
-                              />
-                            </span>
+                            <img
+                              src={space.image}
+                              alt={space.name}
+                              className="
+                                h-36
+                                w-full
+                                object-cover
 
-                            <span className="pnt-overview-body">
-                              <span className="pnt-overview-name">
-                                {space.name}
-                              </span>
-                            </span>
+                                transition
+                                duration-300
 
-                            <Icon
-                              name="chevron-right"
-                              size={18}
-                              className="pnt-overview-arrow"
+                                group-hover:scale-105
+
+                                sm:h-44
+                              "
                             />
+
+                            <div
+                              className="
+                                absolute
+                                inset-0
+                                bg-gradient-to-t
+                                from-black/70
+                                via-black/10
+                                to-transparent
+                              "
+                            />
+
+                            <span
+                              className="
+                                absolute
+                                bottom-3
+                                left-4
+                                text-base
+                                font-semibold
+                                text-white
+                              "
+                            >
+                              {space.name}
+                            </span>
                           </button>
                         )
                       )}
@@ -634,20 +705,42 @@ export default function ServiceBookingModal({ service, onClose }) {
                 }}
               />
             ) : (
-              <div className="painting-modal-scope">
-                <InteriorDesignCategory
-                  modal={true}
-                  onSelectCategory={(categorySlug) => {
-                    setSelectedInteriorDesignCategory(categorySlug);
-                    setSelectedInteriorDesignProject(null);
-                    scrollModalToTop();
-                  }}
-                  onCustom={() => {
-                    console.log('Custom interior design');
-                  }}
-                />
-              </div>
+              <InteriorDesignCategory
+                modal={true}
+                onSelectCategory={(categorySlug) => {
+                  setSelectedInteriorDesignCategory(categorySlug);
+                  setSelectedInteriorDesignProject(null);
+                  scrollModalToTop();
+                }}
+                onCustom={() => {
+                  console.log('Custom interior design');
+                }}
+              />
             )
+
+  //        ) : service.slug === 'painting' ? (
+  // <div className="painting-modal-scope">
+  //   {selectedPaintingFlow ? (
+  //     <PaintingFlow
+  //       modal={true}
+  //       flowSlug={selectedPaintingFlow}
+  //       onBackToCategories={() => {
+  //         setSelectedPaintingFlow(null);
+  //         scrollModalToTop();
+  //       }}
+  //       onStepChange={scrollModalToTop}
+  //     />
+  //   ) : (
+  //     <PaintingCategory
+  //       modal={true}
+  //       onSelectFlow={(flowSlug) => {
+  //         setSelectedPaintingFlow(flowSlug);
+  //         scrollModalToTop();
+  //       }}
+  //     />
+  //   )}
+  // </div>
+
           ) : service.slug === 'painting' ? (
             selectedPaintingFlow ? (
               <div className="painting-modal-scope">
@@ -672,8 +765,9 @@ export default function ServiceBookingModal({ service, onClose }) {
                 />
               </div>
             )
+
           ) : service.slug === 'plumbing' ? (
-            <div className="plumbing-modal-scope painting-modal-scope service-modal-scope">
+            <div className="plumbing-modal-scope">
             {plumbingView === 'category' ? (
               <PlumbingCategory
                 modal={true}
@@ -784,20 +878,12 @@ export default function ServiceBookingModal({ service, onClose }) {
               />
             )
           ) : (
-            <div
-              className={
-                ['waterproofing', 'pop-ceiling-design', 'electrical'].includes(service.slug)
-                  ? 'painting-modal-scope service-modal-scope'
-                  : ''
-              }
-            >
-              <ServiceBooking
-                serviceSlug={service.slug}
-                modal={true}
-                onClose={onClose}
-                onStepChange={scrollModalToTop}
-              />
-            </div>
+            <ServiceBooking
+              serviceSlug={service.slug}
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
           )}
         </div>
       </div>

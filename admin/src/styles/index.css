@@ -1,0 +1,11 @@
+/* =========================================================================
+   SUPPLYBASE ADMIN — STYLESHEET ENTRY POINT
+   A smaller foundation than the marketing site: tokens, reset, buttons,
+   form controls, then the admin panel's own layout/table/badge/drawer rules.
+   ========================================================================= */
+
+@import './variables.css';
+@import './global.css';
+@import './buttons.css';
+@import './forms.css';
+@import './admin.css';

@@ -19,19 +19,28 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import in.supplybase.backend.appointment.AppointmentService;
 import in.supplybase.backend.appointment.AppointmentSlot;
+import in.supplybase.backend.auth.AuthenticatedUser;
+import in.supplybase.backend.auth.Role;
+import in.supplybase.backend.auth.User;
 import in.supplybase.backend.auth.UserRepository;
+import in.supplybase.backend.booking.dto.BookingAnswerResponse;
+import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
+import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import in.supplybase.backend.catalogue.CatalogueService;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceOption;
 import in.supplybase.backend.catalogue.ServiceOptionRepository;
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.FileStorageService;
 import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
 import in.supplybase.backend.config.AppProperties;
@@ -44,6 +53,35 @@ public class BookingService {
     /** A real person does not book six site visits in an hour; a bot does. */
     private static final int MAX_PER_PHONE_PER_HOUR = 5;
 
+    /**
+     * The plumbing cart's pricing rule (from the approved rate card): actual
+     * itemised pricing up to ₹5,000, a flat ₹99 home-visit/assessment fee
+     * above that (adjusted into the final bill if the customer proceeds).
+     * Scoped narrowly to the 'plumbing' category slug (checked in create()
+     * below) and its 'cart_item'/'consultation_type' question keys (see
+     * V14) — every other category's pricing, including painting's own
+     * itemised total and the electrician add-ons' priced options, is
+     * untouched by this.
+     */
+    private static final String PLUMBING_SLUG = "plumbing";
+    private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
+    private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+
+    /**
+     * Painting's itemised answer keys (see V15) — priced the same way
+     * plumbing's 'cart_item' is (matched catalogue price × quantity, summed
+     * into itemsTotalPaise), but WITHOUT plumbing's ₹5,000/₹99 threshold
+     * override: painting's visitFeePaise stays exactly the category's own
+     * configured fee (see V15's pricing-conflict notes — the reference's
+     * ₹99 is not applied here pending confirmation). 'paint_brand' and every
+     * *_area/*_colour key are deliberately excluded — they carry no price in
+     * the reference, they are recorded as plain answers only.
+     */
+    private static final Set<String> PAINTING_PRICED_KEYS = Set.of(
+            "home_type", "full_home_painting_type", "full_home_product", "full_home_addon",
+            "few_walls_painting_type", "few_walls_product", "few_walls_addon",
+            "renovation_repair", "renovation_addon");
+
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
     private final UserRepository users;
@@ -53,12 +91,15 @@ public class BookingService {
     private final BookingNumbers bookingNumbers;
     private final AppProperties props;
     private final ObjectProvider<JavaMailSender> mailSender;
+    private final BookingFileRepository files;
+    private final FileStorageService storage;
 
     public BookingService(BookingRepository bookings, BookingAnswerRepository answers,
                           UserRepository users, CatalogueService catalogue,
                           ServiceOptionRepository options, AppointmentService appointments,
                           BookingNumbers bookingNumbers, AppProperties props,
-                          ObjectProvider<JavaMailSender> mailSender) {
+                          ObjectProvider<JavaMailSender> mailSender,
+                          BookingFileRepository files, FileStorageService storage) {
         this.bookings = bookings;
         this.answers = answers;
         this.users = users;
@@ -68,6 +109,8 @@ public class BookingService {
         this.bookingNumbers = bookingNumbers;
         this.props = props;
         this.mailSender = mailSender;
+        this.files = files;
+        this.storage = storage;
     }
 
     /**
@@ -123,9 +166,33 @@ public class BookingService {
         }
 
         Booking saved = bookings.save(booking);
-        storeAnswers(saved, category, request.answers());
+        CartPricing pricing = storeAnswers(saved, category, request.answers());
+
+        // Cart/consultation pricing rule — scoped to the 'cart_item' and
+        // 'consultation_type' answer keys only (see the constants' Javadoc).
+        // Every other booking keeps the category's flat visitFeePaise exactly
+        // as before.
+        if (pricing.itemsTotalPaise() > 0) {
+            saved.setItemsTotalPaise(pricing.itemsTotalPaise());
+            // Plumbing's ₹5,000/₹99 threshold is plumbing-only — painting
+            // (and anything else with a non-zero itemsTotalPaise) keeps the
+            // category's own flat visitFeePaise, already set above.
+            if (PLUMBING_SLUG.equals(category.getSlug())) {
+                saved.setVisitFeePaise(pricing.itemsTotalPaise() <= ACTUAL_PRICING_THRESHOLD_PAISE
+                        ? pricing.itemsTotalPaise()
+                        : HOME_VISIT_FEE_PAISE);
+            }
+            saved = bookings.save(saved);
+        } else if (pricing.hasConsultationAnswer()) {
+            saved.setVisitFeePaise(HOME_VISIT_FEE_PAISE);
+            saved = bookings.save(saved);
+        }
+
         notifyStaff(saved);
         return BookingReceipt.from(saved);
+    }
+
+    private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
     }
 
     /**
@@ -134,25 +201,38 @@ public class BookingService {
      * The request shape is open — questions are data — but that must not mean
      * anything can be written. A key the service never asks about is dropped,
      * and a choice that is not one of the offered options is refused outright.
+     *
+     * Also computes the cart pricing total: for a 'cart_item' answer whose
+     * matched catalogue option carries a price, the line's unit price and
+     * quantity are copied from the catalogue/request — quantity from the
+     * request (client-chosen, capped at 1 minimum by validation), price
+     * always from the catalogue, never from the request — and multiplied
+     * into a running total. This is what create() uses to decide the real
+     * amount payable, so a manipulated client-side total can never be
+     * charged.
      */
-    private void storeAnswers(Booking booking, ServiceCategory category,
+    private CartPricing storeAnswers(Booking booking, ServiceCategory category,
                               List<CreateBookingRequest.AnswerInput> submitted) {
         if (submitted == null || submitted.isEmpty()) {
-            return;
+            return new CartPricing(0L, false);
         }
 
         Map<String, ServiceOption> questionByKey = new HashMap<>();
         Map<String, Set<String>> allowedByKey = new HashMap<>();
+        Map<String, ServiceOption> optionByKeyAndValue = new HashMap<>();
         for (ServiceOption option : options
                 .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(category.getId())) {
             questionByKey.putIfAbsent(option.getQuestionKey(), option);
             if (option.getOptionValue() != null) {
                 allowedByKey.computeIfAbsent(option.getQuestionKey(), k -> new HashSet<>())
                         .add(option.getOptionValue());
+                optionByKeyAndValue.put(option.getQuestionKey() + " " + option.getOptionValue(), option);
             }
         }
 
         List<BookingAnswer> rows = new ArrayList<>();
+        long itemsTotalPaise = 0L;
+        boolean hasConsultationAnswer = false;
         for (CreateBookingRequest.AnswerInput input : submitted) {
             ServiceOption question = questionByKey.get(input.key());
             if (question == null) {
@@ -169,17 +249,31 @@ public class BookingService {
                         "\"" + input.value() + "\" is not an option for that question.");
             }
 
-            rows.add(BookingAnswer.builder()
+            BookingAnswer.BookingAnswerBuilder row = BookingAnswer.builder()
                     .bookingId(booking.getId())
                     .questionKey(input.key())
                     // Copied from the catalogue, not from the request — the
                     // browser does not get to decide what it was asked.
                     .questionText(question.getQuestionText())
                     .answerValue(input.value())
-                    .answerLabel(input.label())
-                    .build());
+                    .answerLabel(input.label());
+
+            if ("cart_item".equals(input.key()) || PAINTING_PRICED_KEYS.contains(input.key())) {
+                ServiceOption matched = optionByKeyAndValue.get(input.key() + " " + input.value());
+                if (matched != null && matched.getPricePaise() != null) {
+                    int quantity = input.quantity() == null ? 1 : Math.max(1, input.quantity());
+                    long lineTotal = matched.getPricePaise() * quantity;
+                    row.quantity(quantity).unitPricePaise(matched.getPricePaise()).lineTotalPaise(lineTotal);
+                    itemsTotalPaise += lineTotal;
+                }
+            } else if ("consultation_type".equals(input.key())) {
+                hasConsultationAnswer = true;
+            }
+
+            rows.add(row.build());
         }
         answers.saveAll(rows);
+        return new CartPricing(itemsTotalPaise, hasConsultationAnswer);
     }
 
     /* ------------------------------------------------------------- reads */
@@ -211,6 +305,61 @@ public class BookingService {
                 .toList();
     }
 
+    /**
+     * One booking in full, including the answers actually given in the
+     * booking wizard — the /mine list above deliberately skips these (an
+     * extra query per row nobody's looking at yet), so this is the only
+     * place they're fetched.
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse get(Long id, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(booking, answerResponses);
+    }
+
+    /**
+     * A customer's own edit to their booking — contact details and the visit
+     * address only. The service items and price are locked in at booking
+     * time (see storeAnswers); changing those here would leave a reserved or
+     * paid amount out of sync with the cart, so that stays a "call us" change.
+     *
+     * Same 404-not-403 access check as get(): a booking that isn't the
+     * caller's own does not confirm its existence, let alone let them edit it.
+     */
+    @Transactional
+    public BookingResponse updateMine(Long id, UpdateMyBookingRequest request, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+        if (booking.getStatus().isFinal()) {
+            throw ApiException.badRequest(
+                    "That booking is already " + booking.getStatus().name().toLowerCase()
+                            + " and can no longer be edited.");
+        }
+
+        String phone = PhoneNumbers.normalise(request.phone());
+        booking.setName(request.name().trim());
+        booking.setPhone(phone);
+        booking.setWhatsapp(request.whatsapp() == null || request.whatsapp().isBlank()
+                ? phone : PhoneNumbers.normalise(request.whatsapp()));
+        booking.setEmail(blankToNull(request.email()));
+        booking.setAddress(request.address().trim());
+        booking.setCity(request.city().trim());
+        booking.setPincode(blankToNull(request.pincode()));
+        booking.setLocation(request.city().trim());
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(bookings.save(booking), answerResponses);
+    }
+
     @Transactional
     public BookingResponse update(Long id, UpdateBookingRequest request) {
         Booking booking = bookings.findById(id)
@@ -220,11 +369,178 @@ public class BookingService {
                     "That booking is already " + booking.getStatus().name().toLowerCase()
                             + " and cannot be changed.");
         }
+        // isFinal() above guarantees a booking can only ever reach CANCELLED
+        // once, so the seat is released exactly once — no extra guard needed.
+        if (request.status() == BookingStatus.CANCELLED && booking.getAppointmentSlot() != null) {
+            appointments.release(booking.getAppointmentSlot());
+        }
         booking.setStatus(request.status());
         if (request.adminNotes() != null) {
             booking.setAdminNotes(request.adminNotes());
         }
         return BookingResponse.from(bookings.save(booking));
+    }
+
+    /* ----------------------------------------------------------- staff */
+
+    /**
+     * Hands a booking to a professional.
+     *
+     * Only allowed once the office has actually confirmed the visit
+     * (CONFIRMED) or has already decided assignment is next
+     * (ASSIGNMENT_PENDING) — assigning a still-unpaid or already-finished
+     * booking would be a state-machine violation, not a not-found or a bad
+     * input, hence the 409.
+     */
+    @Transactional
+    public BookingResponse assignProfessional(Long bookingId, Long professionalId) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        if (booking.getStatus() != BookingStatus.CONFIRMED
+                && booking.getStatus() != BookingStatus.ASSIGNMENT_PENDING) {
+            throw ApiException.conflict(
+                    "A booking can only be assigned from CONFIRMED or ASSIGNMENT_PENDING status.");
+        }
+
+        User professional = users.findById(professionalId)
+                .orElseThrow(() -> ApiException.badRequest("That account does not exist."));
+        if (professional.getRole() != Role.PROFESSIONAL) {
+            throw ApiException.badRequest("That account is not a professional.");
+        }
+
+        booking.setAssignedProfessional(professional);
+        booking.setStatus(BookingStatus.PROFESSIONAL_ASSIGNED);
+        return BookingResponse.from(bookings.save(booking));
+    }
+
+    /* ------------------------------------------------------- professional */
+
+    @Transactional(readOnly = true)
+    public List<ProfessionalBookingResponse> myAssignedBookings(Long professionalId) {
+        return bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(professionalId).stream()
+                .map(ProfessionalBookingResponse::from)
+                .toList();
+    }
+
+    /**
+     * A narrow, forward-only set of transitions a professional may make on
+     * their own job — progressing a visit or a job already scheduled by the
+     * office. Anything else (cancelling, jumping stages, touching payment or
+     * assignment) stays with staff.
+     */
+    private static final Map<BookingStatus, Set<BookingStatus>> SELF_SERVICE_TRANSITIONS = Map.of(
+            BookingStatus.SITE_VISIT_SCHEDULED, Set.of(BookingStatus.SITE_VISIT_COMPLETED),
+            BookingStatus.WORK_SCHEDULED, Set.of(BookingStatus.WORK_IN_PROGRESS),
+            BookingStatus.WORK_IN_PROGRESS, Set.of(BookingStatus.WORK_COMPLETED));
+
+    @Transactional
+    public ProfessionalBookingResponse advanceOwnBookingStatus(
+            Long bookingId, BookingStatus newStatus, Long callerId) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        // Not theirs (or unassigned) gets 404, not 403 — same reasoning as
+        // ProjectService.get: revealing that the booking exists is itself
+        // information a stranger to it is not entitled to.
+        if (booking.getAssignedProfessional() == null
+                || !booking.getAssignedProfessional().getId().equals(callerId)) {
+            throw ApiException.notFound("That booking");
+        }
+
+        Set<BookingStatus> allowed = SELF_SERVICE_TRANSITIONS.get(booking.getStatus());
+        if (allowed == null || !allowed.contains(newStatus)) {
+            throw ApiException.badRequest("That status change is not available to you.");
+        }
+
+        booking.setStatus(newStatus);
+        return ProfessionalBookingResponse.from(bookings.save(booking));
+    }
+
+    /* ---------------------------------------------------------------- files */
+
+    public record DownloadedFile(byte[] content, String filename, String contentType) {
+    }
+
+    @Transactional
+    public BookingFileResponse uploadFile(Long bookingId, String kind, MultipartFile file, Long uploaderId) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        FileStorageService.StoredFile stored = storage.store(file, "bookings/" + bookingId);
+
+        BookingFile.BookingFileBuilder builder = BookingFile.builder()
+                .booking(booking)
+                .storageKey(stored.storageKey())
+                .originalName(stored.originalName())
+                .contentType(stored.contentType() != null ? stored.contentType() : "application/octet-stream")
+                .sizeBytes(stored.sizeBytes())
+                .kind(kind == null || kind.isBlank() ? "PHOTO" : kind);
+
+        if (uploaderId != null) {
+            users.findById(uploaderId).ifPresent(builder::uploadedBy);
+        }
+
+        return BookingFileResponse.from(files.save(builder.build()));
+    }
+
+    /**
+     * The booking wizard's own upload call, for the two services that collect
+     * photos of the problem or the appliance. Booking creation is public and
+     * usually anonymous, so this cannot require a signed-in owner the way
+     * {@link #listFiles} does — instead it trusts whoever holds both the
+     * booking number (BookingReceipt deliberately withholds the numeric id —
+     * see its own javadoc — so this takes the human-readable number instead)
+     * and the phone number on the booking, the same proof-of-ownership shape
+     * the create endpoint's own rate limit already relies on.
+     */
+    @Transactional
+    public BookingFileResponse uploadOwnFile(String bookingNumber, String phone, String kind, MultipartFile file) {
+        Booking booking = bookings.findByBookingNumber(bookingNumber)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        if (!booking.getPhone().equals(PhoneNumbers.normalise(phone))) {
+            throw ApiException.notFound("That booking");
+        }
+        Long uploaderId = booking.getUser() != null ? booking.getUser().getId() : null;
+        return uploadFile(booking.getId(), kind, file, uploaderId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingFileResponse> listFiles(Long bookingId, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        return files.findByBookingIdOrderByCreatedAtDesc(bookingId).stream()
+                .map(BookingFileResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public DownloadedFile downloadFile(Long bookingId, Long fileId, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        BookingFile file = files.findById(fileId)
+                .filter(f -> f.getBooking().getId().equals(bookingId))
+                .orElseThrow(() -> ApiException.notFound("That file"));
+
+        byte[] content = storage.load(file.getStorageKey());
+        return new DownloadedFile(content, file.getOriginalName(), file.getContentType());
+    }
+
+    /**
+     * Staff sees any booking; the booking's own signed-in user (most
+     * bookings are from visitors and have none) sees only their own. Anyone
+     * else gets 404, not 403 — same reasoning as ProjectService.get. Shared
+     * by get() and the file endpoints below — a booking's files are never
+     * visible to someone who can't see the booking itself.
+     */
+    private void checkAccess(Booking booking, AuthenticatedUser viewer) {
+        if (!viewer.isStaff()
+                && (booking.getUser() == null || !booking.getUser().getId().equals(viewer.id()))) {
+            throw ApiException.notFound("That booking");
+        }
     }
 
     /* ------------------------------------------------------------ email */

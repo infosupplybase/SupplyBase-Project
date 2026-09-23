@@ -1,0 +1,79 @@
+# Production stack for a single VPS: MySQL + the API, both containerized,
+# neither reachable from the internet except through nginx (see
+# DEPLOYMENT.md for the full VPS walkthrough this file is part of).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build   start / rebuild after a git pull
+#   docker compose -f docker-compose.prod.yml logs -f api     watch the API's logs
+#   docker compose -f docker-compose.prod.yml down            stop (data survives — it's in named volumes)
+#
+# Reads secrets from .env in this same directory. Copy .env.example to .env
+# and fill in real production values first — this file is gitignored and
+# must never be committed.
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: supplybase-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    # No "ports:" here on purpose. MySQL is reachable only from the "api"
+    # container, over this compose file's private network (as host "mysql"),
+    # never from the host machine or the internet.
+    volumes:
+      - supplybase-mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: supplybase-api
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+      ENQUIRY_EMAIL: ${ENQUIRY_EMAIL:-}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USER: ${MAIL_USER:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      STORAGE_ROOT_DIR: /data/uploads
+    volumes:
+      # Uploaded project documents / booking files survive a container
+      # restart or rebuild — a real disk on the VPS, unlike a PaaS's
+      # ephemeral filesystem.
+      - supplybase-uploads:/data/uploads
+    # Bound to loopback only — reachable as localhost:8080 from nginx running
+    # on this same host, never directly from the internet. nginx is what
+    # terminates TLS and is the only thing actually listening on 80/443.
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  supplybase-mysql-data:
+  supplybase-uploads:

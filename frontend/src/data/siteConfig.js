@@ -1,0 +1,239 @@
+/**
+ * SUPPLYBASE PROJECTS — SITE CONFIGURATION
+ * ----------------------------------------
+ * Single source of truth for brand text, contact details, statistics and social links.
+ * Edit values here and they update everywhere on the website.
+ */
+
+export const company = {
+  name: 'Supplybase',
+  nameUpper: 'SUPPLYBASE',
+  tagline: 'ONE PARTNER. COMPLETE PROJECT.',
+  statement: 'DESIGN. BUILD. DELIVER.',
+  model: 'LABOUR + MATERIAL + MANAGEMENT',
+  shortIntro:
+    'From 3D architectural design to construction and finishing — we provide labour, materials and complete project execution under one roof.',
+  longIntro:
+    'Supplybase is a construction, architectural design, interior design and turnkey project execution company. We handle labour, material and project management so our clients deal with one partner from the first drawing to the final handover.',
+};
+
+/**
+ * OFFICIAL CONTACT DETAILS — used by every call, email and WhatsApp button on the site.
+ */
+export const contact = {
+  phoneDisplay: '+91 77095 88422',
+  phoneRaw: '917709588422', // country code + number, digits only (used for tel: and WhatsApp)
+  email: 'info.supplybase@gmail.com',
+  addressLines: ['Mumbai, Maharashtra', 'India'],
+  serviceAreas: ['Mumbai', 'Navi Mumbai', 'Thane', 'Kalyan', 'Panvel', 'Pune'],
+  workingHours: 'Monday – Saturday, 9:00 AM – 7:00 PM',
+};
+
+/**
+ * PARTNER PORTAL — the address of the separate partners app (partners/), where
+ * professionals apply and sign in. Set VITE_PARTNERS_URL (no trailing slash) once
+ * it is deployed. Left empty, the footer's "Partner Login" link is hidden and any
+ * old /partner link goes to the home page, so the site never points at something
+ * that is not there yet.
+ */
+export const partnersUrl = (import.meta.env.VITE_PARTNERS_URL || '').replace(/\/$/, '');
+
+/**
+ * SOCIAL LINKS — leave a url empty ('') to hide that icon from the footer.
+ */
+export const social = [
+  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/supplybase_official/?hl=en' },
+  { id: 'facebook', label: 'Facebook', url: '' },
+  { id: 'linkedin', label: 'LinkedIn', url: '' },
+  { id: 'youtube', label: 'YouTube', url: '' },
+];
+
+/**
+ * COMPANY STATISTICS — edit these numbers as the business grows.
+ */
+/*
+ * The four company numbers. `icon` names an entry in components/ui/Icon.jsx
+ * and `featured` picks the one card that carries the gold border.
+ *
+ * These are the values an admin screen would eventually own — the shape here
+ * is already the shape the API should return, so switching source later is a
+ * change of import, not a change of markup. Labels are stored in sentence
+ * case and uppercased in CSS, so they stay readable anywhere else they are
+ * used.
+ */
+export const stats = [
+  { id: 'projects',      value: '100+', label: 'Projects Completed',   icon: 'building' },
+  { id: 'professionals', value: '30+',  label: 'Skilled Professionals', icon: 'users', featured: true },
+  { id: 'experience',    value: '10+',  label: 'Years of Experience',  icon: 'award' },
+  { id: 'satisfaction',  value: '100%', label: 'Client Satisfaction',  icon: 'thumbs-up' },
+];
+
+/**
+ * HERO TRUST BAR — the five promises shown directly under the hero.
+ */
+export const trustPoints = [
+  { icon: 'partners', title: 'ONE PARTNER', text: 'For Everything' },
+  { icon: 'shield', title: 'QUALITY', text: 'You Can Trust' },
+  { icon: 'team', title: 'EXPERIENCED TEAM', text: 'Professional Experts' },
+  { icon: 'clock', title: 'ON TIME', text: 'Project Delivery' },
+  { icon: 'home-check', title: 'COMPLETE SOLUTION', text: 'End-to-End Service' },
+];
+
+/**
+ * HOW IT WORKS — the four-step delivery process.
+ */
+export const processSteps = [
+  {
+    number: '01',
+    icon: 'chat',
+    title: 'CONSULTATION',
+    text: 'Share your requirements, and we assess the site, scope, and budget.',
+  },
+  {
+    number: '02',
+    icon: 'blueprint',
+    title: 'PLANNING & DESIGN',
+    text: 'We plan, design and visualise your project in 2D drawings and 3D views before work begins.',
+  },
+  {
+    number: '03',
+    icon: 'helmet',
+    title: 'EXECUTION',
+    text: 'Supervised quality, on-time and on-budget delivery.',
+  },
+  {
+    number: '04',
+    icon: 'handover',
+    title: 'HANDOVER',
+    text: 'We finish, clean, and hand over a ready-to-use project.',
+  },
+];
+
+/**
+ * DIFFERENTIATORS — the reasons to choose us, shown on the home page and the
+ * About page. (There is no longer a separate Why Us page.)
+ */
+// export const whyUsPoints = [
+//   {
+//     icon: 'partners',
+//     title: 'One Partner For Everything',
+//     text: 'Design, civil work, interiors, electrical, plumbing and finishing handled by a single accountable team — no coordinating five different contractors.',
+//   },
+//   {
+//     icon: 'package',
+//     title: 'Labour + Material Supplied',
+//     text: 'We arrange skilled labour and quality materials together, so you get one clear rate instead of chasing suppliers yourself.',
+//   },
+//   {
+//     icon: 'blueprint',
+//     title: 'Design Before You Build',
+//     text: '2D plans, 3D exterior and 3D interior views let you see the finished result before the first brick is laid.',
+//   },
+//   {
+//     icon: 'shield',
+//     title: 'Quality You Can Trust',
+//     text: 'Supervised workmanship, standard materials and stage-wise checks on every project we take on.',
+//   },
+//   {
+//     icon: 'clock',
+//     title: 'On-Time Delivery',
+//     text: 'Clear timelines agreed at the start and a schedule that our site team is held to.',
+//   },
+//   {
+//     icon: 'rupee',
+//     title: 'Transparent Pricing',
+//     text: 'Itemised quotations with no hidden charges, so you always know what you are paying for.',
+//   },
+// ];
+
+export const whyUsPoints = [
+  {
+    title: 'One Partner For Everything',
+    text: 'Design, construction, interiors, and finishing—all managed by one accountable team.',
+    icon: 'users',
+    image: '/assets/about/one-partner.jpeg',
+  },
+  {
+    title: 'Labour + Material Supplied',
+    text: 'Skilled labour and quality materials, bundled into one clear rate—saving you time, hassle, and supplier chasing.',
+    icon: 'box',
+    image: '/assets/about/labour-material.jpeg',
+  },
+  {
+    title: 'Design Before You Build',
+    text: '2D plans and 3D views help you visualize your project before construction begins.',
+    icon: 'layout',
+    image: '/assets/about/design-before-build.jpeg',
+  },
+  {
+    title: 'Quality You Can Trust',
+    text: 'Supervised workmanship, standard materials and stage-wise checks on every project we take on.',
+    icon: 'shield',
+    image: '/assets/about/quality.jpeg',
+  },
+  {
+    title: 'On-Time Delivery',
+    text: 'Clear timelines agreed at the start and a schedule that our site team sticks to.',
+    icon: 'clock',
+    image: '/assets/about/on-time.jpeg',
+  },
+  {
+    title: 'Transparent Pricing',
+    text: 'Itemised quotations with no hidden charges, so you always know what you are paying for.',
+    icon: 'circle-dollar',
+    image: '/assets/about/pricing.jpeg',
+  },
+];
+
+/**
+ * PRIMARY NAVIGATION.
+ */
+export const mainNav = [
+  { label: 'HOME', path: '/' },
+  { label: 'SERVICES', path: '/services', hasMegaMenu: true },
+  // Projects and Materials sections are disabled sitewide — see App.jsx.
+  // { label: 'PROJECTS', path: '/projects' },
+  // { label: 'MATERIALS', path: '/materials' },
+  { label: 'ABOUT US', path: '/about' },
+  { label: 'CONTACT US', path: '/contact' },
+];
+
+/**
+ * FOOTER QUICK LINKS.
+ */
+export const quickLinks = [
+  { label: 'Home', path: '/' },
+  { label: 'Services', path: '/services' },
+  // Projects and Materials sections are disabled sitewide — see App.jsx.
+  // { label: 'Projects', path: '/projects' },
+  // { label: 'Materials', path: '/materials' },
+  { label: 'About Us', path: '/about' },
+  { label: 'Contact Us', path: '/contact' },
+  { label: 'Get a Quote', path: '/quote' },
+  { label: 'Login', path: '/login' },
+];
+
+/**
+ * PROJECT TYPES + BUDGET RANGES used by the quote form dropdowns.
+ */
+export const projectTypes = [
+  'Residential — New Construction',
+  'Residential — Interior',
+  'Residential — Renovation',
+  'Commercial / Office',
+  'Retail / Showroom',
+  'Industrial / Warehouse',
+  'Other',
+];
+
+export const budgetRanges = [
+  'Under ₹5 Lakh',
+  '₹5 Lakh – ₹15 Lakh',
+  '₹15 Lakh – ₹30 Lakh',
+  '₹30 Lakh – ₹50 Lakh',
+  '₹50 Lakh – ₹1 Crore',
+  'Above ₹1 Crore',
+  'Not decided yet',
+];
+
+export default { company, contact, social, stats, trustPoints, processSteps, whyUsPoints, mainNav, quickLinks, projectTypes, budgetRanges };

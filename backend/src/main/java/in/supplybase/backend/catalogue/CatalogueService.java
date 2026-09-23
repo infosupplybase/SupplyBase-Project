@@ -1,5 +1,6 @@
 package in.supplybase.backend.catalogue;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,12 +11,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import in.supplybase.backend.catalogue.dto.CategoryResponse;
+import in.supplybase.backend.catalogue.dto.CreateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.CreateQuestionRequest;
 import in.supplybase.backend.catalogue.dto.QuestionResponse;
+import in.supplybase.backend.catalogue.dto.SearchResultResponse;
 import in.supplybase.backend.catalogue.dto.ServiceFormResponse;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryActiveRequest;
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.Money;
 
 @Service
 public class CatalogueService {
+
+    private static final BigDecimal DEFAULT_VISIT_FEE = new BigDecimal("25.00");
 
     private final ServiceCategoryRepository categories;
     private final ServiceOptionRepository options;
@@ -26,30 +35,46 @@ public class CatalogueService {
         this.options = options;
     }
 
+    /** The seven main categories, in order — a sub-service is left out (see {@link #form}). */
     @Transactional(readOnly = true)
     public List<CategoryResponse> listCategories() {
-        return categories.findByActiveTrueOrderBySortOrderAsc().stream()
+        return categories.findByActiveTrueAndParentSlugIsNullOrderBySortOrderAsc().stream()
                 .map(CategoryResponse::from)
                 .toList();
     }
 
     /**
-     * Short and historical names that people type or bookmark.
-     *
-     * "painting" is the obvious guess for a service actually called
-     * painting-waterproofing, and a 404 for a guess that close is a bad
-     * answer when we know exactly what they meant.
+     * Catalogue-wide search across both main categories and sub-services
+     * (electrician's seven detailed journeys) — capped at 20 so a broad term
+     * like "installation" returns a shortlist, not the whole table.
+     */
+    @Transactional(readOnly = true)
+    public List<SearchResultResponse> search(String q) {
+        String query = q == null ? "" : q.trim();
+        if (query.isEmpty()) {
+            return List.of();
+        }
+        return categories.search(query).stream()
+                .limit(20)
+                .map(SearchResultResponse::from)
+                .toList();
+    }
+
+    /**
+     * Short and historical names that people type or bookmark. A guess this
+     * close deserves the right page, not a 404.
      */
     private static final Map<String, String> SLUG_ALIASES = Map.of(
-            "painting", "painting-waterproofing",
-            "waterproofing", "painting-waterproofing",
-            "paint", "painting-waterproofing",
-            "electrical", "electrician",
-            "electric", "electrician",
-            "interior", "interior-work",
-            "interior-design", "interior-work",
-            "interiors", "interior-work",
-            "plumber", "plumbing");
+            "paint", "painting",
+            "waterproof", "waterproofing",
+            "electric", "electrical",
+            "electrician", "electrical",
+            "interior", "interior-design",
+            "interiors", "interior-design",
+            "interior-choice", "interior-by-choice",
+            "plumber", "plumbing",
+            "pop-false-ceiling", "pop-ceiling-design",
+            "pop-ceiling", "pop-ceiling-design");
 
     @Transactional(readOnly = true)
     public ServiceCategory requireCategory(String slug) {
@@ -70,25 +95,218 @@ public class CatalogueService {
     @Transactional(readOnly = true)
     public ServiceFormResponse form(String slug) {
         ServiceCategory category = requireCategory(slug);
+        return new ServiceFormResponse(CategoryResponse.from(category), foldQuestions(category.getId()));
+    }
 
+    private List<QuestionResponse> foldQuestions(Long categoryId) {
         Map<String, QuestionBuilder> byKey = new LinkedHashMap<>();
         for (ServiceOption row : options
-                .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(category.getId())) {
+                .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(categoryId)) {
             QuestionBuilder builder = byKey.computeIfAbsent(
                     row.getStepNo() + ":" + row.getQuestionKey(),
                     key -> new QuestionBuilder(row));
             if (row.getOptionValue() != null) {
                 builder.options.add(new QuestionResponse.OptionResponse(
                         row.getOptionValue(), row.getOptionLabel(),
-                        row.getOptionHint(), row.getOptionGroup()));
+                        row.getOptionHint(), row.getOptionGroup(),
+                        row.getPricePaise() == null ? null : Money.paiseToRupees(row.getPricePaise())));
             }
         }
+        return byKey.values().stream().map(QuestionBuilder::build).toList();
+    }
 
-        List<QuestionResponse> questions = byKey.values().stream()
-                .map(QuestionBuilder::build)
+    /* ----------------------------------------------------------- staff */
+
+    /** Every category, active or not — the admin screen manages both. */
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> listAllCategories() {
+        return categories.findAllByOrderBySortOrderAsc().stream()
+                .map(CategoryResponse::from)
                 .toList();
+    }
 
-        return new ServiceFormResponse(CategoryResponse.from(category), questions);
+    /** Looks a category up by slug regardless of active status, for admin edits. */
+    @Transactional(readOnly = true)
+    public ServiceCategory requireAnyCategory(String slug) {
+        String key = slug == null ? "" : slug.trim().toLowerCase();
+        return categories.findBySlug(key)
+                .orElseThrow(() -> ApiException.notFound("That service"));
+    }
+
+    @Transactional
+    public CategoryResponse createCategory(CreateCategoryRequest request) {
+        String slug = request.slug().trim().toLowerCase();
+        if (categories.existsBySlug(slug)) {
+            throw ApiException.conflict("A service with that slug already exists.");
+        }
+
+        BigDecimal visitFee = request.visitFee() == null ? DEFAULT_VISIT_FEE : request.visitFee();
+        ServiceCategory category = ServiceCategory.builder()
+                .slug(slug)
+                .name(request.name().trim())
+                .tagline(request.tagline())
+                .description(request.description())
+                .icon(request.icon())
+                .heroImage(request.heroImage())
+                .visitFeePaise(Money.rupeesToPaise(visitFee))
+                .sortOrder(request.sortOrder())
+                .active(true)
+                .build();
+
+        return CategoryResponse.from(categories.save(category));
+    }
+
+    /** The slug is the path identifier and is never changed here. */
+    @Transactional
+    public CategoryResponse updateCategory(String slug, UpdateCategoryRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+
+        BigDecimal visitFee = request.visitFee() == null ? DEFAULT_VISIT_FEE : request.visitFee();
+        category.setName(request.name().trim());
+        category.setTagline(request.tagline());
+        category.setDescription(request.description());
+        category.setIcon(request.icon());
+        category.setHeroImage(request.heroImage());
+        category.setVisitFeePaise(Money.rupeesToPaise(visitFee));
+        category.setSortOrder(request.sortOrder());
+
+        return CategoryResponse.from(categories.save(category));
+    }
+
+    /**
+     * Soft delete: {@code active} goes false, the row stays.
+     *
+     * Bookings and enquiries reference a category by slug/FK, and
+     * {@code service_options} cascades on delete from {@code service_categories},
+     * so a hard delete here would corrupt history and silently wipe every
+     * question this category ever asked.
+     */
+    @Transactional
+    public void deactivateCategory(String slug) {
+        ServiceCategory category = requireAnyCategory(slug);
+        category.setActive(false);
+        categories.save(category);
+    }
+
+    /** Turns a category back on, or off — the admin screen's toggle. */
+    @Transactional
+    public CategoryResponse setCategoryActive(String slug, UpdateCategoryActiveRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+        category.setActive(request.active());
+        return CategoryResponse.from(categories.save(category));
+    }
+
+    /**
+     * Every active question for a category, admin or not — {@link #form}
+     * cannot be reused here because it 404s on an inactive category, and the
+     * admin screen needs to open exactly those to reactivate them.
+     */
+    @Transactional(readOnly = true)
+    public List<QuestionResponse> listQuestions(String slug) {
+        ServiceCategory category = requireAnyCategory(slug);
+        return foldQuestions(category.getId());
+    }
+
+    /**
+     * Creates one question, one {@code ServiceOption} row per option — or a
+     * single row with no option fields for a TEXT/NUMBER/FILE question, the
+     * same shape {@link #form} already knows how to read.
+     */
+    @Transactional
+    public QuestionResponse createQuestion(String slug, CreateQuestionRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+        List<ServiceOption> rows = buildOptionRows(category.getId(), request);
+        options.saveAll(rows);
+        return toQuestionResponse(rows);
+    }
+
+    /**
+     * Replaces every row for {@code questionKey}: the existing rows are
+     * deleted and fresh ones inserted from the request body. Simplest correct
+     * approach for "a question is really N rows" — trying to diff and patch
+     * individual option rows in place would need to match old options to new
+     * ones by value, which the request has no stable id to do reliably.
+     */
+    @Transactional
+    public QuestionResponse updateQuestion(String slug, String questionKey, CreateQuestionRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+        List<ServiceOption> existing = options.findByCategoryIdAndQuestionKey(category.getId(), questionKey);
+        if (existing.isEmpty()) {
+            throw ApiException.notFound("That question");
+        }
+        options.deleteByCategoryIdAndQuestionKey(category.getId(), questionKey);
+
+        List<ServiceOption> rows = buildOptionRows(category.getId(), request);
+        options.saveAll(rows);
+        return toQuestionResponse(rows);
+    }
+
+    /**
+     * Soft delete: {@code active} goes false on every row sharing this key.
+     *
+     * A booking's stored answers copy the question text and key at booking
+     * time (see {@code BookingService.storeAnswers}), so nothing downstream
+     * breaks either way — soft delete is kept only for consistency with the
+     * category delete, and so it can be undone.
+     */
+    @Transactional
+    public void deactivateQuestion(String slug, String questionKey) {
+        ServiceCategory category = requireAnyCategory(slug);
+        List<ServiceOption> rows = options.findByCategoryIdAndQuestionKey(category.getId(), questionKey);
+        if (rows.isEmpty()) {
+            throw ApiException.notFound("That question");
+        }
+        rows.forEach(row -> row.setActive(false));
+        options.saveAll(rows);
+    }
+
+    private List<ServiceOption> buildOptionRows(Long categoryId, CreateQuestionRequest request) {
+        List<CreateQuestionRequest.OptionInput> optionInputs = request.options();
+        if (optionInputs == null || optionInputs.isEmpty()) {
+            return List.of(ServiceOption.builder()
+                    .categoryId(categoryId)
+                    .stepNo(request.stepNo())
+                    .questionKey(request.questionKey())
+                    .questionText(request.questionText())
+                    .inputType(request.inputType())
+                    .required(request.required())
+                    .sortOrder(0)
+                    .active(true)
+                    .build());
+        }
+
+        List<ServiceOption> rows = new ArrayList<>();
+        int sortOrder = 1;
+        for (CreateQuestionRequest.OptionInput option : optionInputs) {
+            rows.add(ServiceOption.builder()
+                    .categoryId(categoryId)
+                    .stepNo(request.stepNo())
+                    .questionKey(request.questionKey())
+                    .questionText(request.questionText())
+                    .inputType(request.inputType())
+                    .required(request.required())
+                    .optionValue(option.value())
+                    .optionLabel(option.label())
+                    .optionHint(option.hint())
+                    .optionGroup(option.group())
+                    .pricePaise(option.price() == null ? null : Money.rupeesToPaise(option.price()))
+                    .sortOrder(sortOrder++)
+                    .active(true)
+                    .build());
+        }
+        return rows;
+    }
+
+    private QuestionResponse toQuestionResponse(List<ServiceOption> rows) {
+        ServiceOption first = rows.get(0);
+        List<QuestionResponse.OptionResponse> optionResponses = rows.stream()
+                .filter(row -> row.getOptionValue() != null)
+                .map(row -> new QuestionResponse.OptionResponse(
+                        row.getOptionValue(), row.getOptionLabel(), row.getOptionHint(), row.getOptionGroup(),
+                        row.getPricePaise() == null ? null : Money.paiseToRupees(row.getPricePaise())))
+                .toList();
+        return new QuestionResponse(first.getStepNo(), first.getQuestionKey(), first.getQuestionText(),
+                first.getInputType(), first.isRequired(), optionResponses);
     }
 
     private static final class QuestionBuilder {

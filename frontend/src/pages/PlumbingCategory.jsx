@@ -57,16 +57,16 @@ export default function PlumbingCategory({
           )}
 
           {!loading && !error && (
-            <div className={modal ? 'pnt-overview-list' : 'plb-overview-grid'}>
+            <div className="plb-overview-grid">
               {tabs.map((tab) =>
                 modal ? (
                   <button
                     key={tab.slug}
                     type="button"
-                    className="pnt-overview-card !w-full !text-left"
+                    className="plb-overview-card !w-full !text-left"
                     onClick={() => onSelectTab?.(tab.slug)}
                   >
-                    <span className="pnt-overview-photo">
+                    <span className="plb-overview-photo">
                       <img
                         src={tab.overviewImage}
                         alt=""
@@ -76,16 +76,22 @@ export default function PlumbingCategory({
                       />
                     </span>
 
-                    <span className="pnt-overview-body">
-                      <span className="pnt-overview-name">{tab.name}</span>
-                      {tab.fromPrice != null && (
-                        <span className="pnt-overview-tagline">
-                          From {formatRupees(tab.fromPrice)} (Actual pricing)
-                        </span>
-                      )}
+                    <span className="plb-overview-name">
+                      {tab.name}
+                      <Icon name="chevron-right" size={16} />
                     </span>
 
-                    <Icon name="chevron-right" size={18} className="pnt-overview-arrow" />
+                    {tab.fromPrice != null && (
+                      <>
+                        <span className="plb-overview-price">
+                          From {formatRupees(tab.fromPrice)}
+                        </span>
+
+                        <span className="plb-overview-price-note">
+                          (Actual pricing)
+                        </span>
+                      </>
+                    )}
                   </button>
                 ) : (
                   <Link
@@ -126,10 +132,10 @@ export default function PlumbingCategory({
               {modal ? (
                 <button
                   type="button"
-                  className="pnt-overview-card pnt-overview-consult !w-full !text-left"
+                  className="plb-overview-card plb-overview-consult !w-full !text-left"
                   onClick={() => onSelectConsultation?.()}
                 >
-                  <span className="pnt-overview-photo">
+                  <span className="plb-overview-photo">
                     <img
                       src={plumbingConsultationContent.overviewImage}
                       alt=""
@@ -139,16 +145,18 @@ export default function PlumbingCategory({
                     />
                   </span>
 
-                  <span className="pnt-overview-body">
-                    <span className="pnt-overview-name">
-                      {plumbingConsultationContent.name}
-                    </span>
-                    <span className="pnt-overview-tagline">
-                      ₹99 Home Visit. For projects above ₹5,000 (adjusted in final bill)
-                    </span>
+                  <span className="plb-overview-name">
+                    {plumbingConsultationContent.name}
+                    <Icon name="chevron-right" size={16} />
                   </span>
 
-                  <Icon name="chevron-right" size={18} className="pnt-overview-arrow" />
+                  <span className="plb-overview-price">
+                    ₹99 Home Visit
+                  </span>
+
+                  <span className="plb-overview-price-note">
+                    For projects above ₹5,000 (adjusted in final bill)
+                  </span>
                 </button>
               ) : (
                 <Link
