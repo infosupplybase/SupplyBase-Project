@@ -28,12 +28,24 @@ export default function CustomerDetailsFields({ details, setDetail, errors, idPr
                inputMode="numeric" value={details.phone}
                onChange={setDetail('phone')} error={errors.phone}
                placeholder="Enter mobile number" />
-        <Field id={`${idPrefix}-whatsapp`} label="WhatsApp Number (Optional)" type="tel"
+        <Field id={`${idPrefix}-whatsapp`} label={
+  <>
+    WhatsApp Number
+    <br />
+    (Optional)
+  </>
+} type="tel"
                inputMode="numeric" value={details.whatsapp}
                onChange={setDetail('whatsapp')} error={errors.whatsapp}
                placeholder="Enter WhatsApp number"
                hint="Leave blank if it is the same as your mobile." />
-        <Field id={`${idPrefix}-email`} label="Email Address (Optional)" type="email"
+        <Field id={`${idPrefix}-email`} label={
+  <>
+    Email Address
+    <br />
+    (Optional)
+  </>
+} type="email"
                value={details.email} onChange={setDetail('email')}
                error={errors.email} placeholder="Enter email address" />
       </div>
@@ -52,9 +64,9 @@ export default function CustomerDetailsFields({ details, setDetail, errors, idPr
         <Field id={`${idPrefix}-city`} label="City" required value={details.city}
                onChange={setDetail('city')} error={errors.city}
                placeholder="Mumbai" />
-        <Field id={`${idPrefix}-pincode`} label="Pincode" value={details.pincode}
-               onChange={setDetail('pincode')} error={errors.pincode}
-               placeholder="400001" />
+       <Field id={`${idPrefix}-pincode`} label="Pincode" required value={details.pincode}
+       onChange={setDetail('pincode')} error={errors.pincode}
+       placeholder="400001" />
       </div>
     </>
   );

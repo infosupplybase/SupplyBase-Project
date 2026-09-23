@@ -677,17 +677,31 @@ export default function InteriorDesignFlow({
                     ? ' This is the illustrated reference project — its area, timeline and warranty below are real example figures.'
                     : ' Exact scope, materials and timeline for this project are confirmed during your free site consultation.'}
                 </p>
-                {hasPricing && (
-                  <div className="id-stats-row">
-                    <div><Icon name="ruler" size={18} /><span>{ID_REFERENCE_STATS.areaSqft}</span></div>
-                    <div><Icon name="clock" size={18} /><span>{ID_REFERENCE_STATS.timeline}</span></div>
-                    <div><Icon name="shield" size={18} /><span>{ID_REFERENCE_STATS.warranty} warranty</span></div>
-                  </div>
-                )}
-              </div>
-            )}
+               {hasPricing && (
+  <div className="id-stats-row">
+    <div className="id-stat-box">
+      <Icon name="ruler" size={20} />
+      <span className="id-stat-value">{ID_REFERENCE_STATS.areaSqft}</span>
+      <span className="id-stat-label">Area</span>
+    </div>
 
-            {detailTab === 'inclusions' && (
+    <div className="id-stat-box">
+      <Icon name="clock" size={20} />
+      <span className="id-stat-value">{ID_REFERENCE_STATS.timeline}</span>
+      <span className="id-stat-label">Timeline</span>
+    </div>
+
+    <div className="id-stat-box">
+      <Icon name="shield" size={20} />
+      <span className="id-stat-value">{ID_REFERENCE_STATS.warranty}</span>
+      <span className="id-stat-label">Warranty</span>
+    </div>
+  </div>
+)}
+</div>
+)}
+
+{detailTab === 'inclusions' && (
               <div className="id-tab-panel id-inclusion-grid">
                 {idInclusions.map((inc) => (
                   <div key={inc.label} className="id-inclusion-item">

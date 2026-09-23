@@ -247,6 +247,8 @@ const stageQuestions = useMemo(() => {
     return [[], [], []];
   }
 
+  const seenKeys = new Set();
+
   const usable = form.questions
     .filter(
       (q) =>
@@ -256,6 +258,15 @@ const stageQuestions = useMemo(() => {
           String(q.key || '').startsWith(prefix)
         )
     )
+    .filter((q) => {
+      // Same question key ko sirf ek baar show karo
+      if (seenKeys.has(q.key)) {
+        return false;
+      }
+
+      seenKeys.add(q.key);
+      return true;
+    })
     .map((q, index) => ({
       ...q,
       _questionId: `${q.key}-${index}`,

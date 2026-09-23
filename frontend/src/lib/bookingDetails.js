@@ -28,8 +28,10 @@ export function validateDetails(details) {
   }
   if (!details.address.trim()) next.address = 'Please enter your address';
   if (!details.city.trim()) next.city = 'Please enter your city';
-  if (details.pincode.trim() && !/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
-    next.pincode = 'Enter a 6-digit pincode';
-  }
+  if (!details.pincode.trim()) {
+  next.pincode = 'Please enter your pincode';
+} else if (!/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
+  next.pincode = 'Enter a 6-digit pincode';
+}
   return next;
 }
