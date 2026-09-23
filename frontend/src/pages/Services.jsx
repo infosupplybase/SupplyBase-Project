@@ -155,18 +155,18 @@ export default function Services() {
                   className="svc-card"
                   data-service={service.slug}
                   onClick={() => {
-  setSelectedService(service);
-  setSelectedInteriorSpace(null);
-  setSelectedInteriorDesign(null);
-  setShowInteriorBooking(false);
-  setSelectedInteriorDesignCategory(null);
-  setSelectedInteriorDesignProject(null);
-  setSelectedPaintingFlow(null);
-  setSelectedPlumbingTab(null);
-  setPlumbingView('category');
-  setSelectedPlumbingConsultation(null);
-  setSelectedOtherService(null);
-}}
+                    setSelectedService(service);
+                    setSelectedInteriorSpace(null);
+                    setSelectedInteriorDesign(null);
+                    setShowInteriorBooking(false);
+                    setSelectedInteriorDesignCategory(null);
+                    setSelectedInteriorDesignProject(null);
+                    setSelectedPaintingFlow(null);
+                    setSelectedPlumbingTab(null);
+                    setPlumbingView('category');
+                    setSelectedPlumbingConsultation(null);
+                    setSelectedOtherService(null);
+                  }}
                 >
                   <div className="svc-card-media">
                     <img
@@ -187,7 +187,7 @@ export default function Services() {
                     <h3>
                       {service.name}
                     </h3>
-{/* 
+                    {/* 
                     <p>
                       {service.description}
                     </p> */}
@@ -740,7 +740,7 @@ export default function Services() {
                         <div
                           className="
                             grid
-                            grid-cols-1
+                            grid-cols-2
                             gap-4
                             sm:grid-cols-2
                           "
