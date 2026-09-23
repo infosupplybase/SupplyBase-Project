@@ -1,5 +1,6 @@
 /* =========================================================================
    SUPPLYBASE — INTERIOR DESIGN
+
    Separate from Interior by Choice (interior-catalog.css / `ibc-*`), which
    keeps its own light theme. This section reuses the `pnt-` hero/flow-
    shell/step-card/tabs/option/swatch classes already established by
@@ -8,6 +9,7 @@
    (category/project grids, package cards, inclusion grid, post-booking
    sections).
    ========================================================================= */
+
 
 /* --------------------------------------------------------- filter pills */
 
@@ -40,6 +42,7 @@
   border-color: var(--gold);
   color: var(--black);
 }
+
 
 /* -------------------------------------------------------- category grid */
 
@@ -110,17 +113,7 @@
   position: absolute;
   right: var(--space-4);
   bottom: var(--space-4);
-} 
-  
-
-
-
-
-
-
-
-
-
+}
 
 
 /* ----------------------------------------------------------- project grid */
@@ -224,6 +217,7 @@
   color: var(--ink-muted);
 }
 
+
 /* ---------------------------------------------------------- package cards */
 
 .id-package-grid {
@@ -275,9 +269,16 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
   color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .id-package-body {
@@ -312,10 +313,15 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--gold-light) 0%,
+    var(--gold) 100%
+  );
   color: var(--black);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
+
 
 /* ------------------------------------------------------------- inclusions */
 
@@ -332,7 +338,11 @@
   text-align: center;
   gap: 6px;
   padding: var(--space-3);
-  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    var(--light-bg) 100%
+  );
   border-radius: var(--radius-sm);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
@@ -343,6 +353,7 @@
 .id-inclusion-item svg {
   color: var(--gold-deep);
 }
+
 
 /* --------------------------------------------------------------- details */
 
@@ -358,21 +369,73 @@
 }
 
 .id-stats-row {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 100%;
+  margin-top: var(--space-4);
+  background: transparent !important;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .id-stats-row > div {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--ink-soft);
+  justify-content: center;
+  min-height: 70px;
+  padding: 8px;
+  background: transparent !important;
+  border: 0;
+  border-right: 1px solid rgba(0, 0, 0, 0.10);
+  text-align: center;
+}
+
+.id-stats-row > div:last-child {
+  border-right: none;
 }
 
 .id-stats-row svg {
   color: var(--gold-deep);
+  flex-shrink: 0;
+}
+
+.id-stat-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.id-stat-label {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  line-height: 1.2;
+}
+
+@media (max-width: 767px) {
+  .id-stats-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .id-stats-row > div {
+    min-height: 64px;
+    padding: 6px 3px;
+  }
+
+  .id-stats-row svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .id-stat-value {
+    font-size: 0.75rem;
+  }
+
+  .id-stat-label {
+    font-size: 0.62rem;
+  }
 }
 
 .id-gallery-thumb {
@@ -392,6 +455,7 @@
   object-fit: cover;
 }
 
+
 /* --------------------------------------------------------------- 3D / CTA */
 
 .id-3d-actions {
@@ -400,6 +464,7 @@
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
+
 
 /* ------------------------------------------------------ post-booking area */
 
@@ -411,7 +476,12 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
+  background: radial-gradient(
+    circle at 32% 28%,
+    #fffdf6 0%,
+    #fbeecb 55%,
+    #f2dda3 100%
+  );
   color: var(--gold-deep);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.75rem;
@@ -436,7 +506,11 @@
   align-items: center;
   gap: 8px;
   padding: var(--space-3);
-  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    var(--light-bg) 100%
+  );
   border-radius: var(--radius-sm);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
   font-size: 0.78rem;
@@ -449,7 +523,11 @@
 }
 
 .id-support-card {
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #faf9f6 100%
+  );
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
@@ -503,6 +581,7 @@
   line-height: 1.5;
 }
 
+
 /* -------------------------------------------------------------- responsive */
 
 @media (max-width: 480px) {
@@ -518,7 +597,9 @@
   }
 }
 
-/* Interior Design inside Services modal */
+
+/* ---------------------------------------- Interior Design inside Services modal */
+
 .id-modal-flow,
 .id-modal-flow.wizard-shell,
 .id-modal-flow.pnt-flow-shell {
