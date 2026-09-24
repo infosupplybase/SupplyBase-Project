@@ -8,7 +8,30 @@ project. It talks to the same `backend/` API.
 |---|---|
 | `/login` | Partner sign in |
 | `/join` | Apply to become a partner |
-| `/` | Dashboard — application status, then assigned jobs |
+| `/` | Dashboard — application status, then (once approved) numbers, jobs and earnings |
+
+## The dashboard for an approved partner
+
+- **Four numbers** at the top: active jobs, jobs completed, earned this month, payout pending.
+- **Jobs tab** — soonest visit first, with a "next up" flag; each job shows when and where
+  (with a Directions link), the customer (call / WhatsApp), what the customer asked for (no
+  prices), what the job pays the partner, and the one next step the partner may take.
+- **Earnings tab** — total earned, paid out, pending, this month, and each completed job with
+  its payout and whether it has been paid.
+- **Partner support** — WhatsApp and phone for the partner desk.
+
+**Earnings are set by Supplybase, per job.** An admin enters what a job pays in the admin
+app (**Bookings → a booking → Partner payout**) and marks it paid after paying the partner.
+"Earned" means the job is completed *and* has a payout; a completed job with no amount yet
+shows "to be confirmed", never ₹0. The customer never sees any of it. Money is stored in
+paise; the API is `GET /api/professional/earnings` (partner) and
+`PATCH /api/admin/bookings/{id}/payout` (admin).
+
+## The partner phone number
+
+`src/config.js` holds the partner desk number (`PARTNER_PHONE`, `PARTNER_PHONE_RAW`). It is a
+**different number from the customer line** on the main website. The raw form includes the
+country code (`91…`) because `wa.me` links need it.
 
 ## How access works
 

@@ -53,7 +53,11 @@
   position: fixed;
   inset: -25px;
 
-  background-image: url("/assets/partners/partner-background.jpg");
+  /* This layer used to point at partner-background.jpg, a file that was never
+     added (only the .png exists), so it drew nothing and the browser logged a
+     404 on every page. The image is drawn by .partner-body::before instead;
+     the dead reference is removed rather than "fixed" so the page looks the
+     same as it always did. */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
