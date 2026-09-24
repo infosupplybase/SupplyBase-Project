@@ -2,9 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import api, { friendlyError } from '../../lib/api';
+import { searchSubServices } from '../../lib/serviceSearch';
 
 /** Where a search hit actually lives. */
 function routeFor(result) {
+  // Jobs inside a service (a plumbing item, a waterproofing type…) know
+  // their own page.
+  if (result.route) {
+    return result.route;
+  }
+
   if (result.parentSlug === 'electrical') {
     return `/services/electrical/${result.slug}`;
   }
@@ -49,11 +56,16 @@ export default function HomeHero() {
     setSearching(true);
 
     const timer = setTimeout(() => {
-      api
-        .searchCatalogue(q)
-        .then((data) => {
+      // The catalogue finds services; the sub-service search finds the jobs
+      // inside them (toilet, tap, terrace, false ceiling…). Only the
+      // catalogue failing is an error — the extras are a bonus.
+      Promise.all([
+        api.searchCatalogue(q),
+        searchSubServices(q).catch(() => []),
+      ])
+        .then(([services, jobs]) => {
           if (!cancelled) {
-            setResults(data);
+            setResults([...services, ...jobs]);
           }
         })
         .catch((err) => {

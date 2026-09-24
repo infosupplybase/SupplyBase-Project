@@ -8,7 +8,6 @@ import ServiceBooking from './pages/ServiceBooking';
 // routes below. Imports kept (not deleted) so re-enabling is a two-line diff.
 // import Projects from './pages/Projects';
 // import Materials from './pages/Materials';
-import Book from './pages/Book';
 import InteriorByChoice from './pages/InteriorByChoice';
 import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
 import InteriorDesignDetail from './pages/InteriorDesignDetail';
@@ -48,7 +47,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * ROUTES
  * /                       Home
  * /services               All services
- * /services/:slug         Book a site visit for one of the four services
+ * /services/:slug         Book a site visit for one service
  * /services/electrical    Electrical Services category list
  * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
  * /services/plumbing      Plumbing Services overview grid (8 categories + consultation)
@@ -71,7 +70,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  *                          POP's four non-detailed subservices land, via ?preselect=<value>
  *                          (see ServiceBooking.jsx)
  * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
- * /book                   Book a site visit (?type=service | ?type=project)
+ * /book                   Redirects to /services (old standalone booking page, removed)
  * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
  * /about                  About us
  * /contact                Contact
@@ -194,7 +193,10 @@ export default function App() {
         {/* <Route path="projects" element={<Projects />} /> */}
         {/* <Route path="projects/:slug" element={<ProjectDetail />} /> */}
         {/* <Route path="materials" element={<Materials />} /> */}
-        <Route path="book" element={<Book />} />
+        {/* The old standalone /book page had its own hard-coded list of
+            services that had drifted from the real ones. Every booking now
+            starts from a service, so old links go to the services page. */}
+        <Route path="book" element={<Navigate to="/services" replace />} />
 
         {/* Interior by Choice — the ready-made design catalogue. Its own
             small route tree, separate from the generic /services/:slug

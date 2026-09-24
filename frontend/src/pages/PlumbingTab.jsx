@@ -33,7 +33,15 @@ export default function PlumbingTab({
   const [query, setQuery] = useState('');
 
   const tab = getTab(tabSlug);
-  const filter = activeFilter || tab?.filterTabs[0];
+
+  // Only offer a filter that has something behind it — several of the
+  // reference's pills ("Accessories", "Repairs", "Inspection"…) match none of
+  // the actual items and led to an empty "No services found" list.
+  const filters = useMemo(
+    () => (tab ? tab.filterTabs.filter((f) => tab.items.some((item) => matchesFilter(item, f))) : []),
+    [tab]
+  );
+  const filter = activeFilter || filters[0];
 
   const visibleItems = useMemo(() => {
     if (!tab) return [];
@@ -121,7 +129,9 @@ export default function PlumbingTab({
             />
           </div>
 
-          <CategoryTabs tabs={tab.filterTabs} active={filter} onChange={setActiveFilter} />
+          {filters.length > 1 && (
+            <CategoryTabs tabs={filters} active={filter} onChange={setActiveFilter} />
+          )}
 
           <h2 className="plb-select-heading">Select a Service</h2>
 

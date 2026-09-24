@@ -1,10 +1,11 @@
 /**
  * SUPPLYBASE PROJECTS — SERVICES DATA
  * ----------------------------------
- * Every service page on the website is generated from this file.
- * To add a new service: copy one object, change the values, and it automatically appears in
- * the home page grid, the services page, the header mega menu and the footer,
- * and gets its own page at /services/<slug>.
+ * The live list of services is the catalogue API (see hooks/useServiceCatalogue).
+ * This file is the static copy of it: the fallback the footer, mobile menu and
+ * quote form show until the API answers (or if it can't be reached), and the
+ * lookup for names by slug (getServiceBySlug). Keep it in step with the
+ * catalogue — same services, same order (featuredServiceSlugs).
  *
  * megaMenuGroup: DESIGN | CONSTRUCTION | FINISHING | MEP | SPECIALIZED
  *
@@ -17,10 +18,9 @@
  * services that don't fit the main seven (architectural-design,
  * civil-construction, furniture, fabrication, finishing) rather than
  * showing five more top-level tiles.
- * This file drives navigation only (mega menu, mobile menu); the homepage's
- * "Popular Services" grid and the /services listing read the live API
- * instead, so the two never drift apart. The rest stay `active: false`
- * rather than deleted — ready to switch back on, not rendered anywhere live.
+ * The five services that live under Other Services stay `active: false`
+ * here rather than deleted — they are not top-level services, so they must
+ * not appear in any list built from this file.
  * Every helper below (and every component that lists services) filters on
  * that flag; a service object with no `active` field is active by default.
  */
@@ -562,8 +562,19 @@ export const services = [
    still show its name and details, not "unknown service". */
 export const getServiceBySlug = (slug) => services.find((s) => s.slug === slug);
 
-/* The list any current, live navigation or picker should render from. */
-export const activeServices = services.filter((s) => s.active !== false);
+/* The list any current, live navigation or picker should render from, in the
+   same order as featuredServiceSlugs (and the live catalogue) — services[]
+   itself lists Electrician before Plumber, which used to make the footer,
+   menu and quote form disagree with the home page. Anything not featured
+   sorts last. */
+const featuredRank = (slug) => {
+  const index = featuredServiceSlugs.indexOf(slug);
+  return index === -1 ? featuredServiceSlugs.length : index;
+};
+
+export const activeServices = services
+  .filter((s) => s.active !== false)
+  .sort((a, b) => featuredRank(a.slug) - featuredRank(b.slug));
 
 /* Kept in featuredServiceSlugs order, not in services[] order, so the list
    above controls which service leads. A slug that no longer exists, or is

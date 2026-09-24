@@ -38,6 +38,21 @@ export const plumbingOverviewIntro = {
   text: 'Verified plumbers. Quality materials. Transparent pricing. On-time service.',
 };
 
+/** The rate card this catalogue was transcribed from lists a few items under
+    more than one tab (Wall Mixer, Towel Rod, Mirror, and Health Faucet — the
+    last one under three tabs, at two different prices). The customer should
+    see each service once, so when an item is repeated this says which tab it
+    belongs to. Keyed by catalogue value; the tab is the catalogue `group`.
+    The database carries the same decision (V23 migration); this keeps the
+    site correct in the meantime and if the catalogue ever repeats an item
+    again. Anything not listed simply keeps its first occurrence. */
+export const PLUMBING_ITEM_HOME = {
+  'health-faucet-installation': 'Bathroom Fitting',
+  'wall-mixer-installation': 'Bathroom Fitting',
+  'towel-rod-installation': 'Bathroom Accessories',
+  'bathroom-mirror-installation': 'Bathroom Accessories',
+};
+
 /** Order here = display order everywhere (overview grid, tab bar). */
 export const plumbingTabs = [
   {

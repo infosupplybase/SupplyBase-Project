@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon';
-import api, { friendlyError } from '../../lib/api';
+import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import ServiceBookingModal, { useServiceBookingModal } from '../services/ServiceBookingModal';
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
@@ -32,25 +31,9 @@ const LABEL_OVERRIDES = {
 const displayName = (category) => LABEL_OVERRIDES[category.slug] || category.name;
 
 export default function PopularServices() {
-  const [categories, setCategories] = useState(null);
-  const [error, setError] = useState('');
+  const { services: categories, error } = useServiceCatalogue();
 
   const booking = useServiceBookingModal();
-
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .services()
-      .then((data) => {
-        if (!cancelled) setCategories(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(friendlyError(err));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <section className="popular-services">
