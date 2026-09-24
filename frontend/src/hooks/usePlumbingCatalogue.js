@@ -1,6 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import api, { friendlyError } from '../lib/api';
-import { plumbingTabs } from '../data/plumbingContent';
+import { plumbingTabs, PLUMBING_ITEM_HOME } from '../data/plumbingContent';
+
+/**
+ * Shows each service once. Items are matched on their name (so "Health
+ * Faucet Installation" is caught even where it carries a different catalogue
+ * value on another tab); of the repeats, the one under its designated home
+ * tab (PLUMBING_ITEM_HOME) is kept, otherwise the first. Order is preserved.
+ */
+export function dedupeItems(options) {
+  const chosen = new Map();
+  const isAtHome = (opt) => PLUMBING_ITEM_HOME[opt.value] === opt.group;
+
+  options.forEach((opt) => {
+    const key = opt.label.trim().toLowerCase();
+    const current = chosen.get(key);
+    if (!current || (isAtHome(opt) && !isAtHome(current))) {
+      chosen.set(key, opt);
+    }
+  });
+
+  return options.filter((opt) => chosen.get(opt.label.trim().toLowerCase()) === opt);
+}
 
 /**
  * Fetches the plumbing category's live form (GET /api/catalogue/services/plumbing/form)
@@ -37,7 +58,7 @@ export default function usePlumbingCatalogue() {
   const tabs = useMemo(() => {
     const cartQuestion = form?.questions.find((q) => q.key === 'cart_item');
     const byGroup = new Map();
-    (cartQuestion?.options || []).forEach((opt) => {
+    dedupeItems(cartQuestion?.options || []).forEach((opt) => {
       const group = opt.group || 'Other';
       if (!byGroup.has(group)) byGroup.set(group, []);
       byGroup.get(group).push(opt);

@@ -3,7 +3,7 @@ import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
 import { paintingOverviewIntro, paintingCategories, paintingTrustPoints } from '../data/paintingContent';
 
-/** /services/painting — the four-card overview, matching the reference's
+/** /services/painting — the three-card overview, matching the reference's
     "Painting Category" screen (shown at the start of every one of the
     reference's three flows). */
 export default function PaintingCategory({
@@ -29,11 +29,7 @@ export default function PaintingCategory({
       key={cat.slug}
       type="button"
       className="pnt-overview-card !w-full !text-left"
-      onClick={() =>
-        onSelectFlow?.(
-          cat.slug === 'room' ? 'few-walls' : cat.slug
-        )
-      }
+      onClick={() => onSelectFlow?.(cat.slug)}
     >
       <span className="pnt-overview-photo">
         <img

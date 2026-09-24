@@ -49,11 +49,11 @@ export const paintingTrustPoints = [
   { icon: 'check-circle', label: 'Warranty on Work' },
 ];
 
-/** The four category cards on /services/painting. "Room Painting" has no
-    detailed journey of its own in the reference or the existing site — it
-    reuses the Few Walls flow's area-first structure per the brief ("reuse
-    the appropriate room-selection flow without inventing unsupported
-    packages or prices"), rather than a fourth invented wizard. */
+/** The three category cards on /services/painting. There used to be a fourth,
+    "Room Painting", but it opened exactly the same screen as Few Walls (whose
+    first question is already "which area — living room, bedroom, kitchen…"),
+    so the same journey appeared twice under two names. Its room wording now
+    lives in Few Walls' tagline instead. */
 export const paintingCategories = [
   {
     slug: 'full-home',
@@ -64,16 +64,9 @@ export const paintingCategories = [
   },
   {
     slug: 'few-walls',
-    name: 'Few Walls Painting',
-    tagline: 'Perfect for a quick refresh',
+    name: 'Few Walls or Room Painting',
+    tagline: 'A quick refresh for a bedroom, living room, kitchen or a few walls',
     image: '/assets/projects/modern-interior.jpeg',
-    route: '/services/painting/few-walls',
-  },
-  {
-    slug: 'room',
-    name: 'Room Painting',
-    tagline: 'Bedroom, Living Room, Kitchen',
-    image: '/assets/popular-services/painting.png',
     route: '/services/painting/few-walls',
   },
   {

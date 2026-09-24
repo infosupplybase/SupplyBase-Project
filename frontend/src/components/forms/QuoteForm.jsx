@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import { activeServices as services } from '../../data/services';
+import { activeServices } from '../../data/services';
+import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import { projectTypes, budgetRanges, contact } from '../../data/siteConfig';
 import { buildEnquiryMessage, whatsappHref, mailtoWith, telHref } from '../../lib/contact';
 import api from '../../lib/api';
@@ -51,6 +52,10 @@ export default function QuoteForm({ defaultService = '', compact = false, source
   const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(null); // null | 'whatsapp' | 'email'
+
+  // Same services, same order as the rest of the site; the static list only
+  // fills in until the catalogue arrives.
+  const { services } = useServiceCatalogue(activeServices);
 
   const update = (field) => (e) => {
     setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -201,7 +206,7 @@ export default function QuoteForm({ defaultService = '', compact = false, source
             <option value="">Select a service</option>
             {services.map((service) => (
               <option key={service.slug} value={service.name}>
-                {service.number} — {service.name}
+                {service.name}
               </option>
             ))}
             <option value="Not sure yet">Not sure yet</option>

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
-import { activeServices as services } from '../../data/services';
+import { activeServices } from '../../data/services';
+import useServiceCatalogue, { serviceRoute } from '../../hooks/useServiceCatalogue';
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
 
@@ -12,6 +13,9 @@ import { useAuth } from '../../context/AuthContext';
 export default function MobileMenu({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const { user } = useAuth();
+
+  // Live catalogue, with the static list only as the "not loaded yet" fill-in.
+  const { services } = useServiceCatalogue(activeServices);
 
   return (
     <div className={`mobile-menu ${open ? 'open' : ''}`}>
@@ -59,7 +63,7 @@ export default function MobileMenu({ open, onClose }) {
                     All Services
                   </NavLink>
                   {services.map((service) => (
-                    <NavLink key={service.slug} to={`/services/${service.slug}`} onClick={onClose}>
+                    <NavLink key={service.slug} to={serviceRoute(service.slug)} onClick={onClose}>
                       {service.name}
                     </NavLink>
                   ))}
