@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 import PageHero from '../components/ui/PageHero';
@@ -7,31 +7,12 @@ import Reveal from '../components/ui/Reveal';
 
 import { otherServiceTiles } from '../data/otherServices';
 
-// ============================================================
-// PROJECT STAGES
-// ============================================================
-
-
-
-
-// ============================================================
-// COMPONENT
-// ============================================================
-
 export default function OtherServicesCategory({
   modal = false,
   onSelectService,
 }) {
-
-  // Selected project stage
-  const [selectedStage, setSelectedStage] = useState('');
-
   return (
     <>
-      {/* ======================================================
-          PAGE HERO
-      ====================================================== */}
-
       {!modal && (
         <PageHero
           eyebrow="OTHER SERVICES"
@@ -50,19 +31,9 @@ export default function OtherServicesCategory({
         />
       )}
 
-
-      {/* ======================================================
-          MAIN SECTION
-      ====================================================== */}
-
       <section
-        className={
-          modal
-            ? 'elc-section !py-0'
-            : 'elc-section'
-        }
+        className={modal ? 'elc-section !py-0' : 'elc-section'}
       >
-
         <div
           className={
             modal
@@ -70,34 +41,29 @@ export default function OtherServicesCategory({
               : 'container container-narrow'
           }
         >
-
-          {/* ==================================================
-              OTHER SERVICES
-          ================================================== */}
-
           <div className="elc-list">
-
             {otherServiceTiles.map((tile, i) => (
-
               <Reveal
                 key={tile.slug}
                 delay={i * 30}
               >
-
                 <Link
                   to={`/services/${tile.slug}`}
                   className="elc-tile"
-
                   onClick={(e) => {
                     if (modal) {
                       e.preventDefault();
-
                       onSelectService?.(tile.slug);
                     }
                   }}
                 >
-
-                  {/* Icon */}
+                  <span className="elc-tile-image">
+                    <img
+                      src={tile.image}
+                      alt={tile.name}
+                      loading="lazy"
+                    />
+                  </span>
 
                   <span className="elc-tile-icon">
                     <Icon
@@ -106,43 +72,22 @@ export default function OtherServicesCategory({
                     />
                   </span>
 
-
-                  {/* Text */}
-
                   <span className="elc-tile-body">
+                    <strong>{tile.name}</strong>
 
-                    <strong>
-                      {tile.name}
-                    </strong>
-
-                    <span>
-                      {tile.blurb}
-                    </span>
-
+                    <span>{tile.blurb}</span>
                   </span>
-
-
-                  {/* Arrow */}
 
                   <Icon
                     name="chevron-right"
                     size={18}
                     className="elc-tile-arrow"
                   />
-
                 </Link>
-
               </Reveal>
-
             ))}
-
           </div>
-
-
-         
-
         </div>
-
       </section>
     </>
   );

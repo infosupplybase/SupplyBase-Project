@@ -1,38 +1,17 @@
-
 import { useEffect, useMemo, useState } from 'react';
-
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/ui/Icon';
-
 import QuestionField from '../components/booking/QuestionField';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
-
 import SlotPicker from '../components/booking/SlotPicker';
 
 import api, { friendlyError } from '../lib/api';
-
 import { useAuth } from '../context/AuthContext';
-
 import { contact } from '../data/siteConfig';
-
-
-
-
-/**
- * One booking page, four services.
- *
- * Nothing about the questions lives here. The page asks the API what to ask
- * (GET /api/catalogue/services/{slug}/form) and renders whatever comes back,
- * so adding an option is a database row rather than a release.
- *
- * Five stages:
- * Service -> Property -> Details -> Schedule -> Confirm
- */
 
 const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
 
-// const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
 const emptyDetails = {
@@ -45,9 +24,9 @@ const emptyDetails = {
   pincode: '',
 };
 
-const isValidPhone = (v) =>
+const isValidPhone = (value) =>
   /^[6-9]\d{9}$/.test(
-    String(v || '')
+    String(value || '')
       .replace(/\D/g, '')
       .replace(/^91/, '')
       .replace(/^0/, '')
@@ -60,23 +39,19 @@ export default function ServiceBooking({
   onClose,
 }) {
   const { slug: routeSlug } = useParams();
-
-  const slug = serviceSlug || routeSlug;
-
-  const { user } = useAuth();
-
   const [searchParams] = useSearchParams();
 
+  const slug = serviceSlug || routeSlug;
   const preselect = searchParams.get('preselect');
+
+  const { user } = useAuth();
 
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
   const [stage, setStage] = useState(0);
-
   const [answers, setAnswers] = useState({});
-
   const [details, setDetails] = useState(emptyDetails);
 
   const [date, setDate] = useState('');
@@ -86,21 +61,14 @@ export default function ServiceBooking({
   const [error, setError] = useState('');
 
   const [busy, setBusy] = useState(false);
-
   const [receipt, setReceipt] = useState(null);
 
-  /**
-   * Notify parent modal about current step.
-   */
   useEffect(() => {
     if (modal && onStepChange) {
       onStepChange(stage, receipt);
     }
   }, [stage, receipt, modal, onStepChange]);
 
-  /**
-   * Load service form.
-   */
   useEffect(() => {
     let cancelled = false;
 
@@ -116,11 +84,6 @@ export default function ServiceBooking({
           throw new Error('Invalid service form received from server.');
         }
 
-        /*
-         * Debug information.
-         *
-         * This also helps identify duplicate question keys such as "notes".
-         */
         console.log(
           'SERVICE FORM QUESTIONS:',
           result.questions.map((q, index) => ({
@@ -132,11 +95,6 @@ export default function ServiceBooking({
         );
 
         setForm(result);
-
-        /*
-         * Switching service mid-flow must not carry answers to questions
-         * that the new service never asked.
-         */
         setStage(0);
 
         const validPreselect =
@@ -144,7 +102,7 @@ export default function ServiceBooking({
           result.questions.some(
             (q) =>
               q.key === 'service_needed' &&
-              q.options?.some((o) => o.value === preselect)
+              q.options?.some((option) => option.value === preselect)
           );
 
         setAnswers(
@@ -179,186 +137,112 @@ export default function ServiceBooking({
     };
   }, [slug, preselect]);
 
-  /**
-   * Prefill details from signed-in account.
-   */
   useEffect(() => {
-    if (user) {
-      setDetails((d) => ({
-        ...d,
-        name: d.name || user.fullName || '',
-        phone: d.phone || user.phone || '',
-        email: d.email || user.email || '',
-      }));
-    }
+    if (!user) return;
+
+    setDetails((current) => ({
+      ...current,
+      name: current.name || user.fullName || '',
+      phone: current.phone || user.phone || '',
+      email: current.email || user.email || '',
+    }));
   }, [user]);
 
-  /**
-   * Questions for each question stage.
-   *
-   * Service:
-   *   service_needed
-   *
-   * Property:
-   *   property_type
-   *
-   * Details:
-   *   everything else
-   *
-   * FILE questions are excluded.
-   *
-   * Dedicated flow questions beginning with pop_ or wp_ are excluded because
-   * those are handled by their dedicated flow pages.
-   */
-  // const stageQuestions = useMemo(() => {
-  //   if (!form || !Array.isArray(form.questions)) {
-  //     return [[], [], []];
-  //   }
+  const stageQuestions = useMemo(() => {
+    if (!form || !Array.isArray(form.questions)) {
+      return [[], [], []];
+    }
 
-  //   const usable = form.questions.filter(
-  //     (q) =>
-  //       q &&
-  //       q.inputType !== 'FILE' &&
-  //       !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-  //         String(q.key || '').startsWith(prefix)
-  //       )
-  //   );
+    const usable = form.questions
+      .filter(
+        (q) =>
+          q &&
+          q.inputType !== 'FILE' &&
+          !(slug === 'pop-ceiling-design' && q.key === 'pop_home_type') &&
+          !(q.key === 'rooms' && slug !== 'pop-ceiling-design') &&
+          !(slug === 'pop-ceiling-design' && q.key === 'pop_addon') &&
+          q.key !== 'pop_room_notes' &&
+          q.key !== 'pop_design_notes' &&
+          !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+            String(q.key || '').startsWith(prefix)
+          )
+      )
+      .map((q, index) => ({
+        ...q,
+        _questionId: `${q.key}-${index}`,
+      }));
 
-  //   const service = usable.filter(
-  //     (q) => q.key === 'service_needed'
-  //   );
+    const service = usable.filter((q) => q.key === 'service_needed');
 
-  //   const property = usable.filter(
-  //     (q) => q.key === 'property_type'
-  //   );
+    const property = usable.filter((q) => q.key === 'property_type');
 
-  //   const detailsQuestions = usable.filter(
-  //     (q) =>
-  //       q.key !== 'service_needed' &&
-  //       q.key !== 'property_type'
-  //   );
+    const designQuestions = usable.filter(
+      (q) => q.key === 'pop_home_design_style'
+    );
 
-  //   return [service, property, detailsQuestions];
-  // }, [form]);
-const stageQuestions = useMemo(() => {
-  if (!form || !Array.isArray(form.questions)) {
-    return [[], [], []];
-  }
+    const roomQuestions = usable.filter(
+      (q) => q.key === 'pop_room_type' || q.key === 'rooms'
+    );
 
-  const usable = form.questions
-    .filter(
+    const detailsQuestions = usable.filter(
       (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !(slug === 'pop-ceiling-design' && q.key === 'pop_home_type') &&
-        !(q.key === 'rooms' && slug !== 'pop-ceiling-design') &&
-        !(slug === 'pop-ceiling-design' && q.key === 'pop_addon') &&
-        q.key !== 'pop_room_notes' &&
-        q.key !== 'pop_design_notes' &&
-        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-          String(q.key || '').startsWith(prefix)
-        )
-    )
-    .map((q, index) => ({
-      ...q,
-      _questionId: `${q.key}-${index}`,
-    }));
+        q.key !== 'service_needed' &&
+        q.key !== 'property_type' &&
+        q.key !== 'pop_room_type' &&
+        q.key !== 'rooms' &&
+        q.key !== 'pop_home_design_style'
+    );
 
-  const service = usable.filter(
-    (q) => q.key === 'service_needed'
-  );
+    if (slug === 'pop-ceiling-design') {
+      return [service, roomQuestions, designQuestions];
+    }
 
-  const property = usable.filter(
-    (q) => q.key === 'property_type'
-  );
-
-  const designQuestions = usable.filter(
-    (q) => q.key === 'pop_home_design_style'
-  );
-
-  const roomQuestions = usable.filter(
-    (q) => q.key === 'pop_room_type' || q.key === 'rooms'
-  );
-
-  const detailsQuestions = usable.filter(
-    (q) =>
-      q.key !== 'service_needed' &&
-      q.key !== 'property_type' &&
-      q.key !== 'pop_room_type' &&
-      q.key !== 'rooms' &&
-      q.key !== 'pop_home_design_style'
-  );
-
-  if (slug === 'pop-ceiling-design') {
-    return [service, roomQuestions, designQuestions];
-  }
-
-  return [
-    service,
-    property,
-    detailsQuestions,
-  ];
-}, [form]);
+    return [service, property, detailsQuestions];
+  }, [form, slug]);
 
   const scheduleStage = stageQuestions.length;
   const confirmStage = scheduleStage + 1;
+
   const isPopFiveStep = slug === 'pop-ceiling-design';
+
   const stageLabels = isPopFiveStep
     ? ['Service', 'Room', 'Design Style', 'Schedule', 'Confirm']
     : STAGES;
-  /**
-   * Set answer.
-   *
-   * QuestionField can send either:
-   *   - a direct value
-   *   - a functional updater
-   *
-   * Both are supported here.
-   */
+
   const setAnswer = (key) => (next) => {
-    setAnswers((currentAnswers) => {
-      const nextValue =
+    setAnswers((current) => ({
+      ...current,
+      [key]:
         typeof next === 'function'
-          ? next(currentAnswers[key])
-          : next;
+          ? next(current[key])
+          : next,
+    }));
 
-      return {
-        ...currentAnswers,
-        [key]: nextValue,
-      };
-    });
-
-    setErrors((currentErrors) => ({
-      ...currentErrors,
+    setErrors((current) => ({
+      ...current,
       [key]: undefined,
     }));
 
     setError('');
   };
 
-  /**
-   * Set customer detail.
-   */
-  const setDetail = (key) => (e) => {
-    const value = e.target.value;
+  const setDetail = (key) => (event) => {
+    const value = event.target.value;
 
-    setDetails((currentDetails) => ({
-      ...currentDetails,
+    setDetails((current) => ({
+      ...current,
       [key]: value,
     }));
 
-    setErrors((currentErrors) => ({
-      ...currentErrors,
+    setErrors((current) => ({
+      ...current,
       [key]: undefined,
     }));
 
     setError('');
   };
 
-  /**
-   * Validate catalogue questions.
-   */
-  const validateQuestions = (list) => {
+  const validateQuestions = (list = []) => {
     const nextErrors = {};
 
     list.forEach((question) => {
@@ -380,9 +264,6 @@ const stageQuestions = useMemo(() => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  /**
-   * Validate customer details.
-   */
   const validateDetails = () => {
     const nextErrors = {};
 
@@ -406,12 +287,9 @@ const stageQuestions = useMemo(() => {
 
     if (
       details.email.trim() &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        details.email.trim()
-      )
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())
     ) {
-      nextErrors.email =
-        'That email address does not look right';
+      nextErrors.email = 'That email address does not look right';
     }
 
     if (!details.address.trim()) {
@@ -434,9 +312,6 @@ const stageQuestions = useMemo(() => {
     return Object.keys(nextErrors).length === 0;
   };
 
-  /**
-   * Check whether current stage can be left.
-   */
   const canLeaveStage = () => {
     if (stage < scheduleStage) {
       return validateQuestions(stageQuestions[stage]);
@@ -444,11 +319,16 @@ const stageQuestions = useMemo(() => {
 
     if (stage === scheduleStage) {
       if (!date || !time) {
-        setErrors({
+        setErrors((current) => ({
+          ...current,
           slot: 'Please choose a date and a time',
-        });
+        }));
 
         return false;
+      }
+
+      if (isPopFiveStep) {
+        return validateDetails();
       }
 
       return true;
@@ -457,9 +337,6 @@ const stageQuestions = useMemo(() => {
     return validateDetails();
   };
 
-  /**
-   * Next stage.
-   */
   const goNext = () => {
     setError('');
 
@@ -479,9 +356,6 @@ const stageQuestions = useMemo(() => {
     }
   };
 
-  /**
-   * Previous stage.
-   */
   const goBack = () => {
     setError('');
 
@@ -497,11 +371,8 @@ const stageQuestions = useMemo(() => {
     }
   };
 
-  /**
-   * Submit booking.
-   */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     if (!validateDetails()) {
       return;
@@ -511,11 +382,6 @@ const stageQuestions = useMemo(() => {
     setError('');
 
     try {
-      /*
-       * Flatten answers.
-       *
-       * MULTI questions become one row per selected option.
-       */
       const flat = [];
 
       Object.entries(answers).forEach(([key, value]) => {
@@ -529,49 +395,38 @@ const stageQuestions = useMemo(() => {
 
         values
           .filter(
-            (v) =>
-              v !== '' &&
-              v !== null &&
-              v !== undefined
+            (value) =>
+              value !== '' &&
+              value !== null &&
+              value !== undefined
           )
-          .forEach((v) => {
-            const option = (
-              question?.options || []
-            ).find((o) => o.value === v);
+          .forEach((value) => {
+            const option = (question?.options || []).find(
+              (option) => option.value === value
+            );
 
             flat.push({
               key,
-              value: String(v),
+              value: String(value),
               label: option
                 ? option.label
-                : String(v),
+                : String(value),
             });
           });
       });
 
       const result = await api.createBooking({
         serviceSlug: slug,
-
         answers: flat,
-
         preferredDate: date,
-
         preferredTime: time,
-
         name: details.name,
-
         phone: details.phone,
-
         whatsapp: details.whatsapp || null,
-
         email: details.email || null,
-
         address: details.address,
-
         city: details.city,
-
         pincode: details.pincode || null,
-
         areaSqft: answers.area_sqft
           ? Number(answers.area_sqft)
           : null,
@@ -598,31 +453,15 @@ const stageQuestions = useMemo(() => {
     }
   };
 
-  /* ----------------------------------------------------------
-     Loading
-  ---------------------------------------------------------- */
-
   if (loading) {
     return (
-      <div
-        className={
-          modal
-            ? 'w-full'
-            : 'wizard-shell'
-        }
-      >
+      <div className={modal ? 'w-full' : 'wizard-shell'}>
         <div
           className={
-            modal
-              ? 'w-full'
-              : 'wizard-container'
+            modal ? 'w-full' : 'wizard-container'
           }
         >
-          <p
-            style={{
-              color: 'rgba(255,255,255,.6)',
-            }}
-          >
+          <p style={{ color: 'rgba(255,255,255,.6)' }}>
             Loading…
           </p>
         </div>
@@ -630,24 +469,12 @@ const stageQuestions = useMemo(() => {
     );
   }
 
-  /* ----------------------------------------------------------
-     Load error
-  ---------------------------------------------------------- */
-
   if (loadError || !form) {
     return (
-      <div
-        className={
-          modal
-            ? 'w-full'
-            : 'wizard-shell'
-        }
-      >
+      <div className={modal ? 'w-full' : 'wizard-shell'}>
         <div
           className={
-            modal
-              ? 'w-full'
-              : 'wizard-container'
+            modal ? 'w-full' : 'wizard-container'
           }
         >
           <div className="wizard-card">
@@ -655,10 +482,7 @@ const stageQuestions = useMemo(() => {
               role="alert"
               className="alert alert-error"
             >
-              <Icon
-                name="info"
-                size={18}
-              />
+              <Icon name="info" size={18} />
 
               <span>
                 {loadError ||
@@ -680,10 +504,6 @@ const stageQuestions = useMemo(() => {
 
   const { category } = form;
 
-  /* ----------------------------------------------------------
-     Confirmation
-  ---------------------------------------------------------- */
-
   if (receipt) {
     return (
       <Confirmation
@@ -694,29 +514,13 @@ const stageQuestions = useMemo(() => {
     );
   }
 
-  /* ----------------------------------------------------------
-     Main booking UI
-  ---------------------------------------------------------- */
-
   return (
-    <div
-      className={
-        modal
-          ? 'w-full'
-          : 'wizard-shell'
-      }
-    >
+    <div className={modal ? 'w-full' : 'wizard-shell'}>
       <div
         className={
-          modal
-            ? 'w-full'
-            : 'wizard-container'
+          modal ? 'w-full' : 'wizard-container'
         }
       >
-        {/* --------------------------------------------------
-            Top bar
-        -------------------------------------------------- */}
-
         {!modal && (
           <div className="wizard-top">
             {stage > 0 ? (
@@ -761,10 +565,6 @@ const stageQuestions = useMemo(() => {
           </div>
         )}
 
-        {/* --------------------------------------------------
-            Progress
-        -------------------------------------------------- */}
-
         <ol
           className={
             modal
@@ -772,17 +572,13 @@ const stageQuestions = useMemo(() => {
               : 'wizard-steps'
           }
         >
-            {stageLabels.map((label, index) => (
+          {stageLabels.map((label, index) => (
             <li
               key={label}
               className={`wstep ${
-                index === stage
-                  ? 'current'
-                  : ''
+                index === stage ? 'current' : ''
               } ${
-                index < stage
-                  ? 'done'
-                  : ''
+                index < stage ? 'done' : ''
               }`}
               aria-current={
                 index === stage
@@ -809,14 +605,7 @@ const stageQuestions = useMemo(() => {
           ))}
         </ol>
 
-        {/* --------------------------------------------------
-            Form
-        -------------------------------------------------- */}
-
-        <form
-          onSubmit={handleSubmit}
-          noValidate
-        >
+        <form onSubmit={handleSubmit} noValidate>
           <div
             className={
               modal
@@ -824,34 +613,28 @@ const stageQuestions = useMemo(() => {
                 : 'wizard-card'
             }
           >
-            {/* --------------------------------------------
-                Stages 1-3: Questions
-            -------------------------------------------- */}
-
             {stage < scheduleStage &&
               stageQuestions[stage].map(
                 (question, index) => (
-              <QuestionField
-                key={question._questionId || `${question.key}-${index}`}
-                question={question}
-                value={answers[question.key]}
-                onChange={setAnswer(question.key)}
-                error={errors[question.key]}
-                serviceSlug={slug}
-              />
+                  <QuestionField
+                    key={
+                      question._questionId ||
+                      `${question.key}-${index}`
+                    }
+                    question={question}
+                    value={answers[question.key]}
+                    onChange={setAnswer(question.key)}
+                    error={errors[question.key]}
+                    serviceSlug={slug}
+                  />
                 )
               )}
-
-            {/* --------------------------------------------
-                Stage 4: Schedule
-            -------------------------------------------- */}
 
             {stage === scheduleStage && (
               <>
                 <div className="wizard-card-head">
                   <h2>
-                    Choose Date &amp; Time for
-                    Site Visit
+                    Choose Date &amp; Time for Site Visit
                   </h2>
 
                   <p>
@@ -863,12 +646,12 @@ const stageQuestions = useMemo(() => {
                   serviceSlug={slug}
                   date={date}
                   time={time}
-                  onPick={(d, t) => {
-                    setDate(d);
-                    setTime(t);
+                  onPick={(selectedDate, selectedTime) => {
+                    setDate(selectedDate);
+                    setTime(selectedTime);
 
-                    setErrors((currentErrors) => ({
-                      ...currentErrors,
+                    setErrors((current) => ({
+                      ...current,
                       slot: undefined,
                     }));
                   }}
@@ -877,10 +660,18 @@ const stageQuestions = useMemo(() => {
 
                 {isPopFiveStep && (
                   <>
-                    <div className="wizard-card-head" style={{ marginTop: 24 }}>
+                    <div
+                      className="wizard-card-head"
+                      style={{ marginTop: 24 }}
+                    >
                       <h2>Enter Your Details</h2>
-                      <p>We will contact you to confirm the appointment.</p>
+
+                      <p>
+                        We will contact you to confirm the
+                        appointment.
+                      </p>
                     </div>
+
                     <CustomerDetailsFields
                       details={details}
                       setDetail={setDetail}
@@ -892,20 +683,14 @@ const stageQuestions = useMemo(() => {
               </>
             )}
 
-            {/* --------------------------------------------
-                Stage 5: Customer details + Summary
-            -------------------------------------------- */}
-
             {stage === confirmStage && (
               <>
                 <div className="wizard-card-head">
-                  <h2>
-                    Enter Your Details
-                  </h2>
+                  <h2>Enter Your Details</h2>
 
                   <p>
-                    We will contact you to
-                    confirm the appointment.
+                    We will contact you to confirm the
+                    appointment.
                   </p>
                 </div>
 
@@ -957,15 +742,11 @@ const stageQuestions = useMemo(() => {
 
                 <div
                   className="field"
-                  style={{
-                    marginTop: 16,
-                  }}
+                  style={{ marginTop: 16 }}
                 >
                   <label htmlFor="bk-address">
                     Project Address{' '}
-                    <span className="req">
-                      *
-                    </span>
+                    <span className="req">*</span>
                   </label>
 
                   <textarea
@@ -985,9 +766,7 @@ const stageQuestions = useMemo(() => {
 
                 <div
                   className="form-grid"
-                  style={{
-                    marginTop: 16,
-                  }}
+                  style={{ marginTop: 16 }}
                 >
                   <Field
                     id="bk-city"
@@ -1019,30 +798,16 @@ const stageQuestions = useMemo(() => {
               </>
             )}
 
-            {/* --------------------------------------------
-                Error
-            -------------------------------------------- */}
-
             {error && (
               <div
                 role="alert"
                 className="alert alert-error"
-                style={{
-                  marginTop: 18,
-                }}
+                style={{ marginTop: 18 }}
               >
-                <Icon
-                  name="info"
-                  size={18}
-                />
-
+                <Icon name="info" size={18} />
                 <span>{error}</span>
               </div>
             )}
-
-            {/* --------------------------------------------
-                Footer
-            -------------------------------------------- */}
 
             <div
               className={
@@ -1065,7 +830,9 @@ const stageQuestions = useMemo(() => {
                 </button>
               )}
 
-              {stage === confirmStage || (isPopFiveStep && stage === scheduleStage) ? (
+              {stage === confirmStage ||
+              (isPopFiveStep &&
+                stage === scheduleStage) ? (
                 <button
                   type="submit"
                   className="
@@ -1078,9 +845,7 @@ const stageQuestions = useMemo(() => {
                   "
                   disabled={busy}
                 >
-                  {busy
-                    ? 'BOOKING…'
-                    : 'BOOK NOW'}
+                  {busy ? 'BOOKING…' : 'BOOK NOW'}
 
                   <Icon
                     name="arrow-right"
@@ -1088,46 +853,18 @@ const stageQuestions = useMemo(() => {
                   />
                 </button>
               ) : (
-                (
-                  stage >= scheduleStage ||
-                  (
-                    stageQuestions[stage]
-                      .length > 0 &&
-                    stageQuestions[stage].every(
-                      (question) => {
-                        if (
-                          !question.required
-                        ) {
-                          return true;
-                        }
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm md:!flex-none md:!w-44 md:!ms-auto"
+                  onClick={goNext}
+                >
+                  CONTINUE
 
-                        const value =
-                          answers[
-                            question.key
-                          ];
-
-                        return Array.isArray(
-                          value
-                        )
-                          ? value.length > 0
-                          : Boolean(value);
-                      }
-                    )
-                  )
-                ) && (
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm md:!flex-none md:!w-44 md:!ms-auto"
-                    onClick={goNext}
-                  >
-                    CONTINUE
-
-                    <Icon
-                      name="arrow-right"
-                      size={17}
-                    />
-                  </button>
-                )
+                  <Icon
+                    name="arrow-right"
+                    size={17}
+                  />
+                </button>
               )}
             </div>
           </div>
@@ -1136,10 +873,6 @@ const stageQuestions = useMemo(() => {
     </div>
   );
 }
-
-/* ==========================================================
-   Field
-========================================================== */
 
 function Field({
   id,
@@ -1150,17 +883,12 @@ function Field({
   ...rest
 }) {
   return (
-    <div
-      className={`field ${
-        error ? 'error' : ''
-      }`}
-    >
+    <div className={`field ${error ? 'error' : ''}`}>
       <label htmlFor={id}>
         {label}{' '}
+
         {required && (
-          <span className="req">
-            *
-          </span>
+          <span className="req">*</span>
         )}
       </label>
 
@@ -1184,10 +912,6 @@ function Field({
   );
 }
 
-/* ==========================================================
-   Summary
-========================================================== */
-
 function Summary({
   category,
   form,
@@ -1195,23 +919,17 @@ function Summary({
   date,
   time,
 }) {
-  /*
-   * Filter out FILE questions and dedicated-flow questions.
-   */
   const rows = form.questions
     .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some(
-          (prefix) =>
-            String(q.key || '').startsWith(
-              prefix
-            )
+      (question) =>
+        question &&
+        question.inputType !== 'FILE' &&
+        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+          String(question.key || '').startsWith(prefix)
         )
     )
-    .map((q, questionIndex) => {
-      const value = answers[q.key];
+    .map((question, questionIndex) => {
+      const value = answers[question.key];
 
       const values = Array.isArray(value)
         ? value
@@ -1223,74 +941,52 @@ function Summary({
         return null;
       }
 
-      const labels = values.map((v) => {
-        const option = (
-          q.options || []
-        ).find(
-          (o) => o.value === v
+      const labels = values.map((value) => {
+        const option = (question.options || []).find(
+          (option) => option.value === value
         );
 
-        return option
-          ? option.label
-          : v;
+        return option ? option.label : value;
       });
 
       return {
-        key: q.key,
+        key: question.key,
         index: questionIndex,
-        question: q.text,
+        question: question.text,
         answer: labels.join(', '),
       };
     })
     .filter(Boolean);
 
   return (
-    <div
-      style={{
-        marginTop: 26,
-      }}
-    >
+    <div style={{ marginTop: 26 }}>
       <div className="wizard-card-head">
         <h2>Booking Summary</h2>
 
         <p>
-          Please check everything before
-          you pay.
+          Please check everything before you pay.
         </p>
       </div>
 
       <dl className="review-list">
         <div>
           <dt>Service</dt>
-
-          <dd>
-            {category.name}
-          </dd>
+          <dd>{category.name}</dd>
         </div>
 
         <div>
           <dt>Site visit</dt>
-
           <dd>
             {date} at {time}
           </dd>
         </div>
 
         {rows.map((row) => (
-          /*
-           * Index is included because the API can return duplicate
-           * catalogue keys such as "notes".
-           */
           <div
             key={`${row.key}-${row.index}`}
           >
-            <dt>
-              {row.question}
-            </dt>
-
-            <dd>
-              {row.answer}
-            </dd>
+            <dt>{row.question}</dt>
+            <dd>{row.answer}</dd>
           </div>
         ))}
       </dl>
@@ -1315,7 +1011,6 @@ function Summary({
                 size={13}
                 strokeWidth={3}
               />
-
               {item}
             </li>
           ))}
@@ -1330,17 +1025,13 @@ function Summary({
           The final project cost will be
           provided after site inspection.
           Supplybase will provide the
-          required material according to the
-          approved quotation.
+          required material according to
+          the approved quotation.
         </p>
       </div>
     </div>
   );
 }
-
-/* ==========================================================
-   Confirmation
-========================================================== */
 
 function Confirmation({
   receipt,
@@ -1352,18 +1043,10 @@ function Confirmation({
   );
 
   return (
-    <div
-      className={
-        modal
-          ? 'w-full'
-          : 'wizard-shell'
-      }
-    >
+    <div className={modal ? 'w-full' : 'wizard-shell'}>
       <div
         className={
-          modal
-            ? 'w-full'
-            : 'wizard-container'
+          modal ? 'w-full' : 'wizard-container'
         }
       >
         <div
@@ -1382,9 +1065,7 @@ function Confirmation({
               />
             </div>
 
-            <h2>
-              Your Site Visit is Booked!
-            </h2>
+            <h2>Your Site Visit is Booked!</h2>
 
             <p>
               We have received your request.
@@ -1406,8 +1087,7 @@ function Confirmation({
                 <dt>Date &amp; Time</dt>
 
                 <dd>
-                  {receipt.date},{' '}
-                  {receipt.time}
+                  {receipt.date}, {receipt.time}
                 </dd>
               </div>
 
@@ -1430,16 +1110,14 @@ function Confirmation({
 
             <Link
               to="/dashboard"
-              className="btn btn-primary w-full sm:w-auto sm:min-w-[250px]"
+              className="btn btn-primary btn-block"
             >
               GO TO DASHBOARD
             </Link>
 
             <div
-              className="btn-row flex justify-center"
-              style={{
-                marginTop: 12,
-              }}
+              className="btn-row"
+              style={{ marginTop: 12 }}
             >
               <a
                 href={`https://wa.me/${contact.phoneRaw}?text=${message}`}

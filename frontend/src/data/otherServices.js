@@ -1,34 +1,38 @@
-
 export const otherServiceTiles = [
   {
     slug: 'architectural-design',
     name: 'Architectural & Design',
     blurb: '2D drawings and 3D architectural visualisation',
     icon: 'building',
+    image: '/assets/services/architectural-design.jpeg',
   },
   {
     slug: 'civil-construction',
     name: 'Civil Construction',
     blurb: 'New construction, RCC work, brickwork and plaster',
     icon: 'crane',
+    image: '/assets/services/construction.jpeg',
   },
   {
     slug: 'furniture',
     name: 'Furniture Work',
     blurb: 'Modular kitchens, wardrobes, TV units and beds',
     icon: 'wardrobe',
+    image: '/assets/services/otherservicesimage/furniture.png',
   },
   {
     slug: 'fabrication',
     name: 'Fabrication',
     blurb: 'MS and SS gates, railings, grills and staircases',
     icon: 'welding',
+    image: '/assets/services/otherservicesimage/fabrication.png',
   },
   {
     slug: 'finishing',
     name: 'Finishing Work',
     blurb: 'Flooring, marble and granite, tiling and touch-up',
     icon: 'trowel',
+    image: '/assets/services/otherservicesimage/finishing.png',
   },
 ];
 
@@ -93,6 +97,3 @@ export const otherServiceOptionImages = {
   'sanitary-fixtures': '/assets/hero/plumbing.png',
   'final-touch-up': '/assets/hero/Others.png',
 };
-
-
-
