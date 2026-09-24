@@ -1,16 +1,15 @@
-import { useEffect, useState } from 'react';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
-import api, { friendlyError } from '../lib/api';
+import useServiceCatalogue from '../hooks/useServiceCatalogue';
 import ServiceBookingModal, { useServiceBookingModal } from '../components/services/ServiceBookingModal';
 
 /**
- * The four services (RULE 1).
+ * Every service we offer.
  *
- * Fetched, not hard-coded: this and the booking form read the same catalogue,
- * so they cannot drift apart.
+ * Fetched, not hard-coded: the home tiles, footer, menus and quote form read
+ * the same catalogue (see useServiceCatalogue), so they cannot drift apart.
  */
 
 const serviceImages = {
@@ -25,44 +24,16 @@ const serviceImages = {
 };
 
 export default function Services() {
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { services, loading, error } = useServiceCatalogue([]);
 
   const booking = useServiceBookingModal();
-
-  useEffect(() => {
-    let cancelled = false;
-
-    api
-      .services()
-      .then((result) => {
-        if (!cancelled) {
-          setServices(result);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(friendlyError(err));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <>
       <PageHero
         eyebrow="OUR SERVICES"
         title="WHAT WE DO"
-        text="Four services, one accountable team. Book a site visit and we will assess the work and send you a written quotation."
+        text="One accountable team for every job. Book a site visit and we will assess the work and send you a written quotation."
         image="/assets/services/service-hero.jpg"
         breadcrumbs={[{ label: 'Services' }]}
       />
@@ -104,7 +75,7 @@ export default function Services() {
                 >
                   <div className="svc-card-media">
                     <img
-                      src={serviceImages[service.slug]}
+                      src={serviceImages[service.slug] || service.heroImage}
                       alt={service.name}
                     />
                   </div>

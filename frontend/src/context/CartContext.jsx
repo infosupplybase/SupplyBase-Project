@@ -4,11 +4,43 @@ const STORAGE_KEY = 'sb.cart.plumbing';
 
 const CartContext = createContext(null);
 
+/**
+ * Catalogue items that were retired because they repeated another item (V23
+ * migration), and the item that replaced each. A cart saved in someone's
+ * browser before that still holds the old slug; without this its checkout
+ * would be rejected as "not an option". Only the old line's identity and
+ * price are swapped — quantity is kept.
+ */
+const RETIRED_ITEMS = {
+  'health-faucet-installation-tapfaucet': {
+    itemSlug: 'health-faucet-installation',
+    unitPricePaise: 29900,
+    description: 'Installation of health faucet with holder and connection.',
+  },
+};
+
+function migrateRetiredItems(items) {
+  const merged = [];
+
+  items.forEach((item) => {
+    const next = RETIRED_ITEMS[item.itemSlug] ? { ...item, ...RETIRED_ITEMS[item.itemSlug] } : item;
+    const existing = merged.find((i) => i.itemSlug === next.itemSlug);
+
+    if (existing) {
+      existing.quantity += next.quantity;
+    } else {
+      merged.push({ ...next });
+    }
+  });
+
+  return merged;
+}
+
 function readStoredItems() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? migrateRetiredItems(parsed) : [];
   } catch {
     return [];
   }

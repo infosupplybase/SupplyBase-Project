@@ -30,3 +30,24 @@ export const jobStatusTone = (status) => {
 };
 
 export const isFinished = (status) => status === 'WORK_COMPLETED' || status === 'CANCELLED';
+
+/**
+ * The one step a partner can take on their own job from each status — these
+ * mirror the server's allow-list (BookingService.SELF_SERVICE_TRANSITIONS), so
+ * a status not listed here means "waiting on Supplybase", not a missing button.
+ */
+export const NEXT_STEP = {
+  SITE_VISIT_SCHEDULED: {
+    status: 'SITE_VISIT_COMPLETED',
+    label: 'Mark site visit done',
+  },
+  WORK_SCHEDULED: {
+    status: 'WORK_IN_PROGRESS',
+    label: 'Start work',
+  },
+  WORK_IN_PROGRESS: {
+    status: 'WORK_COMPLETED',
+    label: 'Mark work completed',
+    confirm: 'Mark this job as completed? This tells Supplybase the work is finished.',
+  },
+};
