@@ -3,6 +3,17 @@ import Icon from '../ui/Icon';
 import ProblemLocationModal from './ProblemLocationModal';
 
 import {
+fabricationImages,
+  fabricationPropertyImages,
+  fabricationMaterialImages,
+} from '../../data/fabricationImages';
+
+import {
+  furnitureImages,
+} from '../../data/furnitureImages';
+
+import {
+
   waterproofingImages,
   propertyImages,
   problemImages,
@@ -320,6 +331,78 @@ export default function QuestionField({
         );
       }
     }
+
+
+
+    /**
+ * ========================================================
+ * FURNITURE
+ * ========================================================
+ */
+
+if (
+  serviceSlug === 'furniture' ||
+  serviceSlug === 'furniture-work'
+) {
+  return findImage(
+    furnitureImages,
+    option
+  );
+}
+
+
+/**
+ * ========================================================
+ * FABRICATION
+ * ========================================================
+ */
+
+if (
+  serviceSlug === 'fabrication' ||
+  serviceSlug === 'fabrication-work'
+) {
+
+  // STEP 1 / SERVICE TYPE
+  if (key === 'service_needed') {
+    return findImage(
+      fabricationImages,
+      option
+    );
+  }
+
+  // STEP 2 / PROPERTY TYPE
+  if (
+    key === 'property_type' ||
+    key === 'fabrication_property_type' ||
+    key === 'property'
+  ) {
+    return findImage(
+      fabricationPropertyImages,
+      option
+    );
+  }
+
+  // STEP 3 / PREFERRED MATERIAL
+ 
+if (
+  key === 'material_type' ||
+  key === 'preferred_material' ||
+  key === 'material' ||
+  key === 'fabrication_material'
+) {
+  return findImage(
+    fabricationMaterialImages,
+    option
+  );
+}
+
+  // FALLBACK
+  return findImage(
+    fabricationImages,
+    option
+  );
+}
+
 
     return undefined;
   };
