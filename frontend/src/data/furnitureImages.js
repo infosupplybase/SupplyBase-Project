@@ -5,16 +5,16 @@
 export const furnitureImages = {
 
   'Modular Furniture':
-    '/assets/services/furniture/modular-furniture.png',
+    '/assets/services/furniture/moduler-furniture.png',
 
   'Modular Kitchen':
-    '/assets/services/furniture/modular-kitchen.png',
+    '/assets/services/furniture/moduler-kitchen.png',
 
   'Wardrobes':
     '/assets/services/furniture/wardrobes.png',
 
   'TV Units':
-    '/assets/services/furniture/tv-units.png',
+    '/assets/services/furniture/tv.png',
 
   'Beds':
     '/assets/services/furniture/beds.png',

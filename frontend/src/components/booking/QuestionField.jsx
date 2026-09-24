@@ -27,6 +27,35 @@ import {
   electricianRequirementImages,
 } from '../../data/electricianImages';
 
+import {
+  architecturalImages,
+  architecturalPropertyImages,
+  architecturalProjectStatusImages,
+} from '../../data/architecturalImages';
+
+import {
+  civilConstructionImages,
+  civilConstructionPropertyImages,
+  civilConstructionProjectStageImages,
+} from '../../data/civilConstructionImages';
+
+import {
+  furnitureImages,
+  furniturePropertyImages,
+  furnitureMaterialImages
+} from '../../data/furnitureImages';
+
+import {
+  fabricationImages,
+  fabricationPropertyImages,
+  fabricationMaterialImages,
+} from '../../data/fabricationImages';
+
+import {
+  finishingImages,
+  finishingPropertyImages,
+} from '../../data/finishingImages';
+
 export default function QuestionField({
   question,
   value,
@@ -34,6 +63,7 @@ export default function QuestionField({
   error,
   serviceSlug,
 }) {
+
   const {
     key,
     text,
@@ -43,6 +73,7 @@ export default function QuestionField({
   } = question;
 
   const isMulti = inputType === 'MULTI';
+
 
   /**
    * ==========================================================
@@ -56,8 +87,10 @@ export default function QuestionField({
       ? [value]
       : [];
 
+
   const isChosen = (optionValue) =>
     selected.includes(optionValue);
+
 
   /**
    * ==========================================================
@@ -66,8 +99,11 @@ export default function QuestionField({
    */
 
   const toggle = (optionValue) => {
+
     if (isMulti) {
+
       onChange((prev) => {
+
         const list = Array.isArray(prev)
           ? prev
           : prev
@@ -81,6 +117,7 @@ export default function QuestionField({
         }
 
         return [...list, optionValue];
+
       });
 
       return;
@@ -88,6 +125,7 @@ export default function QuestionField({
 
     onChange(optionValue);
   };
+
 
   /**
    * ==========================================================
@@ -98,6 +136,7 @@ export default function QuestionField({
   const groups = [];
 
   (options || []).forEach((option) => {
+
     const groupName = option.group || '';
 
     let group = groups.find(
@@ -105,6 +144,7 @@ export default function QuestionField({
     );
 
     if (!group) {
+
       group = {
         name: groupName,
         items: [],
@@ -116,17 +156,17 @@ export default function QuestionField({
     group.items.push(option);
   });
 
+
   /**
    * ==========================================================
    * HELPER
    * ==========================================================
    *
    * Try both option.value and option.label.
-   * This is important because catalogue values can be different
-   * from the displayed labels.
    */
 
   const findImage = (imageMap, option) => {
+
     if (!imageMap || !option) {
       return undefined;
     }
@@ -137,6 +177,7 @@ export default function QuestionField({
     );
   };
 
+
   /**
    * ==========================================================
    * GET OPTION IMAGE
@@ -144,36 +185,281 @@ export default function QuestionField({
    */
 
   const getOptionImage = (option) => {
-    /**
-     * ========================================================
-     * WATERPROOFING
-     * ========================================================
-     */
+
+
+   // ========================================================
+// ARCHITECTURAL DESIGN
+// ========================================================
+
+if (serviceSlug === 'architectural-design') {
+
+  // ------------------------------------------------------
+  // PROPERTY TYPE / BHK
+  // ------------------------------------------------------
+
+  if (
+    key === 'property_type' ||
+    key === 'home_type' ||
+    key === 'bhk'
+  ) {
+    return findImage(
+      architecturalPropertyImages,
+      option
+    );
+  }
+
+  // ------------------------------------------------------
+  // PROJECT STATUS
+  // ------------------------------------------------------
+
+  if (
+    key === 'project_status' ||
+    key === 'project_stage' ||
+    key === 'construction_stage'
+  ) {
+    return findImage(
+      architecturalProjectStatusImages,
+      option
+    );
+  }
+
+  // ------------------------------------------------------
+  // ARCHITECTURAL SERVICE
+  // ------------------------------------------------------
+
+  return findImage(
+    architecturalImages,
+    option
+  );
+}
+
+    // ========================================================
+    // CIVIL CONSTRUCTION
+    // ========================================================
+
+    if (
+      serviceSlug === 'civil-construction' ||
+      serviceSlug === 'civil_construction' ||
+      serviceSlug === 'construction'
+    ) {
+
+      // ------------------------------------------------------
+      // PROPERTY TYPE
+      // ------------------------------------------------------
+
+      if (
+        key === 'property_type' ||
+        key === 'home_type' ||
+        key === 'bhk'
+      )
+       {
+
+        return findImage(
+          civilConstructionPropertyImages,
+          option
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // PROJECT / CONSTRUCTION STAGE
+      // ------------------------------------------------------
+
+      if (
+        key === 'project_stage' ||
+        key === 'construction_stage' ||
+        key === 'construction_status' ||
+        key === 'project_status'
+      ) {
+
+        return findImage(
+          civilConstructionProjectStageImages,
+          option
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // CIVIL CONSTRUCTION SERVICE
+      // ------------------------------------------------------
+
+      return findImage(
+        civilConstructionImages,
+        option
+      );
+    }
+
+
+    // ========================================================
+    // FURNITURE
+    // ========================================================
+
+    if (
+      serviceSlug === 'furniture' ||
+      serviceSlug === 'furniture-work' ||
+      serviceSlug === 'furniture-services'
+    ) {
+
+      // ------------------------------------------------------
+      // PROPERTY TYPE
+      // ------------------------------------------------------
+
+      if (
+        key === 'property_type' ||
+        key === 'home_type' ||
+        key === 'bhk'
+      ) {
+
+        return findImage(
+          furniturePropertyImages,
+          option
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // PREFERRED MATERIAL
+      // ------------------------------------------------------
+
+      if (
+        key === 'preferred_material' ||
+        key === 'material' ||
+        key === 'furniture_material' ||
+        key === 'preferred_materials'
+      ) {
+
+        return findImage(
+          furnitureMaterialImages,
+          option
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // FURNITURE SERVICE
+      // ------------------------------------------------------
+
+      return findImage(
+        furnitureImages,
+        option
+      );
+    }
+
+// ========================================================
+// FABRICATION
+// ========================================================
+
+if (
+  serviceSlug === 'fabrication' ||
+  serviceSlug === 'fabrication-work' ||
+  serviceSlug === 'fabrication-services'
+) {
+
+  // ------------------------------------------------------
+  // PROPERTY TYPE
+  // ------------------------------------------------------
+
+  if (
+    key === 'property_type' ||
+    key === 'home_type' ||
+    key === 'bhk'
+  ) {
+
+    return findImage(
+      fabricationPropertyImages,
+      option
+    );
+  }
+
+
+  // ------------------------------------------------------
+  // PREFERRED MATERIAL
+  // ------------------------------------------------------
+
+  if (
+    key === 'preferred_material' ||
+    key === 'material' ||
+    key === 'fabrication_material'
+  ) {
+
+    return findImage(
+      fabricationMaterialImages,
+      option
+    );
+  }
+
+
+  // ------------------------------------------------------
+  // FABRICATION SERVICE
+  // ------------------------------------------------------
+
+  return findImage(
+    fabricationImages,
+    option
+  );
+}
+
+    // ========================================================
+    // FINISHING
+    // ========================================================
+
+    if (
+      serviceSlug === 'finishing' ||
+      serviceSlug === 'finishing-work' ||
+      serviceSlug === 'finishing-services'
+    ) {
+      if (
+        key === 'property_type' ||
+        key === 'home_type' ||
+        key === 'bhk'
+      ) {
+        return findImage(
+          finishingPropertyImages,
+          option
+        );
+      }
+
+      return findImage(
+        finishingImages,
+        option
+      );
+    }
+
+    // ========================================================
+    // WATERPROOFING
+    // ========================================================
 
     if (
       serviceSlug === 'waterproofing' ||
       serviceSlug === 'water-proofing'
     ) {
+
       if (key === 'property_type') {
+
         return findImage(
           propertyImages,
           option
         );
       }
 
+
       if (key === 'problem_type') {
+
         return findImage(
           problemImages,
           option
         );
       }
 
+
       if (key === 'problem_location') {
+
         return findImage(
           problemLocationImages,
           option
         );
       }
+
 
       return findImage(
         waterproofingImages,
@@ -181,57 +467,67 @@ export default function QuestionField({
       );
     }
 
-    /**
-     * ========================================================
-     * POP CEILING & DESIGN
-     * ========================================================
-     */
+
+    // ========================================================
+    // POP CEILING & DESIGN
+    // ========================================================
 
     if (
       serviceSlug === 'pop-ceiling-design' ||
       serviceSlug === 'pop_ceiling_design' ||
       serviceSlug === 'pop-false-ceiling'
     ) {
-      /**
-       * POP HOME TYPE
-       */
+
+      // ------------------------------------------------------
+      // POP HOME TYPE
+      // ------------------------------------------------------
 
       if (
         key === 'pop_home_type' ||
         key === 'home_type' ||
         key === 'property_type'
       ) {
+
         return findImage(
           popHomeTypeImages,
           option
         );
       }
 
+
+      // ------------------------------------------------------
+      // POP SERVICE
+      // ------------------------------------------------------
+
       if (key === 'service_needed') {
+
         return findImage(
           popCeilingImages,
           option
         );
       }
 
-      /**
-       * POP ROOM TYPE
-       */
+
+      // ------------------------------------------------------
+      // POP ROOM TYPE
+      // ------------------------------------------------------
 
       if (
         key === 'pop_room_type' ||
         key === 'room_type' ||
         key === 'rooms'
       ) {
+
         return findImage(
           popRoomTypeImages,
           option
         );
       }
 
-      /**
-       * POP DESIGN STYLE
-       */
+
+      // ------------------------------------------------------
+      // POP DESIGN STYLE
+      // ------------------------------------------------------
 
       if (
         key === 'pop_design_style' ||
@@ -239,20 +535,23 @@ export default function QuestionField({
         key === 'pop_home_design_style' ||
         key === 'pop_room_design_style'
       ) {
+
         return findImage(
           popDesignStyleImages,
           option
         );
       }
 
-      /**
-       * POP ADD-ON
-       */
+
+      // ------------------------------------------------------
+      // POP ADD-ON
+      // ------------------------------------------------------
 
       if (
         key === 'pop_addon' ||
         key === 'addon'
       ) {
+
         return findImage(
           popAddonImages,
           option
@@ -260,60 +559,73 @@ export default function QuestionField({
       }
     }
 
-    /**
-     * ========================================================
-     * ELECTRICIAN
-     * ========================================================
-     */
+
+    // ========================================================
+    // ELECTRICIAN
+    // ========================================================
 
     if (
       serviceSlug === 'electrician' ||
       serviceSlug === 'electrical-services' ||
       serviceSlug === 'electrical'
     ) {
+
       if (key === 'service_needed') {
+
         return findImage(
           electricianImages,
           option
         );
       }
 
+
       if (key === 'property_type') {
+
         return findImage(
           electricianPropertyImages,
           option
         );
       }
 
+
       if (key === 'service_location') {
+
         return findImage(
           electricianLocationImages,
           option
         );
       }
 
+
       if (key === 'current_issue') {
+
         return findImage(
           electricianIssueImages,
           option
         );
       }
 
+
       if (key === 'load_requirement') {
+
         return findImage(
           electricianLoadImages,
           option
         );
       }
 
+
       if (key === 'urgency') {
+
         return findImage(
           electricianUrgencyImages,
           option
         );
       }
 
+
       if (key === 'requirement_type') {
+
         return findImage(
           electricianRequirementImages,
           option
@@ -321,8 +633,10 @@ export default function QuestionField({
       }
     }
 
+
     return undefined;
   };
+
 
   /**
    * ==========================================================
@@ -334,41 +648,128 @@ export default function QuestionField({
     key === 'previous_waterproofing' ||
     key === 'previous_when';
 
-  const [isProblemLocationOpen, setProblemLocationOpen] = useState(false);
+
+  const [
+    isProblemLocationOpen,
+    setProblemLocationOpen,
+  ] = useState(false);
+
+
+  /**
+   * ==========================================================
+   * PROBLEM LOCATION
+   * ==========================================================
+   */
 
   if (key === 'problem_location') {
+
     return (
       <fieldset className="question">
-        <legend className="sr-only">{text}</legend>
+
+        <legend className="sr-only">
+          {text}
+        </legend>
+
+
         <div className="wizard-card-head">
-          <h2>{text}{required && <span className="req"> *</span>}</h2>
-          <p>Select one or more areas where you notice the issue.</p>
+
+          <h2>
+            {text}
+
+            {required && (
+              <span className="req">
+                {' '}*
+              </span>
+            )}
+          </h2>
+
+
+          <p>
+            Select one or more areas where you notice the issue.
+          </p>
+
         </div>
+
+
         <button
           type="button"
-          className={`wp-problem-location-trigger ${selected.length ? 'has-selection' : ''}`}
-          onClick={() => setProblemLocationOpen(true)}
+          className={`wp-problem-location-trigger ${
+            selected.length
+              ? 'has-selection'
+              : ''
+          }`}
+          onClick={() =>
+            setProblemLocationOpen(true)
+          }
           aria-haspopup="dialog"
         >
-          <span className="wp-problem-location-trigger-icon"><Icon name="map-pin" size={23} /></span>
-          <span>
-            <strong>{selected.length ? `${selected.length} area${selected.length === 1 ? '' : 's'} selected` : 'Choose the affected area'}</strong>
-            <small>{selected.length ? selected.join(', ') : 'Tap to select from the list'}</small>
+
+          <span className="wp-problem-location-trigger-icon">
+
+            <Icon
+              name="map-pin"
+              size={23}
+            />
+
           </span>
-          <Icon name="chevron-right" size={18} />
+
+
+          <span>
+
+            <strong>
+              {selected.length
+                ? `${selected.length} area${
+                    selected.length === 1
+                      ? ''
+                      : 's'
+                  } selected`
+                : 'Choose the affected area'
+              }
+            </strong>
+
+
+            <small>
+              {selected.length
+                ? selected.join(', ')
+                : 'Tap to select from the list'
+              }
+            </small>
+
+          </span>
+
+
+          <Icon
+            name="chevron-right"
+            size={18}
+          />
+
         </button>
-        {error && <span className="field-error">{error}</span>}
+
+
+        {error && (
+          <span className="field-error">
+            {error}
+          </span>
+        )}
+
+
         {isProblemLocationOpen && (
+
           <ProblemLocationModal
             options={options || []}
             selected={selected}
             onToggle={toggle}
-            onClose={() => setProblemLocationOpen(false)}
+            onClose={() =>
+              setProblemLocationOpen(false)
+            }
           />
+
         )}
+
       </fieldset>
     );
   }
+
 
   /**
    * ==========================================================
@@ -377,35 +778,48 @@ export default function QuestionField({
    */
 
   return (
+
     <fieldset className="question">
 
       <legend className="sr-only">
         {text}
       </legend>
 
+
       <div className="wizard-card-head">
+
         <h2>
+
           {text}
 
           {required && (
+
             <span className="req">
               {' '}*
             </span>
+
           )}
+
         </h2>
 
+
         {isMulti && (
+
           <p>
             You can choose more than one.
           </p>
+
         )}
+
       </div>
+
 
       {/* ======================================================
           SINGLE / MULTI OPTIONS
       ====================================================== */}
 
       {(inputType === 'SINGLE' || isMulti) &&
+
         groups.map((group, groupIndex) => (
 
           <div
@@ -414,10 +828,13 @@ export default function QuestionField({
           >
 
             {group.name && (
+
               <p className="choice-group-title">
                 {group.name}
               </p>
+
             )}
+
 
             {/* ==================================================
                 SIMPLE RADIO QUESTIONS
@@ -460,6 +877,7 @@ export default function QuestionField({
                         }
                       />
 
+
                       <span>
                         {option.label}
                       </span>
@@ -485,7 +903,9 @@ export default function QuestionField({
                     const image =
                       getOptionImage(option);
 
+
                     return (
+
                       <label
                         key={`${option.value}-${optionIndex}`}
                         className={`tile ${
@@ -519,6 +939,7 @@ export default function QuestionField({
                           }
                         />
 
+
                         {/* IMAGE */}
 
                         <span
@@ -534,16 +955,19 @@ export default function QuestionField({
                               loading="eager"
                               decoding="async"
                               onError={(e) => {
+
                                 console.error(
-                                  'POP/WATERPROOFING IMAGE NOT FOUND:',
+                                  'SERVICE IMAGE NOT FOUND:',
                                   image
                                 );
 
                                 e.currentTarget.style.display =
                                   'none';
+
                                 e.currentTarget.parentElement.classList.add(
                                   'has-image-error'
                                 );
+
                               }}
                             />
 
@@ -566,6 +990,7 @@ export default function QuestionField({
 
                         </span>
 
+
                         {/* TEXT */}
 
                         <span className="tile-body">
@@ -574,13 +999,17 @@ export default function QuestionField({
                             {option.label}
                           </span>
 
+
                           {option.hint && (
+
                             <span className="tile-hint">
                               {option.hint}
                             </span>
+
                           )}
 
                         </span>
+
 
                         {/* CHECK ICON */}
 
@@ -598,7 +1027,9 @@ export default function QuestionField({
                         </span>
 
                       </label>
+
                     );
+
                   }
                 )}
 
@@ -608,13 +1039,17 @@ export default function QuestionField({
 
           </div>
 
-        ))}
+        ))
+
+      }
+
 
       {/* ======================================================
           NUMBER INPUT
       ====================================================== */}
 
       {inputType === 'NUMBER' && (
+
         <div className="field">
 
           <input
@@ -630,13 +1065,16 @@ export default function QuestionField({
           />
 
         </div>
+
       )}
+
 
       {/* ======================================================
           TEXT INPUT
       ====================================================== */}
 
       {inputType === 'TEXT' && (
+
         <div className="field">
 
           <textarea
@@ -650,17 +1088,20 @@ export default function QuestionField({
           />
 
         </div>
+
       )}
+
 
       {/* ======================================================
           ERROR
-      ======================================================
-      */}
+      ====================================================== */}
 
       {error && (
+
         <span className="field-error">
           {error}
         </span>
+
       )}
 
     </fieldset>
