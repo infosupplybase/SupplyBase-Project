@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,8 +84,17 @@ public class CatalogueService {
 
     private List<QuestionResponse> foldQuestions(Long categoryId) {
         Map<String, QuestionBuilder> byKey = new LinkedHashMap<>();
+        Set<String> seenQuestions = new java.util.HashSet<>();
+
         for (ServiceOption row : options
                 .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(categoryId)) {
+            String questionIdentity = row.getQuestionKey() + "::" +
+                    (row.getQuestionText() == null ? "" : row.getQuestionText().trim());
+
+            if (!seenQuestions.add(questionIdentity)) {
+                continue;
+            }
+
             QuestionBuilder builder = byKey.computeIfAbsent(
                     row.getStepNo() + ":" + row.getQuestionKey(),
                     key -> new QuestionBuilder(row));
