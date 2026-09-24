@@ -168,6 +168,12 @@ export const api = {
   /** Jobs assigned to the signed-in professional. */
   jobs: () => request('/api/professional/bookings/mine'),
 
+  /**
+   * The signed-in professional's earnings: earned, paid, still to be paid,
+   * this month, and the completed jobs behind them. Money is in paise.
+   */
+  earnings: () => request('/api/professional/earnings'),
+
   /** Move one of the professional's own jobs to its next status. */
   advanceJob: (id, status) =>
     request(`/api/professional/bookings/${id}/status`, { method: 'PATCH', body: { status } }),
