@@ -1,35 +1,27 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
+import PageHeader from '../components/admin/PageHeader';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Drawer from '../components/admin/Drawer';
+import { ErrorBanner, TableEmpty, TableLoading } from '../components/admin/TableStates';
+import rowProps from '../components/admin/rowProps';
+import { useToast } from '../components/admin/Toast';
+import { useAttention } from '../context/AttentionContext';
+import useQueryParam, { usePageParam } from '../hooks/useQueryParam';
 import api, { friendlyError } from '../lib/api';
+import { bookingTone, formatDate, formatDay, label, telHref, whatsappHref } from '../lib/format';
 import { formatRupees } from '../lib/money';
 
 const STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'];
-
-const label = (value) =>
-  String(value || '')
-    .toLowerCase()
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+const TAB_TEXT = { '': 'All', PENDING: 'To review', APPROVED: 'Approved', REJECTED: 'Rejected', SUSPENDED: 'Suspended' };
 
 const toneForPartner = (status) => {
   if (status === 'APPROVED') return 'success';
   if (status === 'PENDING') return 'warning';
   return 'danger';
 };
-
-const toneForJob = (status) => {
-  if (status === 'WORK_COMPLETED') return 'success';
-  if (status === 'CANCELLED') return 'danger';
-  return 'accent';
-};
-
-const formatDate = (value) =>
-  value
-    ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    : '—';
 
 /**
  * The moves an admin can make from each status. Mirrors
@@ -39,28 +31,28 @@ const formatDate = (value) =>
  */
 const ACTIONS = {
   PENDING: [
-    { to: 'APPROVED', text: 'APPROVE PARTNER', style: 'btn-dark' },
-    { to: 'REJECTED', text: 'REJECT APPLICATION', style: 'btn-outline', needsNote: true },
+    { to: 'APPROVED', text: 'APPROVE PARTNER', style: 'btn-primary', icon: 'check-circle', done: 'approved' },
+    { to: 'REJECTED', text: 'REJECT', style: 'btn-danger', needsNote: true, icon: 'close', done: 'rejected' },
   ],
-  APPROVED: [{ to: 'SUSPENDED', text: 'SUSPEND PARTNER', style: 'btn-outline', needsNote: true }],
-  SUSPENDED: [{ to: 'APPROVED', text: 'REINSTATE PARTNER', style: 'btn-dark' }],
-  REJECTED: [{ to: 'APPROVED', text: 'APPROVE INSTEAD', style: 'btn-dark' }],
+  APPROVED: [{ to: 'SUSPENDED', text: 'SUSPEND PARTNER', style: 'btn-danger', needsNote: true, icon: 'lock', done: 'suspended' }],
+  SUSPENDED: [{ to: 'APPROVED', text: 'REINSTATE PARTNER', style: 'btn-primary', icon: 'check-circle', done: 'reinstated' }],
+  REJECTED: [{ to: 'APPROVED', text: 'APPROVE INSTEAD', style: 'btn-primary', icon: 'check-circle', done: 'approved' }],
 };
 
 /**
  * Partners — the professionals ("labour") who work SupplyBase's jobs.
- *
- * The list is filterable by application status and searchable; each row opens
- * a drawer with everything they submitted, the jobs they have been given, and
- * the decision controls. Approving is what makes an account a PROFESSIONAL
- * (so they can be assigned bookings and see their jobs); rejecting or
- * suspending takes that away again.
+ * Approving is what makes an account a PROFESSIONAL (so they can be assigned
+ * bookings and see their jobs); rejecting or suspending takes that away.
  */
 export default function AdminPartners() {
-  const [status, setStatus] = useState('');
-  const [qInput, setQInput] = useState('');
-  const [q, setQ] = useState('');
-  const [page, setPage] = useState(0);
+  const { notify } = useToast();
+  const { refresh: refreshCounts } = useAttention();
+
+  const [status, setStatus] = useQueryParam('status');
+  const [q, setQ] = useQueryParam('q');
+  const [openId, setOpenId] = useQueryParam('open');
+  const [page, setPage] = usePageParam();
+  const [qInput, setQInput] = useState(q);
 
   const [data, setData] = useState(null);
   const [counts, setCounts] = useState(null);
@@ -68,19 +60,17 @@ export default function AdminPartners() {
   const [error, setError] = useState('');
 
   const [selected, setSelected] = useState(null);
-  const [drawerLoading, setDrawerLoading] = useState(false);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState('');
   const [actionError, setActionError] = useState('');
 
-  // Debounce the free-text box before it becomes a `q` query param.
+  // Debounce the free-text box before it becomes the ?q= filter.
   useEffect(() => {
     const timer = setTimeout(() => {
-      setQ(qInput.trim());
-      setPage(0);
+      if (qInput.trim() !== q) setQ(qInput.trim());
     }, 300);
     return () => clearTimeout(timer);
-  }, [qInput]);
+  }, [qInput, q, setQ]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -98,21 +88,27 @@ export default function AdminPartners() {
     load();
   }, [load]);
 
-  const openRow = async (row) => {
-    setSelected(row);
+  useEffect(() => {
+    if (!openId) {
+      setSelected(null);
+      return undefined;
+    }
+    let cancelled = false;
     setNote('');
     setActionError('');
-    setDrawerLoading(true);
-    try {
-      setSelected(await api.admin.partners.get(row.userId));
-    } catch (err) {
-      setActionError(friendlyError(err));
-    } finally {
-      setDrawerLoading(false);
-    }
-  };
-
-  const closeDrawer = () => setSelected(null);
+    setSelected(null);
+    api.admin.partners
+      .get(openId)
+      .then((p) => !cancelled && setSelected(p))
+      .catch((err) => {
+        if (cancelled) return;
+        setError(friendlyError(err));
+        setOpenId('');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [openId, setOpenId]);
 
   const handleAction = async (action) => {
     if (action.needsNote && !note.trim()) {
@@ -125,6 +121,8 @@ export default function AdminPartners() {
       const updated = await api.admin.partners.review(selected.userId, action.to, note.trim() || null);
       setSelected(updated);
       setNote('');
+      notify(`${updated.fullName} ${action.done}`);
+      refreshCounts();
       load();
     } catch (err) {
       setActionError(friendlyError(err));
@@ -134,60 +132,46 @@ export default function AdminPartners() {
   };
 
   const total = counts ? STATUSES.reduce((sum, s) => sum + (counts[s] || 0), 0) : null;
-  const tabLabel = (text, n) => (n == null ? text : `${text} (${n})`);
+  const tabs = ['', ...STATUSES];
 
   return (
     <div>
-      <div className="admin-header">
-        <div>
-          <h1>PARTNERS</h1>
-          <p>Professionals who have applied to work with SupplyBase, and the jobs they&rsquo;ve been given.</p>
-        </div>
-      </div>
-
-      <div className="admin-tabs">
-        <button
-          type="button"
-          className={`admin-tab ${status === '' ? 'active' : ''}`}
-          onClick={() => {
-            setStatus('');
-            setPage(0);
-          }}
-        >
-          {tabLabel('All', total)}
-        </button>
-        {STATUSES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={`admin-tab ${status === s ? 'active' : ''}`}
-            onClick={() => {
-              setStatus(s);
-              setPage(0);
-            }}
-          >
-            {tabLabel(label(s), counts ? counts[s] || 0 : null)}
-          </button>
-        ))}
-      </div>
+      <PageHeader
+        icon="helmet"
+        title="Partners"
+        subtitle="Professionals who applied to work with Supplybase. Approve them to start assigning jobs, and see what each one has earned."
+      />
 
       <div className="admin-toolbar">
-        <input
-          type="text"
-          className="admin-filter"
-          value={qInput}
-          onChange={(e) => setQInput(e.target.value)}
-          placeholder="Search name, email or phone…"
-          style={{ minWidth: 260 }}
-        />
+        <div className="admin-tabs" role="tablist" aria-label="Partner status">
+          {tabs.map((s) => (
+            <button
+              key={s || 'all'}
+              type="button"
+              role="tab"
+              aria-selected={status === s}
+              className={`admin-tab ${status === s ? 'active' : ''}`}
+              onClick={() => setStatus(s)}
+            >
+              {TAB_TEXT[s]}
+              {counts && <span className="admin-tab-count">{s ? counts[s] || 0 : total}</span>}
+            </button>
+          ))}
+        </div>
+        <span className="admin-toolbar-spacer" />
+        <div className="admin-search-input">
+          <Icon name="search" size={17} />
+          <input
+            type="search"
+            value={qInput}
+            onChange={(e) => setQInput(e.target.value)}
+            placeholder="Search name, email or phone"
+            aria-label="Search partners"
+          />
+        </div>
       </div>
 
-      {error && (
-        <div role="alert" className="alert alert-error">
-          <Icon name="info" size={18} />
-          <span>{error}</span>
-        </div>
-      )}
+      <ErrorBanner onRetry={load}>{error}</ErrorBanner>
 
       <div className="admin-table-wrap">
         <table className="admin-table">
@@ -202,24 +186,16 @@ export default function AdminPartners() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={5} className="admin-table-empty">
-                  Loading…
-                </td>
-              </tr>
+              <TableLoading columns={5} />
             ) : data && data.content.length ? (
               data.content.map((row) => (
-                <tr key={row.userId} className="admin-table-row" onClick={() => openRow(row)}>
+                <tr key={row.userId} {...rowProps(() => setOpenId(String(row.userId)), `Open partner ${row.fullName}`)}>
                   <td>
-                    {row.fullName || '—'}
-                    <br />
-                    <span className="admin-table-sub">
-                      {row.phone || '—'} · {row.email}
-                    </span>
+                    <span className="admin-cell-main">{row.fullName || '—'}</span>
+                    <span className="admin-table-sub">{[row.phone, row.email].filter(Boolean).join(' · ')}</span>
                   </td>
                   <td>
                     {row.tradeLabel || '—'}
-                    <br />
                     <span className="admin-table-sub">
                       {[row.city, row.experienceYears != null ? `${row.experienceYears} yrs` : null]
                         .filter(Boolean)
@@ -227,8 +203,7 @@ export default function AdminPartners() {
                     </span>
                   </td>
                   <td>
-                    {row.activeJobs} active
-                    <br />
+                    <strong>{row.activeJobs}</strong> active
                     <span className="admin-table-sub">{row.completedJobs} completed</span>
                   </td>
                   <td>
@@ -238,37 +213,41 @@ export default function AdminPartners() {
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan={5} className="admin-table-empty">
-                  {status || q ? 'No partners match.' : 'No partner applications yet.'}
-                </td>
-              </tr>
+              <TableEmpty columns={5} icon="helmet" title={status || q ? 'No partners match' : 'No partner applications yet'}>
+                {status || q
+                  ? 'Try another tab, or clear the search.'
+                  : 'Professionals apply on the partner portal; their applications appear here for review.'}
+              </TableEmpty>
             )}
           </tbody>
         </table>
       </div>
 
-      {data && <Pagination page={data.number} totalPages={data.totalPages} onChange={setPage} />}
+      <Pagination data={data} onChange={setPage} />
 
-      <Drawer open={Boolean(selected)} onClose={closeDrawer} title={selected ? selected.fullName : ''}>
-        {selected && (
+      <Drawer open={Boolean(openId)} onClose={() => setOpenId('')} title={selected ? selected.fullName : 'Partner'}>
+        {!selected ? (
+          <p className="admin-picker-status">Loading partner…</p>
+        ) : (
           <>
-            <div style={{ marginBottom: 16 }}>
+            <div className="admin-modal-top">
               <StatusBadge tone={toneForPartner(selected.status)}>{label(selected.status)}</StatusBadge>
+              <span className="admin-table-sub" style={{ marginTop: 0 }}>
+                {selected.tradeLabel || 'No trade'} · applied {formatDate(selected.appliedAt)}
+              </span>
             </div>
 
-            <dl className="admin-detail-list">
+            <dl className="admin-detail-list" style={{ marginBottom: 12 }}>
               <div>
                 <dt>Phone</dt>
                 <dd>{selected.phone || '—'}</dd>
               </div>
               <div>
                 <dt>Email</dt>
-                <dd>{selected.email || '—'}</dd>
-              </div>
-              <div>
-                <dt>Trade</dt>
-                <dd>{selected.tradeLabel || '—'}</dd>
+                <dd>
+                  {selected.email || '—'}
+                  {selected.emailVerified === false && <span className="admin-table-sub">Not verified yet</span>}
+                </dd>
               </div>
               <div>
                 <dt>Experience</dt>
@@ -290,150 +269,157 @@ export default function AdminPartners() {
                   <dd>{selected.languages}</dd>
                 </div>
               )}
-              <div>
-                <dt>Applied</dt>
-                <dd>{formatDate(selected.appliedAt)}</dd>
-              </div>
-              {selected.reviewedAt && (
-                <div>
-                  <dt>Last reviewed</dt>
-                  <dd>{formatDate(selected.reviewedAt)}</dd>
-                </div>
-              )}
               {selected.reviewNote && (
                 <div>
                   <dt>Note to partner</dt>
                   <dd>{selected.reviewNote}</dd>
                 </div>
               )}
-              {selected.emailVerified === false && (
-                <div>
-                  <dt>Email</dt>
-                  <dd>Not verified yet</dd>
-                </div>
-              )}
             </dl>
 
-            {!drawerLoading && selected.earnings && (
-              <>
-                <h3 className="admin-form-section-title" style={{ marginTop: 24 }}>
+            <div className="admin-contact-actions" style={{ marginBottom: 24 }}>
+              {telHref(selected.phone) && (
+                <a href={telHref(selected.phone)}>
+                  <Icon name="phone" size={15} /> Call
+                </a>
+              )}
+              {whatsappHref(selected.phone) && (
+                <a href={whatsappHref(selected.phone, `Hello ${selected.fullName}, this is Supplybase.`)} target="_blank" rel="noopener noreferrer">
+                  <Icon name="whatsapp" size={15} /> WhatsApp
+                </a>
+              )}
+            </div>
+
+            {selected.earnings && (
+              <section className="admin-form-section">
+                <h3 className="admin-form-section-title">
+                  <Icon name="rupee" size={16} />
                   Earnings
                 </h3>
-                <dl className="admin-detail-list">
-                  <div>
-                    <dt>Earned (completed jobs)</dt>
-                    <dd>{formatRupees(selected.earnings.earnedPaise)}</dd>
-                  </div>
-                  <div>
-                    <dt>Paid out</dt>
-                    <dd>{formatRupees(selected.earnings.paidPaise)}</dd>
-                  </div>
-                  <div>
-                    <dt>Still to pay</dt>
-                    <dd>
-                      <strong>{formatRupees(selected.earnings.pendingPaise)}</strong>
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>This month</dt>
-                    <dd>{formatRupees(selected.earnings.thisMonthPaise)}</dd>
-                  </div>
-                  {selected.earnings.awaitingPayoutJobs > 0 && (
-                    <div>
-                      <dt>Completed, no payout set</dt>
-                      <dd>
-                        {selected.earnings.awaitingPayoutJobs} job
-                        {selected.earnings.awaitingPayoutJobs === 1 ? '' : 's'} — set the amount in Bookings
-                      </dd>
+                <div className="admin-kpi-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+                  {[
+                    ['Earned', selected.earnings.earnedPaise],
+                    ['Paid out', selected.earnings.paidPaise],
+                    ['Still to pay', selected.earnings.pendingPaise],
+                    ['This month', selected.earnings.thisMonthPaise],
+                  ].map(([text, value]) => (
+                    <div key={text} className="admin-kpi" style={{ padding: 14 }}>
+                      <span className="admin-kpi-label">{text}</span>
+                      <span className="admin-kpi-value" style={{ fontSize: 22 }}>
+                        {formatRupees(value)}
+                      </span>
                     </div>
-                  )}
-                </dl>
-              </>
+                  ))}
+                </div>
+                {selected.earnings.awaitingPayoutJobs > 0 && (
+                  <p className="admin-form-hint" style={{ margin: '12px 0 0' }}>
+                    {selected.earnings.awaitingPayoutJobs} completed job
+                    {selected.earnings.awaitingPayoutJobs === 1 ? ' has' : 's have'} no payout set yet — open the job
+                    below and enter the amount.
+                  </p>
+                )}
+              </section>
             )}
 
-            <h3 className="admin-form-section-title" style={{ marginTop: 24 }}>
-              Jobs ({drawerLoading ? '…' : (selected.jobs || []).length})
-            </h3>
-            {drawerLoading ? (
-              <p className="admin-table-sub">Loading…</p>
-            ) : !selected.jobs || selected.jobs.length === 0 ? (
-              <p className="admin-table-sub">No jobs assigned to this partner yet.</p>
-            ) : (
-              <ul className="admin-stage-list">
-                {selected.jobs.map((job) => (
-                  <li key={job.bookingId} className="admin-stage-item">
-                    <div className="admin-stage-title">
-                      {job.bookingNumber} · {job.serviceLabel || 'Service'}
-                    </div>
-                    <div className="admin-stage-desc">
-                      {[job.customerName, job.location, job.preferredDate && formatDate(job.preferredDate)]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </div>
-                    <div style={{ marginTop: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                      <StatusBadge tone={toneForJob(job.status)}>{label(job.status)}</StatusBadge>
-                      {job.payoutPaise != null && (
-                        <StatusBadge tone={job.paidAt ? 'success' : 'warning'}>
-                          {formatRupees(job.payoutPaise)} · {job.paidAt ? 'Paid' : 'Not paid'}
-                        </StatusBadge>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="calendar" size={16} />
+                Jobs ({(selected.jobs || []).length})
+              </h3>
+              {!selected.jobs || selected.jobs.length === 0 ? (
+                <p className="admin-form-hint" style={{ margin: 0 }}>
+                  No jobs assigned yet. Assign one from a confirmed booking.
+                </p>
+              ) : (
+                <ul className="admin-answers">
+                  {selected.jobs.map((job) => (
+                    <li key={job.bookingId}>
+                      <Link to={`/bookings?open=${job.bookingId}`} className="admin-list-item" style={{ padding: '12px 14px' }}>
+                        <span className="admin-list-main">
+                          <strong>
+                            {job.bookingNumber} · {job.serviceLabel || 'Service'}
+                          </strong>
+                          <span>
+                            {[job.customerName, job.location, job.preferredDate && formatDay(job.preferredDate)]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                          <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                            <StatusBadge tone={bookingTone(job.status)}>{label(job.status)}</StatusBadge>
+                            {job.payoutPaise != null && (
+                              <StatusBadge tone={job.paidAt ? 'success' : 'warning'}>
+                                {formatRupees(job.payoutPaise)} · {job.paidAt ? 'Paid' : 'Not paid'}
+                              </StatusBadge>
+                            )}
+                          </span>
+                        </span>
+                        <Icon name="chevron-right" size={16} />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {ACTIONS[selected.status] && (
+              <section className="admin-form-section">
+                <h3 className="admin-form-section-title">
+                  <Icon name="shield" size={16} />
+                  Decision
+                </h3>
+
+                {selected.status === 'APPROVED' && selected.activeJobs > 0 && (
+                  <div role="alert" className="alert alert-warning">
+                    <Icon name="alert" size={18} />
+                    <span>
+                      This partner still has {selected.activeJobs} open job{selected.activeJobs === 1 ? '' : 's'}.
+                      Suspending stops new assignments but does not reassign the jobs they have.
+                    </span>
+                  </div>
+                )}
+
+                <div className="field" style={{ marginBottom: 12 }}>
+                  <label htmlFor="partner-note">
+                    Note to the partner{' '}
+                    {ACTIONS[selected.status].some((a) => a.needsNote) ? '(needed to reject or suspend)' : '(optional)'}
+                  </label>
+                  <textarea
+                    id="partner-note"
+                    rows={3}
+                    maxLength={500}
+                    value={note}
+                    onChange={(e) => {
+                      setNote(e.target.value);
+                      setActionError('');
+                    }}
+                    placeholder="The partner sees this on their dashboard."
+                  />
+                </div>
+
+                {actionError && (
+                  <div role="alert" className="alert alert-error">
+                    <Icon name="alert" size={18} />
+                    <span>{actionError}</span>
+                  </div>
+                )}
+
+                <div className="btn-row">
+                  {ACTIONS[selected.status].map((action) => (
+                    <button
+                      key={action.to}
+                      type="button"
+                      className={`btn ${action.style}`}
+                      style={{ flex: 1 }}
+                      onClick={() => handleAction(action)}
+                      disabled={Boolean(saving)}
+                    >
+                      <Icon name={action.icon} size={16} />
+                      {saving === action.to ? 'SAVING…' : action.text}
+                    </button>
+                  ))}
+                </div>
+              </section>
             )}
-
-            <div className="admin-form-section" style={{ marginTop: 24 }}>
-              <h3 className="admin-form-section-title">Decision</h3>
-
-              {selected.status === 'APPROVED' && selected.activeJobs > 0 && (
-                <div role="alert" className="alert alert-warning" style={{ marginBottom: 12 }}>
-                  <Icon name="info" size={18} />
-                  <span>
-                    This partner still has {selected.activeJobs} open job{selected.activeJobs === 1 ? '' : 's'}.
-                    Suspending them stops new assignments but doesn&rsquo;t reassign the ones they have.
-                  </span>
-                </div>
-              )}
-
-              <div className="field" style={{ marginBottom: 12 }}>
-                <label htmlFor="partner-note">
-                  Note to partner {ACTIONS[selected.status] && ACTIONS[selected.status].some((a) => a.needsNote) ? '(required to reject or suspend)' : '(optional)'}
-                </label>
-                <textarea
-                  id="partner-note"
-                  rows={3}
-                  maxLength={500}
-                  value={note}
-                  onChange={(e) => {
-                    setNote(e.target.value);
-                    setActionError('');
-                  }}
-                  placeholder="Shown to the partner on their dashboard."
-                />
-              </div>
-
-              {actionError && (
-                <div role="alert" className="alert alert-error" style={{ marginBottom: 12 }}>
-                  <Icon name="info" size={18} />
-                  <span>{actionError}</span>
-                </div>
-              )}
-
-              <div className="btn-row">
-                {(ACTIONS[selected.status] || []).map((action) => (
-                  <button
-                    key={action.to}
-                    type="button"
-                    className={`btn ${action.style} btn-block`}
-                    onClick={() => handleAction(action)}
-                    disabled={Boolean(saving) || drawerLoading}
-                  >
-                    {saving === action.to ? 'SAVING…' : action.text}
-                  </button>
-                ))}
-              </div>
-            </div>
           </>
         )}
       </Drawer>

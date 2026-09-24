@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon';
 import StatusBadge from './StatusBadge';
+import { useToast } from './Toast';
 import api, { friendlyError } from '../../lib/api';
 import { formatRupees, inputToPaise, paiseToInput } from '../../lib/money';
 
@@ -18,6 +19,7 @@ const formatDate = (value) =>
  * unpaid again.
  */
 export default function PartnerPayoutSection({ booking }) {
+  const { notify } = useToast();
   const [payout, setPayout] = useState(null);
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
@@ -66,6 +68,13 @@ export default function PartnerPayoutSection({ booking }) {
       const updated = await api.admin.bookings.setPayout(booking.id, nextAmountPaise, paid);
       setPayout(updated);
       setAmount(paiseToInput(updated.amountPaise));
+      notify(
+        paid
+          ? `${formatRupees(updated.amountPaise)} marked paid to ${updated.partnerName}`
+          : updated.amountPaise == null
+            ? 'Payout cleared'
+            : `Payout set to ${formatRupees(updated.amountPaise)}`
+      );
     } catch (err) {
       setError(friendlyError(err));
     } finally {

@@ -141,6 +141,9 @@ export const api = {
 
   project: (id) => request(`/api/projects/${id}`),
 
+  /** One booking in full, including the customer's wizard answers and prices (staff may read any). */
+  booking: (id) => request(`/api/bookings/${id}`),
+
   admin: {
     enquiries: {
       list: ({ status, page = 0, size = 20 } = {}) =>

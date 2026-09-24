@@ -1,30 +1,32 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Icon from '../components/ui/Icon';
+import PageHeader from '../components/admin/PageHeader';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Drawer from '../components/admin/Drawer';
+import ClientPicker from '../components/admin/ClientPicker';
+import { ErrorBanner, TableEmpty, TableLoading } from '../components/admin/TableStates';
+import rowProps from '../components/admin/rowProps';
+import { useToast } from '../components/admin/Toast';
+import { usePageParam } from '../hooks/useQueryParam';
 import api, { friendlyError } from '../lib/api';
+import { formatDate, label, timeAgo } from '../lib/format';
 
-const PAYMENT_TYPES = ['ADVANCE', 'MILESTONE', 'INVOICE'];
-
-const label = (value) =>
-  String(value || '')
-    .toLowerCase()
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+const PAYMENT_TYPES = [
+  { value: 'ADVANCE', help: 'Paid before work starts' },
+  { value: 'MILESTONE', help: 'Paid when a stage is reached' },
+  { value: 'INVOICE', help: 'Final or itemised bill' },
+];
 
 const toneFor = (status) => {
   if (status === 'PAID') return 'success';
-  if (status === 'FAILED' || status === 'CANCELLED') return 'danger';
+  if (status === 'FAILED' || status === 'CANCELLED' || status === 'REFUNDED') return 'danger';
   if (status === 'PENDING') return 'warning';
   return 'accent';
 };
 
-const formatDate = (value) =>
-  value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-
 const emptyForm = {
-  userId: '',
+  client: null,
   projectId: '',
   stageId: '',
   paymentType: 'ADVANCE',
@@ -33,14 +35,18 @@ const emptyForm = {
   dueDate: '',
 };
 
+/** Money asked of clients — advances, milestones and invoices — and whether each has been paid. */
 export default function AdminPayments() {
-  const [page, setPage] = useState(0);
+  const { notify } = useToast();
+  const [page, setPage] = usePageParam();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [viewing, setViewing] = useState(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [projects, setProjects] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
@@ -62,37 +68,50 @@ export default function AdminPayments() {
     setForm(emptyForm);
     setSaveError('');
     setCreating(true);
+    api.admin.projects
+      .list({ size: 100 })
+      .then((p) => setProjects(p.content))
+      .catch(() => setProjects([]));
   };
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
+  const stages = useMemo(() => {
+    const project = projects.find((p) => String(p.id) === String(form.projectId));
+    return project ? [...project.stages].sort((a, b) => a.stageNo - b.stageNo) : [];
+  }, [projects, form.projectId]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!form.userId || !form.description.trim() || !form.amount) {
-      setSaveError('Client account ID, description and amount are all required.');
+    if (!form.client) {
+      setSaveError('Choose the client this payment is for.');
+      return;
+    }
+    if (!form.description.trim()) {
+      setSaveError('Add a description the client will understand, e.g. "40% advance — interior work".');
+      return;
+    }
+    if (!(Number(form.amount) >= 1)) {
+      setSaveError('Enter an amount of at least ₹1.');
       return;
     }
     setSaving(true);
     setSaveError('');
     try {
-      const payload = {
-        userId: Number(form.userId),
+      const created = await api.admin.payments.create({
+        userId: form.client.id,
         projectId: form.projectId === '' ? undefined : Number(form.projectId),
         stageId: form.stageId === '' ? undefined : Number(form.stageId),
         paymentType: form.paymentType,
         description: form.description.trim(),
         amount: Number(form.amount),
         dueDate: form.dueDate || undefined,
-      };
-      await api.admin.payments.create(payload);
+      });
       setCreating(false);
+      notify(`${created.amountDisplay} raised for ${form.client.fullName || 'the client'}`);
       load();
     } catch (err) {
-      if (err && err.fieldErrors) {
-        setSaveError(Object.values(err.fieldErrors)[0] || friendlyError(err));
-      } else {
-        setSaveError(friendlyError(err));
-      }
+      setSaveError(err && err.fieldErrors ? Object.values(err.fieldErrors)[0] : friendlyError(err));
     } finally {
       setSaving(false);
     }
@@ -100,31 +119,26 @@ export default function AdminPayments() {
 
   return (
     <div>
-      <div className="admin-header">
-        <div>
-          <h1>PAYMENTS</h1>
-          <p>Advances, milestones and invoices raised against a client.</p>
-        </div>
-        <button type="button" className="btn btn-primary btn-sm" onClick={openCreate}>
-          <Icon name="plus" size={16} />
-          RAISE PAYMENT
-        </button>
-      </div>
+      <PageHeader
+        icon="rupee"
+        title="Payments"
+        subtitle="Money you ask clients for — advances, milestones and invoices. The client pays it from their dashboard."
+        actions={
+          <button type="button" className="btn btn-primary btn-sm" onClick={openCreate}>
+            <Icon name="plus" size={16} />
+            RAISE PAYMENT
+          </button>
+        }
+      />
 
-      {error && (
-        <div role="alert" className="alert alert-error">
-          <Icon name="info" size={18} />
-          <span>{error}</span>
-        </div>
-      )}
+      <ErrorBanner onRetry={load}>{error}</ErrorBanner>
 
       <div className="admin-table-wrap">
         <table className="admin-table">
           <thead>
             <tr>
-              <th>Reference</th>
+              <th>Payment</th>
               <th>Type</th>
-              <th>Description</th>
               <th>Project</th>
               <th>Amount</th>
               <th>Due</th>
@@ -133,19 +147,19 @@ export default function AdminPayments() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={7} className="admin-table-empty">
-                  Loading…
-                </td>
-              </tr>
+              <TableLoading columns={6} />
             ) : data && data.content.length ? (
               data.content.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.reference}</td>
+                <tr key={row.id} {...rowProps(() => setViewing(row), `Open payment ${row.reference}`)}>
+                  <td>
+                    <span className="admin-cell-main">{row.description}</span>
+                    <span className="admin-table-sub admin-mono">{row.reference}</span>
+                  </td>
                   <td>{label(row.paymentType)}</td>
-                  <td>{row.description}</td>
                   <td>{row.projectName || '—'}</td>
-                  <td>{row.amountDisplay}</td>
+                  <td>
+                    <strong>{row.amountDisplay}</strong>
+                  </td>
                   <td>{formatDate(row.dueDate)}</td>
                   <td>
                     <StatusBadge tone={toneFor(row.status)}>{label(row.status)}</StatusBadge>
@@ -153,39 +167,101 @@ export default function AdminPayments() {
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan={7} className="admin-table-empty">
-                  No payments raised yet.
-                </td>
-              </tr>
+              <TableEmpty columns={6} icon="rupee" title="No payments raised yet">
+                Raise an advance, milestone or invoice and the client can pay it from their dashboard.
+              </TableEmpty>
             )}
           </tbody>
         </table>
       </div>
 
-      {data && <Pagination page={data.number} totalPages={data.totalPages} onChange={setPage} />}
+      <Pagination data={data} onChange={setPage} />
+
+      <Drawer open={Boolean(viewing)} onClose={() => setViewing(null)} title={viewing ? viewing.reference : ''}>
+        {viewing && (
+          <>
+            <div className="admin-modal-top">
+              <StatusBadge tone={toneFor(viewing.status)}>{label(viewing.status)}</StatusBadge>
+              <span className="admin-table-sub" style={{ marginTop: 0 }}>
+                Raised {timeAgo(viewing.createdAt)}
+              </span>
+            </div>
+            <dl className="admin-detail-list">
+              <div>
+                <dt>Description</dt>
+                <dd>{viewing.description}</dd>
+              </div>
+              <div>
+                <dt>Amount</dt>
+                <dd>
+                  <strong>{viewing.amountDisplay}</strong> {viewing.currency && viewing.currency !== 'INR' ? viewing.currency : ''}
+                </dd>
+              </div>
+              <div>
+                <dt>Type</dt>
+                <dd>{label(viewing.paymentType)}</dd>
+              </div>
+              <div>
+                <dt>Project</dt>
+                <dd>{viewing.projectName || '—'}</dd>
+              </div>
+              <div>
+                <dt>Due</dt>
+                <dd>{formatDate(viewing.dueDate)}</dd>
+              </div>
+              <div>
+                <dt>Paid</dt>
+                <dd>{viewing.paidAt ? formatDate(viewing.paidAt) : 'Not yet'}</dd>
+              </div>
+              {viewing.razorpayOrderId && (
+                <div>
+                  <dt>Razorpay order</dt>
+                  <dd className="admin-mono">{viewing.razorpayOrderId}</dd>
+                </div>
+              )}
+            </dl>
+          </>
+        )}
+      </Drawer>
 
       <Drawer open={creating} onClose={() => setCreating(false)} title="Raise a payment">
-        <form onSubmit={handleCreate}>
-          <div className="field" style={{ marginBottom: 16 }}>
-            <label htmlFor="pay-user">
-              Client's account ID <span className="req">*</span>
-            </label>
-            <input id="pay-user" type="number" min="1" value={form.userId} onChange={update('userId')} />
-            <span className="field-hint">
-              There is no client picker yet — ask the client for their account, or look the ID up
-              directly.
-            </span>
+        <form onSubmit={handleCreate} noValidate>
+          <div style={{ marginBottom: 16 }}>
+            <ClientPicker
+              required
+              value={form.client}
+              onChange={(client) => setForm((f) => ({ ...f, client }))}
+              hint="The client pays this from their dashboard on the website."
+            />
           </div>
 
           <div className="form-grid" style={{ marginBottom: 16 }}>
             <div className="field">
-              <label htmlFor="pay-project">Project ID (optional)</label>
-              <input id="pay-project" type="number" min="1" value={form.projectId} onChange={update('projectId')} />
+              <label htmlFor="pay-project">Project (optional)</label>
+              <select
+                id="pay-project"
+                value={form.projectId}
+                onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value, stageId: '' }))}
+              >
+                <option value="">Not for a project</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.code} · {p.name}
+                    {p.clientName ? ` (${p.clientName})` : ''}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="field">
-              <label htmlFor="pay-stage">Stage ID (optional)</label>
-              <input id="pay-stage" type="number" min="1" value={form.stageId} onChange={update('stageId')} />
+              <label htmlFor="pay-stage">Stage (optional)</label>
+              <select id="pay-stage" value={form.stageId} onChange={update('stageId')} disabled={!stages.length}>
+                <option value="">{form.projectId && !stages.length ? 'This project has no stages' : 'Any stage'}</option>
+                {stages.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.stageNo}. {s.title}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -195,8 +271,8 @@ export default function AdminPayments() {
             </label>
             <select id="pay-type" value={form.paymentType} onChange={update('paymentType')}>
               {PAYMENT_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {label(t)}
+                <option key={t.value} value={t.value}>
+                  {label(t.value)} — {t.help}
                 </option>
               ))}
             </select>
@@ -206,7 +282,15 @@ export default function AdminPayments() {
             <label htmlFor="pay-desc">
               Description <span className="req">*</span>
             </label>
-            <input id="pay-desc" type="text" value={form.description} onChange={update('description')} placeholder="e.g. 40% advance — interior work" />
+            <input
+              id="pay-desc"
+              type="text"
+              maxLength={255}
+              value={form.description}
+              onChange={update('description')}
+              placeholder="e.g. 40% advance — interior work"
+            />
+            <span className="field-hint">The client sees this exactly as written.</span>
           </div>
 
           <div className="form-grid" style={{ marginBottom: 16 }}>
@@ -214,7 +298,7 @@ export default function AdminPayments() {
               <label htmlFor="pay-amount">
                 Amount (₹) <span className="req">*</span>
               </label>
-              <input id="pay-amount" type="number" min="1" step="0.01" value={form.amount} onChange={update('amount')} />
+              <input id="pay-amount" type="number" inputMode="decimal" min="1" step="0.01" value={form.amount} onChange={update('amount')} />
             </div>
             <div className="field">
               <label htmlFor="pay-due">Due date (optional)</label>
@@ -224,12 +308,12 @@ export default function AdminPayments() {
 
           {saveError && (
             <div role="alert" className="alert alert-error">
-              <Icon name="info" size={18} />
+              <Icon name="alert" size={18} />
               <span>{saveError}</span>
             </div>
           )}
 
-          <button type="submit" className="btn btn-dark btn-block" disabled={saving}>
+          <button type="submit" className="btn btn-primary btn-block" disabled={saving}>
             {saving ? 'RAISING…' : 'RAISE PAYMENT'}
           </button>
         </form>
