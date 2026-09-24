@@ -157,7 +157,7 @@ export default function ServiceBookingModal({ service, onClose }) {
 
         {/* MODAL HEADER */}
 
-        <div className="px-6 pt-6 pr-16">
+        <div className="px-5 pt-5 pr-14">
           <p
             className="
               mb-1
@@ -193,19 +193,19 @@ export default function ServiceBookingModal({ service, onClose }) {
           </p> */}
         </div>
 
-        <div className="my-6 h-px bg-gray-200" />
+        <div className="my-4 h-px bg-gray-200" />
 
         {/* MODAL SCROLL AREA */}
 
         <div
           ref={modalScrollRef}
           className="
-            max-h-[calc(88vh-190px)]
+            max-h-[calc(88vh-170px)]
             overflow-y-auto
 
-            px-6
-            pb-10
-            md:pb-12
+            px-5
+            pb-6
+            md:pb-8
 
             max-sm:flex-1
             max-sm:min-h-0

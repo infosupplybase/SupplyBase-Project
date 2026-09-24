@@ -19,7 +19,7 @@ spring:
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:supplybase}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8
     username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -89,8 +89,12 @@ app:
   # reset, email verification). Not a CORS list, just one URL.
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
   jwt:
-    # MUST be overridden in production. Minimum 32 bytes for HS256.
-    secret: ${JWT_SECRET:dev-only-secret-change-me-in-production-please-32b}
+    # No fixed fallback on purpose — see JwtService.resolveSecret for why a
+    # value baked in here would itself be a security hole. Left unset, a
+    # fresh secret is generated for each run instead (fine for local dev;
+    # every session dies on the next restart, so set a real one for anything
+    # that needs to stay signed in). MUST be set in production.
+    secret: ${JWT_SECRET:}
     access-token-minutes: ${JWT_ACCESS_MINUTES:15}
     refresh-token-days: ${JWT_REFRESH_DAYS:30}
     issuer: supplybase-projects

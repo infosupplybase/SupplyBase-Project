@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
 import ProblemLocationModal from './ProblemLocationModal';
+import { otherServiceOptionImages } from '../../data/otherServices';
 
 import {
   electricianImages,
@@ -55,6 +56,76 @@ export default function QuestionField({
     : value
       ? [value]
       : [];
+  const isPopService = [
+    'pop-ceiling-design',
+    'pop_ceiling_design',
+    'pop-false-ceiling',
+  ].includes(serviceSlug);
+  const isPopHomeTypeQuestion = isPopService && [
+    'pop_home_type',
+    'home_type',
+    'property_type',
+  ].includes(key);
+  const optionList = options || [];
+  const isPopRoomQuestion = serviceSlug === 'pop-ceiling-design'
+    && (key === 'pop_room_type' || key === 'rooms');
+  const roomOptions = isPopRoomQuestion
+    ? [
+        {
+          value: 'living-room',
+          label: 'Living Room',
+          hint: 'Classy & functional',
+          group: '',
+        },
+        {
+          value: 'bedroom',
+          label: 'Bedroom',
+          hint: 'Comfortable & stylish',
+          group: '',
+        },
+        {
+          value: 'dining-room',
+          label: 'Dining Room',
+          hint: 'Classy & functional',
+          group: '',
+        },
+        {
+          value: 'kids-room',
+          label: 'Kids Room',
+          hint: 'Fun & creative',
+          group: '',
+        },
+        {
+          value: 'study-room',
+          label: 'Study Room',
+          hint: 'Simple & stylish',
+          group: '',
+        },
+        {
+          value: 'kitchen',
+          label: 'Kitchen',
+          hint: 'Clean & durable',
+          group: '',
+        },
+        {
+          value: 'office-commercial-space',
+          label: 'Office / Commercial Space',
+          hint: 'Professional & efficient',
+          group: '',
+        },
+        {
+          value: 'office-commercial',
+          label: 'Office / Commercial',
+          hint: 'Professional & efficient',
+          group: '',
+        },
+      ]
+    : optionList;
+  const filteredRoomOptions = roomOptions;
+  const homeTypeOptions = optionList;
+  const visibleHomeTypeValues = new Set(
+    homeTypeOptions.map((option) => option.value)
+  );
 
   const isChosen = (optionValue) =>
     selected.includes(optionValue);
@@ -97,7 +168,7 @@ export default function QuestionField({
 
   const groups = [];
 
-  (options || []).forEach((option) => {
+  filteredRoomOptions.forEach((option) => {
     const groupName = option.group || '';
 
     let group = groups.find(
@@ -137,6 +208,18 @@ export default function QuestionField({
     );
   };
 
+  const getOtherServiceImage = (option) => {
+    const normalize = (value) => String(value || '')
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    return otherServiceOptionImages[option.value]
+      || otherServiceOptionImages[normalize(option.value)]
+      || otherServiceOptionImages[normalize(option.label)];
+  };
+
   /**
    * ==========================================================
    * GET OPTION IMAGE
@@ -144,6 +227,14 @@ export default function QuestionField({
    */
 
   const getOptionImage = (option) => {
+    if (
+      ['architectural-design', 'civil-construction', 'furniture', 'fabrication', 'finishing']
+        .includes(serviceSlug) &&
+      (key === 'service_needed' || key === 'property_type' || key === 'project_stage')
+    ) {
+      return getOtherServiceImage(option);
+    }
+
     /**
      * ========================================================
      * WATERPROOFING
@@ -333,6 +424,7 @@ export default function QuestionField({
   const isSimpleRadioQuestion =
     key === 'previous_waterproofing' ||
     key === 'previous_when';
+  const hideVisibleHeading = isPopHomeTypeQuestion || (isMulti && text === 'Select rooms / areas');
 
   const [isProblemLocationOpen, setProblemLocationOpen] = useState(false);
 
@@ -383,23 +475,25 @@ export default function QuestionField({
         {text}
       </legend>
 
-      <div className="wizard-card-head">
-        <h2>
-          {text}
+      {!hideVisibleHeading && (
+        <div className="wizard-card-head">
+          <h2>
+            {text}
 
-          {required && (
-            <span className="req">
-              {' '}*
-            </span>
+            {required && (
+              <span className="req">
+                {' '}*
+              </span>
+            )}
+          </h2>
+
+          {isMulti && (text !== 'Select rooms / areas') && (
+            <p>
+              You can choose more than one.
+            </p>
           )}
-        </h2>
-
-        {isMulti && (
-          <p>
-            You can choose more than one.
-          </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ======================================================
           SINGLE / MULTI OPTIONS
@@ -479,7 +573,7 @@ export default function QuestionField({
 
               <div className="tile-grid">
 
-                {group.items.map(
+                {group.items.filter((option) => visibleHomeTypeValues.has(option.value)).map(
                   (option, optionIndex) => {
 
                     const image =

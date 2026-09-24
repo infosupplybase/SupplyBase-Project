@@ -55,8 +55,8 @@ export default function Hero() {
             fold, so it is eager and high priority — lazy-loading it would
             delay the very first thing a visitor sees. */}
         <img
-          src="/assets/hero-house.svg"
-          alt=""
+          src="/assets/hero/interior-design.png"
+          alt="Supplybase interior design hero"
           fetchPriority="high"
           decoding="async"
         />
