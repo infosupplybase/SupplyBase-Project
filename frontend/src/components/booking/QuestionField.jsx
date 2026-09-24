@@ -27,6 +27,35 @@ import {
   electricianRequirementImages,
 } from '../../data/electricianImages';
 
+import {
+  architecturalImages,
+  architecturalPropertyImages,
+  architecturalProjectStatusImages,
+} from '../../data/architecturalImages';
+
+import {
+  civilConstructionImages,
+  civilConstructionPropertyImages,
+  civilConstructionProjectStageImages,
+} from '../../data/civilConstructionImages';
+
+import {
+  furnitureImages,
+  furniturePropertyImages,
+  furnitureMaterialImages,
+} from '../../data/furnitureImages';
+
+import {
+  fabricationImages,
+  fabricationPropertyImages,
+  fabricationMaterialImages,
+} from '../../data/fabricationImages';
+
+import {
+  finishingImages,
+  finishingPropertyImages,
+} from '../../data/finishingImages';
+
 export default function QuestionField({
   question,
   value,
@@ -144,6 +173,88 @@ export default function QuestionField({
    */
 
   const getOptionImage = (option) => {
+    /**
+     * ========================================================
+     * OTHER SERVICES — architectural design, civil construction,
+     * furniture, fabrication, finishing. Each has a property-type
+     * set, then either a stage set (architectural / civil) or a
+     * material set (furniture / fabrication), then a service set.
+     * ========================================================
+     */
+
+    const isPropertyKey =
+      key === 'property_type' ||
+      key === 'home_type' ||
+      key === 'bhk';
+
+    const isStageKey =
+      key === 'project_stage' ||
+      key === 'construction_stage' ||
+      key === 'construction_status' ||
+      key === 'project_status';
+
+    const isMaterialKey =
+      key === 'material_preference' ||
+      key === 'material_type' ||
+      key === 'preferred_material' ||
+      key === 'material';
+
+    if (serviceSlug === 'architectural-design') {
+      if (isPropertyKey) {
+        return findImage(architecturalPropertyImages, option);
+      }
+
+      if (isStageKey) {
+        return findImage(architecturalProjectStatusImages, option);
+      }
+
+      return findImage(architecturalImages, option);
+    }
+
+    if (serviceSlug === 'civil-construction') {
+      if (isPropertyKey) {
+        return findImage(civilConstructionPropertyImages, option);
+      }
+
+      if (isStageKey) {
+        return findImage(civilConstructionProjectStageImages, option);
+      }
+
+      return findImage(civilConstructionImages, option);
+    }
+
+    if (serviceSlug === 'furniture') {
+      if (isPropertyKey) {
+        return findImage(furniturePropertyImages, option);
+      }
+
+      if (isMaterialKey) {
+        return findImage(furnitureMaterialImages, option);
+      }
+
+      return findImage(furnitureImages, option);
+    }
+
+    if (serviceSlug === 'fabrication') {
+      if (isPropertyKey) {
+        return findImage(fabricationPropertyImages, option);
+      }
+
+      if (isMaterialKey) {
+        return findImage(fabricationMaterialImages, option);
+      }
+
+      return findImage(fabricationImages, option);
+    }
+
+    if (serviceSlug === 'finishing') {
+      if (isPropertyKey) {
+        return findImage(finishingPropertyImages, option);
+      }
+
+      return findImage(finishingImages, option);
+    }
+
     /**
      * ========================================================
      * WATERPROOFING
