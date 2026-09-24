@@ -212,7 +212,7 @@ export default function Dashboard() {
           <div className="dashboard-hero-visual">
 
             <img
-              src="/assets/hero-workers.png"
+              src="/assets/hero-workers1.png"
               alt="Supplybase service professionals"
             />
 
