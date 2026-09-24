@@ -248,18 +248,30 @@ const stageQuestions = useMemo(() => {
   }
 
   const usable = form.questions
-    .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-          String(q.key || '').startsWith(prefix)
-        )
-    )
-    .map((q, index) => ({
-      ...q,
-      _questionId: `${q.key}-${index}`,
-    }));
+  .filter(
+    (q) =>
+      q &&
+      q.inputType !== 'FILE' &&
+      !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+        String(q.key || '').startsWith(prefix)
+      )
+  )
+  .filter((question, index, questions) => {
+    // Remove exact duplicate questions returned by the backend.
+    // Same key + same question text = same question.
+    return (
+      index ===
+      questions.findIndex(
+        (q) =>
+          q.key === question.key &&
+          q.text === question.text
+      )
+    );
+  })
+  .map((q, index) => ({
+    ...q,
+    _questionId: `${q.key}-${index}`,
+  }));
 
   const service = usable.filter(
     (q) => q.key === 'service_needed'
