@@ -17,7 +17,12 @@
 .dashboard-hero {
   position: relative;
   width: 100%;
-  background: #f4f8fc;
+  background: radial-gradient(
+      ellipse at 78% 45%,
+      #ffffff 0%,
+      #f7faff 38%,
+      #f4f8fc 75%
+    );;
   overflow: visible;
   padding-bottom: 3%;
 }
@@ -133,14 +138,14 @@
   align-items: flex-end;
   justify-content: center;
   min-height: 440px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .dashboard-hero-visual img {
   position: absolute;
   z-index: 2;
   right: -10px;
-  bottom: 0;
+  bottom: 60px;
   display: block;
   width: 600px;
   max-width: none;
@@ -323,18 +328,76 @@
     font-size: 52px;
   }
 
-  .dashboard-hero-visual {
-    min-height: 360px;
-    order: 2;
-  }
+/* ============================================================
+   RIGHT IMAGE — BLENDED INTO HERO BACKGROUND
+   ============================================================ */
 
-  .dashboard-hero-visual img {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    width: 500px;
-    max-width: 100%;
-  }
+.dashboard-hero-visual {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  min-height: 440px;
+  overflow: visible;
+}
+
+/* Soft background blend around the image */
+.dashboard-hero-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to left,
+      transparent 65%,
+      #f4f8fc 100%
+    ),
+    linear-gradient(
+      to bottom,
+      #f4f8fc 0%,
+      transparent 18%,
+      transparent 82%,
+      #f4f8fc 100%
+    );
+}
+
+/* Actual workers image */
+.dashboard-hero-visual img {
+  position: absolute;
+  z-index: 2;
+
+  right: -5px;
+  bottom: 0;
+
+  width: 680px;
+  max-width: none;
+  height: auto;
+
+  object-fit: contain;
+  object-position: bottom right;
+
+  /* THIS removes the hard rectangular edges */
+  -webkit-mask-image:
+    radial-gradient(
+      ellipse 78% 82% at 58% 55%,
+      #000 55%,
+      rgba(0,0,0,0.95) 68%,
+      rgba(0,0,0,0.55) 82%,
+      transparent 100%
+    );
+
+  mask-image:
+    radial-gradient(
+      ellipse 78% 82% at 58% 55%,
+      #000 55%,
+      rgba(0,0,0,0.95) 68%,
+      rgba(0,0,0,0.55) 82%,
+      transparent 100%
+    );
+}
 
   .dashboard-hero-bar {
     transform: none;
