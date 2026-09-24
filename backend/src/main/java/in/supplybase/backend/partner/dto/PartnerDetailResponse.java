@@ -5,6 +5,7 @@ import java.util.List;
 
 import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.auth.User;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
 import in.supplybase.backend.partner.PartnerProfile;
 import in.supplybase.backend.partner.PartnerStatus;
 
@@ -17,10 +18,12 @@ public record PartnerDetailResponse(
         Integer experienceYears, String city, String serviceAreas, String languages,
         String reviewNote, Instant reviewedAt, Instant appliedAt,
         long activeJobs, long completedJobs,
+        PartnerEarningsResponse earnings,
         List<PartnerJobResponse> jobs) {
 
     public static PartnerDetailResponse from(PartnerProfile p, String tradeLabel,
                                              long activeJobs, long completedJobs,
+                                             PartnerEarningsResponse earnings,
                                              List<PartnerJobResponse> jobs) {
         User u = p.getUser();
         return new PartnerDetailResponse(
@@ -30,6 +33,6 @@ public record PartnerDetailResponse(
                 p.getPrimaryTrade(), tradeLabel,
                 p.getExperienceYears(), p.getCity(), p.getServiceAreas(), p.getLanguages(),
                 p.getReviewNote(), p.getReviewedAt(), p.getCreatedAt(),
-                activeJobs, completedJobs, jobs);
+                activeJobs, completedJobs, earnings, jobs);
     }
 }
