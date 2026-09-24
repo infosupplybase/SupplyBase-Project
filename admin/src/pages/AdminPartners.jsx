@@ -4,6 +4,7 @@ import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Drawer from '../components/admin/Drawer';
 import api, { friendlyError } from '../lib/api';
+import { formatRupees } from '../lib/money';
 
 const STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'];
 
@@ -313,6 +314,43 @@ export default function AdminPartners() {
               )}
             </dl>
 
+            {!drawerLoading && selected.earnings && (
+              <>
+                <h3 className="admin-form-section-title" style={{ marginTop: 24 }}>
+                  Earnings
+                </h3>
+                <dl className="admin-detail-list">
+                  <div>
+                    <dt>Earned (completed jobs)</dt>
+                    <dd>{formatRupees(selected.earnings.earnedPaise)}</dd>
+                  </div>
+                  <div>
+                    <dt>Paid out</dt>
+                    <dd>{formatRupees(selected.earnings.paidPaise)}</dd>
+                  </div>
+                  <div>
+                    <dt>Still to pay</dt>
+                    <dd>
+                      <strong>{formatRupees(selected.earnings.pendingPaise)}</strong>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>This month</dt>
+                    <dd>{formatRupees(selected.earnings.thisMonthPaise)}</dd>
+                  </div>
+                  {selected.earnings.awaitingPayoutJobs > 0 && (
+                    <div>
+                      <dt>Completed, no payout set</dt>
+                      <dd>
+                        {selected.earnings.awaitingPayoutJobs} job
+                        {selected.earnings.awaitingPayoutJobs === 1 ? '' : 's'} — set the amount in Bookings
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </>
+            )}
+
             <h3 className="admin-form-section-title" style={{ marginTop: 24 }}>
               Jobs ({drawerLoading ? '…' : (selected.jobs || []).length})
             </h3>
@@ -332,8 +370,13 @@ export default function AdminPartners() {
                         .filter(Boolean)
                         .join(' · ')}
                     </div>
-                    <div style={{ marginTop: 6 }}>
+                    <div style={{ marginTop: 6, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                       <StatusBadge tone={toneForJob(job.status)}>{label(job.status)}</StatusBadge>
+                      {job.payoutPaise != null && (
+                        <StatusBadge tone={job.paidAt ? 'success' : 'warning'}>
+                          {formatRupees(job.payoutPaise)} · {job.paidAt ? 'Paid' : 'Not paid'}
+                        </StatusBadge>
+                      )}
                     </div>
                   </li>
                 ))}

@@ -3,6 +3,7 @@ import Icon from '../components/ui/Icon';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Modal from '../components/admin/Modal';
+import PartnerPayoutSection from '../components/admin/PartnerPayoutSection';
 import api, { friendlyError } from '../lib/api';
 
 const STATUSES = [
@@ -420,6 +421,16 @@ export default function AdminBookings() {
                 </form>
               )}
             </section>
+
+            {selected.assignedProfessionalId && (
+              <section className="admin-form-section">
+                <h3 className="admin-form-section-title">
+                  <Icon name="rupee" size={15} />
+                  Partner payout
+                </h3>
+                <PartnerPayoutSection booking={selected} />
+              </section>
+            )}
 
             <section className="admin-form-section">
               <h3 className="admin-form-section-title">
