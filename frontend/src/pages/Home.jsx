@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import HomeHero from '../components/home/HomeHero';
 import PopularServices from '../components/home/PopularServices';
 import ConsultationBanner from '../components/home/ConsultationBanner';
+import HowBookingWorks from '../components/services/HowBookingWorks';
 // Materials and Projects sections are disabled sitewide — see App.jsx.
 // import MaterialsSection from '../components/materials/MaterialsSection';
 import StatsSection from '../components/home/StatsSection';
@@ -21,6 +22,14 @@ export default function Home() {
       <HomeHero />
 
       <PopularServices />
+
+      {/* Five plain steps, right under the services, so a first-time visitor
+          knows what happens after they tap one. */}
+      <section className="home-how" aria-label="How booking works">
+        <div className="container">
+          <HowBookingWorks />
+        </div>
+      </section>
 
       <ConsultationBanner />
 

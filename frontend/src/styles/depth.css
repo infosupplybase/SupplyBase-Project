@@ -1,0 +1,301 @@
+/* =========================================================================
+   SUPPLYBASE — DEPTH AND PHONE POLISH
+   Loaded last (see index.css), so it can refine what the page stylesheets
+   set without editing each of them.
+
+   1. Raised, pressable buttons and cards (the "3D" look), built on the
+      shadow tokens in variables.css.
+   2. Touch screens: no hover lift that sticks after a tap, and a visible
+      press instead.
+   3. Home page: the service hint and the "How booking works" steps.
+   4. Services page: two cards per row on a phone instead of one very long
+      column.
+   5. The phone bottom bar: raised, with the current page on a gold tile.
+   6. A floor on text size so nothing on a phone is smaller than 12px.
+   ========================================================================= */
+
+/* ------------------------------------------------------ 1. buttons */
+
+/* A gold key: lit top edge, darker bottom lip, soft gold glow underneath. */
+.btn-primary {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -3px 0 rgba(120, 80, 0, 0.22), var(--shadow-gold);
+}
+
+.btn-primary:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -3px 0 rgba(120, 80, 0, 0.22),
+    0 14px 26px -8px rgba(190, 140, 20, 0.55), 0 3px 8px rgba(190, 140, 20, 0.3);
+}
+
+/* Pressed: the lip disappears and the face sinks. */
+.btn-primary:active {
+  box-shadow: inset 0 2px 5px rgba(120, 80, 0, 0.3) !important;
+  transform: translateY(1px) !important;
+}
+
+.btn-outline:active,
+.btn-dark:active,
+.btn-ghost:active {
+  transform: translateY(1px) !important;
+}
+
+/* ------------------------------------------------------ 1. cards */
+
+/* Home service tiles: a lit card with the photo set into it. */
+.service-tile-grid {
+  perspective: 900px;
+}
+
+.service-tile {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  transform-style: preserve-3d;
+}
+
+.service-tile-photo {
+  box-shadow: 0 8px 16px -10px rgba(40, 30, 10, 0.55), 0 0 0 1px rgba(40, 30, 10, 0.06);
+}
+
+.service-tile-name {
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Tips back slightly as it lifts, as if picked up by its bottom edge. */
+  .service-tile:hover,
+  .service-tile:focus-visible {
+    transform: translateY(-5px) rotateX(6deg);
+    box-shadow: var(--depth-inset-top), var(--shadow-lg);
+  }
+}
+
+.svc-card {
+  box-shadow: var(--depth-inset-top), var(--shadow);
+}
+
+/* ------------------------------------------------ 2. touch screens */
+
+@media (hover: none) {
+  /* A hover lift on a phone sticks after the tap and leaves the button or
+     card floating until the next tap elsewhere. */
+  .btn:hover,
+  .btn:hover svg,
+  .svc-card:hover,
+  .svc-card:hover .svc-card-media img,
+  .service-tile:hover {
+    transform: none;
+  }
+
+  /* Instead: a quick, visible press on anything that is tapped. */
+  .service-tile:active,
+  .svc-card:active,
+  .elc-tile:active,
+  .plb-overview-card:active,
+  .pnt-overview-card:active,
+  .id-category-card:active,
+  .id-project-card:active,
+  .ibc-space-tile:active,
+  .problem-tile:active,
+  .choice-card:active,
+  .option-card:active {
+    transform: scale(0.98);
+    transition-duration: 0.08s;
+  }
+}
+
+/* ----------------------------------------------------- 3. home page */
+
+.popular-services-head {
+  margin-bottom: var(--space-5);
+}
+
+.popular-services-head .popular-services-title {
+  margin-bottom: 4px;
+}
+
+.popular-services-hint {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 15px;
+}
+
+.home-how {
+  padding: 0 0 var(--space-8);
+  background: var(--white);
+}
+
+/* The booking steps as a raised dark panel with gold tiles. */
+.home-how .hbw {
+  margin-top: 0;
+  background:
+    radial-gradient(600px 220px at 100% 0%, rgba(242, 193, 78, 0.16), transparent 70%),
+    linear-gradient(180deg, #1c1a14 0%, #0d0c0a 100%);
+  border: 1px solid rgba(242, 193, 78, 0.18);
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 26px 50px -22px rgba(0, 0, 0, 0.55);
+}
+
+.home-how .hbw-title {
+  font-size: 14px;
+}
+
+.home-how .hbw-icon {
+  border: 0;
+  border-radius: 16px;
+  background: var(--gold-tile);
+  box-shadow: var(--gold-tile-shadow);
+  color: #2a1d00;
+}
+
+.home-how .hbw-step p {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 640px) {
+  /* The timeline line runs down the middle of the (now square) tiles. */
+  .home-how .hbw-step:not(:last-child)::before {
+    left: 25px;
+  }
+}
+
+@media (max-width: 767px) {
+  .popular-services-head {
+    margin-bottom: 12px;
+  }
+
+  .popular-services-hint {
+    font-size: 13.5px;
+  }
+
+  .home-how {
+    padding-bottom: var(--space-6);
+  }
+}
+
+/* ------------------------------------------------- 4. services page */
+
+@media (max-width: 600px) {
+  .svc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .svc-grid > * {
+    display: flex;
+  }
+
+  .svc-card {
+    width: 100%;
+  }
+
+  .svc-card-media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .svc-card-body {
+    padding: 12px;
+  }
+
+  /* Two lines reserved, so the buttons line up across a row. */
+  .svc-card-body h3 {
+    font-size: 15px;
+    line-height: 1.2;
+    min-height: 2.4em;
+    margin-bottom: 10px;
+    overflow-wrap: anywhere;
+  }
+
+  .svc-card-foot {
+    padding-top: 10px;
+  }
+
+  .svc-card-foot .btn {
+    width: 100%;
+    height: 44px;
+    padding: 0 8px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ------------------------------------------------- 5. phone bottom bar */
+
+@media (max-width: 900px) {
+  .bottom-nav {
+    background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+    border-top: 1px solid rgba(40, 30, 10, 0.08);
+    box-shadow: inset 0 1px 0 #ffffff, 0 -10px 28px -10px rgba(40, 30, 10, 0.28);
+  }
+
+  .bottom-nav-item {
+    gap: 2px;
+    color: #5f594b;
+    font-size: 12px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 28px;
+    border-radius: 999px;
+    transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  }
+
+  /* Where you are: the icon sits on a raised gold tile, the label in deep
+     gold (plain --gold is too faint to read as text on white). */
+  .bottom-nav-item.active {
+    color: var(--gold-deep);
+  }
+
+  .bottom-nav-item.active .bottom-nav-icon {
+    background: var(--gold-tile);
+    box-shadow: var(--gold-tile-shadow);
+    color: #2a1d00;
+  }
+
+  .bottom-nav-item:active .bottom-nav-icon {
+    transform: scale(0.94);
+  }
+
+  .bottom-nav-item:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: -3px;
+  }
+}
+
+/* ----------------------------------------------- 6. text size floor */
+
+.home-hero-eyebrow {
+  font-size: 12px;
+}
+
+@media (max-width: 767px) {
+  .plb-overview-price-note,
+  .pnt-step-num {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-tile:hover,
+  .service-tile:focus-visible {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------ step caption (painting, POP) */
+
+.pnt-step-caption {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+
+.painting-modal-scope .pnt-step-caption {
+  color: var(--gold-deep);
+}
