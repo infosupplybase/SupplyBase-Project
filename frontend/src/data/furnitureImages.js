@@ -5,28 +5,28 @@
 export const furnitureImages = {
 
   'Modular Furniture':
-    '/assets/services/furniture/moduler-furniture.png',
+    '/assets/services/furniture/modular-furniture.jpg',
 
   'Modular Kitchen':
-    '/assets/services/furniture/moduler-kitchen.png',
+    '/assets/services/furniture/modular-kitchen.jpg',
 
   'Wardrobes':
-    '/assets/services/furniture/wardrobes.png',
+    '/assets/services/furniture/wardrobes.jpg',
 
   'TV Units':
-    '/assets/services/furniture/tv.png',
+    '/assets/services/furniture/tv-units.jpg',
 
   'Beds':
-    '/assets/services/furniture/beds.png',
+    '/assets/services/furniture/beds.jpg',
 
   'Office Furniture':
-    '/assets/services/furniture/office-furniture.png',
+    '/assets/services/furniture/office-furniture.jpg',
 
   'Custom Furniture':
-    '/assets/services/furniture/custom-furniture.png',
+    '/assets/services/furniture/custom-furniture.jpg',
 
   'Other':
-    '/assets/services/furniture/Others.png',
+    '/assets/services/furniture/other.jpg',
 };
 
 
@@ -66,7 +66,7 @@ export const furniturePropertyImages = {
     '/assets/services/furniture/commercial.jpeg',  
 
   'Other':
-    '/assets/services/furniture/Others.png',
+    '/assets/services/furniture/property-other.jpg',
 };
 
 
@@ -77,11 +77,11 @@ export const furniturePropertyImages = {
 export const furnitureMaterialImages = {
 
   'Plywood':
-    '/assets/services/furniture/plywood.png',
+    '/assets/services/furniture/material/plywood.jpg',
 
   'MDF':
-    '/assets/services/furniture/mdf.png',
+    '/assets/services/furniture/material/mdf.jpg',
 
   'Not Sure':
-    '/assets/services/furniture/not-sure.png'
+    '/assets/services/furniture/material/not-sure.jpg'
 };
