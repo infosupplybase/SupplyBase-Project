@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Icon from '../components/ui/Icon';
 import PageHeader from '../components/admin/PageHeader';
+import DataTable from '../components/admin/DataTable';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Drawer from '../components/admin/Drawer';
@@ -133,8 +134,7 @@ export default function AdminPayments() {
 
       <ErrorBanner onRetry={load}>{error}</ErrorBanner>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
+      <DataTable label="Payments">
           <thead>
             <tr>
               <th>Payment</th>
@@ -172,8 +172,7 @@ export default function AdminPayments() {
               </TableEmpty>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
       <Pagination data={data} onChange={setPage} />
 

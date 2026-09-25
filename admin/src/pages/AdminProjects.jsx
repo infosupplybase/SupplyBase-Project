@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PageHeader from '../components/admin/PageHeader';
+import DataTable from '../components/admin/DataTable';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Drawer from '../components/admin/Drawer';
@@ -137,8 +138,7 @@ export default function AdminProjects() {
 
       <ErrorBanner onRetry={load}>{error}</ErrorBanner>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
+      <DataTable label="Projects">
           <thead>
             <tr>
               <th>Project</th>
@@ -183,8 +183,7 @@ export default function AdminProjects() {
               </TableEmpty>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
       <Pagination data={data} onChange={setPage} />
 

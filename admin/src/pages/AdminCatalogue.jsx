@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Icon from '../components/ui/Icon';
 import PageHeader from '../components/admin/PageHeader';
+import DataTable from '../components/admin/DataTable';
 import StatusBadge from '../components/admin/StatusBadge';
 import Drawer from '../components/admin/Drawer';
 import { ErrorBanner, TableEmpty, TableLoading } from '../components/admin/TableStates';
@@ -363,8 +364,7 @@ export default function AdminCatalogue() {
 
       <ErrorBanner onRetry={loadCategories}>{error}</ErrorBanner>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
+      <DataTable label="Service categories">
           <thead>
             <tr>
               <th>Slug</th>
@@ -402,8 +402,7 @@ export default function AdminCatalogue() {
               </TableEmpty>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
       {/* ---------------------------------------------------- category drawer */}
       <Drawer open={Boolean(selected)} onClose={closeDrawer} title={selected ? selected.name : ''}>
