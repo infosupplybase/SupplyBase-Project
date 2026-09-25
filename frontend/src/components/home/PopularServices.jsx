@@ -38,7 +38,10 @@ export default function PopularServices() {
   return (
     <section className="popular-services">
       <div className="container">
-        <h2 className="popular-services-title">Popular Services</h2>
+        <div className="popular-services-head">
+          <h2 className="popular-services-title">Popular Services</h2>
+          <p className="popular-services-hint">Tap a service to see its options and book a visit.</p>
+        </div>
 
         {error && (
           <div role="alert" className="alert alert-error">
