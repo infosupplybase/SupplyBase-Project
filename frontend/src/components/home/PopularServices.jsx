@@ -1,5 +1,6 @@
 import Icon from '../ui/Icon';
 import useServiceCatalogue from '../../hooks/useServiceCatalogue';
+import optimizedImage from '../../lib/optimizedImage';
 import ServiceBookingModal, { useServiceBookingModal } from '../services/ServiceBookingModal';
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
@@ -60,7 +61,7 @@ export default function PopularServices() {
 
         {!error && categories && (
           <div className="service-tile-grid">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <button
                 key={category.slug}
                 type="button"
@@ -69,7 +70,15 @@ export default function PopularServices() {
               >
                 <span className="service-tile-photo">
                   {category.heroImage ? (
-                    <img src={category.heroImage} alt="" width={200} height={200} loading="lazy" />
+                    <img
+                      src={optimizedImage(category.heroImage)}
+                      alt=""
+                      width={200}
+                      height={200}
+                      /* The first row is on screen straight away; the rest can wait. */
+                      loading={index < 4 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
                   ) : (
                     <span className="service-tile-placeholder">
                       <Icon name={ICON_BY_SLUG[category.slug] || category.icon} size={34} />

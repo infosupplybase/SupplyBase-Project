@@ -1186,7 +1186,7 @@
   position: relative;
   margin-top: var(--space-6);
   padding: var(--space-7) var(--space-5);
-  background: var(--black) url('/assets/projects/modern-interior.jpeg') center/cover;
+  background: var(--black) url('/assets/projects/modern-interior.webp') center/cover;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   text-align: center;

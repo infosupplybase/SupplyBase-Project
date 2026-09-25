@@ -118,7 +118,7 @@ export default function HomeHero() {
       {/* Hero background image */}
       <div className="home-hero-media">
         <img
-          src="/assets/hero-house2.jpeg"
+          src="/assets/hero-house2.webp"
           alt="Luxury modern house"
           width={1800}
           height={1500}

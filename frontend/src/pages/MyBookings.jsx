@@ -48,7 +48,7 @@ export default function MyBookings() {
         eyebrow="YOUR ACCOUNT"
         title="MY BOOKINGS"
         text="Every site visit and service request you've made with Supplybase, in one place."
-        image="/assets/services/service-hero.jpg"
+        image="/assets/services/service-hero.webp"
         breadcrumbs={[{ label: 'My Account', to: '/dashboard' }, { label: 'Bookings' }]}
       />
 

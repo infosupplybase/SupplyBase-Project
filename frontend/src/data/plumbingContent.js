@@ -9,7 +9,7 @@
  *
  * Images: the project has no per-sub-service plumbing photography (no
  * distinct toilet/tap/basin/pipe/tank photos) and none was supplied. The one
- * real plumbing photo already in the project (/assets/hero/plumbing.png, a
+ * real plumbing photo already in the project (/assets/hero/plumbing.webp, a
  * plumber working under a sink) has marketing text, trust icons and a fee
  * panel baked into roughly its left 55% — at a full-width hero (viewport
  * ≥ ~1280px) object-fit:cover's own horizontal crop isn't enough to hide it
@@ -17,7 +17,7 @@
  * to crop away), so that text showed through behind this page's own real
  * HTML heading. Fixed by pre-cropping a text-free 772x941 strip from the
  * clean right-hand portion of that same source photo — see
- * /assets/plumbing/hero-plumber.jpg — and using THAT as the hero background
+ * /assets/plumbing/hero-plumber.webp — and using THAT as the hero background
  * across every plumbing page instead. It is reused, not new photography.
  * The nine overview-card thumbnails ARE real, distinct product photography:
  * cropped directly from the client-supplied SupplyBase_Actual_Screenshots_Catalog.pdf
@@ -30,7 +30,7 @@
  * See the redesign summary for the full asset-sourcing note.
  */
 
-export const PLUMBING_HERO_IMAGE = '/assets/plumbing/hero-plumber.jpg';
+export const PLUMBING_HERO_IMAGE = '/assets/plumbing/hero-plumber.webp';
 
 export const plumbingOverviewIntro = {
   eyebrow: 'PLUMBING SERVICES',
@@ -61,7 +61,7 @@ export const plumbingTabs = [
     name: 'Toilet Installation',
     icon: 'droplet',
     heroTagline: 'Hygienic homes. Hassle-free installation.',
-    overviewImage: '/assets/plumbing/overview/toilet-installation.jpg',
+    overviewImage: '/assets/plumbing/overview/toilet-installation.webp',
     filterTabs: ['All Services', 'Western Toilet', 'Indian Toilet', 'Flush System', 'Accessories'],
   },
   {
@@ -70,7 +70,7 @@ export const plumbingTabs = [
     name: 'Tap & Faucet Installation',
     icon: 'tap',
     heroTagline: 'Precise fittings, zero drips.',
-    overviewImage: '/assets/plumbing/overview/tap-faucet-installation.jpg',
+    overviewImage: '/assets/plumbing/overview/tap-faucet-installation.webp',
     filterTabs: ['All Services', 'Taps', 'Faucets', 'Mixers', 'Angle Valves', 'Accessories'],
   },
   {
@@ -79,7 +79,7 @@ export const plumbingTabs = [
     name: 'Bathroom Fitting',
     icon: 'droplet',
     heroTagline: 'Complete bathroom fitting solutions for a modern and functional space.',
-    overviewImage: '/assets/plumbing/overview/bathroom-fitting.jpg',
+    overviewImage: '/assets/plumbing/overview/bathroom-fitting.webp',
     filterTabs: ['All Services', 'Showers', 'Accessories', 'Fittings', 'Repair & Replacement'],
   },
   {
@@ -88,7 +88,7 @@ export const plumbingTabs = [
     name: 'Basin & Sink Installation',
     icon: 'tap',
     heroTagline: 'Expert installation for a cleaner, smarter home.',
-    overviewImage: '/assets/plumbing/overview/basin-sink-installation.jpg',
+    overviewImage: '/assets/plumbing/overview/basin-sink-installation.webp',
     filterTabs: ['All Services', 'Wash Basin', 'Kitchen Sink', 'Accessories', 'Repairs', 'Other Services'],
   },
   {
@@ -97,7 +97,7 @@ export const plumbingTabs = [
     name: 'Bathroom Accessories',
     icon: 'ruler',
     heroTagline: 'Small details. A more beautiful home.',
-    overviewImage: '/assets/plumbing/overview/bathroom-accessories.jpg',
+    overviewImage: '/assets/plumbing/overview/bathroom-accessories.webp',
     filterTabs: ['All Accessories', 'Towel Racks', 'Soap Holders', 'Mirrors & Shelves', 'Hooks', 'Other Accessories'],
   },
   {
@@ -106,7 +106,7 @@ export const plumbingTabs = [
     name: 'Drainage & Blockage',
     icon: 'droplet',
     heroTagline: 'Fast. Clean. Reliable. We keep your home flowing.',
-    overviewImage: '/assets/plumbing/overview/drainage-blockage.jpg',
+    overviewImage: '/assets/plumbing/overview/drainage-blockage.webp',
     filterTabs: ['All Services', 'Drain Cleaning', 'Pipe Repair', 'Blockage Removal', 'Inspection'],
   },
   {
@@ -115,7 +115,7 @@ export const plumbingTabs = [
     name: 'Leakage Repair & Connections',
     icon: 'wrench',
     heroTagline: 'Identify. Repair. Prevent. For a leak-free home.',
-    overviewImage: '/assets/plumbing/overview/leakage-repair-connections.jpg',
+    overviewImage: '/assets/plumbing/overview/leakage-repair-connections.webp',
     filterTabs: ['All Services', 'Leakage Repair', 'Pipe Connections', 'Water Supply', 'Other Services'],
   },
   {
@@ -124,7 +124,7 @@ export const plumbingTabs = [
     name: 'Water Tank & Motor Installation',
     icon: 'package',
     heroTagline: 'Safe water. Smooth flow. For a hassle-free home.',
-    overviewImage: '/assets/plumbing/overview/water-tank-motor-installation.jpg',
+    overviewImage: '/assets/plumbing/overview/water-tank-motor-installation.webp',
     filterTabs: ['All Services', 'Water Tank', 'Motor', 'Pipeline & Fittings', 'Repairs', 'Other Services'],
   },
 ];
@@ -132,56 +132,56 @@ export const plumbingTabs = [
 export const plumbingConsultationContent = {
   slug: 'consultation',
   name: 'Book a Consultation',
-  overviewImage: '/assets/plumbing/overview/consultation.jpg',
+  overviewImage: '/assets/plumbing/overview/consultation.webp',
   heroTagline: 'Get expert advice for all your home service needs.',
 };
 
 export const ITEM_IMAGES = {
-  'western-toilet-installation': '/assets/plumbing/services/toilet/western toilet.png',
-  'indian-toilet-installation': '/assets/plumbing/services/toilet/indian toilet.png',
-  'flush-tank-installation': '/assets/plumbing/services/toilet/flush tank.png',
-  'flush-mechanism-repair': '/assets/plumbing/services/toilet/flush tank.png',
-  'toilet-seat-installation': '/assets/plumbing/services/toilet/toilet seat.png',
-  'health-faucet-installation': '/assets/plumbing/services/toilet/health faucet.png',
-  'basin-tap-installation': '/assets/plumbing/services/tap-faucet/basin tap.png',
-  'kitchen-sink-tap-installation': '/assets/plumbing/services/tap-faucet/kitchen sink tap.png',
-  'wall-mixer-installation': '/assets/plumbing/services/tap-faucet/wall mixer.png',
-  'pillar-tap-installation': '/assets/plumbing/services/tap-faucet/pillar tap.png',
-  'angle-valve-installation': '/assets/plumbing/services/tap-faucet/angle valve.png',
-  'health-faucet-installation-tapfaucet': '/assets/plumbing/services/tap-faucet/health faucet.png',
-  'shower-installation': '/assets/plumbing/services/bathroom-fitting/shower.png',
-'towel-rod-installation': '/assets/plumbing/services/bathroom-fitting/towel rod.png',
-'bathroom-mirror-installation': '/assets/plumbing/services/bathroom-fitting/bathroom mirror.png',
-'wash-basin-installation': '/assets/plumbing/services/basin-sink/wash basin.png',
-'table-top-basin-installation': '/assets/plumbing/services/basin-sink/table top basin.png',
-'under-counter-basin-installation': '/assets/plumbing/services/basin-sink/under counter basin.png',
-'kitchen-sink-installation': '/assets/plumbing/services/basin-sink/kitchen sink.png',
-'sink-drain-waste-fitting': '/assets/plumbing/services/basin-sink/sink drain & waste fitting.png',
-'utility-sink-installation': '/assets/plumbing/services/basin-sink/utility sink.png',
-'towel-rack-installation': '/assets/plumbing/services/bathroom-accessories/towel rack.png',
-'soap-dish-installation': '/assets/plumbing/services/bathroom-accessories/soap dish.png',
-'tumbler-holder-installation': '/assets/plumbing/services/bathroom-accessories/tumbler holder.png',
-'robe-hook-installation': '/assets/plumbing/services/bathroom-accessories/robe hook.png',
-'toilet-paper-holder-installation': '/assets/plumbing/services/bathroom-accessories/toilet paper holder.png',
-'glass-shelf-installation': '/assets/plumbing/services/bathroom-accessories/glass shelf.png',
-'bathroom-drain-cleaning': '/assets/plumbing/services/drainage-blockage/bathroom drain.png',
-'kitchen-sink-blockage-removal': '/assets/plumbing/services/drainage-blockage/kitchen sink blockage.png',
-'wash-basin-blockage-removal': '/assets/plumbing/services/drainage-blockage/wash basin blockage.png',
-'toilet-blockage-removal': '/assets/plumbing/services/drainage-blockage/toilet blockage.png',
-'floor-drain-jet-cleaning': '/assets/plumbing/services/drainage-blockage/floor drain jet.png',
-'drain-pipe-repair': '/assets/plumbing/services/drainage-blockage/drain pipe damaged.png',
-'pipe-leakage-repair': '/assets/plumbing/services/leakage/pipe leakage.png',
-'tap-faucet-leakage-repair': '/assets/plumbing/services/leakage/tap leakage.png',
-'toilet-connection-leak-repair': '/assets/plumbing/services/leakage/toilet connection leak.png',
-'sink-basin-connection-repair': '/assets/plumbing/services/leakage/sink basin leakage.png',
-'new-water-line-connection': '/assets/plumbing/services/leakage/new water line connection.png',
-'washing-machine-connection': '/assets/plumbing/services/leakage/washing machine connection.png',
-'overhead-water-tank-installation': '/assets/plumbing/services/water-tank-motor/overhead water tank connection.png',
-'underground-water-tank-installation': '/assets/plumbing/services/water-tank-motor/underground water tank connection.png',
-'water-motor-installation': '/assets/plumbing/services/water-tank-motor/water motor installation.png',
-'float-valve-installation': '/assets/plumbing/services/water-tank-motor/float valve installation.png',
-'pipeline-fittings-connection': '/assets/plumbing/services/water-tank-motor/pipeline connection.png',
-'motor-repair-replacement': '/assets/plumbing/services/water-tank-motor/motor repair.png',
+  'western-toilet-installation': '/assets/plumbing/services/toilet/western toilet.webp',
+  'indian-toilet-installation': '/assets/plumbing/services/toilet/indian toilet.webp',
+  'flush-tank-installation': '/assets/plumbing/services/toilet/flush tank.webp',
+  'flush-mechanism-repair': '/assets/plumbing/services/toilet/flush tank.webp',
+  'toilet-seat-installation': '/assets/plumbing/services/toilet/toilet seat.webp',
+  'health-faucet-installation': '/assets/plumbing/services/toilet/health faucet.webp',
+  'basin-tap-installation': '/assets/plumbing/services/tap-faucet/basin tap.webp',
+  'kitchen-sink-tap-installation': '/assets/plumbing/services/tap-faucet/kitchen sink tap.webp',
+  'wall-mixer-installation': '/assets/plumbing/services/tap-faucet/wall mixer.webp',
+  'pillar-tap-installation': '/assets/plumbing/services/tap-faucet/pillar tap.webp',
+  'angle-valve-installation': '/assets/plumbing/services/tap-faucet/angle valve.webp',
+  'health-faucet-installation-tapfaucet': '/assets/plumbing/services/tap-faucet/health faucet.webp',
+  'shower-installation': '/assets/plumbing/services/bathroom-fitting/shower.webp',
+'towel-rod-installation': '/assets/plumbing/services/bathroom-fitting/towel rod.webp',
+'bathroom-mirror-installation': '/assets/plumbing/services/bathroom-fitting/bathroom mirror.webp',
+'wash-basin-installation': '/assets/plumbing/services/basin-sink/wash basin.webp',
+'table-top-basin-installation': '/assets/plumbing/services/basin-sink/table top basin.webp',
+'under-counter-basin-installation': '/assets/plumbing/services/basin-sink/under counter basin.webp',
+'kitchen-sink-installation': '/assets/plumbing/services/basin-sink/kitchen sink.webp',
+'sink-drain-waste-fitting': '/assets/plumbing/services/basin-sink/sink drain & waste fitting.webp',
+'utility-sink-installation': '/assets/plumbing/services/basin-sink/utility sink.webp',
+'towel-rack-installation': '/assets/plumbing/services/bathroom-accessories/towel rack.webp',
+'soap-dish-installation': '/assets/plumbing/services/bathroom-accessories/soap dish.webp',
+'tumbler-holder-installation': '/assets/plumbing/services/bathroom-accessories/tumbler holder.webp',
+'robe-hook-installation': '/assets/plumbing/services/bathroom-accessories/robe hook.webp',
+'toilet-paper-holder-installation': '/assets/plumbing/services/bathroom-accessories/toilet paper holder.webp',
+'glass-shelf-installation': '/assets/plumbing/services/bathroom-accessories/glass shelf.webp',
+'bathroom-drain-cleaning': '/assets/plumbing/services/drainage-blockage/bathroom drain.webp',
+'kitchen-sink-blockage-removal': '/assets/plumbing/services/drainage-blockage/kitchen sink blockage.webp',
+'wash-basin-blockage-removal': '/assets/plumbing/services/drainage-blockage/wash basin blockage.webp',
+'toilet-blockage-removal': '/assets/plumbing/services/drainage-blockage/toilet blockage.webp',
+'floor-drain-jet-cleaning': '/assets/plumbing/services/drainage-blockage/floor drain jet.webp',
+'drain-pipe-repair': '/assets/plumbing/services/drainage-blockage/drain pipe damaged.webp',
+'pipe-leakage-repair': '/assets/plumbing/services/leakage/pipe leakage.webp',
+'tap-faucet-leakage-repair': '/assets/plumbing/services/leakage/tap leakage.webp',
+'toilet-connection-leak-repair': '/assets/plumbing/services/leakage/toilet connection leak.webp',
+'sink-basin-connection-repair': '/assets/plumbing/services/leakage/sink basin leakage.webp',
+'new-water-line-connection': '/assets/plumbing/services/leakage/new water line connection.webp',
+'washing-machine-connection': '/assets/plumbing/services/leakage/washing machine connection.webp',
+'overhead-water-tank-installation': '/assets/plumbing/services/water-tank-motor/overhead water tank connection.webp',
+'underground-water-tank-installation': '/assets/plumbing/services/water-tank-motor/underground water tank connection.webp',
+'water-motor-installation': '/assets/plumbing/services/water-tank-motor/water motor installation.webp',
+'float-valve-installation': '/assets/plumbing/services/water-tank-motor/float valve installation.webp',
+'pipeline-fittings-connection': '/assets/plumbing/services/water-tank-motor/pipeline connection.webp',
+'motor-repair-replacement': '/assets/plumbing/services/water-tank-motor/motor repair.webp',
 };
 
 /** A rough per-item icon, used only where the item name doesn't map cleanly

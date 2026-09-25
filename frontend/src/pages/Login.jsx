@@ -186,7 +186,7 @@ export default function Login() {
           </button>
 
           <Link to="/" className="auth-logo">
-            <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
+            <img src="/assets/brand/logo.webp" alt={`${company.name} logo`} />
           </Link>
 
           <h1 className="auth-heading">

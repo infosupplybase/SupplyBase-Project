@@ -46,7 +46,7 @@ export default function ProblemLocationModal({ options, selected, onToggle, onCl
                 aria-pressed={isSelected}
               >
                 <span className="wp-problem-location-image">
-                  {image ? <img src={image} alt="" /> : <Icon name="droplet" size={28} />}
+                  {image ? <img loading="lazy" decoding="async" src={image} alt="" /> : <Icon name="droplet" size={28} />}
                 </span>
                 <span>{option.label}</span>
                 {isSelected && <Icon name="check" size={16} strokeWidth={3} />}

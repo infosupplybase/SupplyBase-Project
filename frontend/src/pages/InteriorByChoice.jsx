@@ -24,7 +24,7 @@ export default function InteriorByChoice() {
         eyebrow="INTERIOR BY CHOICE"
         title="Interiors, Your Way"
         text="Choose a ready-made design, customise it to your space, and let us install it."
-        image="/assets/projects/modern-interior.jpeg"
+        image="/assets/projects/modern-interior.webp"
         breadcrumbs={[{ label: 'Interior by Choice' }]}
       />
 

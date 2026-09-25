@@ -4,6 +4,7 @@ import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import useServiceCatalogue from '../hooks/useServiceCatalogue';
 import ServiceBookingModal, { useServiceBookingModal } from '../components/services/ServiceBookingModal';
+import optimizedImage from '../lib/optimizedImage';
 
 /**
  * Every service we offer.
@@ -14,11 +15,11 @@ import ServiceBookingModal, { useServiceBookingModal } from '../components/servi
 
 const serviceImages = {
   'interior-design': '/assets/services/interior-design.webp',
-  'interior-by-choice': '/assets/services/interior-by-choice.png',
-  painting: '/assets/services/painting.jpg',
+  'interior-by-choice': '/assets/services/interior-by-choice.webp',
+  painting: '/assets/services/painting.webp',
   waterproofing: '/assets/services/waterproofing.avif',
-  'pop-ceiling-design': '/assets/services/pop-ceiling-design.jpg',
-  plumbing: '/assets/services/plumber.jpg',
+  'pop-ceiling-design': '/assets/services/pop-ceiling-design.webp',
+  plumbing: '/assets/services/plumber.webp',
   electrical: '/assets/services/electrician.avif',
   'other-services': '/assets/services/other-services.webp',
 };
@@ -34,7 +35,7 @@ export default function Services() {
         eyebrow="OUR SERVICES"
         title="WHAT WE DO"
         text="One accountable team for every job. Book a site visit and we will assess the work and send you a written quotation."
-        image="/assets/services/service-hero.jpg"
+        image="/assets/services/service-hero.webp"
         breadcrumbs={[{ label: 'Services' }]}
       />
 
@@ -74,8 +75,8 @@ export default function Services() {
                   onClick={() => booking.open(service)}
                 >
                   <div className="svc-card-media">
-                    <img
-                      src={serviceImages[service.slug] || service.heroImage}
+                    <img loading="lazy" decoding="async"
+                      src={serviceImages[service.slug] || optimizedImage(service.heroImage)}
                       alt={service.name}
                     />
                   </div>

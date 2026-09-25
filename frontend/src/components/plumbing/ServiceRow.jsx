@@ -29,7 +29,7 @@ export default function ServiceRow({ item, group }) {
     <div className="plb-row">
       <span className="plb-row-thumb" aria-hidden="true">
   {ITEM_IMAGES[item.value] ? (
-  <img
+  <img loading="lazy" decoding="async"
     src={ITEM_IMAGES[item.value]}
     alt=""
     className="h-full w-full object-cover"

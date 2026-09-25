@@ -31,7 +31,7 @@
  * Villa pricing, so they show "Quotation after site visit" instead.
  */
 
-export const ID_HERO_IMAGE = '/assets/projects/modern-interior.jpeg';
+export const ID_HERO_IMAGE = '/assets/projects/modern-interior.webp';
 
 export const idOverviewIntro = {
   eyebrow: 'INTERIOR DESIGN',
@@ -68,7 +68,7 @@ export const idCategories = [
     type: 'apartment',
     tagline: 'Perfect Balance of Space & Style.',
     areaNote: '650 – 1,000 sq. ft.',
-    image: '/assets/pop-ceiling/hero/living-room-cove.jpg',
+    image: '/assets/pop-ceiling/hero/living-room-cove.webp',
   },
   {
     slug: '3bhk',
@@ -76,7 +76,7 @@ export const idCategories = [
     type: 'apartment',
     tagline: 'More Space. More Possibilities.',
     areaNote: '1,000 – 1,500 sq. ft.',
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/office-fitout.webp',
   },
   {
     slug: 'villa',
@@ -84,7 +84,7 @@ export const idCategories = [
     type: 'villa',
     tagline: 'Luxury Living Without Limits.',
     areaNote: '1,500 sq. ft. and above',
-    image: '/assets/projects/luxury-bungalow.jpeg',
+    image: '/assets/projects/luxury-bungalow.webp',
   },
 ];
 
@@ -156,7 +156,7 @@ export const idProjects = [
     name: 'Modern Minimal',
     location: 'Mumbai',
     tier: 'standard',
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/modern-interior.webp',
     hasReferencePricing: true,
   },
   {
@@ -165,7 +165,7 @@ export const idProjects = [
     name: 'Urban Elegant',
     location: 'Pune',
     tier: 'premium',
-    image: '/assets/pop-ceiling/hero/living-room-cove.jpg',
+    image: '/assets/pop-ceiling/hero/living-room-cove.webp',
     hasReferencePricing: false,
   },
   {
@@ -174,7 +174,7 @@ export const idProjects = [
     name: 'Warm Contemporary',
     location: 'Bangalore',
     tier: 'standard',
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/office-fitout.webp',
     hasReferencePricing: false,
   },
   {
@@ -183,7 +183,7 @@ export const idProjects = [
     name: 'Classic White',
     location: 'Thane',
     tier: 'premium',
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/modern-interior.webp',
     hasReferencePricing: false,
   },
   {
@@ -192,7 +192,7 @@ export const idProjects = [
     name: 'Earthy Modern',
     location: 'Navi Mumbai',
     tier: 'standard',
-    image: '/assets/pop-ceiling/hero/living-room-cove.jpg',
+    image: '/assets/pop-ceiling/hero/living-room-cove.webp',
     hasReferencePricing: false,
   },
   {
@@ -201,7 +201,7 @@ export const idProjects = [
     name: 'Industrial Chic',
     location: 'Hyderabad',
     tier: 'luxury',
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/office-fitout.webp',
     hasReferencePricing: false,
   },
 
@@ -212,7 +212,7 @@ export const idProjects = [
     name: 'Coastal Comfort',
     location: 'Panvel',
     tier: 'standard',
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/modern-interior.webp',
     hasReferencePricing: false,
   },
   {
@@ -221,7 +221,7 @@ export const idProjects = [
     name: 'Heritage Warmth',
     location: 'Kalyan',
     tier: 'premium',
-    image: '/assets/pop-ceiling/hero/living-room-cove.jpg',
+    image: '/assets/pop-ceiling/hero/living-room-cove.webp',
     hasReferencePricing: false,
   },
 
@@ -232,7 +232,7 @@ export const idProjects = [
     name: 'Skyline Modern',
     location: 'Mumbai',
     tier: 'premium',
-    image: '/assets/projects/office-fitout.jpeg',
+    image: '/assets/projects/office-fitout.webp',
     hasReferencePricing: false,
   },
   {
@@ -241,7 +241,7 @@ export const idProjects = [
     name: 'Garden Retreat',
     location: 'Thane',
     tier: 'luxury',
-    image: '/assets/projects/modern-interior.jpeg',
+    image: '/assets/projects/modern-interior.webp',
     hasReferencePricing: false,
   },
 
@@ -252,7 +252,7 @@ export const idProjects = [
     name: 'Luxury Villa Escape',
     location: 'Pune',
     tier: 'luxury',
-    image: '/assets/projects/luxury-bungalow.jpeg',
+    image: '/assets/projects/luxury-bungalow.webp',
     hasReferencePricing: false,
   },
   {
@@ -261,7 +261,7 @@ export const idProjects = [
     name: 'Poolside Villa',
     location: 'Navi Mumbai',
     tier: 'luxury',
-    image: '/assets/projects/villa-renovation.jpeg',
+    image: '/assets/projects/villa-renovation.webp',
     hasReferencePricing: false,
   },
 ];

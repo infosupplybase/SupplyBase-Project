@@ -20,7 +20,7 @@ export default function BrandPicker({ options, value, onSelect }) {
             checked={value === opt.value}
             onChange={() => onSelect(opt.value)}
           />
-          <img src={BRAND_LOGO[opt.value]} alt={opt.label} />
+          <img loading="lazy" decoding="async" src={BRAND_LOGO[opt.value]} alt={opt.label} />
           <span className="wp-brand-body">
             <strong>{opt.label}</strong>
             {opt.hint && <span>{opt.hint}</span>}

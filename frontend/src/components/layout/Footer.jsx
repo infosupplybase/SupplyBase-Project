@@ -143,9 +143,9 @@ export default function Footer() {
 
         <div className="ft-brand">
 
-          <img
+          <img loading="lazy" decoding="async"
             className="ft-logo"
-            src="/assets/brand/logo-stacked.png"
+            src="/assets/brand/logo-stacked.webp"
             alt={`${company.name} logo`}
           />
 

@@ -5,31 +5,31 @@
 export const civilConstructionImages = {
 
   'New Construction':
-    '/assets/services/civil-construction/new-construction.png',
+    '/assets/services/civil-construction/new-construction.webp',
 
   'RCC Work':
-    '/assets/services/civil-construction/rcc-work.png',
+    '/assets/services/civil-construction/rcc-work.webp',
 
   'Brickwork':
-    '/assets/services/civil-construction/brickwork.png',
+    '/assets/services/civil-construction/brickwork.webp',
 
   'Plaster Work':
-    '/assets/services/civil-construction/plaster-work.png',
+    '/assets/services/civil-construction/plaster-work.webp',
 
   'Flooring':
-    '/assets/services/civil-construction/flooring.png',
+    '/assets/services/civil-construction/flooring.webp',
 
   'Tiling':
-    '/assets/services/civil-construction/tiling.png',
+    '/assets/services/civil-construction/tiling.webp',
 
   'Waterproofing':
-    '/assets/services/civil-construction/waterproofing.png',
+    '/assets/services/civil-construction/waterproofing.webp',
 
   'Repair & Renovation':
-    '/assets/services/civil-construction/repair-renovation.png',
+    '/assets/services/civil-construction/repair-renovation.webp',
 
   'Other':
-    '/assets/services/civil-construction/Others.png',
+    '/assets/services/civil-construction/Others.webp',
 };
 
 
@@ -40,34 +40,34 @@ export const civilConstructionImages = {
 export const civilConstructionPropertyImages = {
 
   '1 BHK':
-    '/assets/services/civil-construction/1bhk.jpeg',
+    '/assets/services/civil-construction/1bhk.webp',
 
   '2 BHK':
-    '/assets/services/civil-construction/2bhk.jpeg',
+    '/assets/services/civil-construction/2bhk.webp',
 
   '3 BHK':
-    '/assets/services/civil-construction/3bhk.jpeg',
+    '/assets/services/civil-construction/3bhk.webp',
 
   '4 BHK+':
-    '/assets/services/civil-construction/4bhk.jpeg',
+    '/assets/services/civil-construction/4bhk.webp',
 
   'Villa / Bungalow':
-    '/assets/services/civil-construction/villa-bungalow.jpeg',
+    '/assets/services/civil-construction/villa-bungalow.webp',
 
   'Office':
-    '/assets/services/civil-construction/office.jpeg',
+    '/assets/services/civil-construction/office.webp',
 
   'Shop':
-    '/assets/services/civil-construction/shop.jpeg',
+    '/assets/services/civil-construction/shop.webp',
 
   'Commercial':
-    '/assets/services/civil-construction/commercial.jpeg',
+    '/assets/services/civil-construction/commercial.webp',
 
   'Building / Society':
-    '/assets/services/civil-construction/building.jpeg',
+    '/assets/services/civil-construction/building.webp',
 
   'Other':
-    '/assets/services/civil-construction/Others.png',
+    '/assets/services/civil-construction/Others.webp',
 
 };
 
@@ -79,18 +79,18 @@ export const civilConstructionPropertyImages = {
 export const civilConstructionProjectStageImages = {
 
   'Not Started / Planning':
-    '/assets/services/civil-construction/not-started-planning.png',
+    '/assets/services/civil-construction/not-started-planning.webp',
 
   'Foundation Stage':
-    '/assets/services/civil-construction/new-construction.png',
+    '/assets/services/civil-construction/new-construction.webp',
 
   'Structure Stage':
-    '/assets/services/civil-construction/structure-stage.png',
+    '/assets/services/civil-construction/structure-stage.webp',
 
   'Finishing Stage':
-    '/assets/services/civil-construction/finishing-stage.png',
+    '/assets/services/civil-construction/finishing-stage.webp',
 
   'Renovation of Existing Building':
-    '/assets/services/civil-construction/Others.png',
+    '/assets/services/civil-construction/Others.webp',
 
 };

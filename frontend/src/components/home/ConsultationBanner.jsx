@@ -8,7 +8,7 @@ export default function ConsultationBanner() {
   return (
     <section className="consult-banner">
       <img
-        src="/assets/projects/luxury-bungalow.jpeg"
+        src="/assets/projects/luxury-bungalow.webp"
         alt=""
         width={1600}
         height={700}

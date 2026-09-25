@@ -5,28 +5,28 @@
 export const furnitureImages = {
 
   'Modular Furniture':
-    '/assets/services/furniture/modular-furniture.jpg',
+    '/assets/services/furniture/modular-furniture.webp',
 
   'Modular Kitchen':
-    '/assets/services/furniture/modular-kitchen.jpg',
+    '/assets/services/furniture/modular-kitchen.webp',
 
   'Wardrobes':
-    '/assets/services/furniture/wardrobes.jpg',
+    '/assets/services/furniture/wardrobes.webp',
 
   'TV Units':
-    '/assets/services/furniture/tv-units.jpg',
+    '/assets/services/furniture/tv-units.webp',
 
   'Beds':
-    '/assets/services/furniture/beds.jpg',
+    '/assets/services/furniture/beds.webp',
 
   'Office Furniture':
-    '/assets/services/furniture/office-furniture.jpg',
+    '/assets/services/furniture/office-furniture.webp',
 
   'Custom Furniture':
-    '/assets/services/furniture/custom-furniture.jpg',
+    '/assets/services/furniture/custom-furniture.webp',
 
   'Other':
-    '/assets/services/furniture/other.jpg',
+    '/assets/services/furniture/other.webp',
 };
 
 
@@ -37,36 +37,36 @@ export const furnitureImages = {
 export const furniturePropertyImages = {
 
   '1 BHK':
-    '/assets/services/furniture/1bhk.jpeg',
+    '/assets/services/furniture/1bhk.webp',
 
   '2 BHK':
-    '/assets/services/furniture/2bhk.jpeg',
+    '/assets/services/furniture/2bhk.webp',
 
   '3 BHK':
-    '/assets/services/furniture/3bhk.jpeg',
+    '/assets/services/furniture/3bhk.webp',
 
   '4 BHK+':
-    '/assets/services/furniture/4bhk.jpeg',
+    '/assets/services/furniture/4bhk.webp',
 
   'Villa / Bungalow':
-    '/assets/services/furniture/villa-bungalow.jpeg',
+    '/assets/services/furniture/villa-bungalow.webp',
 
   'Office':
-    '/assets/services/furniture/office.jpeg',
+    '/assets/services/furniture/office.webp',
 
   'Shop':
-    '/assets/services/furniture/shop.jpeg',
+    '/assets/services/furniture/shop.webp',
 
   
 
   'Building':
-    '/assets/services/furniture/building.jpeg',
+    '/assets/services/furniture/building.webp',
 
     'Shop / Commercial':
-    '/assets/services/furniture/commercial.jpeg',  
+    '/assets/services/furniture/commercial.webp',  
 
   'Other':
-    '/assets/services/furniture/property-other.jpg',
+    '/assets/services/furniture/property-other.webp',
 };
 
 
@@ -77,11 +77,11 @@ export const furniturePropertyImages = {
 export const furnitureMaterialImages = {
 
   'Plywood':
-    '/assets/services/furniture/material/plywood.jpg',
+    '/assets/services/furniture/material/plywood.webp',
 
   'MDF':
-    '/assets/services/furniture/material/mdf.jpg',
+    '/assets/services/furniture/material/mdf.webp',
 
   'Not Sure':
-    '/assets/services/furniture/material/not-sure.jpg'
+    '/assets/services/furniture/material/not-sure.webp'
 };
