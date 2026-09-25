@@ -291,7 +291,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                               rounded-xl
                             "
                           >
-                            <img
+                            <img loading="lazy" decoding="async"
                               src={design.image}
                               alt={design.name}
                               className="
@@ -630,7 +630,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                               text-left
                             "
                           >
-                            <img
+                            <img loading="lazy" decoding="async"
                               src={space.image}
                               alt={space.name}
                               className="

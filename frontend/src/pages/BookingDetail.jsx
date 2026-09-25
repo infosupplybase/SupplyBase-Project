@@ -151,7 +151,7 @@ export default function BookingDetail() {
         eyebrow="YOUR ACCOUNT"
         title="BOOKING DETAILS"
         text="Everything Supplybase has on file for this service request."
-        image="/assets/services/service-hero.jpg"
+        image="/assets/services/service-hero.webp"
         breadcrumbs={[
           { label: 'My Account', to: '/dashboard' },
           { label: 'Bookings', to: '/dashboard/bookings' },

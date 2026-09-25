@@ -58,7 +58,7 @@ export default function Navbar() {
         <div className="container">
           <div className="header-inner">
             <Link to="/" className="brand" aria-label={`${company.name} — home`}>
-              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
+              <img src="/assets/brand/logo.webp" alt={`${company.name} logo`} />
             </Link>
 
             <nav className="nav" aria-label="Main">

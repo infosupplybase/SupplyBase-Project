@@ -186,8 +186,8 @@ export const services = [
     cardText: 'A catalogue of ready interior designs by space — pick one and book a ₹99 home visit.',
     summary:
       'Not every project starts from a blank page. Browse finished designs by space, pick the one closest to what you want, and book a paid home visit — the fee is adjusted into your final project cost if you go ahead.',
-    heroImage: '/assets/projects/modern-interior.jpeg',
-    gallery: ['/assets/projects/modern-interior.jpeg'],
+    heroImage: '/assets/projects/modern-interior.webp',
+    gallery: ['/assets/projects/modern-interior.webp'],
     subServices: [],
     highlights: [],
     process: [],
@@ -289,8 +289,8 @@ export const services = [
     cardText: 'POP, gypsum and designer false ceilings with cove and LED lighting.',
     summary:
       'A false ceiling does more than hide wiring — it sets the lighting and the proportion of the room. We execute POP and gypsum ceilings, designer profiles, wall moulding, cornice and partition work, with the LED cove and light points planned into the design from the start.',
-    heroImage: '/assets/pop-ceiling/hero/living-room-cove.jpg',
-    gallery: ['/assets/pop-ceiling/hero/living-room-cove.jpg', '/assets/pop-ceiling/full-home/ceiling-design.jpg'],
+    heroImage: '/assets/pop-ceiling/hero/living-room-cove.webp',
+    gallery: ['/assets/pop-ceiling/hero/living-room-cove.webp', '/assets/pop-ceiling/full-home/ceiling-design.webp'],
     subServices: [
       { name: 'POP Ceiling', text: 'Traditional plaster of Paris ceilings with a smooth, paint-ready finish.' },
       { name: 'Gypsum Ceiling', text: 'Gypsum board ceilings on GI framing — fast, clean and stable.' },
@@ -332,8 +332,8 @@ export const services = [
     cardText: 'Complete wiring, DB and panel work, lighting, switches and commercial electrical.',
     summary:
       'Electrical work is a safety job first and a convenience job second. We carry out complete concealed wiring, new installations, DB and panel work, lighting circuits and switch points — planned around how you will actually use the space, and executed with proper earthing and protection.',
-    heroImage: '/assets/services/electrician/hero.jpeg',
-    gallery: ['/assets/services/electrician/home-electrical-services.jpeg', '/assets/services/electrician/fan-installation.jpeg', '/assets/services/electrician/light-installation.jpeg', '/assets/services/electrician/switch-socket-installation.jpeg', '/assets/services/electrician/wiring-rewiring-services.jpeg', '/assets/services/electrician/mcb-db-installation.jpeg'],
+    heroImage: '/assets/services/electrician/hero.webp',
+    gallery: ['/assets/services/electrician/home-electrical-services.webp', '/assets/services/electrician/fan-installation.webp', '/assets/services/electrician/light-installation.webp', '/assets/services/electrician/switch-socket-installation.webp', '/assets/services/electrician/wiring-rewiring-services.webp', '/assets/services/electrician/mcb-db-installation.webp'],
     subServices: [
       { name: 'Complete Wiring', text: 'Full concealed wiring for new homes, offices and shops.' },
       { name: 'New Installation', text: 'New points, circuits and load planning for renovations and extensions.' },

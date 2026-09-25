@@ -21,7 +21,7 @@ export default function ElectricalCategory() {
         eyebrow="ELECTRICIAN"
         title="Electrical Services"
         text="Certified electricians for wiring, fans, switches, repairs and more — pick a service to get started."
-        image="/assets/services/electrician/hero.jpeg"
+        image="/assets/services/electrician/hero.webp"
         breadcrumbs={[
           { label: 'Services', to: '/services' },
           { label: 'Electrical' },

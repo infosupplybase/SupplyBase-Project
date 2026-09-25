@@ -40,8 +40,8 @@
  *   the delivery report).
  */
 
-export const WP_HERO_IMAGE = '/assets/waterproofing/hero/modern-house.jpg';
-export const WP_BATHROOM_IMAGE = '/assets/waterproofing/bathroom/bathroom.jpg';
+export const WP_HERO_IMAGE = '/assets/waterproofing/hero/modern-house.webp';
+export const WP_BATHROOM_IMAGE = '/assets/waterproofing/bathroom/bathroom.webp';
 
 export const wpOverviewIntro = {
   eyebrow: 'WATERPROOFING',
@@ -57,9 +57,9 @@ export const wpTrustPoints = [
 ];
 
 export const BRAND_LOGO = {
-  'dr-fixit': '/assets/materials/dr-fixit.png',
-  'asian-paints': '/assets/materials/asian-paints.png',
-  berger: '/assets/materials/berger-paints.jpg',
+  'dr-fixit': '/assets/materials/dr-fixit.webp',
+  'asian-paints': '/assets/materials/asian-paints.webp',
+  berger: '/assets/materials/berger-paints.webp',
 };
 
 /** The six category-page rows, in the reference's own order. Terrace,
@@ -185,7 +185,7 @@ export const wpFlows = {
     title: 'Interior Wall Waterproofing',
     heroTagline: 'Stop dampness. Protect your walls. Enjoy a healthier home.',
     intro: {
-      image: '/assets/projects/modern-interior.jpeg',
+      image: '/assets/projects/modern-interior.webp',
       heading: 'Stop rising and lateral dampness before it damages your walls and paint.',
       text: 'Ideal for bedrooms, living rooms, kitchens — any interior wall prone to dampness.',
       points: [

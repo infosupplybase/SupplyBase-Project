@@ -34,7 +34,7 @@ export default function MobileMenu({ open, onClose }) {
 >
         <div className="mobile-head">
           <Link to="/" onClick={onClose}>
-            <img src="/assets/brand/logo.png" alt={company.name} />
+            <img loading="lazy" decoding="async" src="/assets/brand/logo.webp" alt={company.name} />
           </Link>
           <button type="button" className="mobile-close" onClick={onClose} aria-label="Close menu">
             <Icon name="close" size={20} />

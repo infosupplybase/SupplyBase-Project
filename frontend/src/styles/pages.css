@@ -690,7 +690,7 @@
   background-color: var(--auth-bg);
   background-image:
     linear-gradient(rgba(6, 7, 10, 0.6), rgba(6, 7, 10, 0.78)),
-    url('/assets/hero-house2.jpeg');
+    url('/assets/hero-house2.webp');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;

@@ -710,7 +710,7 @@ export default function InteriorDesignFlow({
             {detailTab === 'gallery' && (
               <div className="id-tab-panel">
                 <button type="button" className="id-gallery-thumb" onClick={() => setPreviewOpen(true)}>
-                  <img src={project.image} alt={project.name} />
+                  <img loading="lazy" decoding="async" src={project.image} alt={project.name} />
                 </button>
                 <p className="question-hint" style={{ marginTop: 8 }}>+ more photos shared during your consultation.</p>
               </div>
@@ -736,7 +736,7 @@ export default function InteriorDesignFlow({
                 <button type="button" onClick={() => setPreviewOpen(false)} aria-label="Close"><Icon name="close" size={18} /></button>
               </div>
               <div className="pnt-modal-body">
-                <img src={project.image} alt={project.name} style={{ width: '100%', borderRadius: 8 }} />
+                <img loading="lazy" decoding="async" src={project.image} alt={project.name} style={{ width: '100%', borderRadius: 8 }} />
               </div>
             </div>
           </div>
@@ -919,7 +919,7 @@ export default function InteriorDesignFlow({
               <button type="button" onClick={() => setPreviewOpen(false)} aria-label="Close"><Icon name="close" size={18} /></button>
             </div>
             <div className="pnt-modal-body">
-              <img src={project.image} alt={project.name} style={{ width: '100%', borderRadius: 8 }} />
+              <img loading="lazy" decoding="async" src={project.image} alt={project.name} style={{ width: '100%', borderRadius: 8 }} />
               <p className="question-hint" style={{ marginTop: 10 }}>
                 An illustrative concept preview, not a personalised 3D render of your own space — request a 3D design
                 consultation below for that.
