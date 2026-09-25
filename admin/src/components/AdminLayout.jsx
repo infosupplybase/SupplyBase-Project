@@ -66,14 +66,38 @@ function Shell({ children }) {
     setMenuOpen(false);
   }, [location.pathname]);
 
+  // While the phone menu is open, the page behind it must not scroll, and
+  // Escape closes it like any other overlay.
   useEffect(() => {
     if (!menuOpen) return undefined;
     const onKey = (e) => {
       if (e.key === 'Escape') setMenuOpen(false);
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [menuOpen]);
+
+  // On a phone, tabs and filter chips are one sideways-scrolling strip; keep
+  // the selected one in view (a filter picked from the dashboard may be off
+  // to the right). Scrolls only the strip, never the page.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.querySelectorAll('.admin-tab.active, .admin-chip.active').forEach((el) => {
+        const strip = el.parentElement;
+        if (strip && strip.scrollWidth > strip.clientWidth) {
+          // Where the item sits inside the strip's scrollable content.
+          const left = el.getBoundingClientRect().left - strip.getBoundingClientRect().left + strip.scrollLeft;
+          strip.scrollLeft = Math.max(0, left - (strip.clientWidth - el.offsetWidth) / 2);
+        }
+      });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [location.pathname, location.search]);
 
   const handleLogout = async () => {
     await logout();
@@ -159,6 +183,9 @@ function Shell({ children }) {
           </div>
         </div>
       </aside>
+
+      {/* Phone only (hidden by CSS on wider screens): tapping outside the open menu closes it. */}
+      {menuOpen && <div className="admin-menu-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />}
 
       <div className="admin-main-wrap">
         <div className="admin-topbar">

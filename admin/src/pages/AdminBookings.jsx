@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Icon from '../components/ui/Icon';
 import PageHeader from '../components/admin/PageHeader';
+import DataTable from '../components/admin/DataTable';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Modal from '../components/admin/Modal';
@@ -313,8 +314,7 @@ export default function AdminBookings() {
 
       <ErrorBanner onRetry={load}>{error}</ErrorBanner>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
+      <DataTable label="Bookings">
           <thead>
             <tr>
               <th>{mode === 'day' ? 'Time' : 'Booking'}</th>
@@ -390,8 +390,7 @@ export default function AdminBookings() {
               </TableEmpty>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
       {mode !== 'day' && <Pagination data={data} onChange={setPage} />}
 
