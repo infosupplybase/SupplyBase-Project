@@ -34,8 +34,8 @@ const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
 const SCHEDULE = 3;
 const CONFIRM = 4;
 
-// const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
-const DEDICATED_FLOW_PREFIXES = ['wp_'];
+ const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
+//const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
 const emptyDetails = {
   name: '',
@@ -1170,18 +1170,24 @@ function Summary({
    * Filter out FILE questions and dedicated-flow questions.
    */
   const rows = form.questions
-    .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some(
-          (prefix) =>
-            String(q.key || '').startsWith(
-              prefix
-            )
-        )
-    )
-    .map((q, questionIndex) => {
+  .filter(
+    (q) =>
+      q &&
+      q.inputType !== 'FILE' &&
+      !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+        String(q.key || '').startsWith(prefix)
+      )
+  )
+  .filter(
+    (question, index, questions) =>
+      index ===
+      questions.findIndex(
+        (q) =>
+          q.key === question.key &&
+          q.text === question.text
+      )
+  )
+  .map((q, questionIndex) => {
       const value = answers[q.key];
 
       const values = Array.isArray(value)

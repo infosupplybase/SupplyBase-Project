@@ -83,79 +83,58 @@ export const popHomeTypeImages = {
  */
 
 export const popRoomTypeImages = {
-  'living-room':
-    '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'living-room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Living Room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  living: '/assets/pop-ceiling/hero/living-room-cove.webp',
 
-  'Living Room':
-    '/assets/pop-ceiling/hero/living-room-cove.webp',
+  bedroom: '/assets/projects/bedroom.webp',
+  Bedroom: '/assets/projects/bedroom.webp',
+  'bed-room': '/assets/projects/bedroom.jpeg',
 
-  bedroom:
-    '/assets/projects/bedroom.webp',
+  'dining-room': '/assets/pop-ceiling/hero/diningroom.webp',
+  'Dining Room': '/assets/pop-ceiling/hero/diningroom.webp',
+  dining: '/assets/pop-ceiling/hero/diningroom.webp',
 
-  Bedroom:
-    '/assets/projects/bedroom.webp',
+  'study-room': '/assets/pop-ceiling/hero/studyroom.webp',
+  'Study Room': '/assets/pop-ceiling/hero/studyroom.webp',
+  study: '/assets/pop-ceiling/hero/studyroom.webp',
 
-  'dining-room':
-    '/assets/pop-ceiling/hero/diningroom.webp',
+  'kids-room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  'Kids Room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  kids: '/assets/pop-ceiling/hero/kidsroom.webp',
 
-  'Dining Room':
-    '/assets/pop-ceiling/hero/diningroom.webp',
+  kitchen: '/assets/waterproofing/hero/kitchen.webp',
+  Kitchen: '/assets/waterproofing/hero/kitchen.webp',
 
-  'study-room':
-    '/assets/pop-ceiling/hero/studyroom.webp',
+  'office-commercial-space': '/assets/waterproofing/hero/office.webp',
+  'Office / Commercial Space': '/assets/waterproofing/hero/office.webp',
+  'Office / Commercial': '/assets/waterproofing/hero/office.webp',
+  Office: '/assets/waterproofing/hero/office.webp',
+  office: '/assets/waterproofing/hero/office.webp',
 
-  'Study Room':
-    '/assets/pop-ceiling/hero/studyroom.webp',
+  other: '/assets/waterproofing/hero/other.png',
+  Other: '/assets/waterproofing/hero/other.png',
+  'other-room': '/assets/waterproofing/hero/other.png',
+  'Other Room': '/assets/waterproofing/hero/other.png',
 
-  'kids-room':
-    '/assets/pop-ceiling/hero/kidsroom.webp',
+  'pooja-room': '/assets/projects/modern-interior.jpeg',
+  'Pooja Room': '/assets/projects/modern-interior.jpeg',
 
-  'Kids Room':
-    '/assets/pop-ceiling/hero/kidsroom.webp',
+  'guest-room': '/assets/projects/modern-interior.jpeg',
+  'Guest Room': '/assets/projects/modern-interior.jpeg',
 
-  Kitchen:
-    '/assets/waterproofing/hero/kitchen.webp',
+  'home-office': '/assets/waterproofing/hero/office.webp',
+  'Home Office': '/assets/waterproofing/hero/office.webp',
 
-  'Office / Commercial Space':
-    '/assets/waterproofing/hero/office.webp',
-
-  Other:
-    '/assets/projects/modern-interior.webp',
-
-  'other-room':
-    '/assets/projects/modern-interior.webp',
-
-  'Other Room':
-    '/assets/projects/modern-interior.webp',
-
-  'POP Ceiling':
-    '/assets/pop-ceiling/hero/living-room-cove.webp',
-
-  'Gypsum Ceiling':
-    '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
-
-  'False Ceiling':
-    '/assets/pop-ceiling/hero/false-ceiling.webp',
-
-  Cornice:
-    '/assets/pop-ceiling/hero/cornice.webp',
-
-  'Partition Work':
-    '/assets/pop-ceiling/hero/partition-work.webp',
-
-  'LED Cove & Lighting':
-    '/assets/pop-ceiling/hero/led-cove-lighting.webp',
-
-  'POP TV Wall':
-    '/assets/pop-ceiling/hero/pop-tv-wall.webp',
-
-  'POP Repair & Renovation':
-    '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
-
-  Other:
-    '/assets/pop-ceiling/hero/other.png',
+  'POP Ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Gypsum Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'False Ceiling': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  Cornice: '/assets/pop-ceiling/hero/cornice.webp',
+  'Partition Work': '/assets/pop-ceiling/hero/partition-work.webp',
+  'LED Cove & Lighting': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'POP Repair & Renovation': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
 };
-
 
 /**
  * ============================================================

@@ -375,6 +375,20 @@ body:has(.wizard-shell) .floating-actions {
     transform var(--t-fast) var(--ease);
 }
 
+.tile--no-image {
+  min-height: 120px;
+}
+
+.tile--no-image .tile-body {
+  min-height: 0;
+  padding: 22px 18px;
+}
+
+.tile--no-image .tile-label {
+  font-size: 17px;
+  line-height: 1.25;
+}
+
 
 /*
  * Hover effect.

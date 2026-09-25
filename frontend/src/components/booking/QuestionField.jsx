@@ -125,8 +125,17 @@ export default function QuestionField({
    */
 
   const groups = [];
+  const seenOptions = new Set();
 
   (options || []).forEach((option) => {
+    const uniqueKey = `${option.group || ''}::${option.value ?? ''}::${option.label ?? ''}`;
+
+    if (seenOptions.has(uniqueKey)) {
+      return;
+    }
+
+    seenOptions.add(uniqueKey);
+
     const groupName = option.group || '';
 
     let group = groups.find(
@@ -160,9 +169,23 @@ export default function QuestionField({
       return undefined;
     }
 
+    const normalizeKey = (value) =>
+      String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+    const direct = imageMap[option.value] || imageMap[option.label];
+    if (direct) return direct;
+
+    const normalizedMap = Object.fromEntries(
+      Object.entries(imageMap).map(([key, value]) => [normalizeKey(key), value])
+    );
+
     return (
-      imageMap[option.value] ||
-      imageMap[option.label]
+      normalizedMap[normalizeKey(option.value)] ||
+      normalizedMap[normalizeKey(option.label)]
     );
   };
 
