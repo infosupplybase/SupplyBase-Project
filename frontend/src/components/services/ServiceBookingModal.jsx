@@ -100,7 +100,7 @@ export default function ServiceBookingModal({ service, onClose }) {
        ${service.slug === 'interior-by-choice'
   ? 'max-w-[1000px]'
   : service.slug === 'interior-design'
-    ? 'max-w-[7600px]'
+    ? 'max-w-[760px]'
     : 'max-w-[500px]'
     
 }
