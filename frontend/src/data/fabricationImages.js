@@ -4,31 +4,31 @@
 
 export const fabricationImages = {
   'MS Fabrication':
-    '/assets/services/fabrication/ms-fabrication.png',
+    '/assets/services/fabrication/ms-fabrication.jpg',
 
   'SS Fabrication':
-    '/assets/services/fabrication/ss-fabrication.png',
+    '/assets/services/fabrication/ss-fabrication.jpg',
 
   'Gates':
-    '/assets/services/fabrication/gates.png',
+    '/assets/services/fabrication/gates.jpg',
 
   'Railings':
-    '/assets/services/fabrication/reiling.png',
+    '/assets/services/fabrication/railings.jpg',
 
   'Grills':
-    '/assets/services/fabrication/grills.png',
+    '/assets/services/fabrication/grills.jpg',
 
   'Staircase':
-    '/assets/services/fabrication/staircase.png',
+    '/assets/services/fabrication/staircase.jpg',
 
   'Shed & Roofing':
-    '/assets/services/fabrication/roofing.png',
+    '/assets/services/fabrication/shed-roofing.jpg',
 
   'Structural Fabrication':
-    '/assets/services/fabrication/strucure.png',
+    '/assets/services/fabrication/structural-fabrication.jpg',
 
   'Other':
-    '/assets/services/fabrication/others.png',
+    '/assets/services/fabrication/other.jpg',
 };
 
 
@@ -59,10 +59,10 @@ export const fabricationPropertyImages = {
     '/assets/services/fabrication/shop.jpeg',
 
   'Industrial':
-    '/assets/services/fabrication/commercial.jpeg',
+    '/assets/services/fabrication/property-industrial.jpg',
 
   'Other':
-    '/assets/services/fabrication/others.png',
+    '/assets/services/fabrication/property-other.jpg',
 };
 
 
@@ -72,11 +72,11 @@ export const fabricationPropertyImages = {
 
 export const fabricationMaterialImages = {
   'Mild Steel (MS)':
-    '/assets/services/fabrication/mild-steel.png',
+    '/assets/services/fabrication/material/mild-steel.jpg',
 
   'Stainless Steel (SS)':
-    '/assets/services/fabrication/stainless-steel.png',
+    '/assets/services/fabrication/material/stainless-steel.jpg',
 
   'Not Sure':
-    '/assets/services/fabrication/not-sure.png',
+    '/assets/services/fabrication/material/not-sure.jpg',
 };
