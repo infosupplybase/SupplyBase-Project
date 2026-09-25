@@ -4,7 +4,7 @@ import { formatRupees } from '../../lib/money';
 /**
  * Four numbers a partner checks first: what is on their plate, what they have
  * finished, what they earned this month, and what they are still owed.
- * `earnings` is null until it loads (the cards show a dash, not a zero).
+ * `earnings` is null until it loads (the tiles show a dash, not a zero).
  */
 export default function StatsRow({ earnings }) {
   const e = earnings;
@@ -12,7 +12,7 @@ export default function StatsRow({ earnings }) {
   const cards = [
     {
       key: 'active',
-      icon: 'clock',
+      icon: 'briefcase',
       label: 'Active jobs',
       value: e ? String(e.activeJobs) : '—',
       note: 'Scheduled or in progress',
@@ -42,17 +42,17 @@ export default function StatsRow({ earnings }) {
   ];
 
   return (
-    <div className="pd-stats" aria-label="Your numbers">
+    <ul className="pp-stats" aria-label="Your numbers">
       {cards.map((card) => (
-        <div key={card.key} className={`pd-stat ${card.accent ? 'pd-stat-accent' : ''}`}>
-          <span className="pd-stat-icon">
-            <Icon name={card.icon} size={18} />
+        <li key={card.key} className={`pp-stat ${card.accent ? 'pp-stat-accent' : ''}`}>
+          <span className="pp-stat-icon" aria-hidden="true">
+            <Icon name={card.icon} size={19} />
           </span>
-          <span className="pd-stat-label">{card.label}</span>
-          <strong className="pd-stat-value">{card.value}</strong>
-          {card.note && <span className="pd-stat-note">{card.note}</span>}
-        </div>
+          <span className="pp-stat-label">{card.label}</span>
+          <strong className="pp-stat-value">{card.value}</strong>
+          {card.note && <span className="pp-stat-note">{card.note}</span>}
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

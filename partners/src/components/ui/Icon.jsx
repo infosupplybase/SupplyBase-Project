@@ -537,6 +537,45 @@ const paths = {
       <path d="M10.5 7.5v6M7.5 10.5h6" />
     </>
   ),
+
+  /* ------------------------------------------------------------ portal */
+  dashboard: (
+    <>
+      <rect x="3" y="3" width="7.5" height="9" rx="1.5" />
+      <rect x="13.5" y="3" width="7.5" height="5" rx="1.5" />
+      <rect x="13.5" y="11" width="7.5" height="10" rx="1.5" />
+      <rect x="3" y="15" width="7.5" height="6" rx="1.5" />
+    </>
+  ),
+  briefcase: (
+    <>
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+      <path d="M3 12.5h18" />
+    </>
+  ),
+  logout: (
+    <>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 16l-4-4 4-4" />
+      <path d="M6 12h10" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8" />
+      <path d="M4 4v4h4" />
+      <path d="M4 13a8 8 0 0 0 14.3 4.9L20 16" />
+      <path d="M20 20v-4h-4" />
+    </>
+  ),
+  alert: (
+    <>
+      <path d="M12 3.5 2.5 20h19z" />
+      <path d="M12 10v4.5" />
+      <path d="M12 17.2v.3" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 22, strokeWidth = 1.6, className = '', ...rest }) {

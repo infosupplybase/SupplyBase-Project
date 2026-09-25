@@ -2,23 +2,25 @@ import { useState } from 'react';
 import { PARTNER_PHONE_RAW } from '../../config';
 
 /**
- * The "join Supplybase" banner shown to anyone who is not yet a working
- * partner (no application, pending, rejected, suspended). An approved partner
- * goes straight to their jobs and earnings instead.
+ * The "join Supplybase" banner, shown to a signed-in person who has not
+ * applied. Someone whose application is pending, declined or paused sees
+ * where it stands instead, and an approved partner their jobs and earnings.
  *
  * The WhatsApp button opens a chat with the partner desk, whose number is set
  * in config.js (PARTNER_PHONE_RAW, with the country code — wa.me needs it).
  */
 export default function PartnerHero() {
   const [phone, setPhone] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   const handleJoin = () => {
     const cleanPhone = phone.replace(/\D/g, '');
 
-    if (cleanPhone.length !== 10) {
-      alert('Please enter a valid 10-digit WhatsApp number.');
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+      setPhoneError('Please enter a valid 10-digit WhatsApp number.');
       return;
     }
+    setPhoneError('');
 
     const message = encodeURIComponent(
       `Hello Supplybase, I want to join as a service professional. My WhatsApp number is +91 ${cleanPhone}.`
@@ -96,6 +98,8 @@ export default function PartnerHero() {
               src="/assets/partners/partner-hero.png"
               alt="Supplybase service professionals"
               className="partner-hero-image"
+              loading="lazy"
+              decoding="async"
             />
 
           </div>
@@ -144,14 +148,20 @@ export default function PartnerHero() {
 
               <input
                 type="tel"
+                inputMode="numeric"
+                autoComplete="tel-national"
+                aria-label="Your WhatsApp number"
+                aria-invalid={phoneError ? 'true' : undefined}
+                aria-describedby={phoneError ? 'partner-phone-error' : undefined}
                 value={phone}
-                onChange={(e) =>
+                onChange={(e) => {
+                  setPhoneError('');
                   setPhone(
                     e.target.value
                       .replace(/\D/g, '')
                       .slice(0, 10)
-                  )
-                }
+                  );
+                }}
                 placeholder="Enter WhatsApp number"
                 maxLength={10}
               />
@@ -166,6 +176,12 @@ export default function PartnerHero() {
             >
               Join Us
             </button>
+
+            {phoneError && (
+              <p id="partner-phone-error" className="partner-phone-error" role="alert">
+                {phoneError}
+              </p>
+            )}
 
           </div>
 

@@ -8,23 +8,26 @@ function EarningRow({ item }) {
   let badge;
 
   if (item.payoutPaise == null) {
-    badge = <span className="pd-badge pd-badge-muted">To be confirmed</span>;
+    badge = <span className="pp-pill pp-pill-muted">To be confirmed</span>;
   } else if (item.paidAt) {
-    badge = <span className="pd-badge pd-badge-success">Paid {formatDate(item.paidAt)}</span>;
+    badge = <span className="pp-pill pp-pill-success">Paid {formatDate(item.paidAt)}</span>;
   } else {
-    badge = <span className="pd-badge pd-badge-warning">Payment pending</span>;
+    badge = <span className="pp-pill pp-pill-warning">Payment pending</span>;
   }
 
   return (
-    <li className="pd-earn-row">
-      <div className="pd-earn-main">
+    <li className="pp-earn-row">
+      <span className="pp-earn-row-icon" aria-hidden="true">
+        <Icon name={item.paidAt ? 'check-circle' : 'clock'} size={18} />
+      </span>
+      <div className="pp-earn-main">
         <strong>{item.serviceLabel || 'Service'}</strong>
         <span>
           {item.bookingNumber}
           {item.completedAt ? ` · Completed ${formatDate(item.completedAt)}` : ''}
         </span>
       </div>
-      <div className="pd-earn-amount">
+      <div className="pp-earn-amount">
         <strong>{formatRupees(item.payoutPaise)}</strong>
         {badge}
       </div>
@@ -48,35 +51,60 @@ export default function EarningsPanel({ earnings, error }) {
   }
 
   if (!earnings) {
-    return <p className="question-hint">Loading your earnings…</p>;
+    return (
+      <div className="pp-earn-hero pp-skeleton" aria-busy="true">
+        <span className="sr-only" role="status">
+          Loading your earnings…
+        </span>
+        <span className="pp-sk pp-sk-title" />
+        <span className="pp-sk pp-sk-line" />
+      </div>
+    );
   }
 
-  const cards = [
-    { label: 'Total earned', value: formatRupees(earnings.earnedPaise), note: 'All completed jobs', primary: true },
-    { label: 'Paid out', value: formatRupees(earnings.paidPaise), note: 'Already sent to you' },
-    { label: 'Payout pending', value: formatRupees(earnings.pendingPaise), note: 'Earned, not yet paid', warn: true },
-    { label: 'This month', value: formatRupees(earnings.thisMonthPaise), note: `${earnings.completedThisMonth} job${earnings.completedThisMonth === 1 ? '' : 's'} completed` },
+  const tiles = [
+    { label: 'Total earned', value: formatRupees(earnings.earnedPaise), note: 'All completed jobs' },
+    { label: 'Paid to you', value: formatRupees(earnings.paidPaise), note: 'Already sent' },
+    {
+      label: 'This month',
+      value: formatRupees(earnings.thisMonthPaise),
+      note: `${earnings.completedThisMonth} job${earnings.completedThisMonth === 1 ? '' : 's'} completed`,
+    },
   ];
 
   const helpLink = `https://wa.me/${PARTNER_PHONE_RAW}?text=${encodeURIComponent('Hello Supplybase, I have a question about a payout.')}`;
 
   return (
-    <>
-      <div className="pd-earn-cards">
-        {cards.map((card) => (
-          <div
-            key={card.label}
-            className={`pd-earn-card ${card.primary ? 'pd-earn-card-primary' : ''} ${card.warn ? 'pd-earn-card-warn' : ''}`}
-          >
-            <span className="pd-earn-label">{card.label}</span>
-            <strong className="pd-earn-value">{card.value}</strong>
-            <span className="pd-earn-note">{card.note}</span>
-          </div>
-        ))}
+    <section aria-labelledby="pp-earn-title">
+      <h2 id="pp-earn-title" className="sr-only">
+        Earnings
+      </h2>
+
+      <div className="pp-earn-hero">
+        <div>
+          <span className="pp-earn-hero-label">Waiting to be paid to you</span>
+          <strong className="pp-earn-hero-value">{formatRupees(earnings.pendingPaise)}</strong>
+          <span className="pp-earn-hero-note">
+            Earned on your completed jobs and not yet sent to you.
+          </span>
+        </div>
+        <span className="pp-earn-hero-coin" aria-hidden="true">
+          <Icon name="rupee" size={34} />
+        </span>
       </div>
 
+      <ul className="pp-earn-tiles">
+        {tiles.map((tile) => (
+          <li key={tile.label} className="pp-earn-tile">
+            <span className="pp-earn-label">{tile.label}</span>
+            <strong className="pp-earn-value">{tile.value}</strong>
+            <span className="pp-earn-note">{tile.note}</span>
+          </li>
+        ))}
+      </ul>
+
       {earnings.awaitingPayoutJobs > 0 && (
-        <div className="pd-callout">
+        <div className="pp-callout">
           <Icon name="info" size={18} />
           <span>
             {earnings.awaitingPayoutJobs} completed job{earnings.awaitingPayoutJobs === 1 ? ' is' : 's are'} waiting
@@ -85,32 +113,34 @@ export default function EarningsPanel({ earnings, error }) {
         </div>
       )}
 
-      <div className="partner-section-title">
-        <h2>Completed jobs &amp; payouts</h2>
-        <span>{earnings.completedJobs}</span>
+      <div className="pp-section-head">
+        <h3>Completed jobs &amp; payouts</h3>
+        <span className="pp-count">{earnings.completedJobs}</span>
       </div>
 
       {earnings.recent.length === 0 ? (
-        <div className="partner-empty">
-          <Icon name="rupee" size={32} />
+        <div className="pp-empty pp-empty-sm">
+          <span className="pp-empty-icon" aria-hidden="true">
+            <Icon name="rupee" size={26} />
+          </span>
           <h3>No earnings yet</h3>
           <p>Complete your first job and its payout will appear here.</p>
         </div>
       ) : (
-        <ul className="pd-earn-list">
+        <ul className="pp-earn-list">
           {earnings.recent.map((item) => (
             <EarningRow key={item.bookingId} item={item} />
           ))}
         </ul>
       )}
 
-      <p className="pd-fineprint">
+      <p className="pp-fineprint">
         Supplybase sets the payout for each job. Question about an amount?{' '}
         <a href={helpLink} target="_blank" rel="noopener noreferrer">
           WhatsApp the partner desk
         </a>{' '}
         on {PARTNER_PHONE}.
       </p>
-    </>
+    </section>
   );
 }

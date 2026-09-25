@@ -49,7 +49,17 @@ public record ProfessionalBookingResponse(
         return from(b, List.of());
     }
 
+    /**
+     * The customer's phone, WhatsApp and street address are shared only while
+     * the partner still has work to do. Once the job is completed or
+     * cancelled they are withheld (the area in {@code location} stays, so the
+     * job still reads sensibly in the partner's history): a partner keeps no
+     * standing list of customers' numbers and home addresses, and a later
+     * question about a finished job goes through Supplybase.
+     */
     public static ProfessionalBookingResponse from(Booking b, List<Requirement> requirements) {
+        boolean closed = b.getStatus() == BookingStatus.WORK_COMPLETED
+                || b.getStatus() == BookingStatus.CANCELLED;
         return new ProfessionalBookingResponse(
                 b.getId(), b.getReference(), b.getBookingNumber(),
                 b.getBookingType(), b.getStatus(),
@@ -57,8 +67,11 @@ public record ProfessionalBookingResponse(
                 b.getWorkNature(), b.getWorkOption(), b.getWorkDetail(),
                 b.getPreferredDate(),
                 b.getPreferredSlot() == null ? null : b.getPreferredSlot().label(),
-                b.getName(), b.getPhone(), b.getWhatsapp(),
-                b.getAddress(), b.getLocation(),
+                b.getName(),
+                closed ? null : b.getPhone(),
+                closed ? null : b.getWhatsapp(),
+                closed ? null : b.getAddress(),
+                b.getLocation(),
                 b.isAttachmentsPending(), b.getCreatedAt(),
                 b.getPartnerPayoutPaise(), b.getPartnerPaidAt(), b.getCompletedAt(),
                 requirements);
