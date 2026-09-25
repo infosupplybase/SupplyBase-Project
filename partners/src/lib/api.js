@@ -8,27 +8,120 @@
  * Tokens are stored under their own keys ("sb.partner.*") so being signed in
  * here never collides with the customer site or the admin panel, which keep
  * theirs in different keys — and the three apps are on different origins
- * anyway, so each has its own localStorage.
+ * anyway, so each has its own storage.
  */
 
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
 
-const ACCESS_KEY = 'sb.partner.accessToken';
-const REFRESH_KEY = 'sb.partner.refreshToken';
+export const ACCESS_KEY = 'sb.partner.accessToken';
+export const REFRESH_KEY = 'sb.partner.refreshToken';
+
+/** Fired on window when the server stops accepting this session (see request()). */
+export const SESSION_EXPIRED_EVENT = 'sb:partner-session-expired';
 
 /* ------------------------------------------------------------ token store */
 
-export const getAccessToken = () => localStorage.getItem(ACCESS_KEY);
-export const getRefreshToken = () => localStorage.getItem(REFRESH_KEY);
+/*
+ * Where the tokens live decides how long a sign-in lasts on this device:
+ *
+ *   sessionStorage — the default. Gone when the browser (or this tab) is
+ *                    closed, so a partner who signs in on a shared or
+ *                    borrowed phone does not leave the account open on it.
+ *   localStorage   — only when the partner ticks "Keep me signed in on this
+ *                    device" at sign-in; survives restarts, for their own phone.
+ *
+ * Reads check both, so a refresh keeps the tokens in whichever one they were
+ * put in. Every access is wrapped: storage can throw (private mode, blocked
+ * site data), and a throw here must mean "not signed in", not a blank page.
+ */
+const stores = () => {
+  const list = [];
+  try {
+    list.push(window.sessionStorage);
+  } catch {
+    /* unavailable */
+  }
+  try {
+    list.push(window.localStorage);
+  } catch {
+    /* unavailable */
+  }
+  return list;
+};
 
-export function storeTokens({ accessToken, refreshToken }) {
-  if (accessToken) localStorage.setItem(ACCESS_KEY, accessToken);
-  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
+const read = (key) => {
+  for (const store of stores()) {
+    try {
+      const value = store.getItem(key);
+      if (value) return value;
+    } catch {
+      /* unreadable */
+    }
+  }
+  return null;
+};
+
+const storeHolding = (key) =>
+  stores().find((store) => {
+    try {
+      return Boolean(store.getItem(key));
+    } catch {
+      return false;
+    }
+  });
+
+export const getAccessToken = () => read(ACCESS_KEY);
+export const getRefreshToken = () => read(REFRESH_KEY);
+
+/** True when this device was asked to keep the partner signed in. */
+export const isRemembered = () => {
+  try {
+    return Boolean(window.localStorage.getItem(REFRESH_KEY));
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * `remember` picks the store on sign-in. Left out (a token refresh), the new
+ * tokens go where the old ones were.
+ */
+export function storeTokens({ accessToken, refreshToken }, remember) {
+  let target;
+  if (remember === undefined) {
+    target = storeHolding(REFRESH_KEY) || stores()[0];
+  } else {
+    clearTokens();
+    try {
+      target = remember ? window.localStorage : window.sessionStorage;
+    } catch {
+      target = null;
+    }
+  }
+  if (!target) return;
+  try {
+    if (accessToken) target.setItem(ACCESS_KEY, accessToken);
+    if (refreshToken) target.setItem(REFRESH_KEY, refreshToken);
+  } catch {
+    /* storage full or blocked: the sign-in lasts only until reload */
+  }
 }
 
 export function clearTokens() {
-  localStorage.removeItem(ACCESS_KEY);
-  localStorage.removeItem(REFRESH_KEY);
+  for (const store of stores()) {
+    try {
+      store.removeItem(ACCESS_KEY);
+      store.removeItem(REFRESH_KEY);
+    } catch {
+      /* nothing to clear */
+    }
+  }
+}
+
+/** Tell the app the session is over: tokens are dropped and it returns to sign-in. */
+function endSession() {
+  clearTokens();
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
 }
 
 /* ---------------------------------------------------------------- errors */
@@ -67,6 +160,9 @@ async function refreshTokens() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
+      cache: 'no-store',
+      credentials: 'omit',
+      referrerPolicy: 'no-referrer',
     })
       .then(async (response) => {
         if (!response.ok) {
@@ -97,16 +193,27 @@ async function send(path, { method = 'GET', body, auth = true } = {}) {
     method,
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
+    // Jobs carry customers' phone numbers and addresses: never keep a copy
+    // of an API answer in the browser's HTTP cache.
+    cache: 'no-store',
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
   });
 }
 
 export async function request(path, options = {}) {
+  const hadSession = options.auth !== false && Boolean(getAccessToken() || getRefreshToken());
   let response = await send(path, options);
 
   if (response.status === 401 && options.auth !== false && getRefreshToken()) {
     const refreshed = await refreshTokens();
     if (refreshed) response = await send(path, options);
   }
+
+  // Signed in a moment ago and the server no longer accepts it (signed out
+  // elsewhere, password changed, account disabled, refresh expired): end the
+  // session here too rather than leave a dashboard of failing requests.
+  if (response.status === 401 && hadSession) endSession();
 
   if (response.status === 204) return null;
 

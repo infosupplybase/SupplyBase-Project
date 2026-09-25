@@ -1,508 +1,1137 @@
 /* =========================================================================
-   PARTNER DASHBOARD — numbers, tabs, richer job cards, earnings, support
-   Everything here is prefixed `pd-` and sets its own text colour: the shared
-   card rule in partner.css gives the cards a pale text colour, so an element
-   inside them that doesn't say what colour it is would be hard to read.
+   PARTNER DASHBOARD — numbers, jobs, earnings
+   Built on the depth tokens in partner.css (--pp-elev-*, --pp-gold-tile).
    ========================================================================= */
 
+/* ----------------------------------------------------------------- stats */
 
-/* ---------- the four numbers at the top ---------- */
-
-.pd-stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin: 0 0 24px;
-}
-
-.pd-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px 18px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  color: var(--ink);
-}
-
-.pd-stat-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  background: var(--gold-a12);
-  color: var(--gold-deep);
-}
-
-.pd-stat-label {
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
-
-.pd-stat-value {
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  line-height: 1.1;
-  color: var(--ink);
-}
-
-.pd-stat-note {
-  font-size: 0.8rem;
-  color: var(--ink-muted);
-}
-
-.pd-stat-accent {
-  border-color: var(--gold-a40);
-  background: linear-gradient(180deg, #fffdf6 0%, #fff8e6 100%);
-}
-
-
-/* ---------- Jobs | Earnings switch ---------- */
-
-.pd-tabs {
-  display: flex;
-  gap: 6px;
-  width: fit-content;
-  max-width: 100%;
-  margin: 0 0 20px;
-  padding: 5px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.pd-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--ink-soft);
-  font: inherit;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.pd-tab:hover {
-  background: var(--gold-a08);
-}
-
-.pd-tab.active {
-  background: var(--black);
-  color: var(--gold-light);
-}
-
-.pd-tab:focus-visible {
-  outline: 2px solid var(--gold-deep);
-  outline-offset: 2px;
-}
-
-.pd-tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--gold);
-  color: var(--black);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-
-/* ---------- job card extras ---------- */
-
-.partner-job-card {
+.pp-stats {
   position: relative;
-}
-
-.partner-job-card .partner-job-meta li {
-  align-items: flex-start;
-}
-
-.partner-job-card .partner-job-meta svg {
-  margin-top: 3px;
-}
-
-.partner-job-card.pd-next-up {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px var(--gold-a24), var(--shadow-sm);
-}
-
-.pd-next-flag {
-  position: absolute;
-  top: -11px;
-  left: 16px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--gold);
-  color: var(--black);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.pd-when {
-  color: var(--gold-deep);
-  font-style: normal;
-  font-weight: 600;
-}
-
-.pd-note {
-  margin: 0;
-  padding: 10px 12px;
-  border-left: 3px solid var(--gold);
-  border-radius: 0 8px 8px 0;
-  background: var(--gold-a08);
-  color: var(--ink-soft);
-  font-size: 0.9rem;
-}
-
-.pd-requirements {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--ink);
-}
-
-.pd-requirements summary {
-  padding: 10px 12px;
-  color: var(--ink);
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.pd-requirements ul {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 0;
-  padding: 0 12px 10px;
-  list-style: none;
-}
-
-.pd-requirements li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 6px;
-  border-top: 1px dashed var(--border);
-  font-size: 0.86rem;
-}
-
-.pd-req-q {
-  color: var(--ink-muted);
-}
-
-.pd-req-a {
-  color: var(--ink);
-  font-weight: 600;
-  text-align: right;
-}
-
-.pd-payout {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  font-size: 0.88rem;
-  font-weight: 600;
-}
-
-.pd-payout-muted {
-  background: #f3f3f3;
-  color: var(--ink-soft);
-}
-
-.pd-payout-accent {
-  background: var(--gold-a12);
-  color: var(--gold-deep);
-}
-
-.pd-payout-warning {
-  background: #fff1d9;
-  color: #7a4300;
-}
-
-.pd-payout-success {
-  background: #e4f5ea;
-  color: #155d33;
-}
-
-.pd-quick-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.pd-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font-size: 0.84rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.pd-chip:hover {
-  border-color: var(--gold);
-  background: var(--gold-a08);
-}
-
-
-/* ---------- earnings ---------- */
-
-.pd-earn-cards {
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.pd-earn-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px 18px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  color: var(--ink);
-}
-
-.pd-earn-label {
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
-
-.pd-earn-value {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  line-height: 1.15;
-  color: var(--ink);
-}
-
-.pd-earn-note {
-  font-size: 0.8rem;
-  color: var(--ink-muted);
-}
-
-.pd-earn-card-primary {
-  background: var(--black);
-  border-color: var(--black);
-}
-
-.pd-earn-card-primary .pd-earn-label,
-.pd-earn-card-primary .pd-earn-note {
-  color: var(--on-dark-muted);
-}
-
-.pd-earn-card-primary .pd-earn-value {
-  color: var(--gold-light);
-}
-
-.pd-earn-card-warn {
-  border-color: var(--gold-a40);
-  background: linear-gradient(180deg, #fffdf6 0%, #fff8e6 100%);
-}
-
-.pd-callout {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding: 12px 14px;
-  border: 1px solid var(--gold-a40);
-  border-radius: 12px;
-  background: #fff8e6;
-  color: #5c4200;
-  font-size: 0.9rem;
-}
-
-.pd-callout svg {
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.pd-earn-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0;
+  gap: 16px;
+  margin: -78px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.pd-earn-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 16px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-}
-
-.pd-earn-main {
+.pp-stat {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--pp-line);
+  border-radius: var(--pp-radius);
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+  box-shadow: var(--pp-elev-3);
   min-width: 0;
 }
 
-.pd-earn-main strong {
-  color: var(--ink);
+.pp-stat-icon {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: var(--pp-gold-tile);
+  box-shadow: var(--pp-gold-tile-shadow);
+  color: #2a1d00;
 }
 
-.pd-earn-main span {
-  color: var(--ink-muted);
-  font-size: 0.82rem;
+.pp-stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pp-muted);
 }
 
-.pd-earn-amount {
+.pp-stat-value {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--pp-ink);
+  overflow-wrap: anywhere;
+}
+
+.pp-stat-note {
+  font-size: 0.8rem;
+  color: var(--pp-muted);
+}
+
+/* The one number a partner watches most: dark and gold. */
+.pp-stat-accent {
+  border-color: rgba(242, 193, 78, 0.35);
+  background:
+    radial-gradient(240px 120px at 100% 0%, rgba(242, 193, 78, 0.22), transparent 70%),
+    linear-gradient(180deg, #221f17 0%, var(--pp-night) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 22px 44px -16px rgba(0, 0, 0, 0.55);
+}
+
+.pp-stat-accent .pp-stat-label,
+.pp-stat-accent .pp-stat-note {
+  color: var(--pp-on-night-muted);
+}
+
+.pp-stat-accent .pp-stat-value {
+  color: var(--gold-light);
+}
+
+/* ------------------------------------------------------- section header */
+
+.pp-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 4px 0 14px;
+}
+
+.pp-section-head h2,
+.pp-section-head h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.pp-count {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--pp-bg-deep);
+  box-shadow: var(--pp-inset);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.pp-segment {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--pp-bg-deep);
+  box-shadow: var(--pp-inset);
+}
+
+.pp-segment button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--pp-ink-soft);
+  font: 600 0.9rem var(--font-body);
+  cursor: pointer;
+}
+
+.pp-segment button span {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(40, 30, 10, 0.08);
+  font-size: 0.78rem;
+}
+
+.pp-segment button[aria-pressed='true'] {
+  background: linear-gradient(180deg, #ffffff, #fbf8f0);
+  box-shadow: var(--pp-elev-1);
+  color: var(--pp-ink);
+}
+
+.pp-segment button[aria-pressed='true'] span {
+  background: var(--pp-gold-tile);
+  color: #2a1d00;
+}
+
+.pp-segment button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.pp-privacy-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.pp-privacy-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ----------------------------------------------------------------- jobs */
+
+.pp-job-list {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 18px;
 }
 
-.pd-earn-amount strong {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  color: var(--ink);
+.pp-job {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid var(--pp-line);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fdfbf6 100%);
+  box-shadow: var(--pp-elev-2);
+  transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease);
 }
 
-.pd-badge {
-  padding: 3px 10px;
+@media (hover: hover) and (pointer: fine) {
+  .pp-job:not(.is-done):hover {
+    transform: translateY(-2px);
+    box-shadow: var(--pp-elev-3);
+  }
+}
+
+/* The next job to go to: a gold rim and a little more lift. */
+.pp-job.is-next {
+  border-color: rgba(207, 154, 34, 0.55);
+  box-shadow: 0 0 0 3px rgba(242, 193, 78, 0.22), var(--pp-elev-3);
+}
+
+.pp-job.is-done {
+  background: #fbfaf6;
+  box-shadow: var(--pp-elev-1);
+}
+
+.pp-job.is-done .pp-job-icon {
+  background: var(--pp-bg-deep);
+  box-shadow: var(--pp-inset);
+  color: var(--pp-muted);
+}
+
+.pp-job-flag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: -6px 0 -4px;
+  padding: 6px 12px;
   border-radius: 999px;
-  font-size: 0.74rem;
+  background: var(--pp-night);
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.5);
+  color: var(--gold-light);
+  font-size: 0.76rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pp-job-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.pp-job-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--pp-gold-tile);
+  box-shadow: var(--pp-gold-tile-shadow);
+  color: #2a1d00;
+}
+
+.pp-job-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pp-job-title h3 {
+  margin: 0;
+  font-size: 1.18rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.pp-job-ref {
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  color: var(--pp-muted);
+}
+
+/* Status pills */
+
+.pp-pill {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
   white-space: nowrap;
 }
 
-.pd-badge-muted {
-  background: #f0f0f0;
-  color: var(--ink-soft);
+.pp-pill-accent {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent);
 }
 
-.pd-badge-warning {
-  background: #fff1d9;
-  color: #7a4300;
+.pp-pill-success {
+  background: var(--success-soft);
+  border-color: var(--success-line);
+  color: var(--success);
 }
 
-.pd-badge-success {
-  background: #e4f5ea;
-  color: #155d33;
+.pp-pill-warning {
+  background: var(--warning-soft);
+  border-color: var(--warning-line);
+  color: var(--warning);
 }
 
-.pd-fineprint {
-  margin: 18px 0 0;
+.pp-pill-danger {
+  background: var(--danger-soft);
+  border-color: var(--danger-line);
+  color: var(--danger);
+}
+
+.pp-pill-muted {
+  background: var(--pp-bg-deep);
+  border-color: var(--pp-line);
+  color: var(--pp-ink-soft);
+}
+
+/* Step bar: five dots on a rail, the rail filled up to where the job is. */
+
+.pp-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 14px 8px 12px;
+  border-radius: 14px;
+  background: var(--pp-bg);
+  box-shadow: var(--pp-inset);
+  list-style: none;
+}
+
+.pp-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* The rail from this dot to the next one. */
+.pp-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: calc(50% + 15px);
+  right: calc(-50% + 15px);
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(40, 30, 10, 0.12);
+}
+
+.pp-step.is-done:not(:last-child)::after {
+  background: var(--success);
+}
+
+.pp-step-dot {
+  position: relative;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid rgba(40, 30, 10, 0.18);
+  background: #ffffff;
+  color: var(--pp-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.pp-step.is-done .pp-step-dot {
+  border-color: var(--success);
+  background: var(--success);
+  color: #ffffff;
+  box-shadow: 0 3px 8px -3px rgba(22, 121, 74, 0.6);
+}
+
+.pp-step.is-current .pp-step-dot {
+  border-color: var(--gold-dark);
+  background: var(--pp-gold-tile);
+  box-shadow: var(--pp-gold-tile-shadow), 0 0 0 5px rgba(242, 193, 78, 0.25);
+  color: #2a1d00;
+}
+
+.pp-step-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--pp-muted);
+}
+
+.pp-step.is-current .pp-step-name {
+  color: var(--pp-ink);
+  font-weight: 700;
+}
+
+/* "What do I do now?" */
+
+.pp-guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--ink-soft);
-  font-size: 0.84rem;
+  border-radius: 12px;
+  background: var(--pp-bg);
+  color: var(--pp-ink-soft);
 }
 
-.pd-fineprint a {
+.pp-guide svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--pp-muted);
+}
+
+.pp-guide p {
+  margin: 0;
+  font-size: 0.93rem;
+  line-height: 1.5;
+}
+
+.pp-guide strong {
+  color: var(--pp-ink);
+}
+
+.pp-guide.is-you {
+  background: linear-gradient(180deg, #fff6dc 0%, #fdf0c8 100%);
+  box-shadow: inset 0 0 0 1px rgba(207, 154, 34, 0.35);
+  color: #4a3a10;
+}
+
+.pp-guide.is-you svg {
   color: var(--gold-deep);
+}
+
+/* Facts: When / Where / Customer / Work */
+
+.pp-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+
+.pp-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pp-facts dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pp-muted);
+}
+
+.pp-facts dd {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--pp-ink);
+  overflow-wrap: anywhere;
+}
+
+.pp-facts a {
+  color: var(--accent);
   font-weight: 600;
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 2px;
 }
 
+.pp-when {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--pp-night);
+  color: var(--gold-light);
+  font-size: 0.74rem;
+  font-weight: 700;
+  vertical-align: 1px;
+}
 
-/* ---------- partner support card ---------- */
+.pp-note {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+  background: var(--pp-bg);
+  color: var(--pp-ink-soft);
+  font-size: 0.93rem;
+  font-style: italic;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
 
-.pd-support p {
-  margin: 0 0 14px;
-  color: var(--ink-soft);
+/* What the customer asked for */
+
+.pp-reqs {
+  border: 1px solid var(--pp-line);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.pp-reqs summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 14px;
+  font-weight: 600;
+  font-size: 0.93rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pp-reqs summary::-webkit-details-marker {
+  display: none;
+}
+
+.pp-reqs summary::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  margin-left: auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform var(--t-fast) var(--ease);
+}
+
+.pp-reqs[open] summary::after {
+  transform: rotate(225deg) translateY(-2px);
+}
+
+.pp-reqs summary span {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--pp-bg-deep);
+  font-size: 0.78rem;
+}
+
+.pp-reqs summary:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: -3px;
+  border-radius: 12px;
+}
+
+.pp-reqs ul {
+  margin: 0;
+  padding: 0 14px 10px;
+  list-style: none;
+}
+
+.pp-reqs li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  border-top: 1px dashed var(--pp-line);
   font-size: 0.9rem;
 }
 
-.pd-support .btn + .btn {
-  margin-top: 8px;
+.pp-req-q {
+  color: var(--pp-muted);
 }
 
+.pp-req-a {
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
 
-/* ---------- tablet and phone ---------- */
+/* Payout line */
 
-/* The phone rules in partner.css keep this heading on one line, which cuts off
-   the subtitle and any long name ("Welcome back, …") at the screen edge. */
-@media (max-width: 600px) {
-  .partner-dashboard-heading h1,
-  .partner-dashboard-heading p {
-    white-space: normal;
-    overflow-wrap: anywhere;
+.pp-payout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.pp-payout svg {
+  flex-shrink: 0;
+}
+
+.pp-payout-muted {
+  background: var(--pp-bg);
+  color: var(--pp-ink-soft);
+}
+
+.pp-payout-accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pp-payout-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.pp-payout-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+/* Directions / Call / WhatsApp — big, equal, thumb-sized. */
+
+.pp-quick {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.pp-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--pp-line-strong);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff, #f7f3ea);
+  box-shadow: var(--pp-elev-1);
+  color: var(--pp-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+
+.pp-quick-btn:hover {
+  border-color: rgba(207, 154, 34, 0.6);
+}
+
+.pp-quick-btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--pp-inset);
+}
+
+.pp-quick-btn:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.pp-quick-btn svg {
+  flex-shrink: 0;
+}
+
+.pp-quick-wa svg {
+  color: var(--whatsapp-dark);
+}
+
+.pp-job-foot {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+  border-top: 1px solid var(--pp-line);
+}
+
+.pp-step-btn {
+  margin-top: 12px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 10px 22px -10px rgba(150, 105, 10, 0.7);
+}
+
+.pp-job .alert {
+  margin: 0;
+}
+
+/* Skeletons while loading */
+
+.pp-skeleton {
+  pointer-events: none;
+}
+
+.pp-sk {
+  display: block;
+  height: 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #eee9dd 0%, #f8f5ee 50%, #eee9dd 100%);
+  background-size: 200% 100%;
+  animation: pp-shimmer 1.3s ease-in-out infinite;
+}
+
+.pp-sk-title {
+  width: 45%;
+  height: 22px;
+}
+
+.pp-sk-bar {
+  height: 54px;
+  border-radius: 14px;
+}
+
+.pp-sk-line {
+  width: 80%;
+}
+
+.pp-sk-line.short {
+  width: 50%;
+}
+
+@keyframes pp-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
   }
 }
 
-@media (max-width: 900px) {
-  .pd-stats,
-  .pd-earn-cards {
+/* -------------------------------------------------------------- earnings */
+
+.pp-earn-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+  padding: 26px;
+  border-radius: 20px;
+  background:
+    radial-gradient(360px 180px at 100% 0%, rgba(242, 193, 78, 0.28), transparent 70%),
+    linear-gradient(160deg, #26221a 0%, var(--pp-night) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 26px 50px -20px rgba(0, 0, 0, 0.6);
+  color: var(--pp-on-night);
+}
+
+.pp-earn-hero > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pp-earn-hero-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+
+.pp-earn-hero-value {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 6vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
+  overflow-wrap: anywhere;
+}
+
+.pp-earn-hero-note {
+  font-size: 0.9rem;
+  color: var(--pp-on-night-muted);
+}
+
+.pp-earn-hero-coin {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--pp-gold-tile);
+  box-shadow: var(--pp-gold-tile-shadow), 0 14px 28px -10px rgba(242, 193, 78, 0.55);
+  color: #2a1d00;
+  transform: rotate(-8deg);
+}
+
+.pp-earn-hero.pp-skeleton {
+  flex-direction: column;
+  align-items: stretch;
+  background: #ffffff;
+  box-shadow: var(--pp-elev-2);
+}
+
+.pp-earn-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+.pp-earn-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--pp-line);
+  border-radius: var(--pp-radius);
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+  box-shadow: var(--pp-elev-2);
+  min-width: 0;
+}
+
+.pp-earn-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pp-muted);
+}
+
+.pp-earn-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.pp-earn-note {
+  font-size: 0.8rem;
+  color: var(--pp-muted);
+}
+
+.pp-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--warning-soft);
+  box-shadow: inset 0 0 0 1px var(--warning-line);
+  color: var(--warning);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.pp-callout svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.pp-earn-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--pp-line);
+  border-radius: var(--pp-radius);
+  background: #ffffff;
+  box-shadow: var(--pp-elev-2);
+  list-style: none;
+  overflow: hidden;
+}
+
+.pp-earn-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--pp-line);
+}
+
+.pp-earn-row:first-child {
+  border-top: 0;
+}
+
+.pp-earn-row-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--pp-bg);
+  box-shadow: var(--pp-inset);
+  color: var(--pp-muted);
+}
+
+.pp-earn-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pp-earn-main strong {
+  overflow-wrap: anywhere;
+}
+
+.pp-earn-main span {
+  font-size: 0.82rem;
+  color: var(--pp-muted);
+}
+
+.pp-earn-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.pp-earn-amount strong {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.pp-fineprint {
+  margin: 16px 0 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  color: var(--pp-muted);
+}
+
+.pp-fineprint a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ============================================================ responsive */
+
+@media (max-width: 1100px) {
+  .pp-stats {
+    gap: 12px;
+  }
+
+  .pp-stat {
+    padding: 16px 14px 14px;
+  }
+}
+
+@media (max-width: 720px) {
+  .pp-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: -64px;
   }
-}
 
-@media (max-width: 520px) {
-  .pd-stats,
-  .pd-earn-cards {
+  .pp-stat {
+    padding: 14px 14px 12px;
+    gap: 2px;
+  }
+
+  .pp-stat-icon {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+  }
+
+  .pp-stat-label {
+    font-size: 0.72rem;
+  }
+
+  .pp-stat-note {
+    font-size: 0.74rem;
+  }
+
+  .pp-section-head h2 {
+    font-size: 1.15rem;
+  }
+
+  .pp-job {
+    gap: 14px;
+    padding: 18px 16px;
+    border-radius: 16px;
+  }
+
+  .pp-job-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .pp-job-title h3 {
+    font-size: 1.08rem;
+  }
+
+  .pp-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pp-job-foot {
+    display: block;
+  }
+
+  .pp-step-btn {
+    width: 100%;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .pp-earn-hero {
+    padding: 22px 18px;
+  }
+
+  .pp-earn-hero-coin {
+    width: 58px;
+    height: 58px;
+  }
+
+  .pp-earn-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
-  .pd-stat,
-  .pd-earn-card {
-    padding: 14px;
+  .pp-earn-tile:last-child {
+    grid-column: 1 / -1;
   }
 
-  .pd-stat-value,
-  .pd-earn-value {
-    font-size: 1.35rem;
+  .pp-earn-value {
+    font-size: 1.3rem;
+  }
+}
+
+/* Small phones: the status pill drops under the title so the title keeps
+   its width, and the segment spans the row. */
+@media (max-width: 480px) {
+  .pp-job-head {
+    flex-wrap: wrap;
   }
 
-  .pd-tabs {
-    width: 100%;
+  /* The title gets the whole row beside the icon; the pill goes under it. */
+  .pp-job-title {
+    flex: 1 1 calc(100% - 58px);
   }
 
-  .pd-tab {
-    flex: 1;
-    justify-content: center;
-    padding: 10px 12px;
+  .pp-job-head {
+    row-gap: 8px;
   }
 
-  .pd-earn-row {
-    align-items: flex-start;
-    flex-direction: column;
+  .pp-job-head .pp-pill {
+    order: 3;
+    margin-left: 54px;
+  }
+
+  /* Three equal buttons: icon above the word, so the words never squeeze out. */
+  .pp-quick {
     gap: 8px;
   }
 
-  .pd-earn-amount {
-    align-items: flex-start;
+  .pp-quick-btn {
+    flex-direction: column;
+    gap: 4px;
+    min-height: 60px;
+    padding: 6px 4px;
+    font-size: 0.8rem;
+  }
+
+  .pp-segment {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pp-segment button {
+    justify-content: center;
+  }
+
+  .pp-steps {
+    padding: 12px 2px 10px;
+  }
+
+  .pp-step-name {
+    font-size: 0.68rem;
+  }
+
+  .pp-earn-row {
+    flex-wrap: wrap;
+    gap: 10px 12px;
+  }
+
+  .pp-earn-amount {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-left: 48px;
+  }
+}
+
+@media (max-width: 340px) {
+  .pp-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pp-quick {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-sk {
+    animation: none;
+  }
+
+  .pp-job {
+    transition: none;
   }
 }
