@@ -30,10 +30,11 @@ export default function PaintingCategory({
       type="button"
       className="pnt-overview-card !w-full !text-left"
       onClick={() =>
-        onSelectFlow?.(
-          cat.slug === 'room' ? 'few-walls' : cat.slug
-        )
-      }
+  onSelectFlow?.(
+    cat.slug === 'room' ? 'few-walls' : cat.slug,
+    cat.name
+  )
+}
     >
       <span className="pnt-overview-photo">
         <img

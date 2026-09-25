@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import StepIndicator from '../components/painting/StepIndicator';
 import OptionCard from '../components/painting/OptionCard';
@@ -30,14 +30,22 @@ import { contact } from '../data/siteConfig';
 export default function PaintingFlow({
   modal = false,
   flowSlug: propFlowSlug,
+  paintingCategoryName,
   onBackToCategories,
   onStepChange,
 }) {
-  const params = useParams();
-  const navigate = useNavigate();
+ const params = useParams();
+const location = useLocation();
+const navigate = useNavigate();
 
-  const flowSlug = propFlowSlug || params.flowSlug;
-  const flow = paintingFlows[flowSlug];
+const flowSlug = propFlowSlug || params.flowSlug;
+const flow = paintingFlows[flowSlug];
+
+const displayFlow = paintingCategoryName
+  ? { ...flow, name: paintingCategoryName }
+  : location.state?.paintingCategoryName
+    ? { ...flow, name: location.state.paintingCategoryName }
+    : flow;
   const { user } = useAuth();
   const { category, loading, error: loadError, optionsFor, productsByTier, coloursByTab } =
     usePaintingCatalogue();
@@ -319,7 +327,7 @@ if (modal) {
       : 'wizard-container'
   }
 >
-          <div className="wizard-card">
+          
             <div className="confirmed">
               <div className="confirmed-tick">
                 <Icon name="check" size={38} strokeWidth={3} />
@@ -330,7 +338,7 @@ if (modal) {
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
                 <div><dt>Date &amp; Time</dt><dd>{receipt.date}, {receipt.time}</dd></div>
-                <div><dt>Service</dt><dd>{flow.name}</dd></div>
+                <div><dt>Service</dt><dd>{displayFlow.name}</dd></div>
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
@@ -390,66 +398,135 @@ if (modal) {
   </div>
 )}
         </div>
-      </div>
+      
     );
   }
 
   /* ------------------------------------------------------------ details */
-  if (stage === DETAILS) {
-    return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
-          <FlowTopBar flow={flow} onBack={goBack} />
-          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
-            <div className="wizard-card">
-              <div className="wizard-card-head">
-                <h2>Your Details</h2>
-                <p>We will contact you to confirm the appointment.</p>
-              </div>
-              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pnt" />
-              {submitError && (
-                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
-                  <Icon name="info" size={18} /><span>{submitError}</span>
-                </div>
-              )}
-              <div
-  className={
-    modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
-      : 'wizard-foot'
-  }
->
-                <button
-  type="button"
-  className={
-    modal
-  ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
-  : 'btn btn-ghost btn-back'
-  }
-  onClick={goBack}
->BACK</button>
-                <button
-  type="submit"
-  className={
-    modal
-  ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[150px] md:!min-w-[150px] md:!flex-none md:!px-4'
-  : 'btn btn-primary'
-  }
->CONTINUE <Icon name="arrow-right" size={17} /></button>
-              </div>
+ /* ------------------------------------------------------------ details */
+/* ------------------------------------------------------------ details */
+if (stage === DETAILS) {
+  return (
+    <div
+      className={
+        modal
+          ? 'wizard-shell pnt-modal-flow !min-h-0 !w-full !pb-0'
+          : 'wizard-shell'
+      }
+    >
+      <div
+        className={
+          modal
+            ? 'wizard-container !min-h-0 !w-full !max-w-none !pb-0 !px-0'
+            : 'wizard-container'
+        }
+      >
+        <FlowTopBar flow={displayFlow} onBack={goBack} />
+
+          <StepIndicator
+          steps={[...configSteps, { title: 'Your Details' }]}
+          activeIndex={configSteps.length}
+        />
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+
+            if (canLeaveDetails()) {
+              goNext();
+            }
+          }}
+          noValidate
+          className={modal ? '!w-full !max-w-none' : ''}
+        >
+          <div
+            className={
+              modal
+                ? 'wizard-card !w-full !max-w-none !rounded-none !border-0 !bg-transparent !p-0 !shadow-none'
+                : 'wizard-card'
+            }
+          >
+            <div className="wizard-card-head">
+              <h2>Enter Your Details</h2>
+              <p>
+                We will contact you to confirm the appointment.
+              </p>
             </div>
-          </form>
-        </div>
+
+            <CustomerDetailsFields
+              details={details}
+              setDetail={setDetail}
+              errors={errors}
+              idPrefix="pnt"
+            />
+
+            {submitError && (
+              <div
+                role="alert"
+                className="alert alert-error"
+                style={{ marginTop: 18 }}
+              >
+                <Icon name="info" size={18} />
+                <span>{submitError}</span>
+              </div>
+            )}
+
+            <div
+              className={
+                modal
+                  ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[76px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+                  : 'wizard-foot'
+              }
+            >
+              <button
+                type="button"
+                className={
+                  modal
+                    ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
+                    : 'btn btn-ghost btn-back'
+                }
+                onClick={goBack}
+              >
+                BACK
+              </button>
+
+              <button
+                type="submit"
+                className={
+                  modal
+                    ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[125px] md:!min-w-[125px] md:!flex-none md:!px-4'
+                    : 'btn btn-primary'
+                }
+              >
+                CONTINUE
+                <Icon name="arrow-right" size={17} />
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   /* ----------------------------------------------------------- schedule */
   if (stage === SCHEDULE) {
     return (
-      <div className="wizard-shell">
-        <div className="wizard-container">
-          <FlowTopBar flow={flow} onBack={goBack} />
+     <div
+  className={
+    modal
+      ? 'wizard-shell pnt-modal-flow !min-h-0 !w-full !pb-0'
+      : 'wizard-shell'
+  }
+>
+  <div
+    className={
+      modal
+        ? 'wizard-container !min-h-0 !w-full !max-w-none !pb-0 !px-0'
+        : 'wizard-container'
+    }
+  >
+          <FlowTopBar flow={displayFlow} onBack={goBack} />
           <form onSubmit={handleSubmit} noValidate>
             <div className="wizard-card">
               <div className="wizard-card-head">
@@ -527,7 +604,7 @@ if (modal) {
       : 'container container-narrow'
   }
 >
-        <FlowTopBar flow={flow} onBack={goBack} plain />
+        <FlowTopBar flow={displayFlow} onBack={goBack} plain />
         <StepIndicator steps={configSteps} activeIndex={stage - 1} />
 
         <div
@@ -668,6 +745,7 @@ function FlowTopBar({ flow, onBack, plain }) {
         <Icon name="arrow-left" size={20} />
       </button>
       <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.name}</h1>
+
       <a
         href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.name}.`)}`}
         target="_blank"
@@ -676,6 +754,8 @@ function FlowTopBar({ flow, onBack, plain }) {
       >
         Need help?
       </a>
+      
+     
     </div>
   );
 }

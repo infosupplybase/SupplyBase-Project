@@ -60,6 +60,7 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useState(null);
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useState(null);
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useState(null);
+  const [selectedPaintingCategoryName, setSelectedPaintingCategoryName] = useState(null);
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useState(null);
   const [plumbingView, setPlumbingView] = useState('category');
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useState(null);
@@ -96,13 +97,13 @@ export default function ServiceBookingModal({ service, onClose }) {
           relative
           w-full
 
-         ${service.slug === 'interior-by-choice'
+       ${service.slug === 'interior-by-choice'
   ? 'max-w-[1000px]'
   : service.slug === 'interior-design'
-    ? 'max-w-[1000px]'
+    ? 'max-w-[760px]'
     : 'max-w-[500px]'
+    
 }
-
           max-h-[88vh]
           h-auto
           overflow-hidden
@@ -717,55 +718,32 @@ export default function ServiceBookingModal({ service, onClose }) {
                 }}
               />
             )
-
-  //        ) : service.slug === 'painting' ? (
-  // <div className="painting-modal-scope">
-  //   {selectedPaintingFlow ? (
-  //     <PaintingFlow
-  //       modal={true}
-  //       flowSlug={selectedPaintingFlow}
-  //       onBackToCategories={() => {
-  //         setSelectedPaintingFlow(null);
-  //         scrollModalToTop();
-  //       }}
-  //       onStepChange={scrollModalToTop}
-  //     />
-  //   ) : (
-  //     <PaintingCategory
-  //       modal={true}
-  //       onSelectFlow={(flowSlug) => {
-  //         setSelectedPaintingFlow(flowSlug);
-  //         scrollModalToTop();
-  //       }}
-  //     />
-  //   )}
-  // </div>
-
           ) : service.slug === 'painting' ? (
             selectedPaintingFlow ? (
               <div className="painting-modal-scope">
                 <PaintingFlow
-                  modal={true}
-                  flowSlug={selectedPaintingFlow}
-                  onBackToCategories={() => {
-                    setSelectedPaintingFlow(null);
-                    scrollModalToTop();
-                  }}
-                  onStepChange={scrollModalToTop}
-                />
+  modal={true}
+  flowSlug={selectedPaintingFlow}
+  paintingCategoryName={selectedPaintingCategoryName}
+  onBackToCategories={() => {
+    setSelectedPaintingFlow(null);
+    scrollModalToTop();
+  }}
+  onStepChange={scrollModalToTop}
+/>
               </div>
             ) : (
               <div className="painting-modal-scope">
                 <PaintingCategory
                   modal={true}
-                  onSelectFlow={(flowSlug) => {
-                    setSelectedPaintingFlow(flowSlug);
-                    scrollModalToTop();
-                  }}
+                onSelectFlow={(flowSlug, categoryName) => {
+  setSelectedPaintingFlow(flowSlug);
+  setSelectedPaintingCategoryName(categoryName);
+  scrollModalToTop();
+}}
                 />
               </div>
             )
-
           ) : service.slug === 'plumbing' ? (
             <div className="plumbing-modal-scope">
             {plumbingView === 'category' ? (
