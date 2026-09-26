@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -43,17 +44,21 @@ export default function PaintingFlow({
   const { category, loading, error: loadError, optionsFor, productsByTier, coloursByTab } =
     usePaintingCatalogue();
 
-  const [stage, setStage] = useState(1);
-  const [answers, setAnswers] = useState({});
-  const [details, setDetails] = useState(user
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:paint:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [compareOpen, setCompareOpen] = useState(false);
 
   const configSteps = useMemo(() => flow?.steps || [], [flow]);
@@ -197,7 +202,7 @@ export default function PaintingFlow({
     return;
   }
 
-  setStage((s) => Math.max(s - 1, 1));
+  formBack(() => setStage((s) => Math.max(s - 1, 1)));
 
   if (modal) {
     onStepChange?.();
