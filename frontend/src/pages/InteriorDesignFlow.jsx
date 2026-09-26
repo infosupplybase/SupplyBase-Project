@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 /**
  * /services/interior-design/:categorySlug/:projectSlug — one page, every
@@ -52,25 +53,29 @@ export default function InteriorDesignFlow({
   const { user } = useAuth();
   const { category: liveCategory } = useInteriorDesignCatalogue();
 
-  const [stage, setStage] = useState(PACKAGE);
-  const [tier, setTier] = useState('standard');
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:id:${categorySlug}:${projectSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, PACKAGE, { push: true });
+  const [tier, setTier] = useHistoryState(`${scope}:tier`, 'standard');
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailTab, setDetailTab] = useState('overview');
   const [customiseTab, setCustomiseTab] = useState('style');
-  const [style, setStyle] = useState('');
-  const [colour, setColour] = useState('');
-  const [requirements, setRequirements] = useState('');
+  const [style, setStyle] = useHistoryState(`${scope}:style`, '');
+  const [colour, setColour] = useHistoryState(`${scope}:colour`, '');
+  const [requirements, setRequirements] = useHistoryState(`${scope}:requirements`, '');
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  const [details, setDetails] = useState(user
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   const hasPricing = project?.hasReferencePricing;
   const packagePrice = useMemo(() => {
@@ -107,7 +112,7 @@ export default function InteriorDesignFlow({
       return;
     }
 
-    setStage((s) => Math.max(s - 1, PACKAGE));
+    formBack(() => setStage((s) => Math.max(s - 1, PACKAGE)));
 
     if (modal) {
       onStepChange?.();

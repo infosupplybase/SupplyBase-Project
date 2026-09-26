@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
+import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 
 
@@ -76,21 +77,25 @@ export default function ServiceBooking({
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [stage, setStage] = useState(0);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:svc:${slug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
 
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
 
-  const [details, setDetails] = useState(emptyDetails);
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
 
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
 
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
 
   const [busy, setBusy] = useState(false);
 
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   /**
    * Notify parent modal about current step.
@@ -137,11 +142,11 @@ export default function ServiceBooking({
         setForm(result);
 
         /*
-         * Switching service mid-flow must not carry answers to questions
-         * that the new service never asked.
+         * Each service keeps its own saved answers (the history-state keys
+         * include the slug), so switching service never carries answers
+         * over, and a refresh must not wipe what was restored. Only a fresh
+         * visit with ?preselect= starts with that option ticked.
          */
-        setStage(0);
-
         const validPreselect =
           preselect &&
           result.questions.some(
@@ -150,19 +155,14 @@ export default function ServiceBooking({
               q.options?.some((o) => o.value === preselect)
           );
 
-        setAnswers(
-          validPreselect
-            ? {
-                service_needed: [preselect],
-              }
-            : {}
-        );
+        if (validPreselect && !hasHistoryState(`${scope}:answers`)) {
+          setAnswers({
+            service_needed: [preselect],
+          });
+        }
 
-        setDate('');
-        setTime('');
         setErrors({});
         setError('');
-        setReceipt(null);
       })
       .catch((err) => {
         console.error('SERVICE FORM ERROR:', err);
@@ -180,7 +180,7 @@ export default function ServiceBooking({
     return () => {
       cancelled = true;
     };
-  }, [slug, preselect]);
+  }, [slug, preselect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Prefill details from signed-in account.
@@ -472,8 +472,10 @@ const stageQuestions = useMemo(() => {
   const goBack = () => {
     setError('');
 
-    setStage((currentStage) =>
-      Math.max(currentStage - 1, 0)
+    formBack(() =>
+      setStage((currentStage) =>
+        Math.max(currentStage - 1, 0)
+      )
     );
 
     if (!modal) {

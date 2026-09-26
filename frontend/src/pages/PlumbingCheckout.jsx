@@ -10,6 +10,7 @@ import { formatRupees } from '../lib/money';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -29,14 +30,18 @@ export default function PlumbingCheckout({
   const { user } = useAuth();
   const { items, count, subtotalPaise, clear } = useCart();
 
-  const [stage, setStage] = useState(SCHEDULE);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [details, setDetails] = useState(emptyDetails);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = 'f:plb-checkout';
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, SCHEDULE, { push: true });
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   useEffect(() => {
     if (user) {
@@ -86,7 +91,7 @@ export default function PlumbingCheckout({
       return;
     }
 
-    setStage((s) => Math.max(s - 1, SCHEDULE));
+    formBack(() => setStage((s) => Math.max(s - 1, SCHEDULE)));
 
     if (modal) {
       onStepChange?.();
