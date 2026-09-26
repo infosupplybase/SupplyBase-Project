@@ -13,9 +13,9 @@
  */
 export default function StatsBackdrop() {
   return (
-    <img
+    <img loading="lazy" decoding="async"
       className="wss-backdrop"
-      src="/assets/stats/construction-backdrop.jpg"
+      src="/assets/stats/construction-backdrop.webp"
       alt=""
       aria-hidden="true"
       /* lowercase: React 18 does not know the camelCase `fetchPriority` prop

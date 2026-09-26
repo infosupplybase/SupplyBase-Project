@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import { COMPANY_NAME, SITE_URL } from '../config';
-import { useAuth, friendlyError } from '../context/AuthContext';
+import { IDLE_MINUTES, useAuth, friendlyError } from '../context/AuthContext';
 import api from '../lib/api';
 
 /**
@@ -21,12 +21,13 @@ import api from '../lib/api';
  * they might lose.
  */
 export default function Login() {
-  const { user, login } = useAuth();
+  const { user, login, notice: signedOutNotice, clearNotice } = useAuth();
   const navigate = useNavigate();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
@@ -48,7 +49,8 @@ export default function Login() {
 
     setBusy(true);
     try {
-      await login(identifier, password);
+      await login(identifier, password, remember);
+      clearNotice();
       navigate('/', { replace: true });
     } catch (err) {
       setError(friendlyError(err));
@@ -142,7 +144,10 @@ export default function Login() {
             </div>
 
             <div className="login-meta">
-              <span />
+              <label className="checkbox-row">
+                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+                Keep me signed in on this device
+              </label>
               <button
                 type="button"
                 className="auth-inline-link auth-forgot"
@@ -152,6 +157,19 @@ export default function Login() {
                 Forgot password?
               </button>
             </div>
+
+            <p className="partner-auth-note">
+              {remember
+                ? 'Only tick this on your own phone. You will stay signed in until you sign out.'
+                : `For your safety you are signed out when you close the browser, or after ${IDLE_MINUTES} minutes without activity.`}
+            </p>
+
+            {signedOutNotice && !error && (
+              <div role="status" className="alert alert-warning">
+                <Icon name="lock" size={18} />
+                <span>{signedOutNotice}</span>
+              </div>
+            )}
 
             {error && (
               <div role="alert" className="alert alert-error">

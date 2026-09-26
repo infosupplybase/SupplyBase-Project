@@ -1,7 +1,5 @@
-
 /* =========================================================================
    SUPPLYBASE — PAINTING SERVICES
-
    Three itemised booking journeys (Full Home / Few Walls / Renovation),
    matching the approved reference. Prefixed `pnt-` so nothing collides with
    the rest of the site. Booking-flow screens (Details/Schedule/Confirm)
@@ -11,7 +9,6 @@
 .pnt-section {
   padding: var(--section-y) 0 calc(var(--section-y) + 40px);
 }
-
 
 /* ------------------------------------------------------------------ hero */
 
@@ -37,12 +34,7 @@
 .pnt-hero-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(5, 5, 5, 0.5) 0%,
-    rgba(5, 5, 5, 0.7) 55%,
-    rgba(5, 5, 5, 0.92) 100%
-  );
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.5) 0%, rgba(5, 5, 5, 0.7) 55%, rgba(5, 5, 5, 0.92) 100%);
 }
 
 .pnt-hero-inner {
@@ -107,7 +99,6 @@
   height: auto;
 }
 
-
 /* ------------------------------------------------------------- trust row */
 
 .pnt-trust-row {
@@ -138,7 +129,6 @@
   color: var(--gold-deep);
 }
 
-
 /* -------------------------------------------------------- overview cards */
 
 .pnt-overview-list {
@@ -157,10 +147,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  transition:
-    border-color var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .pnt-overview-card:hover,
@@ -208,7 +195,6 @@
   flex-shrink: 0;
   color: var(--ink-muted);
 }
-
 
 /* ------------------------------------------------------------- flow intro */
 
@@ -318,7 +304,6 @@
   color: var(--success);
 }
 
-
 /* ---------------------------------------------------------- flow shell */
 
 .pnt-flow-shell {
@@ -366,7 +351,6 @@
   white-space: nowrap;
 }
 
-
 /* ------------------------------------------------------------- step dots */
 
 .pnt-steps {
@@ -399,29 +383,18 @@
   color: var(--on-dark-muted);
   font-size: 0.72rem;
   font-weight: 700;
-  transition:
-    background var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-step.current .pnt-step-num {
-  background: linear-gradient(
-    180deg,
-    var(--gold-light) 0%,
-    var(--gold) 100%
-  );
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
   color: var(--on-gold);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
 .pnt-step.done .pnt-step-num {
-  background: #111111;
-  color: var(--gold);
-}
-
-.pnt-step.done .pnt-step-num svg {
-  color: var(--gold);
-  stroke: var(--gold);
+  background: var(--gold-a40);
+  color: var(--white);
 }
 
 .pnt-step-line {
@@ -434,7 +407,6 @@
 .pnt-step.done .pnt-step-line {
   background: var(--gold-a40);
 }
-
 
 /* --------------------------------------------------------------- card */
 
@@ -460,7 +432,6 @@
   flex: 1;
 }
 
-
 /* ----------------------------------------------------- single-choice list */
 
 .pnt-option-list {
@@ -480,10 +451,7 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-option:hover {
@@ -511,16 +479,9 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(
-    160deg,
-    #fffdf6 0%,
-    #fbeecb 60%,
-    #f2dda3 100%
-  );
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
-  box-shadow:
-    var(--depth-inset-top),
-    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-option-body {
@@ -558,11 +519,7 @@
 
 .pnt-option.selected .pnt-option-radio {
   border-color: var(--gold);
-  background: radial-gradient(
-    circle,
-    var(--gold) 0 40%,
-    transparent 42%
-  );
+  background: radial-gradient(circle, var(--gold) 0 40%, transparent 42%);
 }
 
 .pnt-compare-link {
@@ -579,7 +536,6 @@
 .pnt-compare-link svg:last-child {
   margin-left: auto;
 }
-
 
 /* -------------------------------------------------------------- brands */
 
@@ -602,10 +558,7 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .pnt-brand-card:hover {
@@ -673,7 +626,6 @@
   font-weight: 700;
 }
 
-
 /* ------------------------------------------------------------- tabs */
 
 .pnt-tabs {
@@ -698,16 +650,13 @@
   font-size: 0.84rem;
   font-weight: 600;
   white-space: nowrap;
-  transition:
-    background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease);
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
 .pnt-tab.active {
   background: var(--gold);
   color: var(--on-gold);
 }
-
 
 /* ----------------------------------------------------------- products */
 
@@ -745,10 +694,7 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-product:hover {
@@ -776,16 +722,9 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(
-    160deg,
-    #fffdf6 0%,
-    #fbeecb 60%,
-    #f2dda3 100%
-  );
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
-  box-shadow:
-    var(--depth-inset-top),
-    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-product-body {
@@ -814,7 +753,6 @@
   color: var(--gold-deep);
   margin-right: 22px;
 }
-
 
 /* -------------------------------------------------------------- colours */
 
@@ -850,15 +788,11 @@
   align-items: center;
   justify-content: center;
   color: rgba(0, 0, 0, 0.55);
-  transition:
-    box-shadow var(--t-fast) var(--ease),
-    transform var(--t-fast) var(--ease);
+  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
 }
 
 .pnt-swatch.selected .pnt-swatch-chip {
-  box-shadow:
-    0 0 0 2px var(--white),
-    0 0 0 4px var(--gold);
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--gold);
   transform: scale(0.94);
 }
 
@@ -911,7 +845,6 @@
   aspect-ratio: unset;
   flex-shrink: 0;
 }
-
 
 /* ---------------------------------------------------------------- modal */
 
@@ -994,20 +927,16 @@
   .pnt-modal-overlay {
     align-items: center;
   }
-
   .pnt-modal {
     border-radius: var(--radius-lg);
   }
-
   .pnt-compare-table {
     flex-direction: row;
   }
-
   .pnt-compare-col {
     flex: 1;
   }
 }
-
 
 /* ---------------------------------------------------------------- addons */
 
@@ -1028,10 +957,7 @@
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition:
-    border-color var(--t-fast) var(--ease),
-    background var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-addon:hover {
@@ -1058,16 +984,9 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(
-    160deg,
-    #fffdf6 0%,
-    #fbeecb 60%,
-    #f2dda3 100%
-  );
+  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
   color: var(--gold-deep);
-  box-shadow:
-    var(--depth-inset-top),
-    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
 }
 
 .pnt-addon-body {
@@ -1112,7 +1031,6 @@
   background: var(--gold);
   color: var(--on-gold);
 }
-
 
 /* -------------------------------------------------------------- summary */
 
@@ -1162,11 +1080,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4);
-  background: linear-gradient(
-    180deg,
-    #fffdf5 0%,
-    var(--gold-a08) 100%
-  );
+  background: linear-gradient(180deg, #fffdf5 0%, var(--gold-a08) 100%);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
@@ -1221,7 +1135,6 @@
   color: var(--ink-muted);
 }
 
-
 /* ----------------------------------------------------------------- fee */
 
 .pnt-fee-strip {
@@ -1230,11 +1143,7 @@
   justify-content: space-between;
   margin-top: var(--space-5);
   padding: 14px 18px;
-  background: linear-gradient(
-    180deg,
-    #262626 0%,
-    var(--black) 100%
-  );
+  background: linear-gradient(180deg, #262626 0%, var(--black) 100%);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   color: var(--white);
@@ -1271,16 +1180,13 @@
   margin-top: 1px;
 }
 
-
 /* -------------------------------------------------------- renovation closing */
 
 .pnt-closing {
   position: relative;
   margin-top: var(--space-6);
   padding: var(--space-7) var(--space-5);
-  background:
-    var(--black) url('/assets/projects/modern-interior.jpeg')
-    center/cover;
+  background: var(--black) url('/assets/projects/modern-interior.webp') center/cover;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   text-align: center;
@@ -1291,11 +1197,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(5, 5, 5, 0.75),
-    rgba(5, 5, 5, 0.9)
-  );
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0.75), rgba(5, 5, 5, 0.9));
 }
 
 .pnt-closing-eyebrow,
@@ -1320,52 +1222,63 @@
   margin-bottom: var(--space-5);
 }
 
-
 /* --------------------------------------------------------------- mobile */
 
 @media (max-width: 767px) {
   .pnt-hero {
     min-height: 340px;
   }
-
   .pnt-hero-logo {
     width: 64px;
     top: calc(var(--header-h-mobile) + var(--space-3));
   }
+  /* Reserves room for the logo (64px + its right gutter) so a longer
+     heading, like POP Ceiling & Design's, wraps before reaching it
+     instead of running underneath — Painting's own shorter title never
+     surfaced this since it never got that close on its own.
 
-  /* Reserves room for the logo on mobile so longer headings
-     wrap before reaching it instead of running underneath. */
+     Doubled-up selector (not just .pnt-hero-inner) so this reliably
+     beats components.css's own `.container { padding: 0 18px }` reset
+     at ≤420px — same specificity, but components.css loads later, so
+     the single-class version silently lost that fight.
+
+     padding-top is restated for the same reason: that .container reset
+     was already silently zeroing it (a pre-existing, previously-dormant
+     bug), which never showed up while every heading here fit on one
+     line inside the flex-end-aligned, min-height-floored .pnt-hero — but
+     the extra wrap this padding-right forces on longer titles grows the
+     content past that floor, and with no top clearance restated, the
+     grown box has nothing pushing it below the fixed header, so its
+     first line renders hidden behind it. Same clearance formula already
+     used for .pnt-hero-logo's own top offset, just above. */
   .pnt-hero .pnt-hero-inner {
-    padding-top: calc(
-      var(--header-h-mobile) + var(--space-3)
-    );
+    padding-top: calc(var(--header-h-mobile) + var(--space-3));
     padding-right: 90px;
   }
-
   .pnt-trust-row,
   .pnt-intro-trust {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .pnt-problems-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .pnt-brand-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
   .pnt-swatch-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-
-
 /* =========================================================
    Painting flow inside Services modal
    ========================================================= */
 
 .painting-modal-scope .pnt-section {
+  /* .pnt-section's own top/bottom padding (clamp 56-104px each) is meant to
+     clear a full-page hero banner above and give breathing room below —
+     the modal has no hero, just its own compact header and scroll area, so
+     that padding was showing as large blank gaps above and below the
+     category list. */
   padding-top: 0 !important;
   padding-bottom: 12px !important;
   margin-top: 0 !important;
@@ -1395,7 +1308,6 @@
   margin-top: 0 !important;
 }
 
-
 /* =========================================================
    Painting modal — mobile product card layout
    ========================================================= */
@@ -1414,6 +1326,7 @@
   .painting-modal-scope .pnt-product-swatch {
     grid-column: 1;
     grid-row: 1 / span 2;
+
     width: 40px;
     height: 40px;
   }
@@ -1421,6 +1334,7 @@
   .painting-modal-scope .pnt-product-body {
     grid-column: 2;
     grid-row: 1;
+
     width: 100%;
     min-width: 0;
   }
@@ -1442,6 +1356,7 @@
   .painting-modal-scope .pnt-product-price {
     grid-column: 2;
     grid-row: 2;
+
     margin-right: 0;
     white-space: nowrap;
   }
@@ -1449,56 +1364,40 @@
   .painting-modal-scope .pnt-option-radio {
     grid-column: 3;
     grid-row: 1 / span 2;
+
     align-self: center;
   }
 }
-
 
 /* =========================================================
    Painting modal — progress indicator colours
    ========================================================= */
 
 .painting-modal-scope .pnt-step-num {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border: 1px solid #000000 !important;
+  background: #000000;
+  color: #f1f1f3;
+  border: 1px solid #d1d5db;
 }
-
-/* CURRENT STEP = GOLD CIRCLE */
-
-.painting-modal-scope .pnt-step.current .pnt-step-num {
-  background: var(--gold) !important;
-  color: #111111 !important;
-  border-color: var(--gold) !important;
-}
-
-/* COMPLETED STEP = BLACK CIRCLE */
-
-.painting-modal-scope .pnt-step.done .pnt-step-num {
-  background: #000000 !important;
-  color: var(--gold) !important;
-  border-color: #000000 !important;
-}
-
-/* COMPLETED STEP = GOLD TICK */
-
-.painting-modal-scope .pnt-step.done .pnt-step-num svg {
-  color: var(--gold) !important;
-  stroke: var(--gold) !important;
-}
-
-/* DEFAULT LINE */
 
 .painting-modal-scope .pnt-step-line {
-  background: rgba(255, 255, 255, 0.14);
+  background: #000000;
 }
 
-/* COMPLETED LINE = GOLD */
+.painting-modal-scope .pnt-step.current .pnt-step-num {
+  background: var(--gold);
+  color: var(--on-gold);
+  border-color: var(--gold);
+}
+
+.painting-modal-scope .pnt-step.done .pnt-step-num {
+  background: var(--gold);
+  color: var(--on-gold);
+  border-color: var(--gold);
+}
 
 .painting-modal-scope .pnt-step.done .pnt-step-line {
-  background: var(--gold) !important;
+  background: var(--gold);
 }
-
 
 /* =========================================================
    Painting modal — top heading and help link colours
@@ -1515,32 +1414,3 @@
 .painting-modal-scope .pnt-help:hover {
   color: var(--gold-deep) !important;
 }
-
-
-/* =========================================================
-   PAINTING DETAILS — MATCH WATERPROOFING CONTENT WIDTH
-   ========================================================= */
-
-@media (min-width: 768px) {
-  .painting-details-container {
-    padding-left: 36px !important;
-    padding-right: 36px !important;
-  }
-}
-
-@media (max-width: 767px) {
-  .painting-details-container {
-    padding-left: 30px !important;
-    padding-right: 30px !important;
-  }
-}
-
-.painting-modal-scope .pnt-steps {
-  margin-top: -20px !important;
-  margin-bottom: 24px !important;
-}
-
-.painting-modal-scope .wizard-card {
-  transform: translateY(-10px);
-}
-

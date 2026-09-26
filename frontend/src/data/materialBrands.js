@@ -15,14 +15,14 @@
  * delete its line here — the grid reflows on its own.
  */
 export const materialBrands = [
-  { id: 'asian-paints', name: 'Asian Paints', logo: '/assets/materials/asian-paints.png', order: 1, active: true },
-  { id: 'kajaria',      name: 'Kajaria',      logo: '/assets/materials/kajaria.png',      order: 2, active: true },
-  { id: 'dr-fixit',     name: 'Dr. Fixit',    logo: '/assets/materials/dr-fixit.png',     order: 3, active: true },
-  { id: 'polycab',      name: 'Polycab',      logo: '/assets/materials/polycab.png',      order: 4, active: true },
-  { id: 'astral-pipes', name: 'Astral Pipes', logo: '/assets/materials/astral-pipes.png', order: 5, active: true },
-  { id: 'gyproc',       name: 'Gyproc',       logo: '/assets/materials/gyproc.png',       order: 6, active: true },
-  { id: 'century-ply',  name: 'Century Ply',  logo: '/assets/materials/century-ply.png',  order: 7, active: true },
-  { id: 'jaquar',       name: 'Jaquar',       logo: '/assets/materials/jaquar.png',       order: 8, active: true },
+  { id: 'asian-paints', name: 'Asian Paints', logo: '/assets/materials/asian-paints.webp', order: 1, active: true },
+  { id: 'kajaria',      name: 'Kajaria',      logo: '/assets/materials/kajaria.webp',      order: 2, active: true },
+  { id: 'dr-fixit',     name: 'Dr. Fixit',    logo: '/assets/materials/dr-fixit.webp',     order: 3, active: true },
+  { id: 'polycab',      name: 'Polycab',      logo: '/assets/materials/polycab.webp',      order: 4, active: true },
+  { id: 'astral-pipes', name: 'Astral Pipes', logo: '/assets/materials/astral-pipes.webp', order: 5, active: true },
+  { id: 'gyproc',       name: 'Gyproc',       logo: '/assets/materials/gyproc.webp',       order: 6, active: true },
+  { id: 'century-ply',  name: 'Century Ply',  logo: '/assets/materials/century-ply.webp',  order: 7, active: true },
+  { id: 'jaquar',       name: 'Jaquar',       logo: '/assets/materials/jaquar.webp',       order: 8, active: true },
 ];
 
 /** What the section renders: active brands only, in display order. */

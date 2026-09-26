@@ -15,7 +15,12 @@ export default function ProtectedRoute() {
   const location = useLocation();
 
   if (loading) {
-    return <div className="partner-loading">Checking your sign-in…</div>;
+    return (
+      <div className="pp-loading" role="status">
+        <span className="pp-spinner" aria-hidden="true" />
+        Checking your sign-in…
+      </div>
+    );
   }
 
   if (!user) {

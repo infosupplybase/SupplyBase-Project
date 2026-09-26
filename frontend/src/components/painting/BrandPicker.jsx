@@ -2,8 +2,8 @@ import Icon from '../ui/Icon';
 import { BRAND_WHY } from '../../data/paintingContent';
 
 const BRAND_LOGO = {
-  'asian-paints': '/assets/materials/asian-paints.png',
-  berger: '/assets/materials/berger-paints.jpg',
+  'asian-paints': '/assets/materials/asian-paints.webp',
+  berger: '/assets/materials/berger-paints.webp',
 };
 
 /** Two brand cards (real project logo files — see paintingContent.js's
@@ -24,7 +24,7 @@ export default function BrandPicker({ options, value, onSelect }) {
               checked={value === opt.value}
               onChange={() => onSelect(opt.value)}
             />
-            <img src={BRAND_LOGO[opt.value]} alt={opt.label} />
+            <img loading="lazy" decoding="async" src={BRAND_LOGO[opt.value]} alt={opt.label} />
             {value === opt.value && (
               <span className="pnt-brand-check" aria-hidden="true">
                 <Icon name="check" size={12} strokeWidth={3.5} />

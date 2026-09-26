@@ -28,8 +28,10 @@ export default function BottomNav() {
           end={item.end}
           className={({ isActive }) => `bottom-nav-item ${isActive ? 'active' : ''}`}
         >
-          <Icon name={item.icon} size={21} />
-          <span>{item.label}</span>
+          <span className="bottom-nav-icon" aria-hidden="true">
+            <Icon name={item.icon} size={21} />
+          </span>
+          <span className="bottom-nav-label">{item.label}</span>
         </NavLink>
       ))}
     </nav>

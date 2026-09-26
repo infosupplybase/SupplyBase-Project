@@ -17,7 +17,7 @@
 export const heroSlides = [
   {
     id: 'interior',
-    image: '/assets/hero/interior-design.png',
+    image: '/assets/hero/interior-design.webp',
     alt: 'Supplybase Interior Design Service',
     route: '/booking/interior-work',
     bookLabel: 'Book Interior Design Service',
@@ -26,7 +26,7 @@ export const heroSlides = [
   },
   {
     id: 'plumbing',
-    image: '/assets/hero/plumbing.png',
+    image: '/assets/hero/plumbing.webp',
     alt: 'Supplybase Plumbing Service',
     route: '/booking/plumbing',
     bookLabel: 'Book Plumbing Service',
@@ -34,7 +34,7 @@ export const heroSlides = [
   },
   {
     id: 'painting',
-    image: '/assets/hero/painting.png',
+    image: '/assets/hero/painting.webp',
     alt: 'Supplybase Painting Service',
     route: '/booking/painting-waterproofing',
     bookLabel: 'Book Painting and Waterproofing Service',
@@ -42,7 +42,7 @@ export const heroSlides = [
   },
   {
     id: 'electrician',
-    image: '/assets/hero/electrical.png',
+    image: '/assets/hero/electrical.webp',
     alt: 'Supplybase Electrical Service',
     route: '/booking/electrician',
     bookLabel: 'Book Electrical Service',

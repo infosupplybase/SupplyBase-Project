@@ -9,33 +9,14 @@ import {
   social,
 } from '../../data/siteConfig';
 import { activeServices } from '../../data/services';
+import useServiceCatalogue, {
+  serviceRoute,
+} from '../../hooks/useServiceCatalogue';
 import {
   telHref,
   mailtoHref,
   whatsappHref,
 } from '../../lib/contact';
-
-/**
- * Interior by Choice, Electrical and Other Services each have their own
- * richer page instead of the generic booking wizard.
- */
-function footerRoute(slug) {
-  if (slug === 'interior-by-choice') {
-    return '/interior-by-choice';
-  }
-
-  return `/services/${slug}`;
-}
-
-/*
- * Services are taken from the same source used by the rest of the website.
- */
-const footerServices = activeServices.map((s) => ({
-  id: s.slug,
-  name: s.shortName || s.name,
-  route: footerRoute(s.slug),
-  icon: s.icon,
-}));
 
 const WHATSAPP_MESSAGE =
   'Hello Supplybase, I would like to discuss my project.';
@@ -128,6 +109,13 @@ function FooterColumn({
 export default function Footer() {
   const year = new Date().getFullYear();
 
+  /*
+   * Services come from the live catalogue, the same source as the home
+   * tiles and the /services page. The static list only fills in until it
+   * arrives (or if it can't be reached) so the footer is never empty.
+   */
+  const { services: catalogue } = useServiceCatalogue(activeServices);
+
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
@@ -155,9 +143,9 @@ export default function Footer() {
 
         <div className="ft-brand">
 
-          <img
+          <img loading="lazy" decoding="async"
             className="ft-logo"
-            src="/assets/brand/logo-stacked.png"
+            src="/assets/brand/logo-stacked.webp"
             alt={`${company.name} logo`}
           />
 
@@ -231,10 +219,10 @@ export default function Footer() {
 
             <ul className="ft-list ft-list-services">
 
-              {footerServices.map((service) => (
-                <li key={service.id}>
+              {catalogue.map((service) => (
+                <li key={service.slug}>
 
-                  <Link to={service.route}>
+                  <Link to={serviceRoute(service.slug)}>
                     {service.name}
                   </Link>
 

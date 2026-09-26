@@ -22,7 +22,7 @@ export default function Quote() {
             ? `Tell us about your ${preselected.name.toLowerCase()} requirement and we will come back with an itemised quotation.`
             : 'Share your requirement and we will come back with a clear, itemised quotation — no obligation.'
         }
-        image="/assets/services/architectural-design.svg"
+        image="/assets/hero-quote.webp"
         breadcrumbs={[{ label: 'Get a Quote' }]}
       />
 

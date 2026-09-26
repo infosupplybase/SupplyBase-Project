@@ -29,7 +29,10 @@ import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
+import in.supplybase.backend.booking.dto.PartnerPayoutResponse;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
+import in.supplybase.backend.booking.dto.SetPartnerPayoutRequest;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
 import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import jakarta.validation.Valid;
@@ -151,6 +154,18 @@ public class BookingController {
         return service.assignProfessional(id, request.professionalId());
     }
 
+    /** What the assigned partner earns for this job and whether it has been paid. Admin only. */
+    @GetMapping("/api/admin/bookings/{id}/payout")
+    public PartnerPayoutResponse partnerPayout(@PathVariable Long id) {
+        return service.partnerPayout(id);
+    }
+
+    @PatchMapping("/api/admin/bookings/{id}/payout")
+    public PartnerPayoutResponse setPartnerPayout(@PathVariable Long id,
+                                                  @Valid @RequestBody SetPartnerPayoutRequest request) {
+        return service.setPartnerPayout(id, request.amountPaise(), request.paid());
+    }
+
     @PostMapping(value = "/api/admin/bookings/{id}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<BookingFileResponse> uploadFile(@PathVariable Long id,
             @RequestParam(defaultValue = "PHOTO") String kind,
@@ -164,6 +179,12 @@ public class BookingController {
     @GetMapping("/api/professional/bookings/mine")
     public List<ProfessionalBookingResponse> myAssignedBookings() {
         return service.myAssignedBookings(currentUser.require().id());
+    }
+
+    /** The signed-in partner's own earnings: earned, paid, still owed, this month. */
+    @GetMapping("/api/professional/earnings")
+    public PartnerEarningsResponse myEarnings() {
+        return service.myEarnings(currentUser.require().id());
     }
 
     @PatchMapping("/api/professional/bookings/{id}/status")

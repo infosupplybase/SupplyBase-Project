@@ -1,10 +1,11 @@
 /**
  * SUPPLYBASE PROJECTS — SERVICES DATA
  * ----------------------------------
- * Every service page on the website is generated from this file.
- * To add a new service: copy one object, change the values, and it automatically appears in
- * the home page grid, the services page, the header mega menu and the footer,
- * and gets its own page at /services/<slug>.
+ * The live list of services is the catalogue API (see hooks/useServiceCatalogue).
+ * This file is the static copy of it: the fallback the footer, mobile menu and
+ * quote form show until the API answers (or if it can't be reached), and the
+ * lookup for names by slug (getServiceBySlug). Keep it in step with the
+ * catalogue — same services, same order (featuredServiceSlugs).
  *
  * megaMenuGroup: DESIGN | CONSTRUCTION | FINISHING | MEP | SPECIALIZED
  *
@@ -17,10 +18,9 @@
  * services that don't fit the main seven (architectural-design,
  * civil-construction, furniture, fabrication, finishing) rather than
  * showing five more top-level tiles.
- * This file drives navigation only (mega menu, mobile menu); the homepage's
- * "Popular Services" grid and the /services listing read the live API
- * instead, so the two never drift apart. The rest stay `active: false`
- * rather than deleted — ready to switch back on, not rendered anywhere live.
+ * The five services that live under Other Services stay `active: false`
+ * here rather than deleted — they are not top-level services, so they must
+ * not appear in any list built from this file.
  * Every helper below (and every component that lists services) filters on
  * that flag; a service object with no `active` field is active by default.
  */
@@ -186,8 +186,8 @@ export const services = [
     cardText: 'A catalogue of ready interior designs by space — pick one and book a ₹99 home visit.',
     summary:
       'Not every project starts from a blank page. Browse finished designs by space, pick the one closest to what you want, and book a paid home visit — the fee is adjusted into your final project cost if you go ahead.',
-    heroImage: '/assets/projects/modern-interior.jpeg',
-    gallery: ['/assets/projects/modern-interior.jpeg'],
+    heroImage: '/assets/projects/modern-interior.webp',
+    gallery: ['/assets/projects/modern-interior.webp'],
     subServices: [],
     highlights: [],
     process: [],
@@ -289,8 +289,8 @@ export const services = [
     cardText: 'POP, gypsum and designer false ceilings with cove and LED lighting.',
     summary:
       'A false ceiling does more than hide wiring — it sets the lighting and the proportion of the room. We execute POP and gypsum ceilings, designer profiles, wall moulding, cornice and partition work, with the LED cove and light points planned into the design from the start.',
-    heroImage: '/assets/pop-ceiling/hero/living-room-cove.jpg',
-    gallery: ['/assets/pop-ceiling/hero/living-room-cove.jpg', '/assets/pop-ceiling/full-home/ceiling-design.jpg'],
+    heroImage: '/assets/pop-ceiling/hero/living-room-cove.webp',
+    gallery: ['/assets/pop-ceiling/hero/living-room-cove.webp', '/assets/pop-ceiling/full-home/ceiling-design.webp'],
     subServices: [
       { name: 'POP Ceiling', text: 'Traditional plaster of Paris ceilings with a smooth, paint-ready finish.' },
       { name: 'Gypsum Ceiling', text: 'Gypsum board ceilings on GI framing — fast, clean and stable.' },
@@ -332,8 +332,8 @@ export const services = [
     cardText: 'Complete wiring, DB and panel work, lighting, switches and commercial electrical.',
     summary:
       'Electrical work is a safety job first and a convenience job second. We carry out complete concealed wiring, new installations, DB and panel work, lighting circuits and switch points — planned around how you will actually use the space, and executed with proper earthing and protection.',
-    heroImage: '/assets/services/electrician/hero.jpeg',
-    gallery: ['/assets/services/electrician/home-electrical-services.jpeg', '/assets/services/electrician/fan-installation.jpeg', '/assets/services/electrician/light-installation.jpeg', '/assets/services/electrician/switch-socket-installation.jpeg', '/assets/services/electrician/wiring-rewiring-services.jpeg', '/assets/services/electrician/mcb-db-installation.jpeg'],
+    heroImage: '/assets/services/electrician/hero.webp',
+    gallery: ['/assets/services/electrician/home-electrical-services.webp', '/assets/services/electrician/fan-installation.webp', '/assets/services/electrician/light-installation.webp', '/assets/services/electrician/switch-socket-installation.webp', '/assets/services/electrician/wiring-rewiring-services.webp', '/assets/services/electrician/mcb-db-installation.webp'],
     subServices: [
       { name: 'Complete Wiring', text: 'Full concealed wiring for new homes, offices and shops.' },
       { name: 'New Installation', text: 'New points, circuits and load planning for renovations and extensions.' },
@@ -562,8 +562,19 @@ export const services = [
    still show its name and details, not "unknown service". */
 export const getServiceBySlug = (slug) => services.find((s) => s.slug === slug);
 
-/* The list any current, live navigation or picker should render from. */
-export const activeServices = services.filter((s) => s.active !== false);
+/* The list any current, live navigation or picker should render from, in the
+   same order as featuredServiceSlugs (and the live catalogue) — services[]
+   itself lists Electrician before Plumber, which used to make the footer,
+   menu and quote form disagree with the home page. Anything not featured
+   sorts last. */
+const featuredRank = (slug) => {
+  const index = featuredServiceSlugs.indexOf(slug);
+  return index === -1 ? featuredServiceSlugs.length : index;
+};
+
+export const activeServices = services
+  .filter((s) => s.active !== false)
+  .sort((a, b) => featuredRank(a.slug) - featuredRank(b.slug));
 
 /* Kept in featuredServiceSlugs order, not in services[] order, so the list
    above controls which service leads. A slug that no longer exists, or is

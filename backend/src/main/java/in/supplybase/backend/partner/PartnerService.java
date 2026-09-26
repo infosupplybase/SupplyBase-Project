@@ -23,6 +23,7 @@ import in.supplybase.backend.booking.Booking;
 import in.supplybase.backend.booking.BookingRepository;
 import in.supplybase.backend.booking.BookingRepository.PartnerJobCount;
 import in.supplybase.backend.booking.BookingStatus;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
@@ -191,7 +192,8 @@ public class PartnerService {
         long active = jobs.stream().filter(b -> !b.getStatus().isFinal()).count();
         long completed = jobs.stream().filter(b -> b.getStatus() == BookingStatus.WORK_COMPLETED).count();
         return PartnerDetailResponse.from(profile, tradeLabels().get(profile.getPrimaryTrade()),
-                active, completed, jobs.stream().map(PartnerJobResponse::from).toList());
+                active, completed, PartnerEarningsResponse.from(jobs, Instant.now()),
+                jobs.stream().map(PartnerJobResponse::from).toList());
     }
 
     /** partnerId -> {active, completed}. Cancelled jobs count as neither. */

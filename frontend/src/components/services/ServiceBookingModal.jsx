@@ -57,19 +57,12 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [selectedInteriorSpace, setSelectedInteriorSpace] = useState(null);
   const [selectedInteriorDesign, setSelectedInteriorDesign] = useState(null);
   const [showInteriorBooking, setShowInteriorBooking] = useState(false);
-  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] =
-    useState(null);
-  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] =
-    useState(null);
-
+  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useState(null);
+  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useState(null);
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useState(null);
-  const [selectedPaintingCategoryName, setSelectedPaintingCategoryName] =
-    useState(null);
-
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useState(null);
   const [plumbingView, setPlumbingView] = useState('category');
-  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] =
-    useState(null);
+  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useState(null);
   const [selectedOtherService, setSelectedOtherService] = useState(null);
 
   const modalScrollRef = useRef(null);
@@ -102,13 +95,14 @@ export default function ServiceBookingModal({ service, onClose }) {
         className={`
           relative
           w-full
-          ${
-            service.slug === 'interior-by-choice'
-              ? 'max-w-[1000px]'
-              : service.slug === 'interior-design'
-                ? 'max-w-[1000px]'
-                : 'max-w-[500px]'
-          }
+
+         ${service.slug === 'interior-by-choice'
+  ? 'max-w-[1000px]'
+  : service.slug === 'interior-design'
+    ? 'max-w-[1000px]'
+    : 'max-w-[500px]'
+}
+
           max-h-[88vh]
           h-auto
           overflow-hidden
@@ -134,19 +128,25 @@ export default function ServiceBookingModal({ service, onClose }) {
             !right-5
             !top-5
             !z-50
+
             !flex
             !h-10
             !w-10
             !items-center
             !justify-center
+
             !rounded-full
             !border
             !border-gray-200
             !bg-white
+
             !text-xl
             !text-gray-700
+
             !shadow-sm
+
             transition
+
             hover:!bg-gray-100
           "
           aria-label="Close booking modal"
@@ -179,6 +179,17 @@ export default function ServiceBookingModal({ service, onClose }) {
           >
             {service.name}
           </h2>
+
+          {/* <p
+            className="
+              mt-2
+              text-sm
+              leading-6
+              text-gray-500
+            "
+          >
+            {service.description}
+          </p> */}
         </div>
 
         <div className="my-6 h-px bg-gray-200" />
@@ -190,19 +201,24 @@ export default function ServiceBookingModal({ service, onClose }) {
           className="
             max-h-[calc(88vh-190px)]
             overflow-y-auto
+
             px-6
             pb-10
             md:pb-12
+
             max-sm:flex-1
             max-sm:min-h-0
             max-sm:max-h-none
+
             [scrollbar-width:none]
             [&::-webkit-scrollbar]:hidden
           "
         >
           {service.slug === 'interior-by-choice' ? (
             <>
+              {/* ========================================= */}
               {/* DESIGN DETAIL */}
+              {/* ========================================= */}
 
               {showInteriorBooking ? (
                 <InteriorBooking
@@ -215,71 +231,81 @@ export default function ServiceBookingModal({ service, onClose }) {
                   }}
                   onStepChange={scrollModalToTop}
                 />
-              ) : selectedInteriorSpace && selectedInteriorDesign ? (
+              ) : selectedInteriorSpace &&
+                selectedInteriorDesign ? (
                 <div className="pb-2 md:pb-8">
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm mb-4"
-                    onClick={() => {
-                      setSelectedInteriorDesign(null);
-                      scrollModalToTop();
-                    }}
-                  >
-                    BACK
-                  </button>
+                  {(() => {
+                    const design =
+                      getDesignBySlug(
+                        selectedInteriorSpace,
+                        selectedInteriorDesign
+                      );
 
-                  <div
-                    className="
-                      grid
-                      grid-cols-1
-                      gap-6
-                      md:grid-cols-2
-                    "
-                  >
-                    {/* DESIGN IMAGE */}
+                    const space =
+                      interiorSpaces.find(
+                        (item) =>
+                          item.slug ===
+                          selectedInteriorSpace
+                      );
 
-                    <div className="overflow-hidden rounded-xl">
-                      <img
-                        src={
-                          getDesignBySlug(
-                            selectedInteriorSpace,
-                            selectedInteriorDesign
-                          )?.image
-                        }
-                        alt={
-                          getDesignBySlug(
-                            selectedInteriorSpace,
-                            selectedInteriorDesign
-                          )?.name
-                        }
-                        className="h-auto max-h-[420px] w-full object-cover"
-                      />
-                    </div>
+                    if (!design) {
+                      return (
+                        <p className="ibc-empty">
+                          Design details could not be loaded.
+                        </p>
+                      );
+                    }
 
-                    {/* DESIGN INFORMATION */}
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm mb-4"
+                          onClick={() => {
+                            setSelectedInteriorDesign(null);
 
-                    <div>
-                      {(() => {
-                        const design = getDesignBySlug(
-                          selectedInteriorSpace,
-                          selectedInteriorDesign
-                        );
+                            scrollModalToTop();
+                          }}
+                        >
+                          {/* <Icon
+                            name="arrow-left"
+                            size={16}
+                          /> */}
 
-                        const space = interiorSpaces.find(
-                          (item) =>
-                            item.slug === selectedInteriorSpace
-                        );
+                          BACK
+                        </button>
 
-                        if (!design) {
-                          return (
-                            <p className="ibc-empty">
-                              Design details could not be loaded.
-                            </p>
-                          );
-                        }
+                        <div
+                          className="
+                            grid
+                            grid-cols-1
+                            gap-6
+                            md:grid-cols-2
+                          "
+                        >
+                          {/* DESIGN IMAGE */}
 
-                        return (
-                          <>
+                          <div
+                            className="
+                              overflow-hidden
+                              rounded-xl
+                            "
+                          >
+                            <img loading="lazy" decoding="async"
+                              src={design.image}
+                              alt={design.name}
+                              className="
+                                h-auto
+                                max-h-[420px]
+                                w-full
+                                object-cover
+                              "
+                            />
+                          </div>
+
+                          {/* DESIGN INFORMATION */}
+
+                          <div>
                             <p
                               className="
                                 mb-2
@@ -343,28 +369,35 @@ export default function ServiceBookingModal({ service, onClose }) {
                             <button
                               type="button"
                               className="
-                                btn
-                                btn-primary
-                                mt-6
-                                w-full
-                                md:w-auto
-                              "
+    btn
+    btn-primary
+    mt-6
+    w-full
+    md:w-auto
+  "
                               onClick={() => {
                                 setShowInteriorBooking(true);
                                 scrollModalToTop();
                               }}
                             >
                               CUSTOMISE THIS DESIGN
+
+                              {/* <Icon
+                                name="arrow-right"
+                                size={17}
+                              /> */}
                             </button>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               ) : selectedInteriorSpace ? (
                 <>
+                  {/* ========================================= */}
                   {/* DESIGN GALLERY */}
+                  {/* ========================================= */}
 
                   <div className="pb-2 md:pb-8">
                     <button
@@ -373,111 +406,130 @@ export default function ServiceBookingModal({ service, onClose }) {
                       onClick={() => {
                         setSelectedInteriorSpace(null);
                         setSelectedInteriorDesign(null);
+
                         scrollModalToTop();
                       }}
                     >
+                      {/* <Icon
+                        name="arrow-left"
+                        size={16}
+                      /> */}
+
                       BACK
                     </button>
 
                     {/* SPACE FILTER */}
 
                     <div className="ibc-filter-row">
-                      {interiorSpaces.map((space) => (
-                        <button
-                          key={space.slug}
-                          type="button"
-                          className={`ibc-filter-chip ${
-                            space.slug === selectedInteriorSpace
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            className={`ibc-filter-chip ${space.slug ===
+                              selectedInteriorSpace
                               ? 'active'
                               : ''
-                          }`}
-                          onClick={() => {
-                            setSelectedInteriorSpace(space.slug);
-                            setSelectedInteriorDesign(null);
-                            scrollModalToTop();
-                          }}
-                        >
-                          {space.name}
-                        </button>
-                      ))}
+                              }`}
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
+
+                              setSelectedInteriorDesign(
+                                null
+                              );
+
+                              scrollModalToTop();
+                            }}
+                          >
+                            {space.name}
+                          </button>
+                        )
+                      )}
                     </div>
 
                     {/* DESIGN CARDS */}
 
-                    {getDesignsBySpace(selectedInteriorSpace).length ===
-                    0 ? (
+                    {getDesignsBySpace(
+                      selectedInteriorSpace
+                    ).length === 0 ? (
                       <p className="ibc-empty">
-                        More designs for this space are on the way. Book
-                        a home visit and our designer will bring options
-                        for you.
+                        More designs for this space
+                        are on the way. Book a home
+                        visit and our designer will
+                        bring options for you.
                       </p>
                     ) : (
                       <div className="ibc-design-grid">
-                        {getDesignsBySpace(selectedInteriorSpace).map(
-                          (design) => (
-                            <div
-                              key={design.slug}
-                              className="ibc-design-card"
+                        {getDesignsBySpace(
+                          selectedInteriorSpace
+                        ).map((design) => (
+                          <div
+                            key={design.slug}
+                            className="ibc-design-card"
+                          >
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-media
+                                !block
+                                !w-full
+                                !border-0
+                                !p-0
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
+
+                                scrollModalToTop();
+                              }}
                             >
-                              <button
-                                type="button"
-                                className="
-                                  ibc-design-media
-                                  !block
-                                  !w-full
-                                  !border-0
-                                  !p-0
-                                "
-                                onClick={() => {
-                                  setSelectedInteriorDesign(
-                                    design.slug
-                                  );
-                                  scrollModalToTop();
-                                }}
-                              >
-                                <img
-                                  src={design.image}
-                                  alt={design.name}
-                                  loading="lazy"
-                                />
-                              </button>
+                              <img
+                                src={design.image}
+                                alt={design.name}
+                                loading="lazy"
+                              />
+                            </button>
 
-                              <button
-                                type="button"
-                                className="
-                                  ibc-design-body
-                                  !w-full
-                                  !border-0
-                                  !text-left
-                                "
-                                onClick={() => {
-                                  setSelectedInteriorDesign(
-                                    design.slug
-                                  );
-                                  scrollModalToTop();
-                                }}
-                              >
-                                <span className="ibc-design-name">
-                                  {design.name}
-                                </span>
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-body
+                                !w-full
+                                !border-0
+                                !text-left
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
 
-                                <span className="ibc-design-price">
-                                  ₹{design.pricePerSqft} / sq.ft.
-                                </span>
-                              </button>
-                            </div>
-                          )
-                        )}
+                                scrollModalToTop();
+                              }}
+                            >
+                              <span className="ibc-design-name">
+                                {design.name}
+                              </span>
+
+                              <span className="ibc-design-price">
+                                ₹{design.pricePerSqft}{' '}
+                                / sq.ft.
+                              </span>
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
 
                     <button
                       type="button"
                       className="
-                        btn
-                        btn-primary
-                        ibc-customise-cta
-                      "
+    btn
+    btn-primary
+    ibc-customise-cta
+  "
                       onClick={() => {
                         setSelectedInteriorDesign(null);
                         setShowInteriorBooking(true);
@@ -485,12 +537,19 @@ export default function ServiceBookingModal({ service, onClose }) {
                       }}
                     >
                       Customise Your Design
+
+                      {/* <Icon
+                        name="arrow-right"
+                        size={17}
+                      /> */}
                     </button>
                   </div>
                 </>
               ) : (
                 <>
+                  {/* ========================================= */}
                   {/* CHOOSE SPACE */}
+                  {/* ========================================= */}
 
                   <div className="pb-2 md:pb-8">
                     <div
@@ -510,7 +569,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                           text-gray-900
                         "
                       >
-                        Book a Home Visit at just ₹{HOME_VISIT_FEE}
+                        Book a Home Visit at just ₹
+                        {HOME_VISIT_FEE}
                       </p>
 
                       <p
@@ -521,7 +581,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                           text-gray-600
                         "
                       >
-                        Get expert advice, measurement and a custom
+                        Get expert advice,
+                        measurement and a custom
                         design as per your choice.
                       </p>
                     </div>
@@ -545,62 +606,73 @@ export default function ServiceBookingModal({ service, onClose }) {
                         sm:grid-cols-2
                       "
                     >
-                      {interiorSpaces.map((space) => (
-                        <button
-                          key={space.slug}
-                          type="button"
-                          onClick={() => {
-                            setSelectedInteriorSpace(space.slug);
-                            setSelectedInteriorDesign(null);
-                            scrollModalToTop();
-                          }}
-                          className="
-                            group
-                            relative
-                            overflow-hidden
-                            rounded-xl
-                            text-left
-                          "
-                        >
-                          <img
-                            src={space.image}
-                            alt={space.name}
-                            className="
-                              h-36
-                              w-full
-                              object-cover
-                              transition
-                              duration-300
-                              group-hover:scale-105
-                              sm:h-44
-                            "
-                          />
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
 
-                          <div
-                            className="
-                              absolute
-                              inset-0
-                              bg-gradient-to-t
-                              from-black/70
-                              via-black/10
-                              to-transparent
-                            "
-                          />
+                              setSelectedInteriorDesign(
+                                null
+                              );
 
-                          <span
+                              scrollModalToTop();
+                            }}
                             className="
-                              absolute
-                              bottom-3
-                              left-4
-                              text-base
-                              font-semibold
-                              text-white
+                              group
+                              relative
+                              overflow-hidden
+                              rounded-xl
+                              text-left
                             "
                           >
-                            {space.name}
-                          </span>
-                        </button>
-                      ))}
+                            <img loading="lazy" decoding="async"
+                              src={space.image}
+                              alt={space.name}
+                              className="
+                                h-36
+                                w-full
+                                object-cover
+
+                                transition
+                                duration-300
+
+                                group-hover:scale-105
+
+                                sm:h-44
+                              "
+                            />
+
+                            <div
+                              className="
+                                absolute
+                                inset-0
+                                bg-gradient-to-t
+                                from-black/70
+                                via-black/10
+                                to-transparent
+                              "
+                            />
+
+                            <span
+                              className="
+                                absolute
+                                bottom-3
+                                left-4
+                                text-base
+                                font-semibold
+                                text-white
+                              "
+                            >
+                              {space.name}
+                            </span>
+                          </button>
+                        )
+                      )}
                     </div>
                   </div>
                 </>
@@ -651,7 +723,6 @@ export default function ServiceBookingModal({ service, onClose }) {
                 <PaintingFlow
                   modal={true}
                   flowSlug={selectedPaintingFlow}
-                  paintingCategoryName={selectedPaintingCategoryName}
                   onBackToCategories={() => {
                     setSelectedPaintingFlow(null);
                     scrollModalToTop();
@@ -663,9 +734,8 @@ export default function ServiceBookingModal({ service, onClose }) {
               <div className="painting-modal-scope">
                 <PaintingCategory
                   modal={true}
-                  onSelectFlow={(flowSlug, categoryName) => {
+                  onSelectFlow={(flowSlug) => {
                     setSelectedPaintingFlow(flowSlug);
-                    setSelectedPaintingCategoryName(categoryName);
                     scrollModalToTop();
                   }}
                 />
@@ -673,97 +743,97 @@ export default function ServiceBookingModal({ service, onClose }) {
             )
           ) : service.slug === 'plumbing' ? (
             <div className="plumbing-modal-scope">
-              {plumbingView === 'category' ? (
-                <PlumbingCategory
-                  modal={true}
-                  onSelectTab={(tabSlug) => {
-                    setSelectedPlumbingTab(tabSlug);
-                    setPlumbingView('tab');
-                    scrollModalToTop();
-                  }}
-                  onSelectConsultation={() => {
-                    setSelectedPlumbingConsultation(null);
-                    setPlumbingView('consultations');
-                    scrollModalToTop();
-                  }}
-                />
-              ) : plumbingView === 'tab' ? (
-                <PlumbingTab
-                  modal={true}
-                  tabSlug={selectedPlumbingTab}
-                  onBackToCategories={() => {
-                    setSelectedPlumbingTab(null);
-                    setPlumbingView('category');
-                    scrollModalToTop();
-                  }}
-                  onOpenConsultation={() => {
-                    setSelectedPlumbingConsultation(null);
-                    setPlumbingView('consultations');
-                    scrollModalToTop();
-                  }}
-                  onViewCart={() => {
-                    setPlumbingView('cart');
-                    scrollModalToTop();
-                  }}
-                />
-              ) : plumbingView === 'cart' ? (
-                <PlumbingCart
-                  modal={true}
-                  onBackToServices={() => {
-                    setPlumbingView(
-                      selectedPlumbingTab ? 'tab' : 'category'
-                    );
-                    scrollModalToTop();
-                  }}
-                  onCheckout={() => {
-                    setPlumbingView('checkout');
-                    scrollModalToTop();
-                  }}
-                />
-              ) : plumbingView === 'checkout' ? (
-                <PlumbingCheckout
-                  modal={true}
-                  onBackToCart={() => {
-                    setPlumbingView('cart');
-                    scrollModalToTop();
-                  }}
-                  onStepChange={scrollModalToTop}
-                  onBackToServices={() => {
-                    setSelectedPlumbingTab(null);
-                    setPlumbingView('category');
-                    scrollModalToTop();
-                  }}
-                />
-              ) : plumbingView === 'consultations' ? (
-                <PlumbingConsultationList
-                  modal={true}
-                  onBackToCategories={() => {
-                    setPlumbingView('category');
-                    scrollModalToTop();
-                  }}
-                  onSelectConsultationType={(typeSlug) => {
-                    setSelectedPlumbingConsultation(typeSlug);
-                    setPlumbingView('consultation-book');
-                    scrollModalToTop();
-                  }}
-                />
-              ) : plumbingView === 'consultation-book' ? (
-                <PlumbingConsultationBook
-                  modal={true}
-                  typeSlug={selectedPlumbingConsultation}
-                  onBackToConsultations={() => {
-                    setSelectedPlumbingConsultation(null);
-                    setPlumbingView('consultations');
-                    scrollModalToTop();
-                  }}
-                  onStepChange={scrollModalToTop}
-                  onBackToServices={() => {
-                    setSelectedPlumbingConsultation(null);
-                    setPlumbingView('category');
-                    scrollModalToTop();
-                  }}
-                />
-              ) : null}
+            {plumbingView === 'category' ? (
+              <PlumbingCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setSelectedPlumbingTab(tabSlug);
+                  setPlumbingView('tab');
+                  scrollModalToTop();
+                }}
+                onSelectConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'tab' ? (
+              <PlumbingTab
+                modal={true}
+                tabSlug={selectedPlumbingTab}
+                onBackToCategories={() => {
+                  setSelectedPlumbingTab(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+                onOpenConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setPlumbingView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'cart' ? (
+              <PlumbingCart
+                modal={true}
+                onBackToServices={() => {
+                  setPlumbingView(
+                    selectedPlumbingTab ? 'tab' : 'category'
+                  );
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setPlumbingView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'checkout' ? (
+              <PlumbingCheckout
+                modal={true}
+                onBackToCart={() => {
+                  setPlumbingView('cart');
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingTab(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultations' ? (
+              <PlumbingConsultationList
+                modal={true}
+                onBackToCategories={() => {
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+                onSelectConsultationType={(typeSlug) => {
+                  setSelectedPlumbingConsultation(typeSlug);
+                  setPlumbingView('consultation-book');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultation-book' ? (
+              <PlumbingConsultationBook
+                modal={true}
+                typeSlug={selectedPlumbingConsultation}
+                onBackToConsultations={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
             </div>
           ) : service.slug === 'other-services' ? (
             selectedOtherService ? (

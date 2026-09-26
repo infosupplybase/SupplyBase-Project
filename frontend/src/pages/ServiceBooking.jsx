@@ -248,30 +248,29 @@ const stageQuestions = useMemo(() => {
   }
 
   const usable = form.questions
-  .filter(
-    (q) =>
-      q &&
-      q.inputType !== 'FILE' &&
-      !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-        String(q.key || '').startsWith(prefix)
-      )
-  )
-  .filter((question, index, questions) => {
-    // Remove exact duplicate questions returned by the backend.
-    // Same key + same question text = same question.
-    return (
-      index ===
-      questions.findIndex(
-        (q) =>
-          q.key === question.key &&
-          q.text === question.text
-      )
-    );
-  })
-  .map((q, index) => ({
-    ...q,
-    _questionId: `${q.key}-${index}`,
-  }));
+    .filter(
+      (q) =>
+        q &&
+        q.inputType !== 'FILE' &&
+        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+          String(q.key || '').startsWith(prefix)
+        )
+    )
+    // The catalogue can hold the same question twice (Waterproofing asks
+    // "Tell us anything else about your work." at step 3 and again at step 6,
+    // both answering the one `notes` key). Same key and same wording means the
+    // same question, so it is asked once — the first one is kept.
+    .filter(
+      (question, index, questions) =>
+        index ===
+        questions.findIndex(
+          (q) => q.key === question.key && q.text === question.text
+        )
+    )
+    .map((q, index) => ({
+      ...q,
+      _questionId: `${q.key}-${index}`,
+    }));
 
   const service = usable.filter(
     (q) => q.key === 'service_needed'

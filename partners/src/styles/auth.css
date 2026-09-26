@@ -345,3 +345,97 @@
     gap: 16px;
   }
 }
+
+/* Moved from partner.css: the apply form's trade <select>, the tall apply
+   card and its small print. */
+/* ============================================================
+   AUTH EXTRAS
+   ============================================================ */
+
+.auth-card .auth-field select {
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 44px;
+  border: 1px solid var(--auth-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 15px;
+  color: var(--auth-text);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+
+.auth-card .auth-field select:focus {
+  outline: none;
+  border-color: var(--auth-gold);
+  background: rgba(245, 208, 51, 0.05);
+  box-shadow: 0 0 0 3px rgba(245, 208, 51, 0.16);
+}
+
+.auth-card .auth-field.error select {
+  border-color: #c24545;
+}
+
+.auth-card .auth-field select option {
+  color: #1a1a1a;
+  background: #fff;
+}
+
+.auth-select-caret {
+  position: absolute;
+  right: 15px;
+  color: var(--auth-text-mute);
+  pointer-events: none;
+}
+
+.auth-card-tall {
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.partner-auth-note {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(245, 245, 245, 0.66); /* --auth-text-mute is too faint for a sentence */
+}
+
+/* New-password strength (apply form): four segments that fill and change
+   colour as the password gets stronger, with the reason in words. */
+.pw-strength {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: -6px;
+  font-size: 0.82rem;
+  color: rgba(245, 245, 245, 0.72);
+}
+
+.pw-strength-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.pw-strength-bar span {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.2s ease;
+}
+
+.pw-strength[data-score='0'] .pw-strength-text { color: #ff9b9b; }
+.pw-strength[data-score='1'] .pw-strength-bar span:nth-child(-n + 1) { background: #e0674f; }
+.pw-strength[data-score='2'] .pw-strength-bar span:nth-child(-n + 2) { background: #e3a13b; }
+.pw-strength[data-score='3'] .pw-strength-bar span:nth-child(-n + 3) { background: #9ccc65; }
+.pw-strength[data-score='4'] .pw-strength-bar span { background: #4cc38a; }
+
+.auth-card .login-meta .checkbox-row {
+  min-height: 44px;
+}

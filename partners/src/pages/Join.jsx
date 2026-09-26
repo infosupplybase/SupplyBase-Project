@@ -34,6 +34,42 @@ const emptyForm = {
 const isValidPhone = (value) =>
   /^[6-9]\d{9}$/.test(String(value).replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
 
+const COMMON_PASSWORDS = ['password', '12345678', '123456789', 'qwerty123', 'supplybase', 'iloveyou', 'abcd1234'];
+
+/**
+ * Why a new password is not good enough, or '' when it is. The API only asks
+ * for 8–72 characters; a partner account opens customers' phone numbers and
+ * addresses, so the portal asks for a little more: letters and a number, and
+ * nothing a stranger could guess from the rest of the form.
+ */
+function passwordProblem(password, form) {
+  if (!password) return 'Please choose a password';
+  if (password.length < 8) return 'Use at least eight characters';
+  if (password.length > 72) return 'Use 72 characters or fewer';
+  if (!/[a-z]/i.test(password) || !/\d/.test(password)) return 'Use both letters and numbers';
+  const lower = password.toLowerCase();
+  if (COMMON_PASSWORDS.some((common) => lower.includes(common))) return 'That password is too easy to guess';
+  const phone = String(form.phone || '').replace(/\D/g, '').slice(-10);
+  if (phone.length >= 6 && lower.includes(phone.slice(-6))) return "Don't use your phone number in your password";
+  const emailName = String(form.email || '').split('@')[0].toLowerCase();
+  if (emailName.length >= 4 && lower.includes(emailName)) return "Don't use your email address in your password";
+  const firstName = String(form.fullName || '').trim().split(/\s+/)[0].toLowerCase();
+  if (firstName.length >= 4 && lower.includes(firstName)) return "Don't use your name in your password";
+  return '';
+}
+
+/** 0–4 for the strength bar. */
+function passwordScore(password) {
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+  if (/[a-z]/i.test(password) && /\d/.test(password)) score += 1;
+  if (/[^a-z0-9]/i.test(password) || (/[a-z]/.test(password) && /[A-Z]/.test(password))) score += 1;
+  return score;
+}
+
+const STRENGTH = ['Too weak', 'Weak', 'Okay', 'Strong', 'Very strong'];
+
 /**
  * One field of the dark card: label, icon, input, error.
  *
@@ -105,8 +141,8 @@ export default function Join() {
       next.email = 'Please enter a valid email address';
     if (!form.phone.trim()) next.phone = 'Please enter your phone number';
     else if (!isValidPhone(form.phone)) next.phone = 'Enter a 10-digit mobile number';
-    if (!form.password) next.password = 'Please choose a password';
-    else if (form.password.length < 8) next.password = 'Use at least eight characters';
+    const weak = passwordProblem(form.password, form);
+    if (weak) next.password = weak;
     if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
     if (!form.primaryTrade) next.primaryTrade = 'Please choose the work you do';
     const years = Number(form.experienceYears);
@@ -277,8 +313,10 @@ export default function Join() {
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
                   onChange={update('password')}
-                  placeholder="At least eight characters"
+                  placeholder="Letters and numbers, 8+"
                   autoComplete="new-password"
+                  maxLength={72}
+                  aria-describedby="pj-strength"
                 />
                 <button
                   type="button"
@@ -298,20 +336,35 @@ export default function Join() {
                   onChange={update('confirm')}
                   placeholder="Type it once more"
                   autoComplete="new-password"
+                  maxLength={72}
                 />
               </Field>
             </div>
+
+            {form.password && (
+              <div id="pj-strength" className="pw-strength" data-score={passwordProblem(form.password, form) ? 0 : passwordScore(form.password)}>
+                <span className="pw-strength-bar" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </span>
+                <span className="pw-strength-text">
+                  {passwordProblem(form.password, form) || `${STRENGTH[passwordScore(form.password)]} password`}
+                </span>
+              </div>
+            )}
 
             <div className="login-meta">
               <label className="checkbox-row">
                 <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
                 <span>
                   I agree to the{' '}
-                  <a href={`${SITE_URL}/terms`} target="_blank" rel="noreferrer" className="auth-inline-link">
+                  <a href={`${SITE_URL}/terms`} target="_blank" rel="noopener noreferrer" className="auth-inline-link">
                     Terms
                   </a>{' '}
                   &amp;{' '}
-                  <a href={`${SITE_URL}/privacy-policy`} target="_blank" rel="noreferrer" className="auth-inline-link">
+                  <a href={`${SITE_URL}/privacy-policy`} target="_blank" rel="noopener noreferrer" className="auth-inline-link">
                     Privacy Policy
                   </a>
                 </span>

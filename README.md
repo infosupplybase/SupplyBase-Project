@@ -102,11 +102,11 @@ You should almost never need to touch a component to change content on the websi
 |---|---|
 | `/` | Home |
 | `/services` | All services |
-| `/services/:slug` | Service detail — one template, all 10 services |
+| `/services/:slug` | One service — a site-visit booking form, or (Painting, Plumbing, Waterproofing, POP, Electrical, Interior, Other Services) its own category page |
 | `/projects` | Projects with category filtering |
 | `/projects/:slug` | Project detail |
 | `/materials` | Materials and brands we use |
-| `/book` | Book a site visit (`?type=service` or `?type=project`) |
+| `/book` | Redirects to `/services` (every booking starts from a service) |
 | `/about` | About Us |
 | `/contact` | Contact + enquiry form |
 | `/quote` | Get a Quote (`?service=<slug>` pre-selects a service) |

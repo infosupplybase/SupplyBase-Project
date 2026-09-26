@@ -1057,14 +1057,16 @@
     opacity: 0.60;
   }
 
-  /* Moves the "WHAT WE DO" box down and left-of-center over the photo */
+  /* Moves the "WHAT WE DO" box down and left-of-center over the photo.
+     The box is centred on the 33% line, but never allowed to start left of
+     the 20px page gutter: `left: 33%` + `translateX(-50%)` on its own pushed
+     the box (and its text) off the left edge on every screen between 721px
+     and about 1180px wide — tablets, small laptops, a resized window. */
   .page-hero-inner {
     position: absolute;
 
-    left: 33%;
+    left: max(20px, calc(33% - min(780px, 100% - 40px) / 2));
     bottom: 45px;
-
-    transform: translateX(-50%);
 
     z-index: 2;
 
