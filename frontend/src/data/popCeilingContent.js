@@ -33,7 +33,7 @@
  *   Plumbing's and Painting's line items.
  */
 
-export const POP_HERO_IMAGE = '/assets/pop-ceiling/hero/living-room-cove.jpg';
+export const POP_HERO_IMAGE = '/assets/pop-ceiling/hero/living-room-cove.webp';
 
 export const popOverviewIntro = {
   eyebrow: 'POP & GYPSUM',
@@ -159,7 +159,7 @@ export const popFlows = {
     intro: {
       eyebrow: 'PROFESSIONAL',
       heading: 'Transform your entire home with elegant POP ceilings.',
-      image: '/assets/pop-ceiling/full-home/ceiling-design.jpg',
+      image: '/assets/pop-ceiling/full-home/ceiling-design.webp',
       points: [
         { icon: 'sparkle', label: 'Modern Designs' },
         { icon: 'award', label: 'Premium Finish' },

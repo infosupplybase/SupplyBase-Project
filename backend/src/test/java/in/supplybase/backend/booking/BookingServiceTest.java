@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -500,6 +501,185 @@ class BookingServiceTest {
                     .isEqualTo(HttpStatus.BAD_REQUEST);
 
             verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("finishing a job stamps when it was completed, once")
+        void completingStampsTheCompletionTime() {
+            Booking booking = Booking.builder().id(1L).status(BookingStatus.WORK_IN_PROGRESS)
+                    .assignedProfessional(User.builder().id(5L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            assertThat(booking.getCompletedAt()).isNull();
+            service.advanceOwnBookingStatus(1L, BookingStatus.WORK_COMPLETED, 5L);
+
+            assertThat(booking.getCompletedAt()).isNotNull();
+            Instant first = booking.getCompletedAt();
+            booking.setStatus(BookingStatus.WORK_COMPLETED); // e.g. a repeated save
+            assertThat(booking.getCompletedAt()).isEqualTo(first);
+        }
+
+        @Test
+        @DisplayName("a partner's own job response carries their payout, and only theirs")
+        void aJobCarriesItsOwnPayout() {
+            Booking booking = Booking.builder().id(1L).status(BookingStatus.WORK_COMPLETED)
+                    .partnerPayoutPaise(150000L).build();
+            when(bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(5L)).thenReturn(List.of(booking));
+
+            ProfessionalBookingResponse job = service.myAssignedBookings(5L).get(0);
+
+            assertThat(job.partnerPayoutPaise()).isEqualTo(150000L);
+            assertThat(job.partnerPaidAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("each job carries what the customer asked for, in order, with no prices")
+        void jobsCarryTheirRequirementsWithoutPrices() {
+            Booking first = Booking.builder().id(1L).status(BookingStatus.WORK_SCHEDULED).build();
+            Booking second = Booking.builder().id(2L).status(BookingStatus.WORK_SCHEDULED).build();
+            when(bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(5L)).thenReturn(List.of(first, second));
+            when(answers.findByBookingIdInOrderByIdAsc(List.of(1L, 2L))).thenReturn(List.of(
+                    BookingAnswer.builder().bookingId(1L).questionKey("area").questionText("Which area?")
+                            .answerValue("tv-wall").answerLabel("TV Wall").quantity(1)
+                            .unitPricePaise(39900L).lineTotalPaise(39900L).build(),
+                    BookingAnswer.builder().bookingId(1L).questionKey("colour").answerValue("white").quantity(2).build(),
+                    BookingAnswer.builder().bookingId(2L).questionKey("area").questionText("Which area?")
+                            .answerValue("kitchen").answerLabel("Kitchen Walls").quantity(1).build()));
+
+            List<ProfessionalBookingResponse> jobs = service.myAssignedBookings(5L);
+
+            assertThat(jobs.get(0).requirements()).extracting(ProfessionalBookingResponse.Requirement::question)
+                    .containsExactly("Which area?", "colour"); // falls back to the key when no text was stored
+            assertThat(jobs.get(0).requirements()).extracting(ProfessionalBookingResponse.Requirement::answer)
+                    .containsExactly("TV Wall", "white");
+            assertThat(jobs.get(1).requirements()).hasSize(1);
+            // the partner-facing record has no field that could carry a price
+            assertThat(ProfessionalBookingResponse.Requirement.class.getRecordComponents())
+                    .extracting(java.lang.reflect.RecordComponent::getName)
+                    .containsExactly("question", "answer", "quantity");
+        }
+    }
+
+    @Nested
+    @DisplayName("partner payouts")
+    class PartnerPayouts {
+
+        private final User partner = User.builder().id(5L).role(Role.PROFESSIONAL).fullName("Ravi").build();
+
+        private Booking job(BookingStatus status) {
+            Booking booking = Booking.builder().id(1L).status(status).assignedProfessional(partner).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            lenient().when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            return booking;
+        }
+
+        private void assertRejected(Runnable call, HttpStatus expected) {
+            assertThatThrownBy(call::run)
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(expected);
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("needs an assigned partner")
+        void needsAPartner() {
+            Booking booking = Booking.builder().id(1L).status(BookingStatus.CONFIRMED).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertRejected(() -> service.setPartnerPayout(1L, 100000L, false), HttpStatus.CONFLICT);
+        }
+
+        @Test
+        @DisplayName("a cancelled job has no payout")
+        void cancelledHasNone() {
+            job(BookingStatus.CANCELLED);
+
+            assertRejected(() -> service.setPartnerPayout(1L, 100000L, false), HttpStatus.CONFLICT);
+        }
+
+        @Test
+        @DisplayName("the amount can be agreed before the work is done, without paying")
+        void amountBeforeCompletion() {
+            Booking booking = job(BookingStatus.WORK_IN_PROGRESS);
+
+            service.setPartnerPayout(1L, 150000L, false);
+
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(150000L);
+            assertThat(booking.getPartnerPaidAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("cannot be marked paid until the work is completed")
+        void paidNeedsCompletedWork() {
+            job(BookingStatus.WORK_IN_PROGRESS);
+
+            assertRejected(() -> service.setPartnerPayout(1L, 150000L, true), HttpStatus.CONFLICT);
+        }
+
+        @Test
+        @DisplayName("cannot be marked paid without a real amount")
+        void paidNeedsAnAmount() {
+            job(BookingStatus.WORK_COMPLETED);
+
+            assertRejected(() -> service.setPartnerPayout(1L, null, true), HttpStatus.BAD_REQUEST);
+            assertRejected(() -> service.setPartnerPayout(1L, 0L, true), HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @DisplayName("marking paid stamps the time once; repeating it keeps the original time")
+        void paidTimeIsStampedOnce() {
+            Booking booking = job(BookingStatus.WORK_COMPLETED);
+
+            service.setPartnerPayout(1L, 150000L, true);
+            Instant stamped = booking.getPartnerPaidAt();
+            assertThat(stamped).isNotNull();
+
+            service.setPartnerPayout(1L, 150000L, true);
+            assertThat(booking.getPartnerPaidAt()).isEqualTo(stamped);
+        }
+
+        @Test
+        @DisplayName("a paid amount cannot change until it is marked unpaid")
+        void paidAmountIsLocked() {
+            Booking booking = job(BookingStatus.WORK_COMPLETED);
+            booking.setPartnerPayoutPaise(150000L);
+            booking.setPartnerPaidAt(Instant.now());
+
+            assertRejected(() -> service.setPartnerPayout(1L, 170000L, true), HttpStatus.CONFLICT);
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(150000L);
+
+            // reopening it first is allowed, and clears the paid time
+            service.setPartnerPayout(1L, 170000L, false);
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(170000L);
+            assertThat(booking.getPartnerPaidAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("moving a job to another partner drops the payout agreed with the first")
+        void reassigningClearsThePayout() {
+            Booking booking = job(BookingStatus.ASSIGNMENT_PENDING);
+            booking.setPartnerPayoutPaise(150000L);
+            User other = User.builder().id(6L).role(Role.PROFESSIONAL).build();
+            when(users.findById(6L)).thenReturn(Optional.of(other));
+
+            service.assignProfessional(1L, 6L);
+
+            assertThat(booking.getAssignedProfessional()).isSameAs(other);
+            assertThat(booking.getPartnerPayoutPaise()).isNull();
+        }
+
+        @Test
+        @DisplayName("assigning the same partner again keeps the payout")
+        void sameAssigneeKeepsThePayout() {
+            Booking booking = job(BookingStatus.ASSIGNMENT_PENDING);
+            booking.setPartnerPayoutPaise(150000L);
+            when(users.findById(5L)).thenReturn(Optional.of(partner));
+
+            service.assignProfessional(1L, 5L);
+
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(150000L);
         }
     }
 

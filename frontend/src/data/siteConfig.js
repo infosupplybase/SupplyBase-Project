@@ -151,37 +151,37 @@ export const whyUsPoints = [
     title: 'One Partner For Everything',
     text: 'Design, construction, interiors, and finishing—all managed by one accountable team.',
     icon: 'users',
-    image: '/assets/about/one-partner.jpeg',
+    image: '/assets/about/one-partner.webp',
   },
   {
     title: 'Labour + Material Supplied',
     text: 'Skilled labour and quality materials, bundled into one clear rate—saving you time, hassle, and supplier chasing.',
     icon: 'box',
-    image: '/assets/about/labour-material.jpeg',
+    image: '/assets/about/labour-material.webp',
   },
   {
     title: 'Design Before You Build',
     text: '2D plans and 3D views help you visualize your project before construction begins.',
     icon: 'layout',
-    image: '/assets/about/design-before-build.jpeg',
+    image: '/assets/about/design-before-build.webp',
   },
   {
     title: 'Quality You Can Trust',
     text: 'Supervised workmanship, standard materials and stage-wise checks on every project we take on.',
     icon: 'shield',
-    image: '/assets/about/quality.jpeg',
+    image: '/assets/about/quality.webp',
   },
   {
     title: 'On-Time Delivery',
     text: 'Clear timelines agreed at the start and a schedule that our site team sticks to.',
     icon: 'clock',
-    image: '/assets/about/on-time.jpeg',
+    image: '/assets/about/on-time.webp',
   },
   {
     title: 'Transparent Pricing',
     text: 'Itemised quotations with no hidden charges, so you always know what you are paying for.',
     icon: 'circle-dollar',
-    image: '/assets/about/pricing.jpeg',
+    image: '/assets/about/pricing.webp',
   },
 ];
 

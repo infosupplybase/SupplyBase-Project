@@ -32,6 +32,8 @@ import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
+import in.supplybase.backend.booking.dto.PartnerPayoutResponse;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
 import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
@@ -408,6 +410,11 @@ public class BookingService {
             throw ApiException.badRequest("That account is not a professional.");
         }
 
+        // A payout was agreed with the previous partner, not this one.
+        if (booking.getAssignedProfessional() != null
+                && !booking.getAssignedProfessional().getId().equals(professional.getId())) {
+            booking.setPartnerPayoutPaise(null);
+        }
         booking.setAssignedProfessional(professional);
         booking.setStatus(BookingStatus.PROFESSIONAL_ASSIGNED);
         return BookingResponse.from(bookings.save(booking));
@@ -417,9 +424,81 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<ProfessionalBookingResponse> myAssignedBookings(Long professionalId) {
-        return bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(professionalId).stream()
-                .map(ProfessionalBookingResponse::from)
+        List<Booking> jobs = bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(professionalId);
+        Map<Long, List<ProfessionalBookingResponse.Requirement>> requirements = requirementsFor(
+                jobs.stream().map(Booking::getId).toList());
+        return jobs.stream()
+                .map(b -> ProfessionalBookingResponse.from(b, requirements.getOrDefault(b.getId(), List.of())))
                 .toList();
+    }
+
+    /** What the customer asked for on each job, grouped by booking — one query for all of them. */
+    private Map<Long, List<ProfessionalBookingResponse.Requirement>> requirementsFor(List<Long> bookingIds) {
+        Map<Long, List<ProfessionalBookingResponse.Requirement>> byBooking = new HashMap<>();
+        if (bookingIds.isEmpty()) {
+            return byBooking;
+        }
+        for (BookingAnswer answer : answers.findByBookingIdInOrderByIdAsc(bookingIds)) {
+            byBooking.computeIfAbsent(answer.getBookingId(), k -> new ArrayList<>())
+                    .add(ProfessionalBookingResponse.Requirement.from(answer));
+        }
+        return byBooking;
+    }
+
+    /** What the signed-in partner has earned, is still owed, and how many jobs are done. */
+    @Transactional(readOnly = true)
+    public PartnerEarningsResponse myEarnings(Long professionalId) {
+        return PartnerEarningsResponse.from(
+                bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(professionalId), Instant.now());
+    }
+
+    /* ---------------------------------------------------- partner payouts */
+
+    @Transactional(readOnly = true)
+    public PartnerPayoutResponse partnerPayout(Long bookingId) {
+        return PartnerPayoutResponse.from(bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking")));
+    }
+
+    /**
+     * Sets what the assigned partner earns for a job and whether it has been
+     * paid out. The admin sends the state they want it to end up in.
+     *
+     * Money rules, so a payout can't be quietly wrong: it needs an assigned
+     * partner; a cancelled job has none; "paid" needs a real amount and a
+     * completed job; and a payout already marked paid can't have its amount
+     * changed until it is marked unpaid first (so a paid figure never moves
+     * without someone deliberately reopening it).
+     */
+    @Transactional
+    public PartnerPayoutResponse setPartnerPayout(Long bookingId, Long amountPaise, boolean paid) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        if (booking.getAssignedProfessional() == null) {
+            throw ApiException.conflict("Assign a partner to this job before setting a payout.");
+        }
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw ApiException.conflict("A cancelled job has no payout.");
+        }
+        if (paid) {
+            if (amountPaise == null || amountPaise <= 0) {
+                throw ApiException.badRequest("Enter the payout amount before marking it paid.");
+            }
+            if (booking.getStatus() != BookingStatus.WORK_COMPLETED) {
+                throw ApiException.conflict("A payout can be marked paid once the work is completed.");
+            }
+        }
+
+        boolean wasPaid = booking.getPartnerPaidAt() != null;
+        if (wasPaid && paid && !java.util.Objects.equals(amountPaise, booking.getPartnerPayoutPaise())) {
+            throw ApiException.conflict(
+                    "This payout is already marked paid. Mark it unpaid before changing the amount.");
+        }
+
+        booking.setPartnerPayoutPaise(amountPaise);
+        booking.setPartnerPaidAt(paid ? (wasPaid ? booking.getPartnerPaidAt() : Instant.now()) : null);
+        return PartnerPayoutResponse.from(bookings.save(booking));
     }
 
     /**
@@ -453,7 +532,9 @@ public class BookingService {
         }
 
         booking.setStatus(newStatus);
-        return ProfessionalBookingResponse.from(bookings.save(booking));
+        Booking saved = bookings.save(booking);
+        return ProfessionalBookingResponse.from(saved,
+                requirementsFor(List.of(saved.getId())).getOrDefault(saved.getId(), List.of()));
     }
 
     /* ---------------------------------------------------------------- files */

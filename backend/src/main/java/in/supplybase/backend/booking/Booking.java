@@ -139,7 +139,7 @@ public class Booking {
 
     @Column(name = "visit_fee_paise", nullable = false)
     @Builder.Default
-    private long visitFeePaise = 2500L;
+    private long visitFeePaise = 9900L;
 
     /**
      * Sum of this booking's cart line items (see BookingAnswer.lineTotalPaise),
@@ -177,6 +177,30 @@ public class Booking {
 
     @Column(name = "admin_notes", columnDefinition = "TEXT")
     private String adminNotes;
+
+    /** When the work was finished — stamped by {@link #setStatus} the moment status becomes WORK_COMPLETED. */
+    @Column(name = "completed_at")
+    private Instant completedAt;
+
+    /**
+     * What the office pays the assigned partner for this job, in paise. Null
+     * until decided. Kept off {@code BookingResponse}: the customer never sees it.
+     */
+    @Column(name = "partner_payout_paise")
+    private Long partnerPayoutPaise;
+
+    /** When that payout was paid out; null while it is still pending. */
+    @Column(name = "partner_paid_at")
+    private Instant partnerPaidAt;
+
+    /** Records the completion time on the way into WORK_COMPLETED, once. */
+    public void setStatus(BookingStatus status) {
+        if (status == BookingStatus.WORK_COMPLETED && this.status != BookingStatus.WORK_COMPLETED
+                && completedAt == null) {
+            completedAt = Instant.now();
+        }
+        this.status = status;
+    }
 
     @Generated(event = EventType.INSERT)
     @Column(name = "created_at", insertable = false, updatable = false)

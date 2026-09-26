@@ -422,6 +422,135 @@
   box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
+/* Working hours line under "Choose a date". */
+.slot-hours {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+}
+
+/* "None of these suit you? Choose your own date & time" */
+.slot-custom-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px dashed var(--gold);
+  border-radius: var(--radius-sm);
+  background: var(--gold-a08);
+  color: var(--ink);
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+
+.slot-custom-link span {
+  flex: 1;
+  min-width: 0;
+}
+
+.slot-custom-link strong {
+  display: block;
+  font-weight: 600;
+}
+
+.slot-custom-link svg {
+  flex-shrink: 0;
+  color: var(--gold-deep);
+}
+
+.slot-custom-link:hover {
+  background: var(--gold-a12);
+  border-style: solid;
+}
+
+.slot-custom-link:focus-visible,
+.slot-mode-link:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.slot-custom-btn {
+  margin-top: 14px;
+}
+
+.slot-custom-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.slot-mode-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--gold-deep);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.slot-custom-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.slot-custom-fields .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slot-custom-fields .input {
+  width: 100%;
+  min-height: 50px;
+  font-size: 16px; /* no zoom-on-focus on iOS */
+}
+
+.slot-custom-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.slot-custom-summary svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.slot-picker-custom .field-error {
+  display: block;
+  margin-top: 12px;
+}
+
+@media (max-width: 420px) {
+  .slot-custom-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ----------------------------------------------------------------- summary */
 
 .summary-list {

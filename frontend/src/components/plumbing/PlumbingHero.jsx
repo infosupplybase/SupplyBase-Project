@@ -37,7 +37,7 @@ export default function PlumbingHero({ eyebrow, title, tagline }) {
 
       <img
         className="plb-hero-logo"
-        src="/assets/brand/logo.png"
+        src="/assets/brand/logo.webp"
         alt="SupplyBase — One Partner. Complete Project."
         width={480}
         height={363}
