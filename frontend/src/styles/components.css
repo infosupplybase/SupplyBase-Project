@@ -1033,6 +1033,22 @@
     overflow: hidden;
     box-sizing: border-box;
   }
+/* ===== PAGE HERO — TALLER, REPOSITIONED (DESKTOP/TABLET ONLY) =====
+   Scoped to min-width: 721px, matching the mobile breakpoint in
+   pages.css — this block used to apply at every width with !important,
+   which silenced that file's own mobile .page-hero-inner rules and
+   pushed the "WHAT WE DO" box off the left edge of narrow screens
+   (left: 33% + translateX(-50%) only makes sense against a wide box). */
+
+@media (min-width: 721px) {
+  .page-hero {
+    position: relative;
+    height: 520px;
+    min-height: 520px;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
 
   /* Background image */
   .page-hero-bg {
@@ -1082,8 +1098,9 @@
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 18px;
 
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.12);
 
     box-sizing: border-box;
   }
+}
 }
