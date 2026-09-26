@@ -9,6 +9,7 @@ import api, { friendlyError } from '../lib/api';
 import { formatRupees } from '../lib/money';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -301,7 +302,7 @@ function CartSummary({ items, subtotalPaise, date, time }) {
       <dl className="review-list">
         <div>
           <dt>Site visit</dt>
-          <dd>{date} at {time}</dd>
+          <dd>{formatVisit(date, time)}</dd>
         </div>
         {items.map((item) => (
           <div key={item.itemSlug}>
@@ -372,7 +373,7 @@ function CheckoutConfirmation({
               </div>
               <div>
                 <dt>Date &amp; Time</dt>
-                <dd>{receipt.date}, {receipt.time}</dd>
+                <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
               {receipt.itemsTotalDisplay && (
                 <div>
