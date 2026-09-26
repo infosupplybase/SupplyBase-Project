@@ -13,7 +13,7 @@
  */
 export default function StatsBackdrop() {
   return (
-    <img loading="lazy" decoding="async"
+    <img loading="lazy"
       className="wss-backdrop"
       src="/assets/stats/construction-backdrop.webp"
       alt=""
@@ -26,3 +26,4 @@ export default function StatsBackdrop() {
     />
   );
 }
+

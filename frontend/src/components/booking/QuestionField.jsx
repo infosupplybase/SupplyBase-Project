@@ -10,6 +10,8 @@ fabricationImages,
 
 import {
   furnitureImages,
+  furniturePropertyImages,
+  furnitureMaterialImages,
 } from '../../data/furnitureImages';
 
 import {
@@ -48,21 +50,7 @@ import {
   civilConstructionImages,
   civilConstructionPropertyImages,
   civilConstructionProjectStageImages,
-} from '../../data/civilConstructionImages';
-
-import {
-  furnitureImages,
-  furniturePropertyImages,
-  furnitureMaterialImages,
-} from '../../data/furnitureImages';
-
-import {
-  fabricationImages,
-  fabricationPropertyImages,
-  fabricationMaterialImages,
-} from '../../data/fabricationImages';
-
-import {
+} from '../../data/civilConstructionImages';import {
   finishingImages,
   finishingPropertyImages,
 } from '../../data/finishingImages';
@@ -860,3 +848,7 @@ if (
     </fieldset>
   );
 }
+
+
+
+
