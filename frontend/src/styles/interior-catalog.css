@@ -1,10 +1,8 @@
 /* =========================================================================
    SUPPLYBASE — INTERIOR BY CHOICE
-
    The design catalogue: space picker, design gallery, design detail and the
    paid home-visit booking flow. Prefixed `ibc-` throughout so nothing here
    collides with the generic booking wizard's classes.
-
    ========================================================================= */
 
 .ibc-section {
@@ -719,4 +717,10 @@
   .ibc-detail-actions {
     flex-direction: column;
   }
+
+  /* These all used to reserve a right margin here (and, for the two panels
+     below, drop their own centring to do it) so they wouldn't render
+     underneath the site-wide floating call/WhatsApp buttons —
+     FloatingActions is disabled sitewide now (see Layout.jsx), so
+     everything here is genuinely full width again. */
 }

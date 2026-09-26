@@ -165,12 +165,88 @@ export const api = {
   /** The signed-in user's own application. 404 (ApiError.status) if they never applied. */
   application: () => request('/api/partners/me'),
 
-  /** Jobs assigned to the signed-in professional. */
+      /** Update the signed-in partner's own profile. */
+  updateProfile: (data) =>
+    request('/api/partners/me', { method: 'PATCH', body: data }),
+
+   /** Jobs assigned to the signed-in professional. */
   jobs: () => request('/api/professional/bookings/mine'),
 
   /** Move one of the professional's own jobs to its next status. */
   advanceJob: (id, status) =>
     request(`/api/professional/bookings/${id}/status`, { method: 'PATCH', body: { status } }),
+
+  /**
+   * Earnings — tries the dedicated endpoint first, falls back to deriving
+   * from jobs if the backend doesn't have one yet.
+   */
+  earnings: async () => {
+    // Try dedicated endpoint first (in case backend adds it later)
+    try {
+      return await request('/api/professional/earnings');
+    } catch (err) {
+      // 404 = endpoint doesn't exist → derive from jobs
+      if (err && err.status !== 404) throw err;
+    }
+
+    // Fallback: derive earnings from completed jobs
+    const jobs = await request('/api/professional/bookings/mine');
+    return deriveEarningsFromJobs(jobs || []);
+  },
 };
 
+/**
+ * Temporary helper — build an earnings shape from raw jobs until
+ * /api/professional/earnings exists on the backend.
+ *
+ * Uses job.partnerPayout if available; falls back to job.amount / job.jobValue.
+ */
+function deriveEarningsFromJobs(jobs) {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const completed = jobs.filter((j) => j.status === 'WORK_COMPLETED');
+
+  const amountOf = (j) =>
+    Number(
+      j.partnerPayout ??
+        j.partner_payout ??
+        j.amount ??
+        j.jobValue ??
+        j.totalAmount ??
+        0
+    );
+
+  const thisMonthJobs = completed.filter((j) => {
+    const d = j.completedAt || j.preferredDate;
+    if (!d) return false;
+    const date = new Date(d);
+    return date >= monthStart && date <= now;
+  });
+
+  const pending = completed.filter(
+    (j) => !j.paidAt && !j.paid_at && j.paymentStatus !== 'PAID'
+  );
+
+  const transactions = completed
+    .map((j) => ({
+      id: j.id,
+      title: j.serviceLabel || 'Job payment',
+      date: j.completedAt || j.preferredDate || '',
+      reference: j.bookingNumber || j.reference || '',
+      amount: amountOf(j),
+      status: j.paidAt || j.paid_at ? 'PAID' : 'PENDING',
+    }))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return {
+    totalEarned: completed.reduce((sum, j) => sum + amountOf(j), 0),
+    thisMonth: thisMonthJobs.reduce((sum, j) => sum + amountOf(j), 0),
+    thisMonthJobs: thisMonthJobs.length,
+    pending: pending.reduce((sum, j) => sum + amountOf(j), 0),
+    pendingJobs: pending.length,
+    bankMask: '',
+    transactions,
+  };
+}
 export default api;

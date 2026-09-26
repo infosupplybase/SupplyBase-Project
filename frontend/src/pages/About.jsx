@@ -15,19 +15,16 @@ const pillars = [
     title: 'Design',
     image: '/assets/services/architectural-design.jpeg',
     text: 'Architectural planning, 2D/3D designs, elevations, and working drawings.',
-    icon: 'blueprint',
   },
   {
     title: 'Build',
     image: '/assets/services/construction.jpeg',
     text: 'RCC, masonry, plastering, electrical, plumbing, and all essential building work.',
-    icon: 'crane',
   },
   {
     title: 'Finish',
     image: '/assets/services/interior-design.jpeg',
     text: 'Ceiling, furniture, painting, flooring, and final touch-ups for a perfect handover.',
-    icon: 'trowel',
   },
 ];
 
@@ -47,11 +44,13 @@ export default function About() {
       {/* ================= WHO WE ARE ================= */}
       <section className="py-8 md:py-10">
         <div className="container mx-auto px-4 md:px-6">
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
 
             {/* Text */}
             <Reveal>
               <div className="max-w-xl">
+
                 <span className="eyebrow">
                   WHO WE ARE
                 </span>
@@ -73,10 +72,12 @@ export default function About() {
                   Supplybase brings the entire project together under one team.
                   We handle drawings, labour, materials, and project management.
                   You get one contract, one point of contact, and clear
-                  accountability. From the first sketch to handover, we manage it all.
+                  accountability. From the first sketch to handover, we manage
+                  it all.
                 </p>
 
                 <div className="flex flex-wrap gap-3 mt-5">
+
                   <Link
                     to="/services"
                     className="btn btn-dark inline-flex items-center gap-2"
@@ -94,41 +95,44 @@ export default function About() {
                     <Icon name="arrow-right" size={17} />
                   </Link>
                   */}
+
                 </div>
+
               </div>
             </Reveal>
 
             {/* Video */}
-            <Reveal
-              className="media-frame"
-              delay={120}
-            >
-              <div className="split-media w-full max-w-md">
-                <video
-                  className="supplybase-video"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  controls
-                  preload="metadata"
-                >
-                  <source
-                    src="/assets/hero/aboutus.mp4"
-                    type="video/mp4"
-                  />
-                  Your browser does not support video.
-                </video>
-              </div>
-            </Reveal>
+              <Reveal
+                className="media-frame"
+                delay={120}
+              >
+                <div className="split-media w-full max-w-md">
+                  <video
+                    className="supplybase-video"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    controls
+                    preload="metadata"
+                  >
+                    <source
+                      src="/assets/hero/aboutus.mp4"
+                      type="video/mp4"
+                    />
+                    Your browser does not support video.
+                  </video>
+                </div>
+              </Reveal>
 
           </div>
         </div>
       </section>
 
       {/* ================= WHAT WE DO ================= */}
-      <section className="pt-0 pb-4 md:pb-6 bg-[var(--section-light)]">
-        <div className="container mx-auto px-3 md:px-5">
+      <section className="section section-light">
+
+        <div className="container">
 
           <SectionHeading
             center
@@ -137,46 +141,44 @@ export default function About() {
             text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div className="value-grid">
+
             {pillars.map((pillar, i) => (
               <Reveal
                 key={pillar.title}
+                className="value-card service-card"
                 delay={i * 90}
-                className="
-                  value-card
-                  !bg-black/10
-                  backdrop-blur-xl
-                  !border-white/25
-                  !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
-                  !p-3
-                  !m-0
-                "
               >
-                <div className="value-icon mb-2">
-                  <Icon
-                    name={pillar.icon}
-                    size={24}
-                    strokeWidth={1.4}
-                  />
+
+                <img
+                  src={pillar.image}
+                  alt={pillar.title}
+                  className="service-card-bg"
+                />
+
+                <div className="service-card-overlay" />
+
+                <div className="service-card-content">
+
+                  <h3>{pillar.title}</h3>
+
+                  <p>{pillar.text}</p>
+
                 </div>
 
-                <h3 className="!mt-0 !mb-1">
-                  {pillar.title}
-                </h3>
-
-                <p className="!mt-0 !mb-0">
-                  {pillar.text}
-                </p>
               </Reveal>
             ))}
+
           </div>
 
         </div>
+
       </section>
 
       {/* ================= HOW WE WORK ================= */}
-      <section className="py-4 md:py-6">
-        <div className="container mx-auto px-3 md:px-5">
+      <section className="section">
+
+        <div className="container">
 
           <SectionHeading
             center
@@ -185,41 +187,38 @@ export default function About() {
             text="The things our clients tell us matter most when they hand over a project."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div className="value-grid">
+
             {whyUsPoints.map((point, i) => (
               <Reveal
                 key={point.title}
+                className="value-card service-card"
                 delay={(i % 3) * 80}
-                className="
-                  value-card
-                  !bg-black/10
-                  backdrop-blur-xl
-                  !border-white/25
-                  !shadow-[0_6px_20px_rgba(0,0,0,0.06)]
-                  !p-3
-                  !m-0
-                "
               >
-                <div className="value-icon mb-2">
-                  <Icon
-                    name={point.icon}
-                    size={24}
-                    strokeWidth={1.4}
-                  />
+
+                <img
+                  src={point.image}
+                  alt={point.title}
+                  className="service-card-bg"
+                />
+
+                <div className="service-card-overlay" />
+
+                <div className="service-card-content">
+
+                  <h3>{point.title}</h3>
+
+                  <p>{point.text}</p>
+
                 </div>
 
-                <h3 className="!mt-0 !mb-1">
-                  {point.title}
-                </h3>
-
-                <p className="!mt-0 !mb-0">
-                  {point.text}
-                </p>
               </Reveal>
             ))}
+
           </div>
 
         </div>
+
       </section>
 
       {/* ================= PROCESS ================= */}
