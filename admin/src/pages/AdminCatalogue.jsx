@@ -26,7 +26,8 @@ const emptyCategoryForm = {
   description: '',
   icon: '',
   heroImage: '',
-  visitFee: '',
+  // Every service's home visit is ₹99; the admin can still change it.
+  visitFee: '99',
   sortOrder: '',
 };
 
