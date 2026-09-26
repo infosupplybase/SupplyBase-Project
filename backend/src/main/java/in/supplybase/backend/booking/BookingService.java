@@ -190,12 +190,188 @@ public class BookingService {
             saved = bookings.save(saved);
         }
 
-        notifyStaff(saved);
+                notifyStaff(saved);
+        notifyCustomer(saved);
+
         return BookingReceipt.from(saved);
+    }
+
+    private static String valueOrDash(Object value) {
+        return value == null || String.valueOf(value).isBlank()
+                ? "-"
+                : String.valueOf(value);
+    }
+
+    private static String formatRupees(Long paise) {
+        if (paise == null) {
+            return "₹0.00";
+        }
+
+        return String.format(
+                java.util.Locale.ROOT,
+                "₹%.2f",
+                paise / 100.0
+        );
     }
 
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
     }
+
+    private void notifyCustomer(Booking booking) {
+    String customerEmail = booking.getEmail();
+
+    if (customerEmail == null || customerEmail.isBlank()) {
+        return;
+    }
+
+    JavaMailSender sender = mailSender.getIfAvailable();
+
+    if (sender == null) {
+        return;
+    }
+
+    try {
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setTo(customerEmail.trim());
+
+        message.setSubject(
+                "SupplyBase Booking Received - " + booking.getBookingNumber()
+        );
+
+        StringBuilder body = new StringBuilder();
+
+        body.append("Hello ")
+                .append(booking.getName())
+                .append(",\n\n");
+
+        body.append("Thank you for choosing SupplyBase.\n");
+        body.append("Your service booking has been received successfully.\n\n");
+
+        body.append("========================================\n");
+        body.append("           BOOKING DETAILS\n");
+        body.append("========================================\n\n");
+
+        body.append("Booking Number : ")
+                .append(valueOrDash(booking.getBookingNumber()))
+                .append("\n");
+
+        body.append("Service        : ")
+                .append(valueOrDash(booking.getServiceLabel()))
+                .append("\n");
+
+        body.append("Status         : ")
+                .append(valueOrDash(booking.getStatus()))
+                .append("\n");
+
+        body.append("Preferred Date : ")
+                .append(valueOrDash(booking.getPreferredDate()))
+                .append("\n");
+
+        if (booking.getAppointmentSlot() != null) {
+            body.append("Preferred Time : ")
+                    .append(valueOrDash(
+                            booking.getAppointmentSlot().getSlotTime()
+                    ))
+                    .append("\n");
+        }
+
+        body.append("\n");
+
+        body.append("--------------- CUSTOMER ---------------\n");
+
+        body.append("Name           : ")
+                .append(valueOrDash(booking.getName()))
+                .append("\n");
+
+        body.append("Phone          : ")
+                .append(valueOrDash(booking.getPhone()))
+                .append("\n");
+
+        body.append("WhatsApp       : ")
+                .append(valueOrDash(booking.getWhatsapp()))
+                .append("\n");
+
+        body.append("Email          : ")
+                .append(valueOrDash(booking.getEmail()))
+                .append("\n");
+
+        body.append("\n");
+
+        body.append("--------------- LOCATION ---------------\n");
+
+        body.append("Address        : ")
+                .append(valueOrDash(booking.getAddress()))
+                .append("\n");
+
+        body.append("City           : ")
+                .append(valueOrDash(booking.getCity()))
+                .append("\n");
+
+        body.append("Pincode        : ")
+                .append(valueOrDash(booking.getPincode()))
+                .append("\n");
+
+        if (booking.getAreaSqft() != null) {
+            body.append("Area           : ")
+                    .append(booking.getAreaSqft())
+                    .append(" sq.ft\n");
+        }
+
+        body.append("\n");
+
+        body.append("--------------- PAYMENT ---------------\n");
+
+if (booking.getItemsTotalPaise() != null
+        && booking.getItemsTotalPaise() > 0) {
+
+    body.append("Items Total    : ")
+            .append(formatRupees(booking.getItemsTotalPaise()))
+            .append("\n");
+}
+
+body.append("Visit Fee      : ")
+        .append(formatRupees(booking.getVisitFeePaise()))
+        .append("\n");
+
+body.append("\n");
+
+        body.append("----------------------------------------\n\n");
+
+        body.append(
+                "Our team will contact you on WhatsApp or phone "
+                        + "to confirm the appointment.\n\n"
+        );
+
+        body.append(
+                "Please keep your booking number "
+                        + booking.getBookingNumber()
+                        + " for future reference.\n\n"
+        );
+
+        body.append("Regards,\n");
+        body.append("SupplyBase Team\n");
+
+        message.setText(body.toString());
+
+        sender.send(message);
+
+        log.info(
+                "Booking confirmation email sent to {} for booking {}",
+                customerEmail,
+                booking.getBookingNumber()
+        );
+
+    } catch (Exception ex) {
+        // Email failure must never make an otherwise successful booking fail.
+        log.warn(
+                "Could not send booking confirmation email to {} for booking {}",
+                customerEmail,
+                booking.getBookingNumber(),
+                ex
+        );
+    }
+}
 
     /**
      * Stores the form answers, checking each against the catalogue first.

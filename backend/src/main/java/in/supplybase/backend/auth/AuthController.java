@@ -29,6 +29,9 @@ import in.supplybase.backend.auth.dto.UserResponse;
 import in.supplybase.backend.auth.dto.VerifyEmailRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import in.supplybase.backend.auth.dto.SendOtpRequest;
+import in.supplybase.backend.auth.dto.VerifyOtpRequest;
+
 
 @RestController
 public class AuthController {
@@ -43,12 +46,17 @@ public class AuthController {
         this.currentUser = currentUser;
     }
 
-    @PostMapping("/api/auth/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request,
-                                                 HttpServletRequest httpRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authService.register(request, httpRequest.getRemoteAddr()));
-    }
+   @PostMapping("/api/auth/register")
+public ResponseEntity<Void> register(
+        @Valid @RequestBody RegisterRequest request,
+        HttpServletRequest httpRequest) {
+
+    String clientIp = httpRequest.getRemoteAddr();
+
+    authService.registerForOtp(request, clientIp);
+
+    return ResponseEntity.noContent().build();
+}
 
     @PostMapping("/api/auth/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
@@ -134,4 +142,24 @@ public class AuthController {
     public UserResponse updateStatus(@PathVariable Long id, @Valid @RequestBody UpdateUserStatusRequest request) {
         return authService.updateStatus(id, request.enabled(), currentUser.require().id());
     }
+
+    @PostMapping("/api/auth/send-otp")
+    public ResponseEntity<Void> sendOtp(
+        @Valid @RequestBody SendOtpRequest request) {
+
+    authService.sendOtp(request.email());
+
+    return ResponseEntity.noContent().build();
+    }
+
+   @PostMapping("/api/auth/verify-otp")
+public AuthResponse verifyOtp(
+        @Valid @RequestBody VerifyOtpRequest request) {
+
+    return authService.verifyOtp(
+            request.email(),
+            request.otp()
+    );
+}
+
 }
