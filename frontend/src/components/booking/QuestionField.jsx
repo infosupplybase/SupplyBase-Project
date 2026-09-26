@@ -1,6 +1,20 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
 import ProblemLocationModal from './ProblemLocationModal';
+<<<<<<< HEAD
+import { otherServiceOptionImages } from '../../data/otherServices';
+
+import {
+  electricianImages,
+  electricianPropertyImages,
+  electricianLocationImages,
+  electricianIssueImages,
+  electricianLoadImages,
+  electricianUrgencyImages,
+  electricianRequirementImages,
+} from '../../data/electricianImages';
+=======
+>>>>>>> main
 
 import {
   waterproofingImages,
@@ -17,6 +31,8 @@ import {
   popCeilingImages,
 } from '../../data/popCeilingImages';
 
+<<<<<<< HEAD
+=======
 import {
   electricianImages,
   electricianPropertyImages,
@@ -56,6 +72,7 @@ import {
   finishingPropertyImages,
 } from '../../data/finishingImages';
 
+>>>>>>> main
 export default function QuestionField({
   question,
   value,
@@ -84,6 +101,79 @@ export default function QuestionField({
     : value
       ? [value]
       : [];
+<<<<<<< HEAD
+  const isPopService = [
+    'pop-ceiling-design',
+    'pop_ceiling_design',
+    'pop-false-ceiling',
+  ].includes(serviceSlug);
+  const isPopHomeTypeQuestion = isPopService && [
+    'pop_home_type',
+    'home_type',
+    'property_type',
+  ].includes(key);
+  const optionList = options || [];
+  const isPopRoomQuestion = serviceSlug === 'pop-ceiling-design'
+    && (key === 'pop_room_type' || key === 'rooms');
+  const roomOptions = isPopRoomQuestion
+    ? [
+        {
+          value: 'living-room',
+          label: 'Living Room',
+          hint: 'Classy & functional',
+          group: '',
+        },
+        {
+          value: 'bedroom',
+          label: 'Bedroom',
+          hint: 'Comfortable & stylish',
+          group: '',
+        },
+        {
+          value: 'dining-room',
+          label: 'Dining Room',
+          hint: 'Classy & functional',
+          group: '',
+        },
+        {
+          value: 'kids-room',
+          label: 'Kids Room',
+          hint: 'Fun & creative',
+          group: '',
+        },
+        {
+          value: 'study-room',
+          label: 'Study Room',
+          hint: 'Simple & stylish',
+          group: '',
+        },
+        {
+          value: 'kitchen',
+          label: 'Kitchen',
+          hint: 'Clean & durable',
+          group: '',
+        },
+        {
+          value: 'office-commercial-space',
+          label: 'Office / Commercial Space',
+          hint: 'Professional & efficient',
+          group: '',
+        },
+        {
+          value: 'office-commercial',
+          label: 'Office / Commercial',
+          hint: 'Professional & efficient',
+          group: '',
+        },
+      ]
+    : optionList;
+  const filteredRoomOptions = roomOptions;
+  const homeTypeOptions = optionList;
+  const visibleHomeTypeValues = new Set(
+    homeTypeOptions.map((option) => option.value)
+  );
+=======
+>>>>>>> main
 
   const isChosen = (optionValue) =>
     selected.includes(optionValue);
@@ -125,8 +215,22 @@ export default function QuestionField({
    */
 
   const groups = [];
+<<<<<<< HEAD
+
+  filteredRoomOptions.forEach((option) => {
+=======
+  const seenOptions = new Set();
 
   (options || []).forEach((option) => {
+    const uniqueKey = `${option.group || ''}::${option.value ?? ''}::${option.label ?? ''}`;
+
+    if (seenOptions.has(uniqueKey)) {
+      return;
+    }
+
+    seenOptions.add(uniqueKey);
+
+>>>>>>> main
     const groupName = option.group || '';
 
     let group = groups.find(
@@ -160,10 +264,43 @@ export default function QuestionField({
       return undefined;
     }
 
+<<<<<<< HEAD
     return (
       imageMap[option.value] ||
       imageMap[option.label]
     );
+  };
+
+  const getOtherServiceImage = (option) => {
+    const normalize = (value) => String(value || '')
+      .toLowerCase()
+      .replace(/&/g, 'and')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+
+    return otherServiceOptionImages[option.value]
+      || otherServiceOptionImages[normalize(option.value)]
+      || otherServiceOptionImages[normalize(option.label)];
+=======
+    const normalizeKey = (value) =>
+      String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+    const direct = imageMap[option.value] || imageMap[option.label];
+    if (direct) return direct;
+
+    const normalizedMap = Object.fromEntries(
+      Object.entries(imageMap).map(([key, value]) => [normalizeKey(key), value])
+    );
+
+    return (
+      normalizedMap[normalizeKey(option.value)] ||
+      normalizedMap[normalizeKey(option.label)]
+    );
+>>>>>>> main
   };
 
   /**
@@ -173,6 +310,14 @@ export default function QuestionField({
    */
 
   const getOptionImage = (option) => {
+<<<<<<< HEAD
+    if (
+      ['architectural-design', 'civil-construction', 'furniture', 'fabrication', 'finishing']
+        .includes(serviceSlug) &&
+      (key === 'service_needed' || key === 'property_type' || key === 'project_stage')
+    ) {
+      return getOtherServiceImage(option);
+=======
     /**
      * ========================================================
      * OTHER SERVICES — architectural design, civil construction,
@@ -253,6 +398,7 @@ export default function QuestionField({
       }
 
       return findImage(finishingImages, option);
+>>>>>>> main
     }
 
     /**
@@ -444,6 +590,10 @@ export default function QuestionField({
   const isSimpleRadioQuestion =
     key === 'previous_waterproofing' ||
     key === 'previous_when';
+<<<<<<< HEAD
+  const hideVisibleHeading = isPopHomeTypeQuestion || (isMulti && text === 'Select rooms / areas');
+=======
+>>>>>>> main
 
   const [isProblemLocationOpen, setProblemLocationOpen] = useState(false);
 
@@ -489,6 +639,36 @@ export default function QuestionField({
 
   return (
     <fieldset className="question">
+<<<<<<< HEAD
+
+      <legend className="sr-only">
+        {text}
+      </legend>
+
+      {!hideVisibleHeading && (
+        <div className="wizard-card-head">
+          <h2>
+            {text}
+
+            {required && (
+              <span className="req">
+                {' '}*
+              </span>
+            )}
+          </h2>
+
+          {isMulti && (text !== 'Select rooms / areas') && (
+            <p>
+              You can choose more than one.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ======================================================
+          SINGLE / MULTI OPTIONS
+      ====================================================== */}
+=======
 
       <legend className="sr-only">
         {text}
@@ -511,6 +691,7 @@ export default function QuestionField({
           </p>
         )}
       </div>
+>>>>>>> main
 
       {/* ======================================================
           SINGLE / MULTI OPTIONS
@@ -590,7 +771,11 @@ export default function QuestionField({
 
               <div className="tile-grid">
 
+<<<<<<< HEAD
+                {group.items.filter((option) => visibleHomeTypeValues.has(option.value)).map(
+=======
                 {group.items.map(
+>>>>>>> main
                   (option, optionIndex) => {
 
                     const image =

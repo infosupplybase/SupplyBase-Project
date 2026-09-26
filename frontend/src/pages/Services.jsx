@@ -1,10 +1,19 @@
+<<<<<<< HEAD
+import { useEffect, useState } from 'react';
+=======
+>>>>>>> main
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
+<<<<<<< HEAD
+import api, { friendlyError } from '../lib/api';
+import ServiceBookingModal, { useServiceBookingModal } from '../components/services/ServiceBookingModal';
+=======
 import useServiceCatalogue from '../hooks/useServiceCatalogue';
 import ServiceBookingModal, { useServiceBookingModal } from '../components/services/ServiceBookingModal';
 import optimizedImage from '../lib/optimizedImage';
+>>>>>>> main
 
 /**
  * Every service we offer.
@@ -12,6 +21,52 @@ import optimizedImage from '../lib/optimizedImage';
  * Fetched, not hard-coded: the home tiles, footer, menus and quote form read
  * the same catalogue (see useServiceCatalogue), so they cannot drift apart.
  */
+<<<<<<< HEAD
+
+const serviceImages = {
+  'interior-design': '/assets/services/interior-design.webp',
+  'interior-by-choice': '/assets/services/interior-by-choice.png',
+  painting: '/assets/services/painting.jpg',
+  waterproofing: '/assets/services/waterproofing.avif',
+  'pop-ceiling-design': '/assets/services/pop-ceiling-design.jpg',
+  plumbing: '/assets/services/plumber.jpg',
+  electrical: '/assets/services/electrician.avif',
+  'other-services': '/assets/services/other-services.webp',
+};
+
+export default function Services() {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const booking = useServiceBookingModal();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    api
+      .services()
+      .then((result) => {
+        if (!cancelled) {
+          setServices(result);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(friendlyError(err));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+=======
 
 const serviceImages = {
   'interior-design': '/assets/services/interior-design.webp',
@@ -28,14 +83,20 @@ export default function Services() {
   const { services, loading, error } = useServiceCatalogue([]);
 
   const booking = useServiceBookingModal();
+>>>>>>> main
 
   return (
     <>
       <PageHero
         eyebrow="OUR SERVICES"
         title="WHAT WE DO"
+<<<<<<< HEAD
+        text="Four services, one accountable team. Book a site visit and we will assess the work and send you a written quotation."
+        image="/assets/services/service-hero.jpg"
+=======
         text="One accountable team for every job. Book a site visit and we will assess the work and send you a written quotation."
         image="/assets/services/service-hero.webp"
+>>>>>>> main
         breadcrumbs={[{ label: 'Services' }]}
       />
 
@@ -75,8 +136,13 @@ export default function Services() {
                   onClick={() => booking.open(service)}
                 >
                   <div className="svc-card-media">
+<<<<<<< HEAD
+                    <img
+                      src={serviceImages[service.slug]}
+=======
                     <img loading="lazy" decoding="async"
                       src={serviceImages[service.slug] || optimizedImage(service.heroImage)}
+>>>>>>> main
                       alt={service.name}
                     />
                   </div>
@@ -99,10 +165,18 @@ export default function Services() {
                     </p> */}
 
                     <div className="svc-card-foot">
+<<<<<<< HEAD
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() => booking.open(service)}
+                      >
+=======
                       {/* No onClick here — the click bubbles up to the card's own
                           handler above (a real <button>'s keyboard activation
                           dispatches a bubbling click too, so Tab+Enter still works). */}
                       <button type="button" className="btn btn-primary btn-sm">
+>>>>>>> main
                         BOOK NOW
 
                         <Icon

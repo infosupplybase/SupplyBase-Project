@@ -41,7 +41,19 @@ export default function usePopCeilingCatalogue() {
     return map;
   }, [form]);
 
+<<<<<<< HEAD
+  const optionsFor = (questionKey) => {
+    const options = byKey.get(questionKey)?.options || [];
+    if (questionKey !== 'pop_home_type') return options;
+
+    return options.filter((option) =>
+      option.value !== '1bhk' &&
+      option.label !== '1 BHK'
+    );
+  };
+=======
   const optionsFor = (questionKey) => byKey.get(questionKey)?.options || [];
+>>>>>>> main
 
   return {
     category: form?.category,

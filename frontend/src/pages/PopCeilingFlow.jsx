@@ -14,7 +14,10 @@ import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
+<<<<<<< HEAD
+=======
 import { formatVisit } from '../lib/visitTime';
+>>>>>>> main
 
 /**
  * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
@@ -281,7 +284,11 @@ export default function PopCeilingFlow() {
 
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
+<<<<<<< HEAD
+                <div><dt>Date &amp; Time</dt><dd>{receipt.date}, {receipt.time}</dd></div>
+=======
                 <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
+>>>>>>> main
                 <div><dt>Service</dt><dd>{flow.title}</dd></div>
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
@@ -382,6 +389,11 @@ export default function PopCeilingFlow() {
   const selectedValue = answers[step?.questionKey];
   const showNotes = step?.notesFor && step.notesFor === selectedValue;
   const notesKey = showNotes ? notesKeyFor(step) : null;
+<<<<<<< HEAD
+  const stepOptions = optionsFor(step?.questionKey);
+  const visibleOptions = stepOptions;
+=======
+>>>>>>> main
 
   return (
     <div className="pnt-flow-shell">
@@ -395,7 +407,11 @@ export default function PopCeilingFlow() {
           {(step.type === 'option' || step.type === 'style') && (
             <>
               <div className="pnt-option-list">
+<<<<<<< HEAD
+                {visibleOptions.map((opt) => (
+=======
                 {optionsFor(step.questionKey).map((opt) => (
+>>>>>>> main
                   <OptionCard
                     key={opt.value}
                     option={opt}

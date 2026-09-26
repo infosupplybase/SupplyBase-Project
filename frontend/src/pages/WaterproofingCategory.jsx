@@ -13,7 +13,11 @@ import { wpOverviewIntro, wpCategories, wpTrustPoints, WP_HERO_IMAGE } from '../
  * for at the overview level. Reuses PaintingHero directly, same as
  * PopCeilingCategory.
  */
+<<<<<<< HEAD
+export default function WaterproofingCategory({ modal = false, onSelectService }) {
+=======
 export default function WaterproofingCategory() {
+>>>>>>> main
   return (
     <>
       <PaintingHero
@@ -28,7 +32,15 @@ export default function WaterproofingCategory() {
         <div className="container container-narrow">
           <div className="pnt-overview-list">
             {wpCategories.map((cat) => (
+<<<<<<< HEAD
+              <Link
+                key={cat.slug}
+                to={cat.route}
+                className="pnt-overview-card"
+              >
+=======
               <Link key={cat.slug} to={cat.route} className="pnt-overview-card">
+>>>>>>> main
                 <span className="pnt-overview-photo pce-overview-icon">
                   <Icon name={cat.icon} size={30} />
                 </span>

@@ -24,6 +24,57 @@
 
 export const popHomeTypeImages = {
   '1bhk':
+<<<<<<< HEAD
+    '/assets/pop-ceiling/hero/1bhk.png',
+
+  '1 BHK':
+    '/assets/pop-ceiling/hero/1bhk.png',
+
+  '2bhk':
+    '/assets/waterproofing/hero/two.png',
+
+  '2 BHK':
+    '/assets/waterproofing/hero/two.png',
+
+  '3bhk':
+    '/assets/waterproofing/hero/three.png',
+
+  '3 BHK':
+    '/assets/waterproofing/hero/three.png',
+
+  '4bhk':
+    '/assets/waterproofing/hero/modern-house.jpg',
+
+  '4 BHK+':
+    '/assets/waterproofing/hero/modern-house.jpg',
+
+  'villa-independent-house':
+    '/assets/waterproofing/hero/Villa.png',
+
+  'Villa / Bungalow':
+    '/assets/waterproofing/hero/Villa.png',
+
+  duplex:
+    '/assets/waterproofing/hero/modern-house.jpg',
+
+  Office:
+    '/assets/waterproofing/hero/office.png',
+
+  Shop:
+    '/assets/waterproofing/hero/shop.png',
+
+  'Shop / Commercial':
+    '/assets/waterproofing/hero/shop.png',
+
+  Commercial:
+    '/assets/waterproofing/hero/commercial.png',
+
+  'Building / Society':
+    '/assets/waterproofing/hero/building.png',
+
+  Other:
+    '/assets/projects/modern-interior.jpeg',
+=======
     '/assets/pop-ceiling/hero/1bhk.webp',
 
   '1 BHK':
@@ -73,6 +124,7 @@ export const popHomeTypeImages = {
 
   Other:
     '/assets/waterproofing/hero/other.webp',
+>>>>>>> main
 };
 
 
@@ -83,80 +135,136 @@ export const popHomeTypeImages = {
  */
 
 export const popRoomTypeImages = {
+<<<<<<< HEAD
   'living-room':
-    '/assets/pop-ceiling/hero/living-room-cove.webp',
+    '/assets/pop-ceiling/hero/living-room-cove.jpg',
 
   'Living Room':
-    '/assets/pop-ceiling/hero/living-room-cove.webp',
+    '/assets/pop-ceiling/hero/living-room-cove.jpg',
 
   bedroom:
-    '/assets/projects/bedroom.webp',
+    '/assets/projects/bedroom.jpeg',
 
   Bedroom:
-    '/assets/projects/bedroom.webp',
+    '/assets/projects/bedroom.jpeg',
 
   'dining-room':
-    '/assets/pop-ceiling/hero/diningroom.webp',
+    '/assets/pop-ceiling/hero/diningroom.png',
 
   'Dining Room':
-    '/assets/pop-ceiling/hero/diningroom.webp',
+    '/assets/pop-ceiling/hero/diningroom.png',
 
   'study-room':
-    '/assets/pop-ceiling/hero/studyroom.webp',
+    '/assets/pop-ceiling/hero/studyroom.png',
 
   'Study Room':
-    '/assets/pop-ceiling/hero/studyroom.webp',
+    '/assets/pop-ceiling/hero/studyroom.png',
 
   'kids-room':
-    '/assets/pop-ceiling/hero/kidsroom.webp',
+    '/assets/pop-ceiling/hero/kidsroom.png',
 
   'Kids Room':
-    '/assets/pop-ceiling/hero/kidsroom.webp',
+    '/assets/pop-ceiling/hero/kidsroom.png',
+
+  kitchen:
+    '/assets/waterproofing/hero/kitchen.png',
 
   Kitchen:
-    '/assets/waterproofing/hero/kitchen.webp',
+    '/assets/waterproofing/hero/kitchen.png',
+
+  'office-commercial-space':
+    '/assets/projects/office-fitout.jpeg',
 
   'Office / Commercial Space':
-    '/assets/waterproofing/hero/office.webp',
+    '/assets/projects/office-fitout.jpeg',
 
-  Other:
-    '/assets/projects/modern-interior.webp',
-
-  'other-room':
-    '/assets/projects/modern-interior.webp',
-
-  'Other Room':
-    '/assets/projects/modern-interior.webp',
+  'office / commercial space':
+    '/assets/projects/office-fitout.jpeg',
 
   'POP Ceiling':
-    '/assets/pop-ceiling/hero/living-room-cove.webp',
+    '/assets/pop-ceiling/hero/living-room-cove.jpg',
 
   'Gypsum Ceiling':
-    '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+    '/assets/pop-ceiling/hero/gypsum-ceiling.png',
 
   'False Ceiling':
-    '/assets/pop-ceiling/hero/false-ceiling.webp',
+    '/assets/pop-ceiling/hero/false-ceiling.png',
 
   Cornice:
-    '/assets/pop-ceiling/hero/cornice.webp',
+    '/assets/pop-ceiling/hero/cornice.png',
 
   'Partition Work':
-    '/assets/pop-ceiling/hero/partition-work.webp',
+    '/assets/pop-ceiling/hero/partition-work.png',
 
   'LED Cove & Lighting':
-    '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+    '/assets/pop-ceiling/hero/led-cove-lighting.png',
 
   'POP TV Wall':
-    '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+    '/assets/pop-ceiling/hero/pop-tv-wall.png',
 
   'POP Repair & Renovation':
-    '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+    '/assets/pop-ceiling/hero/pop-repair-renovation.png',
 
   Other:
-    '/assets/pop-ceiling/hero/other.png',
+    '/assets/projects/modern-interior.jpeg',
 };
 
 
+=======
+  'living-room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Living Room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  living: '/assets/pop-ceiling/hero/living-room-cove.webp',
+
+  bedroom: '/assets/projects/bedroom.webp',
+  Bedroom: '/assets/projects/bedroom.webp',
+  'bed-room': '/assets/projects/bedroom.jpeg',
+
+  'dining-room': '/assets/pop-ceiling/hero/diningroom.webp',
+  'Dining Room': '/assets/pop-ceiling/hero/diningroom.webp',
+  dining: '/assets/pop-ceiling/hero/diningroom.webp',
+
+  'study-room': '/assets/pop-ceiling/hero/studyroom.webp',
+  'Study Room': '/assets/pop-ceiling/hero/studyroom.webp',
+  study: '/assets/pop-ceiling/hero/studyroom.webp',
+
+  'kids-room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  'Kids Room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  kids: '/assets/pop-ceiling/hero/kidsroom.webp',
+
+  kitchen: '/assets/waterproofing/hero/kitchen.webp',
+  Kitchen: '/assets/waterproofing/hero/kitchen.webp',
+
+  'office-commercial-space': '/assets/waterproofing/hero/office.webp',
+  'Office / Commercial Space': '/assets/waterproofing/hero/office.webp',
+  'Office / Commercial': '/assets/waterproofing/hero/office.webp',
+  Office: '/assets/waterproofing/hero/office.webp',
+  office: '/assets/waterproofing/hero/office.webp',
+
+  other: '/assets/waterproofing/hero/other.png',
+  Other: '/assets/waterproofing/hero/other.png',
+  'other-room': '/assets/waterproofing/hero/other.png',
+  'Other Room': '/assets/waterproofing/hero/other.png',
+
+  'pooja-room': '/assets/projects/modern-interior.jpeg',
+  'Pooja Room': '/assets/projects/modern-interior.jpeg',
+
+  'guest-room': '/assets/projects/modern-interior.jpeg',
+  'Guest Room': '/assets/projects/modern-interior.jpeg',
+
+  'home-office': '/assets/waterproofing/hero/office.webp',
+  'Home Office': '/assets/waterproofing/hero/office.webp',
+
+  'POP Ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Gypsum Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'False Ceiling': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  Cornice: '/assets/pop-ceiling/hero/cornice.webp',
+  'Partition Work': '/assets/pop-ceiling/hero/partition-work.webp',
+  'LED Cove & Lighting': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'POP Repair & Renovation': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+};
+
+>>>>>>> main
 /**
  * ============================================================
  * POP DESIGN STYLE IMAGES
@@ -175,6 +283,60 @@ export const popRoomTypeImages = {
 
 export const popDesignStyleImages = {
   simple:
+<<<<<<< HEAD
+    '/assets/pop-ceiling/hero/false-ceiling.png',
+
+  Simple:
+    '/assets/pop-ceiling/hero/false-ceiling.png',
+
+  'simple-elegant':
+    '/assets/pop-ceiling/hero/false-ceiling.png',
+
+  'Simple & Elegant':
+    '/assets/pop-ceiling/hero/false-ceiling.png',
+
+  modern:
+    '/assets/projects/modern-interior.jpeg',
+
+  Modern:
+    '/assets/projects/modern-interior.jpeg',
+
+  classic:
+    '/assets/pop-ceiling/hero/gypsum-ceiling.png',
+
+  Classic:
+    '/assets/pop-ceiling/hero/gypsum-ceiling.png',
+
+  luxury:
+    '/assets/projects/Living_room.jpeg',
+
+  Luxury:
+    '/assets/projects/Living_room.jpeg',
+
+  'cove-ceiling':
+    '/assets/pop-ceiling/hero/living-room-cove.jpg',
+
+  'Cove Ceiling':
+    '/assets/pop-ceiling/hero/living-room-cove.jpg',
+
+  'tray-ceiling':
+    '/assets/pop-ceiling/hero/trayceiling.png',
+
+  'Tray Ceiling':
+    '/assets/pop-ceiling/hero/trayceiling.png',
+
+  'border-ceiling':
+    '/assets/pop-ceiling/hero/cornice.png',
+
+  'Border Ceiling':
+    '/assets/pop-ceiling/hero/cornice.png',
+
+  'custom-design':
+    '/assets/pop-ceiling/hero/custom.png',
+
+  'Custom Design':
+    '/assets/pop-ceiling/hero/custom.png',
+=======
     '/assets/pop-ceiling/hero/false-ceiling.webp',
 
   Simple:
@@ -227,6 +389,7 @@ export const popDesignStyleImages = {
 
   'Custom Design':
     '/assets/pop-ceiling/hero/custom.webp',
+>>>>>>> main
 };
 
 
@@ -238,6 +401,48 @@ export const popDesignStyleImages = {
 
 export const popAddonImages = {
   'pop-cornice':
+<<<<<<< HEAD
+    '/assets/pop-ceiling/hero/cornice.png',
+
+  'POP Cornice (Ceiling Borders)':
+    '/assets/pop-ceiling/hero/cornice.png',
+
+  'pop-moulding':
+    '/assets/pop-ceiling/hero/wall.png',
+
+  'POP Moulding':
+    '/assets/pop-ceiling/hero/wall.png',
+
+  'curtain-cove-pelmet':
+    '/assets/pop-ceiling/hero/led-cove-lighting.png',
+
+  'Curtain Cove / Pelmet':
+    '/assets/pop-ceiling/hero/led-cove-lighting.png',
+
+  'pop-wall-moulding':
+    '/assets/pop-ceiling/hero/wall.png',
+
+  'POP Wall Moulding':
+    '/assets/pop-ceiling/hero/wall.png',
+
+  'pop-wall-panels':
+    '/assets/projects/modern-interior.jpeg',
+
+  'POP Wall Panels':
+    '/assets/projects/modern-interior.jpeg',
+
+  'tv-wall-pop':
+    '/assets/pop-ceiling/hero/pop-tv-wall.png',
+
+  'TV Wall (POP)':
+    '/assets/pop-ceiling/hero/pop-tv-wall.png',
+
+  'ceiling-repair':
+    '/assets/pop-ceiling/hero/pop-repair-renovation.png',
+
+  'Ceiling Repair (if required)':
+    '/assets/pop-ceiling/hero/pop-repair-renovation.png',
+=======
     '/assets/pop-ceiling/hero/cornice.webp',
 
   'POP Cornice (Ceiling Borders)':
@@ -278,6 +483,7 @@ export const popAddonImages = {
 
   'Ceiling Repair (if required)':
     '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+>>>>>>> main
 };
 
 
@@ -289,6 +495,43 @@ export const popAddonImages = {
 
 export const popCeilingImages = {
   'POP Ceiling':
+<<<<<<< HEAD
+    '/assets/services/pop-ceiling-design.jpg',
+
+  'Gypsum Ceiling':
+    '/assets/pop-ceiling/hero/gypsum-ceiling.png',
+
+  'Designer Ceiling':
+    '/assets/pop-ceiling/hero/designer-ceiling.png',
+
+  'Wall Moulding':
+    '/assets/pop-ceiling/hero/wall.png',
+
+  Cornice:
+    '/assets/pop-ceiling/hero/cornice.png',
+
+  'Partition Work':
+  
+    '/assets/pop-ceiling/hero/partition-work.png',
+
+  'LED Cove & Lighting':
+    '/assets/pop-ceiling/hero/led-cove-lighting.png',
+
+  Other:
+    '/assets/pop-ceiling/hero/false-ceiling.png',
+
+  'POP TV Wall':
+    '/assets/pop-ceiling/hero/pop-tv-wall.png',
+
+  'POP Repair & Renovation':
+    '/assets/pop-ceiling/hero/pop-repair-renovation.png',
+
+  'POP Design':
+    '/assets/services/pop-ceiling-design.jpg',
+
+  'False Ceiling':
+    '/assets/pop-ceiling/hero/false-ceiling.png',
+=======
     '/assets/services/pop-ceiling-design.webp',
 
   'Gypsum Ceiling':
@@ -324,6 +567,7 @@ export const popCeilingImages = {
 
   'False Ceiling':
     '/assets/pop-ceiling/hero/false-ceiling.webp',
+>>>>>>> main
 };
 
 

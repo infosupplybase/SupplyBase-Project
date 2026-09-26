@@ -1,3 +1,1152 @@
+<<<<<<< HEAD
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+
+import Icon from '../components/ui/Icon';
+import QuestionField from '../components/booking/QuestionField';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import SlotPicker from '../components/booking/SlotPicker';
+
+import api, { friendlyError } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+import { contact } from '../data/siteConfig';
+
+const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
+
+const DEDICATED_FLOW_PREFIXES = ['wp_'];
+
+const emptyDetails = {
+  name: '',
+  phone: '',
+  whatsapp: '',
+  email: '',
+  address: '',
+  city: '',
+  pincode: '',
+};
+
+const isValidPhone = (value) =>
+  /^[6-9]\d{9}$/.test(
+    String(value || '')
+      .replace(/\D/g, '')
+      .replace(/^91/, '')
+      .replace(/^0/, '')
+  );
+
+export default function ServiceBooking({
+  serviceSlug,
+  modal = false,
+  onStepChange,
+  onClose,
+}) {
+  const { slug: routeSlug } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const slug = serviceSlug || routeSlug;
+  const preselect = searchParams.get('preselect');
+
+  const { user } = useAuth();
+
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  const [stage, setStage] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [details, setDetails] = useState(emptyDetails);
+
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+
+  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+
+  const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useState(null);
+
+  useEffect(() => {
+    if (modal && onStepChange) {
+      onStepChange(stage, receipt);
+    }
+  }, [stage, receipt, modal, onStepChange]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setLoadError('');
+
+    api
+      .serviceForm(slug)
+      .then((result) => {
+        if (cancelled) return;
+
+        if (!result || !Array.isArray(result.questions)) {
+          throw new Error('Invalid service form received from server.');
+        }
+
+        console.log(
+          'SERVICE FORM QUESTIONS:',
+          result.questions.map((q, index) => ({
+            index,
+            key: q.key,
+            text: q.text,
+            inputType: q.inputType,
+          }))
+        );
+
+        setForm(result);
+        setStage(0);
+
+        const validPreselect =
+          preselect &&
+          result.questions.some(
+            (q) =>
+              q.key === 'service_needed' &&
+              q.options?.some((option) => option.value === preselect)
+          );
+
+        setAnswers(
+          validPreselect
+            ? {
+                service_needed: [preselect],
+              }
+            : {}
+        );
+
+        setDate('');
+        setTime('');
+        setErrors({});
+        setError('');
+        setReceipt(null);
+      })
+      .catch((err) => {
+        console.error('SERVICE FORM ERROR:', err);
+
+        if (!cancelled) {
+          setLoadError(friendlyError(err));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, preselect]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    setDetails((current) => ({
+      ...current,
+      name: current.name || user.fullName || '',
+      phone: current.phone || user.phone || '',
+      email: current.email || user.email || '',
+    }));
+  }, [user]);
+
+  const stageQuestions = useMemo(() => {
+    if (!form || !Array.isArray(form.questions)) {
+      return [[], [], []];
+    }
+
+    const usable = form.questions
+      .filter(
+        (q) =>
+          q &&
+          q.inputType !== 'FILE' &&
+          !(slug === 'pop-ceiling-design' && q.key === 'pop_home_type') &&
+          !(q.key === 'rooms' && slug !== 'pop-ceiling-design') &&
+          !(slug === 'pop-ceiling-design' && q.key === 'pop_addon') &&
+          q.key !== 'pop_room_notes' &&
+          q.key !== 'pop_design_notes' &&
+          !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+            String(q.key || '').startsWith(prefix)
+          )
+      )
+      .map((q, index) => ({
+        ...q,
+        _questionId: `${q.key}-${index}`,
+      }));
+
+    const service = usable.filter((q) => q.key === 'service_needed');
+
+    const property = usable.filter((q) => q.key === 'property_type');
+
+    const designQuestions = usable.filter(
+      (q) => q.key === 'pop_home_design_style'
+    );
+
+    const roomQuestions = usable.filter(
+      (q) => q.key === 'pop_room_type' || q.key === 'rooms'
+    );
+
+    const detailsQuestions = usable.filter(
+      (q) =>
+        q.key !== 'service_needed' &&
+        q.key !== 'property_type' &&
+        q.key !== 'pop_room_type' &&
+        q.key !== 'rooms' &&
+        q.key !== 'pop_home_design_style'
+    );
+
+    if (slug === 'pop-ceiling-design') {
+      return [service, roomQuestions, designQuestions];
+    }
+
+    return [service, property, detailsQuestions];
+  }, [form, slug]);
+
+  const scheduleStage = stageQuestions.length;
+  const confirmStage = scheduleStage + 1;
+
+  const isPopFiveStep = slug === 'pop-ceiling-design';
+
+  const stageLabels = isPopFiveStep
+    ? ['Service', 'Room', 'Design Style', 'Schedule', 'Confirm']
+    : STAGES;
+
+  const setAnswer = (key) => (next) => {
+    setAnswers((current) => ({
+      ...current,
+      [key]:
+        typeof next === 'function'
+          ? next(current[key])
+          : next,
+    }));
+
+    setErrors((current) => ({
+      ...current,
+      [key]: undefined,
+    }));
+
+    setError('');
+  };
+
+  const setDetail = (key) => (event) => {
+    const value = event.target.value;
+
+    setDetails((current) => ({
+      ...current,
+      [key]: value,
+    }));
+
+    setErrors((current) => ({
+      ...current,
+      [key]: undefined,
+    }));
+
+    setError('');
+  };
+
+  const validateQuestions = (list = []) => {
+    const nextErrors = {};
+
+    list.forEach((question) => {
+      if (!question.required) return;
+
+      const value = answers[question.key];
+
+      const empty = Array.isArray(value)
+        ? value.length === 0
+        : !value;
+
+      if (empty) {
+        nextErrors[question.key] = 'Please choose an option';
+      }
+    });
+
+    setErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const validateDetails = () => {
+    const nextErrors = {};
+
+    if (!details.name.trim()) {
+      nextErrors.name = 'Please enter your name';
+    }
+
+    if (!details.phone.trim()) {
+      nextErrors.phone = 'Please enter your mobile number';
+    } else if (!isValidPhone(details.phone)) {
+      nextErrors.phone = 'Enter a 10-digit mobile number';
+    }
+
+    if (
+      details.whatsapp.trim() &&
+      !isValidPhone(details.whatsapp)
+    ) {
+      nextErrors.whatsapp =
+        'Enter a 10-digit number, or leave it blank';
+    }
+
+    if (
+      details.email.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())
+    ) {
+      nextErrors.email = 'That email address does not look right';
+    }
+
+    if (!details.address.trim()) {
+      nextErrors.address = 'Please enter your address';
+    }
+
+    if (!details.city.trim()) {
+      nextErrors.city = 'Please enter your city';
+    }
+
+    if (
+      details.pincode.trim() &&
+      !/^[1-9][0-9]{5}$/.test(details.pincode.trim())
+    ) {
+      nextErrors.pincode = 'Enter a 6-digit pincode';
+    }
+
+    setErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const canLeaveStage = () => {
+    if (stage < scheduleStage) {
+      return validateQuestions(stageQuestions[stage]);
+    }
+
+    if (stage === scheduleStage) {
+      if (!date || !time) {
+        setErrors((current) => ({
+          ...current,
+          slot: 'Please choose a date and a time',
+        }));
+
+        return false;
+      }
+
+      if (isPopFiveStep) {
+        return validateDetails();
+      }
+
+      return true;
+    }
+
+    return validateDetails();
+  };
+
+  const goNext = () => {
+    setError('');
+
+    if (!canLeaveStage()) {
+      return;
+    }
+
+    setStage((currentStage) =>
+      Math.min(currentStage + 1, confirmStage)
+    );
+
+    if (!modal) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const goBack = () => {
+    setError('');
+
+    setStage((currentStage) =>
+      Math.max(currentStage - 1, 0)
+    );
+
+    if (!modal) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!validateDetails()) {
+      return;
+    }
+
+    setBusy(true);
+    setError('');
+
+    try {
+      const flat = [];
+
+      Object.entries(answers).forEach(([key, value]) => {
+        const question = form.questions.find(
+          (q) => q.key === key
+        );
+
+        const values = Array.isArray(value)
+          ? value
+          : [value];
+
+        values
+          .filter(
+            (value) =>
+              value !== '' &&
+              value !== null &&
+              value !== undefined
+          )
+          .forEach((value) => {
+            const option = (question?.options || []).find(
+              (option) => option.value === value
+            );
+
+            flat.push({
+              key,
+              value: String(value),
+              label: option
+                ? option.label
+                : String(value),
+            });
+          });
+      });
+
+      const result = await api.createBooking({
+        serviceSlug: slug,
+        answers: flat,
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name,
+        phone: details.phone,
+        whatsapp: details.whatsapp || null,
+        email: details.email || null,
+        address: details.address,
+        city: details.city,
+        pincode: details.pincode || null,
+        areaSqft: answers.area_sqft
+          ? Number(answers.area_sqft)
+          : null,
+      });
+
+      setReceipt(result);
+
+      if (!modal) {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+      }
+    } catch (err) {
+      console.error('BOOKING ERROR:', err);
+
+      if (err && err.fieldErrors) {
+        setErrors(err.fieldErrors);
+      }
+
+      setError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={modal ? 'w-full' : 'wizard-shell'}>
+        <div
+          className={
+            modal ? 'w-full' : 'wizard-container'
+          }
+        >
+          <p style={{ color: 'rgba(255,255,255,.6)' }}>
+            Loading…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !form) {
+    return (
+      <div className={modal ? 'w-full' : 'wizard-shell'}>
+        <div
+          className={
+            modal ? 'w-full' : 'wizard-container'
+          }
+        >
+          <div className="wizard-card">
+            <div
+              role="alert"
+              className="alert alert-error"
+            >
+              <Icon name="info" size={18} />
+
+              <span>
+                {loadError ||
+                  'That service could not be found.'}
+              </span>
+            </div>
+
+            <Link
+              to="/services"
+              className="btn btn-primary btn-block"
+            >
+              SEE ALL SERVICES
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { category } = form;
+
+  if (receipt) {
+    return (
+      <Confirmation
+        receipt={receipt}
+        details={details}
+        modal={modal}
+      />
+    );
+  }
+
+  return (
+    <div className={modal ? 'w-full' : 'wizard-shell'}>
+      <div
+        className={
+          modal ? 'w-full' : 'wizard-container'
+        }
+      >
+        {!modal && (
+          <div className="wizard-top">
+            {stage > 0 ? (
+              <button
+                type="button"
+                className="wizard-back"
+                onClick={goBack}
+                aria-label="Go back"
+              >
+                <Icon
+                  name="arrow-left"
+                  size={20}
+                />
+              </button>
+            ) : (
+              <Link
+                to="/services"
+                className="wizard-back"
+                aria-label="Back to services"
+              >
+                <Icon
+                  name="arrow-left"
+                  size={20}
+                />
+              </Link>
+            )}
+
+            <h1 className="wizard-title">
+              Book a Service
+            </h1>
+
+            <a
+              href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+                `Hello Supplybase, I need help booking ${category.name}.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="wizard-help"
+            >
+              Need help?
+            </a>
+          </div>
+        )}
+
+        <ol
+          className={
+            modal
+              ? 'wizard-steps !mb-5'
+              : 'wizard-steps'
+          }
+        >
+          {stageLabels.map((label, index) => (
+            <li
+              key={label}
+              className={`wstep ${
+                index === stage ? 'current' : ''
+              } ${
+                index < stage ? 'done' : ''
+              }`}
+              aria-current={
+                index === stage
+                  ? 'step'
+                  : undefined
+              }
+            >
+              <span className="wstep-num">
+                {index < stage ? (
+                  <Icon
+                    name="check"
+                    size={14}
+                    strokeWidth={3}
+                  />
+                ) : (
+                  index + 1
+                )}
+              </span>
+
+              <span className="wstep-label">
+                {label}
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        <form onSubmit={handleSubmit} noValidate>
+          <div
+            className={
+              modal
+                ? 'wizard-card !rounded-xl !shadow-none !p-5'
+                : 'wizard-card'
+            }
+          >
+            {stage < scheduleStage &&
+              stageQuestions[stage].map(
+                (question, index) => (
+                  <QuestionField
+                    key={
+                      question._questionId ||
+                      `${question.key}-${index}`
+                    }
+                    question={question}
+                    value={answers[question.key]}
+                    onChange={setAnswer(question.key)}
+                    error={errors[question.key]}
+                    serviceSlug={slug}
+                  />
+                )
+              )}
+
+            {stage === scheduleStage && (
+              <>
+                <div className="wizard-card-head">
+                  <h2>
+                    Choose Date &amp; Time for Site Visit
+                  </h2>
+
+                  <p>
+                    Our team will visit your site.
+                  </p>
+                </div>
+
+                <SlotPicker
+                  serviceSlug={slug}
+                  date={date}
+                  time={time}
+                  onPick={(selectedDate, selectedTime) => {
+                    setDate(selectedDate);
+                    setTime(selectedTime);
+
+                    setErrors((current) => ({
+                      ...current,
+                      slot: undefined,
+                    }));
+                  }}
+                  error={errors.slot}
+                />
+
+                {isPopFiveStep && (
+                  <>
+                    <div
+                      className="wizard-card-head"
+                      style={{ marginTop: 24 }}
+                    >
+                      <h2>Enter Your Details</h2>
+
+                      <p>
+                        We will contact you to confirm the
+                        appointment.
+                      </p>
+                    </div>
+
+                    <CustomerDetailsFields
+                      details={details}
+                      setDetail={setDetail}
+                      errors={errors}
+                      idPrefix="pop-bk"
+                    />
+                  </>
+                )}
+              </>
+            )}
+
+            {stage === confirmStage && (
+              <>
+                <div className="wizard-card-head">
+                  <h2>Enter Your Details</h2>
+
+                  <p>
+                    We will contact you to confirm the
+                    appointment.
+                  </p>
+                </div>
+
+                <div className="form-grid">
+                  <Field
+                    id="bk-name"
+                    label="Full Name"
+                    required
+                    value={details.name}
+                    onChange={setDetail('name')}
+                    error={errors.name}
+                    placeholder="Enter your name"
+                  />
+
+                  <Field
+                    id="bk-phone"
+                    label="Mobile Number"
+                    required
+                    type="tel"
+                    inputMode="numeric"
+                    value={details.phone}
+                    onChange={setDetail('phone')}
+                    error={errors.phone}
+                    placeholder="Enter mobile number"
+                  />
+
+                  <Field
+                    id="bk-whatsapp"
+                    label="WhatsApp Number (Optional)"
+                    type="tel"
+                    inputMode="numeric"
+                    value={details.whatsapp}
+                    onChange={setDetail('whatsapp')}
+                    error={errors.whatsapp}
+                    placeholder="Enter WhatsApp number"
+                    hint="Leave blank if it is the same as your mobile."
+                  />
+
+                  <Field
+                    id="bk-email"
+                    label="Email Address (Optional)"
+                    type="email"
+                    value={details.email}
+                    onChange={setDetail('email')}
+                    error={errors.email}
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                <div
+                  className="field"
+                  style={{ marginTop: 16 }}
+                >
+                  <label htmlFor="bk-address">
+                    Project Address{' '}
+                    <span className="req">*</span>
+                  </label>
+
+                  <textarea
+                    id="bk-address"
+                    rows={3}
+                    value={details.address}
+                    onChange={setDetail('address')}
+                    placeholder="Enter complete address"
+                  />
+
+                  {errors.address && (
+                    <span className="field-error">
+                      {errors.address}
+                    </span>
+                  )}
+                </div>
+
+                <div
+                  className="form-grid"
+                  style={{ marginTop: 16 }}
+                >
+                  <Field
+                    id="bk-city"
+                    label="City"
+                    required
+                    value={details.city}
+                    onChange={setDetail('city')}
+                    error={errors.city}
+                    placeholder="Mumbai"
+                  />
+
+                  <Field
+                    id="bk-pincode"
+                    label="Pincode"
+                    value={details.pincode}
+                    onChange={setDetail('pincode')}
+                    error={errors.pincode}
+                    placeholder="400001"
+                  />
+                </div>
+
+                <Summary
+                  category={category}
+                  form={form}
+                  answers={answers}
+                  date={date}
+                  time={time}
+                />
+              </>
+            )}
+
+            {error && (
+              <div
+                role="alert"
+                className="alert alert-error"
+                style={{ marginTop: 18 }}
+              >
+                <Icon name="info" size={18} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div
+              className={
+                modal
+                  ? 'wizard-foot !static !inset-auto !z-auto !mt-5 !mb-0 !flex !w-full !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+                  : 'wizard-foot'
+              }
+            >
+              {(stage > 0 || modal) && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-back btn-sm md:!flex-none md:!w-36 md:!me-auto"
+                  onClick={
+                    stage > 0
+                      ? goBack
+                      : onClose
+                  }
+                >
+                  BACK
+                </button>
+              )}
+
+              {stage === confirmStage ||
+              (isPopFiveStep &&
+                stage === scheduleStage) ? (
+                <button
+                  type="submit"
+                  className="
+                    btn btn-primary btn-sm
+                    md:!flex-none md:!w-56 md:!ms-auto
+                    max-md:!text-[11px]
+                    max-md:!px-3
+                    max-md:!whitespace-nowrap
+                    max-md:!ms-auto
+                  "
+                  disabled={busy}
+                >
+                  {busy ? 'BOOKING…' : 'BOOK NOW'}
+
+                  <Icon
+                    name="arrow-right"
+                    size={15}
+                  />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm md:!flex-none md:!w-44 md:!ms-auto"
+                  onClick={goNext}
+                >
+                  CONTINUE
+
+                  <Icon
+                    name="arrow-right"
+                    size={17}
+                  />
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  id,
+  label,
+  required,
+  hint,
+  error,
+  ...rest
+}) {
+  return (
+    <div className={`field ${error ? 'error' : ''}`}>
+      <label htmlFor={id}>
+        {label}{' '}
+
+        {required && (
+          <span className="req">*</span>
+        )}
+      </label>
+
+      <input
+        id={id}
+        {...rest}
+      />
+
+      {error ? (
+        <span className="field-error">
+          {error}
+        </span>
+      ) : (
+        hint && (
+          <span className="field-hint">
+            {hint}
+          </span>
+        )
+      )}
+    </div>
+  );
+}
+
+function Summary({
+  category,
+  form,
+  answers,
+  date,
+  time,
+}) {
+  const rows = form.questions
+    .filter(
+      (question) =>
+        question &&
+        question.inputType !== 'FILE' &&
+        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+          String(question.key || '').startsWith(prefix)
+        )
+    )
+    .map((question, questionIndex) => {
+      const value = answers[question.key];
+
+      const values = Array.isArray(value)
+        ? value
+        : value
+          ? [value]
+          : [];
+
+      if (values.length === 0) {
+        return null;
+      }
+
+      const labels = values.map((value) => {
+        const option = (question.options || []).find(
+          (option) => option.value === value
+        );
+
+        return option ? option.label : value;
+      });
+
+      return {
+        key: question.key,
+        index: questionIndex,
+        question: question.text,
+        answer: labels.join(', '),
+      };
+    })
+    .filter(Boolean);
+
+  return (
+    <div style={{ marginTop: 26 }}>
+      <div className="wizard-card-head">
+        <h2>Booking Summary</h2>
+
+        <p>
+          Please check everything before you pay.
+        </p>
+      </div>
+
+      <dl className="review-list">
+        <div>
+          <dt>Service</dt>
+          <dd>{category.name}</dd>
+        </div>
+
+        <div>
+          <dt>Site visit</dt>
+          <dd>
+            {date} at {time}
+          </dd>
+        </div>
+
+        {rows.map((row) => (
+          <div
+            key={`${row.key}-${row.index}`}
+          >
+            <dt>{row.question}</dt>
+            <dd>{row.answer}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="fee-panel">
+        <div className="fee-panel-top">
+          <strong>
+            Site Visit &amp; Quotation Fee
+          </strong>
+        </div>
+
+        <ul className="fee-includes">
+          {[
+            'Site visit',
+            'Assessment',
+            'Measurement where required',
+            'Quotation',
+          ].map((item) => (
+            <li key={item}>
+              <Icon
+                name="check"
+                size={13}
+                strokeWidth={3}
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        <p className="fee-small">
+          This is a one-time fee.{' '}
+          <strong>
+            No advance payment is required
+            for the actual work.
+          </strong>{' '}
+          The final project cost will be
+          provided after site inspection.
+          Supplybase will provide the
+          required material according to
+          the approved quotation.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Confirmation({
+  receipt,
+  details,
+  modal = false,
+}) {
+  const message = encodeURIComponent(
+    `Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`
+  );
+
+  return (
+    <div className={modal ? 'w-full' : 'wizard-shell'}>
+      <div
+        className={
+          modal ? 'w-full' : 'wizard-container'
+        }
+      >
+        <div
+          className={
+            modal
+              ? 'wizard-card !p-5 !rounded-xl !shadow-none'
+              : 'wizard-card'
+          }
+        >
+          <div className="confirmed">
+            <div className="confirmed-tick">
+              <Icon
+                name="check"
+                size={38}
+                strokeWidth={3}
+              />
+            </div>
+
+            <h2>Your Site Visit is Booked!</h2>
+
+            <p>
+              We have received your request.
+              Our team will contact you on
+              WhatsApp or phone to confirm the
+              appointment.
+            </p>
+
+            <dl className="confirmed-panel">
+              <div>
+                <dt>Booking ID</dt>
+
+                <dd className="booking-id">
+                  {receipt.bookingNumber}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Date &amp; Time</dt>
+
+                <dd>
+                  {receipt.date}, {receipt.time}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Service</dt>
+
+                <dd>
+                  {receipt.serviceName}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Location</dt>
+
+                <dd>
+                  {details.city}
+                </dd>
+              </div>
+            </dl>
+
+            <Link
+              to="/dashboard"
+              className="btn btn-primary btn-block"
+            >
+              GO TO DASHBOARD
+            </Link>
+
+            <div
+              className="btn-row"
+              style={{ marginTop: 12 }}
+            >
+              <a
+                href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-whatsapp"
+              >
+                <Icon
+                  name="whatsapp"
+                  size={17}
+                />
+
+                CHAT ON WHATSAPP
+              </a>
+
+              <Link
+                to="/"
+                className="btn btn-ghost btn-back"
+              >
+                BACK TO HOME
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+=======
 
 import { useEffect, useMemo, useState } from 'react';
 
@@ -1438,4 +2587,5 @@ function Confirmation({
       </div>
     </div>
   );
+>>>>>>> main
 }

@@ -8,6 +8,10 @@ import ServiceBooking from './pages/ServiceBooking';
 // routes below. Imports kept (not deleted) so re-enabling is a two-line diff.
 // import Projects from './pages/Projects';
 // import Materials from './pages/Materials';
+<<<<<<< HEAD
+import Book from './pages/Book';
+=======
+>>>>>>> main
 import InteriorByChoice from './pages/InteriorByChoice';
 import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
 import InteriorDesignDetail from './pages/InteriorDesignDetail';
@@ -26,6 +30,20 @@ import PaintingFlow from './pages/PaintingFlow';
 import PopCeilingCategory from './pages/PopCeilingCategory';
 import PopCeilingFlow from './pages/PopCeilingFlow';
 import WaterproofingCategory from './pages/WaterproofingCategory';
+<<<<<<< HEAD
+
+function PopCeilingResetRoute() {
+  const flowSlug = window.location.pathname.split('/').pop();
+  const label = flowSlug === 'room' ? 'Room POP' : 'Full Home POP';
+  return (
+    <Navigate
+      to={`/booking/pop-ceiling-design?preselect=${encodeURIComponent(label)}`}
+      replace
+    />
+  );
+}
+=======
+>>>>>>> main
 import WaterproofingBathroom from './pages/WaterproofingBathroom';
 import WaterproofingFlow from './pages/WaterproofingFlow';
 import InteriorDesignCategory from './pages/InteriorDesignCategory';
@@ -47,7 +65,11 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * ROUTES
  * /                       Home
  * /services               All services
+<<<<<<< HEAD
+ * /services/:slug         Book a site visit for one of the four services
+=======
  * /services/:slug         Book a site visit for one service
+>>>>>>> main
  * /services/electrical    Electrical Services category list
  * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
  * /services/plumbing      Plumbing Services overview grid (8 categories + consultation)
@@ -70,7 +92,11 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  *                          POP's four non-detailed subservices land, via ?preselect=<value>
  *                          (see ServiceBooking.jsx)
  * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
+<<<<<<< HEAD
+ * /book                   Book a site visit (?type=service | ?type=project)
+=======
  * /book                   Redirects to /services (old standalone booking page, removed)
+>>>>>>> main
  * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
  * /about                  About us
  * /contact                Contact
@@ -161,7 +187,11 @@ export default function App() {
             the existing generic wizard below, with their subservice
             preselected (see ServiceBooking.jsx). */}
         <Route path="services/pop-ceiling-design" element={<PopCeilingCategory />} />
+<<<<<<< HEAD
+        <Route path="services/pop-ceiling-design/:flowSlug" element={<PopCeilingResetRoute />} />
+=======
         <Route path="services/pop-ceiling-design/:flowSlug" element={<PopCeilingFlow />} />
+>>>>>>> main
 
         {/* Waterproofing: six subservices, in the reference's own order.
             Five open WaterproofingFlow directly; Bathroom opens its own
@@ -193,10 +223,14 @@ export default function App() {
         {/* <Route path="projects" element={<Projects />} /> */}
         {/* <Route path="projects/:slug" element={<ProjectDetail />} /> */}
         {/* <Route path="materials" element={<Materials />} /> */}
+<<<<<<< HEAD
+        <Route path="book" element={<Book />} />
+=======
         {/* The old standalone /book page had its own hard-coded list of
             services that had drifted from the real ones. Every booking now
             starts from a service, so old links go to the services page. */}
         <Route path="book" element={<Navigate to="/services" replace />} />
+>>>>>>> main
 
         {/* Interior by Choice — the ready-made design catalogue. Its own
             small route tree, separate from the generic /services/:slug
