@@ -20,9 +20,12 @@ import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
 import OtherServicesCategory from '../../pages/OtherServicesCategory';
+<<<<<<< HEAD
 import ElectricalCategory from '../../pages/ElectricalCategory';
 import PopCeilingCategory from '../../pages/PopCeilingCategory';
 import WaterproofingCategory from '../../pages/WaterproofingCategory';
+=======
+>>>>>>> main
 
 /**
  * Opens the "Book a service" modal, shared by every page that lets someone
@@ -99,9 +102,17 @@ export default function ServiceBookingModal({ service, onClose }) {
           relative
           w-full
 
+<<<<<<< HEAD
          ${['interior-by-choice', 'interior-design', 'electrical', 'pop-ceiling-design', 'waterproofing'].includes(service.slug)
   ? 'max-w-[1000px]'
           : 'max-w-[500px]'
+=======
+         ${service.slug === 'interior-by-choice'
+  ? 'max-w-[1000px]'
+  : service.slug === 'interior-design'
+    ? 'max-w-[1000px]'
+    : 'max-w-[500px]'
+>>>>>>> main
 }
 
           max-h-[88vh]
@@ -157,7 +168,11 @@ export default function ServiceBookingModal({ service, onClose }) {
 
         {/* MODAL HEADER */}
 
+<<<<<<< HEAD
         <div className="px-5 pt-5 pr-14">
+=======
+        <div className="px-6 pt-6 pr-16">
+>>>>>>> main
           <p
             className="
               mb-1
@@ -193,19 +208,32 @@ export default function ServiceBookingModal({ service, onClose }) {
           </p> */}
         </div>
 
+<<<<<<< HEAD
         <div className="my-4 h-px bg-gray-200" />
+=======
+        <div className="my-6 h-px bg-gray-200" />
+>>>>>>> main
 
         {/* MODAL SCROLL AREA */}
 
         <div
           ref={modalScrollRef}
           className="
+<<<<<<< HEAD
             max-h-[calc(88vh-170px)]
             overflow-y-auto
 
             px-5
             pb-6
             md:pb-8
+=======
+            max-h-[calc(88vh-190px)]
+            overflow-y-auto
+
+            px-6
+            pb-10
+            md:pb-12
+>>>>>>> main
 
             max-sm:flex-1
             max-sm:min-h-0
@@ -292,7 +320,11 @@ export default function ServiceBookingModal({ service, onClose }) {
                               rounded-xl
                             "
                           >
+<<<<<<< HEAD
                             <img
+=======
+                            <img loading="lazy" decoding="async"
+>>>>>>> main
                               src={design.image}
                               alt={design.name}
                               className="
@@ -631,7 +663,11 @@ export default function ServiceBookingModal({ service, onClose }) {
                               text-left
                             "
                           >
+<<<<<<< HEAD
                             <img
+=======
+                            <img loading="lazy" decoding="async"
+>>>>>>> main
                               src={space.image}
                               alt={space.name}
                               className="
@@ -853,6 +889,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                 }}
               />
             )
+<<<<<<< HEAD
           ) : service.slug === 'electrical' ? (
             <ElectricalCategory
               modal={true}
@@ -865,6 +902,8 @@ export default function ServiceBookingModal({ service, onClose }) {
             <WaterproofingCategory
               modal={true}
             />
+=======
+>>>>>>> main
           ) : (
             <ServiceBooking
               serviceSlug={service.slug}

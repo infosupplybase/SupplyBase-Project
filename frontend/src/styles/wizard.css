@@ -3,210 +3,409 @@
 
    Dark shell, white content card, gold progress.
    Image-based service tiles with responsive layout.
+<<<<<<< HEAD
    ========================================================================= */
 
 /* =========================================================================
    WIZARD SHELL
+=======
+>>>>>>> main
    ========================================================================= */
+
+
+/* ========================================================================
+   WIZARD SHELL
+   ======================================================================== */
 
 .wizard-shell {
   min-height: 100vh;
+
   padding-top: var(--header-h);
+<<<<<<< HEAD
   padding-bottom: calc(var(--space-9) + 40px);
   background: var(--dark);
   color: var(--white);
 }
 
+=======
+
+  background: var(--dark);
+  color: var(--white);
+
+  /*
+   * Room for the sticky mobile CTA so the last field is never trapped
+   * underneath it.
+   */
+  padding-bottom: calc(var(--space-9) + 40px);
+}
+
+
+/*
+ * Every wizard-shell page already has its own "Need help?" WhatsApp link
+ * in the top bar, so the site-wide floating call/WhatsApp buttons are
+ * redundant here.
+ */
+>>>>>>> main
 body:has(.wizard-shell) .floating-actions {
   display: none;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    CONTAINER
    ========================================================================= */
+=======
+
+/* ========================================================================
+   CONTAINER
+   ======================================================================== */
+>>>>>>> main
 
 .wizard-container {
   width: 100%;
   max-width: 780px;
+
   margin: 0 auto;
+<<<<<<< HEAD
   padding: var(--space-5) var(--gutter) 0;
 }
 
 /* =========================================================================
    TOP BAR
    ========================================================================= */
+=======
+
+  padding: var(--space-5) var(--gutter) 0;
+}
+
+
+/* ========================================================================
+   TOP BAR
+   ======================================================================== */
+>>>>>>> main
 
 .wizard-top {
   display: grid;
+
   grid-template-columns: 44px 1fr 44px;
+
   align-items: center;
+
   gap: var(--space-3);
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   margin-bottom: var(--space-5);
 }
+
 
 .wizard-back {
   width: var(--tap-min);
   height: var(--tap-min);
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   border-radius: var(--radius-sm);
+
   color: var(--white);
-  transition: background var(--t-fast) var(--ease);
+
+  transition:
+    background var(--t-fast) var(--ease);
 }
+
 
 .wizard-back:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
+
 .wizard-title {
   margin: 0;
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   font-family: var(--font-display);
+
   font-size: 17px;
   font-weight: 600;
+
   letter-spacing: 0.18em;
+
   text-transform: uppercase;
+
   text-align: center;
+
   color: var(--white);
 }
 
+
 .wizard-help {
   justify-self: end;
+
   font-size: 13px;
+
   color: rgba(255, 255, 255, 0.55);
+
   white-space: nowrap;
-  transition: color var(--t-fast) var(--ease);
+
+  transition:
+    color var(--t-fast) var(--ease);
 }
+
 
 .wizard-help:hover {
   color: var(--gold);
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    PROGRESS STEPS
    ========================================================================= */
+=======
+
+/* ========================================================================
+   PROGRESS STEPS
+   ======================================================================== */
+>>>>>>> main
 
 .wizard-steps {
   position: relative;
+
   display: grid;
+
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
+
   list-style: none;
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   margin: 0 0 var(--space-4);
   padding: 0;
 }
 
+
 .wstep {
   position: relative;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
+
   gap: 8px;
+
   min-width: 0;
 }
 
+<<<<<<< HEAD
+=======
+
+/*
+ * Connector between steps.
+ */
+
+>>>>>>> main
 .wstep:not(:last-child)::after {
   content: '';
+
   position: absolute;
+
   top: 15px;
+
   left: calc(50% + 20px);
   right: calc(-50% + 20px);
+
   height: 2px;
+
   background: rgba(255, 255, 255, 0.14);
+
   z-index: 0;
 }
+
 
 .wstep.done:not(:last-child)::after {
   background: var(--gold);
 }
 
+
 .wstep-num {
   position: relative;
+
   z-index: 1;
+
   width: 32px;
   height: 32px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   border-radius: 50%;
+
   border: 2px solid rgba(255, 255, 255, 0.22);
+
   background: var(--dark);
+
   font-family: var(--font-display);
+
   font-size: 14px;
   font-weight: 700;
+
   color: rgba(255, 255, 255, 0.5);
-  transition: all var(--t) var(--ease);
+
+  transition:
+    all var(--t) var(--ease);
 }
 
+<<<<<<< HEAD
+=======
+
+/*
+ * Completed step.
+ */
+
+>>>>>>> main
 .wstep.done .wstep-num {
   border-color: var(--gold);
+
   color: var(--gold);
+
   background: var(--dark);
 }
+
+
+/*
+ * Current step.
+ */
 
 .wstep.current .wstep-num {
   border-color: var(--gold);
+<<<<<<< HEAD
   background: linear-gradient(
     180deg,
     var(--gold-light) 0%,
     var(--gold) 100%
   );
   color: var(--on-gold);
+=======
+
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+
+  color: var(--on-gold);
+
+>>>>>>> main
   box-shadow:
     var(--depth-inset-top),
     0 0 0 5px rgba(223, 175, 53, 0.16),
     var(--shadow-sm);
 }
 
+
 .wstep-label {
   max-width: 100%;
+<<<<<<< HEAD
   font-size: 12px;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
   overflow: hidden;
+=======
+
+  font-size: 12px;
+
+  letter-spacing: 0.04em;
+
+  color: rgba(255, 255, 255, 0.5);
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+>>>>>>> main
   text-overflow: ellipsis;
 }
 
+
 .wstep.current .wstep-label {
   color: var(--white);
+
   font-weight: 600;
 }
+
 
 .wstep.done .wstep-label {
   color: rgba(255, 255, 255, 0.75);
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    WHITE CONTENT CARD
    ========================================================================= */
+=======
+
+/* ========================================================================
+   WHITE CONTENT CARD
+   ======================================================================== */
+>>>>>>> main
 
 .wizard-card {
   background: var(--white);
+
   color: var(--ink);
+
   border-radius: var(--radius-lg);
+<<<<<<< HEAD
   padding: clamp(16px, 3vw, 24px);
+=======
+
+  padding: clamp(16px, 3vw, 24px);
+
+>>>>>>> main
   box-shadow:
     var(--depth-inset-top),
     0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
+
 .wizard-card-head {
   margin-bottom: var(--space-4);
 }
 
+
 .wizard-card-head h2 {
   margin: 0 0 3px;
+<<<<<<< HEAD
   font-family: var(--font-body);
   font-size: 19px;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: none;
+=======
+
+  font-family: var(--font-body);
+
+  font-size: 19px;
+
+  font-weight: 700;
+
+  letter-spacing: 0;
+
+  text-transform: none;
+
+>>>>>>> main
   color: var(--ink);
 }
 
+
 .wizard-card-head p {
   margin: 0;
+<<<<<<< HEAD
   font-size: 13.5px;
   color: var(--ink-muted);
 }
@@ -214,6 +413,18 @@ body:has(.wizard-shell) .floating-actions {
 /* =========================================================================
    SERVICE TILES
    ========================================================================= */
+=======
+
+  font-size: 13.5px;
+
+  color: var(--ink-muted);
+}
+
+
+/* ========================================================================
+   SERVICE TILES
+   ======================================================================== */
+>>>>>>> main
 
 .tile-grid {
   display: grid;
@@ -221,24 +432,58 @@ body:has(.wizard-shell) .floating-actions {
   gap: 16px;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    INDIVIDUAL SERVICE CARD
    ========================================================================= */
+=======
+
+/* ========================================================================
+   INDIVIDUAL SERVICE CARD
+   ======================================================================== */
+>>>>>>> main
 
 .tile {
   position: relative;
+
   display: flex;
+<<<<<<< HEAD
   flex-direction: column;
   align-items: stretch;
   gap: 0;
   min-height: 190px;
   padding: 0;
   overflow: hidden;
+=======
+
+  flex-direction: column;
+
+  align-items: stretch;
+
+  gap: 0;
+
+  min-height: 190px;
+
+  padding: 0;
+
+  overflow: hidden;
+
+>>>>>>> main
   background: var(--white);
+
   border: 1px solid var(--border);
+
   border-radius: var(--radius-sm);
+<<<<<<< HEAD
   box-shadow: var(--shadow-sm);
   cursor: pointer;
+=======
+
+  box-shadow: var(--shadow-sm);
+
+  cursor: pointer;
+
+>>>>>>> main
   transition:
     border-color var(--t-fast) var(--ease),
     background var(--t-fast) var(--ease),
@@ -246,17 +491,51 @@ body:has(.wizard-shell) .floating-actions {
     transform var(--t-fast) var(--ease);
 }
 
+.tile--no-image {
+  min-height: 120px;
+}
+
+.tile--no-image .tile-body {
+  min-height: 0;
+  padding: 22px 18px;
+}
+
+.tile--no-image .tile-label {
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+
+/*
+ * Hover effect.
+ */
+
 .tile:hover {
   border-color: var(--gold);
+<<<<<<< HEAD
   transform: translateY(-6px);
   box-shadow: var(--shadow);
 }
+=======
+
+  transform: translateY(-6px);
+
+  box-shadow: var(--shadow);
+}
+
+
+/*
+ * Accessible keyboard focus.
+ */
+>>>>>>> main
 
 .tile:focus-within {
   outline: 3px solid var(--gold);
+
   outline-offset: 2px;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    HIDDEN RADIO / CHECKBOX
    ========================================================================= */
@@ -290,22 +569,113 @@ body:has(.wizard-shell) .floating-actions {
   height: 100%;
   object-fit: cover;
   object-position: center;
+=======
+
+/* ========================================================================
+   HIDDEN RADIO / CHECKBOX
+   ======================================================================== */
+
+.tile input {
+  position: absolute;
+
+  opacity: 0;
+
+  width: 1px;
+  height: 1px;
+
+  margin: 0;
+
+  pointer-events: none;
+}
+
+
+/* ========================================================================
+   SERVICE IMAGE
+   ======================================================================== */
+
+.tile-image {
+  position: relative;
+
+  display: block;
+
+  width: 100%;
+
+  height: 180px;
+
+  flex-shrink: 0;
+
+  overflow: hidden;
+
+  background: var(--gold-a12);
+}
+
+
+/*
+ * Actual service image.
+ */
+
+.tile-image img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  object-position: center;
+
+>>>>>>> main
   transition:
     transform 0.3s var(--ease),
     filter 0.3s var(--ease);
 }
 
+<<<<<<< HEAD
+=======
+
+/*
+ * Image zoom on hover.
+ */
+
+>>>>>>> main
 .tile:hover .tile-image img {
   transform: scale(1.05);
 }
 
+<<<<<<< HEAD
 .tile-icon-fallback {
   width: 100%;
   height: 100%;
+=======
+
+/*
+ * Fallback icon if an image does not exist.
+ */
+
+.tile-icon-fallback {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: var(--gold-deep);
+
+  background: var(--gold-a12);
+}
+
+.tile-image.has-image-error::after {
+  content: 'Image unavailable';
+  position: absolute;
+  inset: 0;
+>>>>>>> main
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--gold-deep);
+<<<<<<< HEAD
   background: var(--gold-a12);
 }
 
@@ -316,10 +686,22 @@ body:has(.wizard-shell) .floating-actions {
 /* =========================================================================
    SERVICE NAME AREA
    ========================================================================= */
+=======
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* ========================================================================
+   SERVICE NAME AREA
+   ======================================================================== */
+>>>>>>> main
 
 .tile-body {
   display: flex;
+
   flex-direction: column;
+<<<<<<< HEAD
   align-items: center;
   justify-content: center;
   gap: 4px;
@@ -328,11 +710,42 @@ body:has(.wizard-shell) .floating-actions {
   min-height: 74px;
   padding: 13px 12px 14px;
   background: var(--white);
+=======
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 4px;
+
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 74px;
+
+  padding: 13px 12px 14px;
+
+  background: var(--white);
+
+>>>>>>> main
   text-align: center;
 }
 
+
+/*
+ * Main service name.
+
+ * Example:
+ *
+ * Terrace Waterproofing
+ * Bathroom Wall Waterproofing
+ * Bathroom Tile Re-sealing
+ */
+
 .tile-label {
   display: block;
+<<<<<<< HEAD
   width: 100%;
   margin: 0;
   font-family: var(--font-body);
@@ -342,13 +755,40 @@ body:has(.wizard-shell) .floating-actions {
   letter-spacing: 0.05px;
   color: var(--ink);
   text-align: center;
+=======
+
+  width: 100%;
+
+  margin: 0;
+
+  font-family: var(--font-body);
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  line-height: 1.35;
+
+  letter-spacing: 0.05px;
+
+  color: var(--ink);
+
+  text-align: center;
+
+>>>>>>> main
   transition:
     color var(--t-fast) var(--ease),
     transform var(--t-fast) var(--ease);
 }
 
+
+/*
+ * Optional service description.
+ */
+
 .tile-hint {
   display: block;
+<<<<<<< HEAD
   width: 100%;
   margin: 0;
   font-size: 12px;
@@ -366,23 +806,80 @@ body:has(.wizard-shell) .floating-actions {
 /* =========================================================================
    SELECTED SERVICE TILE
    ========================================================================= */
+=======
+
+  width: 100%;
+
+  margin: 0;
+
+  font-size: 12px;
+
+  font-weight: 400;
+
+  line-height: 1.4;
+
+  color: var(--ink-muted);
+
+  text-align: center;
+}
+
+
+/*
+ * Hover title.
+ */
+
+.tile:hover .tile-label {
+  color: var(--gold-deep);
+
+  transform: translateY(-1px);
+}
+
+
+/* ========================================================================
+   SELECTED SERVICE TILE
+   ======================================================================== */
+>>>>>>> main
 
 .tile:has(input:checked) {
   border-color: var(--gold);
+
   background: var(--gold-a12);
+<<<<<<< HEAD
   box-shadow:
     inset 0 0 0 2px var(--gold),
     0 8px 22px rgba(0, 0, 0, 0.1);
 }
 
+=======
+
+  box-shadow:
+    inset 0 0 0 2px var(--gold),
+    0 8px 22px rgba(0, 0, 0, 0.10);
+}
+
+
+/*
+ * Selected image.
+ */
+
+>>>>>>> main
 .tile:has(input:checked) .tile-image img {
   filter: brightness(0.92);
 }
 
+<<<<<<< HEAD
+=======
+
+/*
+ * Selected body.
+ */
+
+>>>>>>> main
 .tile:has(input:checked) .tile-body {
   background: var(--gold-a12);
 }
 
+<<<<<<< HEAD
 .tile:has(input:checked) .tile-label {
   color: var(--ink);
   font-weight: 800;
@@ -398,10 +895,40 @@ body:has(.wizard-shell) .floating-actions {
   right: 9px;
   width: 24px;
   height: 24px;
+=======
+
+/*
+ * Selected service name.
+ */
+
+.tile:has(input:checked) .tile-label {
+  color: var(--ink);
+
+  font-weight: 800;
+}
+
+
+/* ========================================================================
+   CHECK MARK
+   ======================================================================== */
+
+.tile-check {
+  position: absolute;
+
+  top: 9px;
+  right: 9px;
+
+  width: 24px;
+  height: 24px;
+
+>>>>>>> main
   display: none;
+
   align-items: center;
   justify-content: center;
+
   border-radius: 50%;
+<<<<<<< HEAD
   background: linear-gradient(
     180deg,
     var(--gold-light) 0%,
@@ -411,25 +938,49 @@ body:has(.wizard-shell) .floating-actions {
   box-shadow:
     var(--depth-inset-top),
     0 2px 7px rgba(0, 0, 0, 0.2);
+=======
+
+  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
+
+  color: var(--on-gold);
+
+  box-shadow:
+    var(--depth-inset-top),
+    0 2px 7px rgba(0, 0, 0, 0.20);
+
+>>>>>>> main
   z-index: 2;
 }
+
 
 .tile:has(input:checked) .tile-check {
   display: flex;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    CHOICE GROUP
    ========================================================================= */
+=======
+
+/* ========================================================================
+   CHOICE GROUP
+   ======================================================================== */
+>>>>>>> main
 
 .choice-group {
   width: 100%;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 .choice-group + .choice-group {
   margin-top: var(--space-5);
 }
 
+<<<<<<< HEAD
 .choice-group-title {
   margin: 0 0 10px;
   font-size: 13px;
@@ -440,11 +991,29 @@ body:has(.wizard-shell) .floating-actions {
 /* =========================================================================
    FIELD / ERROR
    ========================================================================= */
+=======
+
+.choice-group-title {
+  margin: 0 0 10px;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: var(--ink);
+}
+
+
+/* ========================================================================
+   FIELD / ERROR
+   ======================================================================== */
+>>>>>>> main
 
 .field {
   width: 100%;
 }
 
+<<<<<<< HEAD
 .field-error {
   display: block;
   margin-top: 7px;
@@ -455,116 +1024,215 @@ body:has(.wizard-shell) .floating-actions {
 /* =========================================================================
    FOOTER BUTTONS
    ========================================================================= */
+=======
+
+.field-error {
+  display: block;
+
+  margin-top: 7px;
+
+  font-size: 12.5px;
+
+  color: #dc2626;
+}
+
+
+/* ========================================================================
+   FOOTER BUTTONS
+   ======================================================================== */
+>>>>>>> main
 
 .wizard-foot {
   display: flex;
+
   align-items: center;
+
   gap: 12px;
+
   margin-top: var(--space-5);
 }
+
 
 .wizard-foot .btn {
   flex: 1;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 .wizard-foot.single .btn {
   flex: 1 1 100%;
 }
 
+
 .wizard-foot .btn-back {
   flex: 0 0 auto;
+
   min-width: 120px;
+
   background: var(--white);
+
   color: var(--ink);
+
   border-color: var(--border);
 }
 
+
 .wizard-foot .btn-back:hover {
   border-color: var(--ink-muted);
+
   background: var(--light-bg);
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    SCHEDULE
    ========================================================================= */
+=======
+
+/* ========================================================================
+   SCHEDULE
+   ======================================================================== */
+>>>>>>> main
 
 .schedule-grid {
   display: grid;
+
   grid-template-columns: 1fr 190px;
+
   gap: var(--space-5);
+
   align-items: start;
 }
 
+
 .slot-list {
   display: grid;
+
   gap: 10px;
 }
 
+
 .slot-list-title {
   margin: 0 0 2px;
+<<<<<<< HEAD
   font-size: 13px;
   font-weight: 600;
+=======
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+>>>>>>> main
   color: var(--ink);
 }
 
+
 .slot-btn {
   min-height: 46px;
+
   padding: 0 14px;
+
   border: 1px solid var(--border);
+
   border-radius: var(--radius-sm);
+
   background: var(--white);
+
   font-size: 14px;
+
   color: var(--ink);
-  transition: all var(--t-fast) var(--ease);
+
+  transition:
+    all var(--t-fast) var(--ease);
 }
+
 
 .slot-btn:not(:disabled):hover {
   border-color: var(--gold);
 }
 
+
 .slot-btn.chosen {
   border-color: var(--gold);
+
   background: var(--gold-a12);
-  box-shadow: inset 0 0 0 1px var(--gold);
+
+  box-shadow:
+    inset 0 0 0 1px var(--gold);
+
   font-weight: 600;
 }
 
+<<<<<<< HEAD
+=======
+
+/*
+ * Struck through rather than hidden.
+ */
+
+>>>>>>> main
 .slot-btn:disabled {
   opacity: 0.4;
+
   cursor: not-allowed;
+
   text-decoration: line-through;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    REVIEW
    ========================================================================= */
+=======
+
+/* ========================================================================
+   REVIEW
+   ======================================================================== */
+>>>>>>> main
 
 .review-list {
   display: grid;
+
   gap: 0;
+
   margin: 0 0 var(--space-4);
 }
 
+
 .review-list > div {
   display: grid;
+
   grid-template-columns: 42% 1fr;
+
   gap: 14px;
+
   padding: 11px 0;
+
   border-bottom: 1px solid var(--border);
 }
 
+
 .review-list dt {
   font-size: 13px;
+
   color: var(--ink-muted);
 }
 
+
 .review-list dd {
   margin: 0;
+
   font-size: 14px;
+
   font-weight: 500;
+
   color: var(--ink);
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    FEE PANEL
    ========================================================================= */
@@ -579,53 +1247,104 @@ body:has(.wizard-shell) .floating-actions {
     var(--gold-a08) 0%,
     var(--gold-a12) 100%
   );
+=======
+
+/* ========================================================================
+   FEE PANEL
+   ======================================================================== */
+
+.fee-panel {
+  margin-top: var(--space-4);
+
+  padding: var(--space-4);
+
+  border: 1px solid var(--gold-a40);
+
+  border-radius: var(--radius);
+
+  background: linear-gradient(180deg, var(--gold-a08) 0%, var(--gold-a12) 100%);
+
+>>>>>>> main
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
 }
 
+
 .fee-panel-top {
   display: flex;
+
   align-items: baseline;
+
   justify-content: space-between;
+
   gap: 12px;
+
   margin-bottom: 10px;
 }
+
 
 .fee-panel-top strong {
   font-size: 14px;
+
   font-weight: 600;
+
   color: var(--ink);
 }
 
+
 .fee-panel-amount {
   font-family: var(--font-display);
+
   font-size: 30px;
+
   font-weight: 700;
+<<<<<<< HEAD
   line-height: 1;
+=======
+
+  line-height: 1;
+
+>>>>>>> main
   color: var(--gold-deep);
 }
 
+
 .fee-includes {
   display: flex;
+
   flex-wrap: wrap;
+
   gap: 6px 16px;
+
   margin-bottom: 10px;
 }
 
+
 .fee-includes li {
   display: flex;
+
   align-items: center;
+
   gap: 6px;
+
   font-size: 13px;
+
   color: var(--ink-soft);
 }
 
+
 .fee-includes svg {
   flex-shrink: 0;
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   color: var(--success);
 }
 
+
 .fee-small {
   margin: 0;
+<<<<<<< HEAD
   font-size: 12.5px;
   line-height: 1.6;
   color: var(--ink-muted);
@@ -637,38 +1356,92 @@ body:has(.wizard-shell) .floating-actions {
 
 .confirmed {
   padding: var(--space-6) var(--space-4);
+=======
+
+  font-size: 12.5px;
+
+  line-height: 1.6;
+
+  color: var(--ink-muted);
+}
+
+
+/* ========================================================================
+   CONFIRMED
+   ======================================================================== */
+
+.confirmed {
+  padding: var(--space-6) var(--space-4);
+
+>>>>>>> main
   text-align: center;
 }
+
 
 .confirmed-tick {
   width: 74px;
   height: 74px;
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   display: flex;
+
   align-items: center;
   justify-content: center;
+<<<<<<< HEAD
   margin: 0 auto var(--space-4);
   border-radius: 50%;
   background: linear-gradient(180deg, #34d873 0%, #22c55e 100%);
   color: var(--white);
+=======
+
+  margin: 0 auto var(--space-4);
+
+  border-radius: 50%;
+
+  background: linear-gradient(180deg, #34d873 0%, #22c55e 100%);
+
+  color: var(--white);
+
+>>>>>>> main
   box-shadow:
     var(--depth-inset-top),
     0 0 0 10px rgba(34, 197, 94, 0.14),
     var(--shadow-sm);
 }
 
+
 .confirmed h2 {
   margin-bottom: 8px;
+<<<<<<< HEAD
   font-family: var(--font-body);
   font-size: 22px;
   font-weight: 700;
   text-transform: none;
   letter-spacing: 0;
+=======
+
+  font-family: var(--font-body);
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  text-transform: none;
+
+  letter-spacing: 0;
+
+>>>>>>> main
   color: var(--ink);
 }
 
+
 .confirmed > p {
   max-width: 44ch;
+
   margin: 0 auto var(--space-5);
+<<<<<<< HEAD
   font-size: 14.5px;
   color: var(--ink-muted);
 }
@@ -683,32 +1456,69 @@ body:has(.wizard-shell) .floating-actions {
   border-radius: var(--radius);
   background: var(--dark-card);
   box-shadow: var(--shadow-sm);
+=======
+
+  font-size: 14.5px;
+
+  color: var(--ink-muted);
+}
+
+
+/* ========================================================================
+   CONFIRMED PANEL
+   ======================================================================== */
+
+.confirmed-panel {
+  margin-bottom: var(--space-5);
+
+  padding: var(--space-4) var(--space-5);
+
+  border-radius: var(--radius);
+
+  background: var(--dark-card);
+
+  box-shadow: var(--shadow-sm);
+
+>>>>>>> main
   text-align: left;
 }
 
+
 .confirmed-panel > div {
   display: grid;
+
   grid-template-columns: 40% 1fr;
+
   gap: 14px;
+
   padding: 10px 0;
+
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 
 .confirmed-panel > div:last-child {
   border-bottom: 0;
 }
 
+
 .confirmed-panel dt {
   font-size: 13px;
+
   color: rgba(255, 255, 255, 0.5);
 }
 
+
 .confirmed-panel dd {
   margin: 0;
+
   font-size: 14px;
+
   font-weight: 600;
+
   color: var(--white);
 }
+
 
 .confirmed-panel .booking-id {
   font-family:
@@ -717,10 +1527,16 @@ body:has(.wizard-shell) .floating-actions {
     Menlo,
     Consolas,
     monospace;
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   letter-spacing: 0.06em;
+
   color: var(--gold);
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    RESPONSIVE — TABLET
    ========================================================================= */
@@ -734,70 +1550,182 @@ body:has(.wizard-shell) .floating-actions {
 /* =========================================================================
    RESPONSIVE — MOBILE
    ========================================================================= */
+=======
+
+/* ========================================================================
+   RESPONSIVE — TABLET
+   ======================================================================== */
+
+@media (max-width: 900px) {
+
+  .tile-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+
+/* ========================================================================
+   RESPONSIVE — MOBILE
+   ======================================================================== */
+>>>>>>> main
 
 @media (max-width: 767px) {
+
   .wizard-container {
     padding-top: var(--space-5);
+<<<<<<< HEAD
     padding-bottom: calc(
       90px + env(safe-area-inset-bottom, 0px)
     );
   }
 
+=======
+
+    /*
+     * Footer is fixed on mobile.
+     * Reserve enough space so content isn't hidden behind it.
+     */
+    padding-bottom:
+      calc(
+        90px +
+        env(safe-area-inset-bottom, 0px)
+      );
+  }
+
+
+  /*
+   * Two cards per row on mobile can make the service names cramped.
+   * One card per row gives the images and names enough space.
+   */
+>>>>>>> main
   .tile-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 
+<<<<<<< HEAD
+=======
+
+  /*
+   * Slightly taller image on mobile.
+   */
+>>>>>>> main
   .tile-image {
     height: 130px;
   }
 
+<<<<<<< HEAD
+=======
+
+  /*
+   * Service name.
+   */
+>>>>>>> main
   .tile-label {
     font-size: 13px;
     line-height: 1.3;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   .tile-body {
     min-height: 60px;
     padding: 10px 8px;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   .schedule-grid {
     grid-template-columns: 1fr;
   }
 
+<<<<<<< HEAD
+=======
+
+  /*
+   * Labels off, numbers on.
+   * Five words will not fit across 375px.
+   */
+>>>>>>> main
   .wstep-label {
     display: none;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   .wizard-title {
     font-size: 15px;
+
     letter-spacing: 0.12em;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   .review-list > div,
   .confirmed-panel > div {
     grid-template-columns: 1fr;
+
     gap: 2px;
   }
 
+<<<<<<< HEAD
+=======
+
+  /*
+   * Sticky footer on phone.
+   */
+>>>>>>> main
   .wizard-foot {
     position: fixed;
+
     left: 0;
     right: 0;
     bottom: 0;
+
     z-index: var(--z-sticky-cta);
+
     margin: 0;
+<<<<<<< HEAD
     padding: 10px var(--space-4);
     padding-bottom: calc(
       10px + env(safe-area-inset-bottom, 0px)
     );
+=======
+
+    padding:
+      10px
+      var(--space-4);
+
+    padding-bottom:
+      calc(
+        10px +
+        env(safe-area-inset-bottom, 0px)
+      );
+
+>>>>>>> main
     background: var(--white);
+
     border-top: 1px solid var(--border);
+
     box-shadow: var(--shadow-up);
   }
+
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    RESPONSIVE — SMALL MOBILE
    ========================================================================= */
@@ -807,20 +1735,44 @@ body:has(.wizard-shell) .floating-actions {
     padding: 14px;
   }
 
+=======
+
+/* ========================================================================
+   RESPONSIVE — SMALL MOBILE
+   ======================================================================== */
+
+@media (max-width: 420px) {
+
+  .wizard-card {
+    padding:
+      14px;
+  }
+
+
+>>>>>>> main
   .tile-image {
     height: 110px;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   .tile-label {
     font-size: 12px;
     line-height: 1.3;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
   .tile-body {
     min-height: 55px;
     padding: 8px 6px;
   }
 
+<<<<<<< HEAD
   .tile-check {
     width: 22px;
     height: 22px;
@@ -832,6 +1784,21 @@ body:has(.wizard-shell) .floating-actions {
 /* ============================================================
    PROPERTY TYPE IMAGE CARDS
    1bhk-2bhk and so on — BookingWizard
+=======
+
+  .tile-check {
+    width: 22px;
+    height: 22px;
+
+    top: 8px;
+    right: 8px;
+  }
+
+}
+
+/* ============================================================
+   PROPERTY TYPE IMAGE CARDS   1bhk-2bk and so on — BookingWizard
+>>>>>>> main
    ============================================================ */
 
 .property-choice {
@@ -870,18 +1837,29 @@ body:has(.wizard-shell) .floating-actions {
   text-align: center;
 }
 
+<<<<<<< HEAD
+=======
+/* Selected property */
+>>>>>>> main
 .property-choice.active {
   border-color: var(--gold) !important;
   box-shadow: inset 0 0 0 2px var(--gold);
 }
 
+<<<<<<< HEAD
+=======
+/* Image hover */
+>>>>>>> main
 .property-choice:hover .property-choice-image {
   transform: scale(1.05);
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    PROBLEM TILES
    ========================================================================= */
+=======
+>>>>>>> main
 
 .problem-tile {
   overflow: hidden;
@@ -937,10 +1915,14 @@ body:has(.wizard-shell) .floating-actions {
   display: none;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    WATERPROOFING PROBLEM LOCATION CHOOSER
    ========================================================================= */
 
+=======
+/* Waterproofing problem-location chooser */
+>>>>>>> main
 .wp-problem-location-trigger {
   width: 100%;
   display: flex;
@@ -1074,10 +2056,14 @@ body:has(.wizard-shell) .floating-actions {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
+<<<<<<< HEAD
   transition:
     border-color var(--t-fast) var(--ease),
     box-shadow var(--t-fast) var(--ease),
     transform var(--t-fast) var(--ease);
+=======
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+>>>>>>> main
 }
 
 .wp-problem-location-option:hover,
@@ -1144,10 +2130,14 @@ body:has(.wizard-shell) .floating-actions {
   }
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    SIMPLE YES / NO / NOT SURE OPTIONS
    ========================================================================= */
 
+=======
+/* Simple Yes / No / Not Sure options */
+>>>>>>> main
 .simple-radio-options {
   display: flex;
   flex-direction: row;
@@ -1169,7 +2159,11 @@ body:has(.wizard-shell) .floating-actions {
   user-select: none;
 }
 
+<<<<<<< HEAD
 .simple-radio-option input[type='radio'] {
+=======
+.simple-radio-option input[type="radio"] {
+>>>>>>> main
   appearance: auto;
   -webkit-appearance: radio;
   width: 18px;
@@ -1198,10 +2192,16 @@ body:has(.wizard-shell) .floating-actions {
     gap: 16px 24px;
   }
 }
+<<<<<<< HEAD
 
 /* =========================================================================
    HAS WATERPROOFING BEEN DONE BEFORE?
    ========================================================================= */
+=======
+/* ============================================================
+   HAS WATERPROOFING BEEN DONE BEFORE?
+   ============================================================ */
+>>>>>>> main
 
 .waterproofing-radio-options {
   display: flex;
@@ -1224,7 +2224,11 @@ body:has(.wizard-shell) .floating-actions {
   user-select: none;
 }
 
+<<<<<<< HEAD
 .waterproofing-radio-option input[type='radio'] {
+=======
+.waterproofing-radio-option input[type="radio"] {
+>>>>>>> main
   appearance: auto;
   -webkit-appearance: radio;
   width: 18px;
@@ -1241,6 +2245,7 @@ body:has(.wizard-shell) .floating-actions {
   color: #c59b3c;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    WHEN WAS IT DONE?
    ========================================================================= */
@@ -1254,11 +2259,38 @@ body:has(.wizard-shell) .floating-actions {
   margin-top: 14px !important;
   padding: 0 !important;
   box-sizing: border-box !important;
+=======
+
+/* ============================================================
+   WHEN WAS IT DONE?
+   ============================================================ */
+
+/* ============================================================
+   WHEN WAS IT DONE? — 5 OPTIONS IN ONE ROW
+   ============================================================ */
+
+.waterproofing-when-options {
+  width: 100% !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+
+  align-items: center !important;
+
+  gap: 8px !important;
+
+  margin-top: 14px !important;
+  padding: 0 !important;
+
+  box-sizing: border-box !important;
+
+>>>>>>> main
   overflow: visible !important;
 }
 
 .waterproofing-when-option {
   display: flex !important;
+<<<<<<< HEAD
   width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -1282,21 +2314,75 @@ body:has(.wizard-shell) .floating-actions {
   -webkit-appearance: radio !important;
   position: static !important;
   display: block !important;
+=======
+
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  flex: none !important;
+
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  gap: 5px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  box-sizing: border-box !important;
+
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.25 !important;
+
+  color: #222 !important;
+
+  white-space: normal !important;
+
+  cursor: pointer;
+}
+
+.waterproofing-when-option input[type="radio"] {
+  appearance: auto !important;
+  -webkit-appearance: radio !important;
+
+  position: static !important;
+
+  display: block !important;
+
+>>>>>>> main
   width: 16px !important;
   height: 16px !important;
   min-width: 16px !important;
   max-width: 16px !important;
+<<<<<<< HEAD
   flex: 0 0 16px !important;
   margin: 0 !important;
   padding: 0 !important;
   opacity: 1 !important;
   pointer-events: auto !important;
   accent-color: #c59b3c;
+=======
+
+  flex: 0 0 16px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  opacity: 1 !important;
+
+  pointer-events: auto !important;
+
+  accent-color: #c59b3c;
+
+>>>>>>> main
   cursor: pointer;
 }
 
 .waterproofing-when-option span {
   display: block !important;
+<<<<<<< HEAD
   width: auto !important;
   min-width: 0 !important;
   max-width: 100% !important;
@@ -1305,6 +2391,21 @@ body:has(.wizard-shell) .floating-actions {
   font-size: 13px !important;
   line-height: 1.25 !important;
   color: #222 !important;
+=======
+
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+
+  color: #222 !important;
+
+>>>>>>> main
   white-space: normal !important;
 }
 
@@ -1312,9 +2413,16 @@ body:has(.wizard-shell) .floating-actions {
   color: #c59b3c !important;
 }
 
+<<<<<<< HEAD
 /* =========================================================================
    MOBILE
    ========================================================================= */
+=======
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+>>>>>>> main
 
 @media (max-width: 700px) {
   .waterproofing-when-options {

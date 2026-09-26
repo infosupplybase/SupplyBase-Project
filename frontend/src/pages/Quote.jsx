@@ -22,7 +22,7 @@ export default function Quote() {
             ? `Tell us about your ${preselected.name.toLowerCase()} requirement and we will come back with an itemised quotation.`
             : 'Share your requirement and we will come back with a clear, itemised quotation — no obligation.'
         }
-        image="/assets/services/architectural-design.svg"
+        image="/assets/hero-quote.webp"
         breadcrumbs={[{ label: 'Get a Quote' }]}
       />
 
@@ -32,7 +32,16 @@ export default function Quote() {
             <QuoteForm defaultService={preselected ? preselected.name : ''} />
 
             <Reveal>
-              <div className="sidebar-card" style={{ marginBottom: 20 }}>
+              <div
+  className="
+    sidebar-card
+    !bg-white/15
+    backdrop-blur-xl
+    !border-white/35
+    !shadow-[0_8px_28px_rgba(0,0,0,0.08)]
+  "
+  style={{ marginBottom: 20 }}
+>
                 <h4>What happens next</h4>
                 <div style={{ display: 'grid', gap: 16, marginTop: 4 }}>
                   {processSteps.map((step) => (

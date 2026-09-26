@@ -33,7 +33,11 @@
  *   Plumbing's and Painting's line items.
  */
 
+<<<<<<< HEAD
 export const POP_HERO_IMAGE = '/assets/pop-ceiling/hero/living-room-cove.jpg';
+=======
+export const POP_HERO_IMAGE = '/assets/pop-ceiling/hero/living-room-cove.webp';
+>>>>>>> main
 
 export const popOverviewIntro = {
   eyebrow: 'POP & GYPSUM',
@@ -159,7 +163,11 @@ export const popFlows = {
     intro: {
       eyebrow: 'PROFESSIONAL',
       heading: 'Transform your entire home with elegant POP ceilings.',
+<<<<<<< HEAD
       image: '/assets/pop-ceiling/full-home/ceiling-design.jpg',
+=======
+      image: '/assets/pop-ceiling/full-home/ceiling-design.webp',
+>>>>>>> main
       points: [
         { icon: 'sparkle', label: 'Modern Designs' },
         { icon: 'award', label: 'Premium Finish' },
@@ -169,7 +177,11 @@ export const popFlows = {
     },
     whatsIncluded: WHATS_INCLUDED_FULL_HOME,
     steps: [
+<<<<<<< HEAD
       { id: 'design_style', type: 'style', questionKey: 'pop_home_design_style', title: 'Choose Design Style', icon: 'layers' },
+=======
+      { id: 'home_type', type: 'option', questionKey: 'pop_home_type', title: 'Select Your Home Type', icon: 'building' },
+>>>>>>> main
       { id: 'addons', type: 'addon', questionKey: 'pop_addon', title: 'Additional Options (Optional)' },
       { id: 'summary', type: 'summary', title: 'Your Selection' },
     ],
@@ -191,8 +203,12 @@ export const popFlows = {
     },
     whatsIncluded: WHATS_INCLUDED_ROOM,
     steps: [
+<<<<<<< HEAD
       { id: 'room_type', type: 'option', questionKey: 'pop_room_type', title: 'Which Room Do You Need POP For?', icon: 'home-check', notesFor: 'other-room', notesLabel: 'Describe the room', notesPlaceholder: 'e.g. Pooja room, guest room, home office…' },
       { id: 'design_style', type: 'style', questionKey: 'pop_room_design_style', title: 'Choose Design Style', icon: 'layers', notesFor: 'custom-design', notesLabel: 'Your design brief (optional)', notesPlaceholder: 'Describe what you have in mind — style, colours, references you can share on your visit…' },
+=======
+      { id: 'room_type', type: 'option', questionKey: 'pop_room_type', title: 'Which room do you need POP for?', icon: 'home-check', notesFor: 'other-room', notesLabel: 'Describe the room', notesPlaceholder: 'e.g. Pooja room, guest room, home office…' },
+>>>>>>> main
       { id: 'addons', type: 'addon', questionKey: 'pop_addon', title: 'Add-On Services (Optional)' },
       { id: 'summary', type: 'summary', title: 'Your Selection' },
     ],

@@ -67,9 +67,17 @@ public class SecurityConfig {
                                  "/api/auth/logout", "/api/auth/forgot-password",
                                  "/api/auth/reset-password", "/api/auth/verify-email").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/enquiries").permitAll()
+                // A professional applying to join. Creates a CUSTOMER login plus a
+                // PENDING application; the PROFESSIONAL role only comes from an
+                // admin approving it (PartnerService.review).
+                .requestMatchers(HttpMethod.POST, "/api/partners/apply").permitAll()
                 // Public, but the JWT filter still runs first — so a signed-in
                 // visitor's booking gets attached to their account.
                 .requestMatchers(HttpMethod.POST, "/api/bookings").permitAll()
+                // The booking wizard's own photo upload for a booking it just
+                // created — see BookingService.uploadOwnFile for the
+                // phone-number ownership check that stands in for a login here.
+                .requestMatchers(HttpMethod.POST, "/api/bookings/by-number/*/files").permitAll()
                 // Razorpay authenticates itself with an HMAC signature in the
                 // request body, not with our JWT, so this must stay open.
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()

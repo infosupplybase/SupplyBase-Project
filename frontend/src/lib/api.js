@@ -119,6 +119,24 @@ async function send(path, { method = 'GET', body, auth = true } = {}) {
   });
 }
 
+/**
+ * Multipart upload — separate from `request` because that always JSON-encodes
+ * its body. Used only for the booking wizard's own photo attachments, which
+ * are public like booking creation itself (see BookingService.uploadOwnFile
+ * on the backend for the phone-number check that stands in for a login).
+ */
+async function uploadFile(path, formData) {
+  const response = await fetch(`${BASE_URL}${path}`, { method: 'POST', body: formData });
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  if (!response.ok) throw new ApiError(response.status, payload);
+  return payload;
+}
+
 export async function request(path, options = {}) {
   let response = await send(path, options);
 
@@ -164,6 +182,30 @@ export const api = {
 
   me: () => request('/api/auth/me'),
 
+  /** Self-service — name and phone only. */
+  /** Self-service profile update. */
+updateProfile: (profile) =>
+  request('/api/auth/me', {
+    method: 'PATCH',
+    body: {
+      fullName: profile.fullName.trim(),
+      phone: profile.phone.trim(),
+      gender: profile.gender,
+      addressLine1: profile.addressLine1.trim(),
+      addressLine2: profile.addressLine2.trim(),
+      city: profile.city.trim(),
+      pinCode: profile.pinCode.trim(),
+      landmark: profile.landmark.trim(),
+    },
+  }),
+
+  /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
+  forgotPassword: (identifier) =>
+    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+
+  /** Re-sends the sign-up verification email to the signed-in user's own address. */
+  sendVerificationEmail: () => request('/api/auth/send-verification', { method: 'POST' }),
+
   myProjects: () => request('/api/projects/mine'),
   myPayments: () => request('/api/payments/mine'),
 
@@ -180,6 +222,10 @@ export const api = {
    * an option in the admin screen changes the form with no deploy.
    */
   serviceForm: (slug) => request(`/api/catalogue/services/${slug}/form`, { auth: false }),
+
+  /** Search across active main categories and sub-services. */
+  searchCatalogue: (q) =>
+    request(`/api/catalogue/search?q=${encodeURIComponent(q)}`, { auth: false }),
 
   /* ----------------------------------------------------- appointments */
 
@@ -198,7 +244,33 @@ export const api = {
    */
   createBooking: (payload) => request('/api/bookings', { method: 'POST', body: payload }),
 
+  /** One photo, attached to a booking that was just created in this session. */
+  uploadBookingFile: (bookingNumber, phone, file, kind = 'PHOTO') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const query = new URLSearchParams({ phone, kind });
+    return uploadFile(`/api/bookings/by-number/${bookingNumber}/files?${query}`, formData);
+  },
+
   myBookings: () => request('/api/bookings/mine'),
+
+  /** One booking in full, including the real answers given in the wizard. */
+  booking: (id) => request(`/api/bookings/${id}`),
+
+  /** A customer editing their own booking's contact details or address. */
+  updateBooking: (id, details) =>
+    request(`/api/bookings/${id}`, {
+      method: 'PATCH',
+      body: {
+        name: details.name.trim(),
+        phone: details.phone.trim(),
+        whatsapp: details.whatsapp.trim(),
+        email: details.email.trim(),
+        address: details.address.trim(),
+        city: details.city.trim(),
+        pincode: details.pincode.trim(),
+      },
+    }),
 };
 
 export default api;

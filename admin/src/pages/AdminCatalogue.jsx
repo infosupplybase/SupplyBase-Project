@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import Icon from '../components/ui/Icon';
+import PageHeader from '../components/admin/PageHeader';
+import DataTable from '../components/admin/DataTable';
 import StatusBadge from '../components/admin/StatusBadge';
 import Drawer from '../components/admin/Drawer';
+import { ErrorBanner, TableEmpty, TableLoading } from '../components/admin/TableStates';
+import rowProps from '../components/admin/rowProps';
+import { useToast } from '../components/admin/Toast';
 import api, { friendlyError } from '../lib/api';
 
 const INPUT_TYPES = ['SINGLE', 'MULTI', 'TEXT', 'NUMBER', 'FILE'];
@@ -21,7 +26,8 @@ const emptyCategoryForm = {
   description: '',
   icon: '',
   heroImage: '',
-  visitFee: '',
+  // Every service's home visit is ₹99; the admin can still change it.
+  visitFee: '99',
   sortOrder: '',
 };
 
@@ -44,6 +50,7 @@ const emptyQuestionForm = {
  * for adding or editing one question.
  */
 export default function AdminCatalogue() {
+  const { notify } = useToast();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -133,6 +140,7 @@ export default function AdminCatalogue() {
       };
       await api.admin.catalogue.categories.create(payload);
       setCreating(false);
+      notify(`Category "${payload.name}" created`);
       loadCategories();
     } catch (err) {
       if (err && err.fieldErrors) setCreateError(Object.values(err.fieldErrors)[0] || friendlyError(err));
@@ -189,6 +197,7 @@ export default function AdminCatalogue() {
       };
       const updated = await api.admin.catalogue.categories.update(selected.slug, payload);
       setSelected(updated);
+      notify(`${updated.name} saved`);
       loadCategories();
     } catch (err) {
       if (err && err.fieldErrors) setEditSaveError(Object.values(err.fieldErrors)[0] || friendlyError(err));
@@ -204,6 +213,7 @@ export default function AdminCatalogue() {
     try {
       const updated = await api.admin.catalogue.categories.setActive(selected.slug, !selected.active);
       setSelected(updated);
+      notify(`${updated.name} is now ${updated.active ? 'shown on' : 'hidden from'} the website`);
       loadCategories();
     } catch (err) {
       setEditSaveError(friendlyError(err));
@@ -315,6 +325,7 @@ export default function AdminCatalogue() {
         await api.admin.catalogue.questions.update(selected.slug, questionKey, payload);
       }
       setQuestionOpen(false);
+      notify(questionMode === 'new' ? 'Question added' : 'Question saved');
       loadQuestions(selected.slug);
     } catch (err) {
       if (err && err.fieldErrors) setQuestionSaveError(Object.values(err.fieldErrors)[0] || friendlyError(err));
@@ -329,6 +340,7 @@ export default function AdminCatalogue() {
     setQuestionsError('');
     try {
       await api.admin.catalogue.questions.remove(selected.slug, q.key);
+      notify('Question removed from the wizard');
       loadQuestions(selected.slug);
     } catch (err) {
       setQuestionsError(friendlyError(err));
@@ -339,26 +351,21 @@ export default function AdminCatalogue() {
 
   return (
     <div>
-      <div className="admin-header">
-        <div>
-          <h1>CATALOGUE</h1>
-          <p>Service categories, and the questions each asks in the booking wizard.</p>
-        </div>
-        <button type="button" className="btn btn-primary btn-sm" onClick={openCreate}>
-          <Icon name="plus" size={16} />
-          NEW CATEGORY
-        </button>
-      </div>
+      <PageHeader
+        icon="package"
+        title="Catalogue"
+        subtitle="The services customers can book, and the questions the booking wizard asks for each. Changes show on the website straight away."
+        actions={
+          <button type="button" className="btn btn-primary btn-sm" onClick={openCreate}>
+            <Icon name="plus" size={16} />
+            NEW CATEGORY
+          </button>
+        }
+      />
 
-      {error && (
-        <div role="alert" className="alert alert-error">
-          <Icon name="info" size={18} />
-          <span>{error}</span>
-        </div>
-      )}
+      <ErrorBanner onRetry={loadCategories}>{error}</ErrorBanner>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
+      <DataTable label="Service categories">
           <thead>
             <tr>
               <th>Slug</th>
@@ -370,23 +377,16 @@ export default function AdminCatalogue() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={5} className="admin-table-empty">
-                  Loading…
-                </td>
-              </tr>
+              <TableLoading columns={5} />
             ) : sortedCategories.length ? (
               sortedCategories.map((category) => (
-                <tr key={category.slug} className="admin-table-row" onClick={() => openRow(category)}>
-                  <td>{category.slug}</td>
+                <tr key={category.slug} {...rowProps(() => openRow(category), `Open category ${category.name}`)}>
                   <td>
-                    {category.name}
-                    {category.tagline && (
-                      <>
-                        <br />
-                        <span className="admin-table-sub">{category.tagline}</span>
-                      </>
-                    )}
+                    <span className="admin-mono">{category.slug}</span>
+                  </td>
+                  <td>
+                    <span className="admin-cell-main">{category.name}</span>
+                    {category.tagline && <span className="admin-table-sub">{category.tagline}</span>}
                   </td>
                   <td>{category.visitFeeDisplay || '—'}</td>
                   <td>{category.sortOrder ?? '—'}</td>
@@ -398,15 +398,12 @@ export default function AdminCatalogue() {
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan={5} className="admin-table-empty">
-                  No categories yet.
-                </td>
-              </tr>
+              <TableEmpty columns={5} icon="package" title="No categories yet">
+                Add a category for each service customers can book.
+              </TableEmpty>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
       {/* ---------------------------------------------------- category drawer */}
       <Drawer open={Boolean(selected)} onClose={closeDrawer} title={selected ? selected.name : ''}>

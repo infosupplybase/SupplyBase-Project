@@ -12,7 +12,7 @@
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>backend</name>
-	<description>Supplybase Projects API</description>
+	<description>Supplybase API</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -132,6 +132,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<!-- Pulled in transitively by jsonassert, and duplicates the real
+				     org.json:json we already depend on directly for Razorpay
+				     (see RazorpayService) — both put org.json.JSONObject on the
+				     classpath, which Spring Boot Test warns about on every run.
+				     jsonassert works identically against either implementation,
+				     so this just leaves the one we actually need. -->
+				<exclusion>
+					<groupId>com.vaadin.external.google</groupId>
+					<artifactId>android-json</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

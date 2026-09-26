@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import in.supplybase.backend.auth.dto.AuthResponse;
 import in.supplybase.backend.auth.dto.LoginRequest;
 import in.supplybase.backend.auth.dto.RegisterRequest;
+import in.supplybase.backend.auth.dto.UpdateProfileRequest;
 import in.supplybase.backend.auth.dto.UserResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 
@@ -250,6 +251,29 @@ public class AuthService {
         return users.findById(userId)
                 .map(UserResponse::from)
                 .orElseThrow(() -> ApiException.notFound("That account"));
+    }
+
+    /** Self-service edit — name, phone, gender, address. See {@link UpdateProfileRequest}. */
+    @Transactional
+    public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = users.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("That account"));
+
+        String phone = PhoneNumbers.normalise(request.phone());
+        if (phone != null && !phone.equals(user.getPhone()) && users.existsByPhone(phone)) {
+            throw ApiException.conflict("Another account already uses that phone number.");
+        }
+
+        user.setFullName(request.fullName().trim());
+        user.setPhone(phone);
+        user.setGender(blankToNull(request.gender()));
+        user.setAddressLine1(blankToNull(request.addressLine1()));
+        user.setAddressLine2(blankToNull(request.addressLine2()));
+        user.setCity(blankToNull(request.city()));
+        user.setPinCode(blankToNull(request.pinCode()));
+        user.setLandmark(blankToNull(request.landmark()));
+
+        return UserResponse.from(users.save(user));
     }
 
     /* ---------------------------------------------------------- password reset */

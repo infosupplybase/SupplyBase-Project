@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -45,6 +46,7 @@ import in.supplybase.backend.booking.dto.BookingResponse;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
 import in.supplybase.backend.catalogue.CatalogueService;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceOption;
@@ -136,7 +138,7 @@ class BookingServiceTest {
                     .thenReturn(List.of(question));
 
             CreateBookingRequest request = requestFor(date, time,
-                    List.of(new CreateBookingRequest.AnswerInput("issue", "leak", "Leaking pipe")));
+                    List.of(new CreateBookingRequest.AnswerInput("issue", "leak", "Leaking pipe", null)));
 
             BookingReceipt receipt = service.create(request, null);
 
@@ -500,6 +502,185 @@ class BookingServiceTest {
 
             verify(bookings, never()).save(any());
         }
+
+        @Test
+        @DisplayName("finishing a job stamps when it was completed, once")
+        void completingStampsTheCompletionTime() {
+            Booking booking = Booking.builder().id(1L).status(BookingStatus.WORK_IN_PROGRESS)
+                    .assignedProfessional(User.builder().id(5L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            assertThat(booking.getCompletedAt()).isNull();
+            service.advanceOwnBookingStatus(1L, BookingStatus.WORK_COMPLETED, 5L);
+
+            assertThat(booking.getCompletedAt()).isNotNull();
+            Instant first = booking.getCompletedAt();
+            booking.setStatus(BookingStatus.WORK_COMPLETED); // e.g. a repeated save
+            assertThat(booking.getCompletedAt()).isEqualTo(first);
+        }
+
+        @Test
+        @DisplayName("a partner's own job response carries their payout, and only theirs")
+        void aJobCarriesItsOwnPayout() {
+            Booking booking = Booking.builder().id(1L).status(BookingStatus.WORK_COMPLETED)
+                    .partnerPayoutPaise(150000L).build();
+            when(bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(5L)).thenReturn(List.of(booking));
+
+            ProfessionalBookingResponse job = service.myAssignedBookings(5L).get(0);
+
+            assertThat(job.partnerPayoutPaise()).isEqualTo(150000L);
+            assertThat(job.partnerPaidAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("each job carries what the customer asked for, in order, with no prices")
+        void jobsCarryTheirRequirementsWithoutPrices() {
+            Booking first = Booking.builder().id(1L).status(BookingStatus.WORK_SCHEDULED).build();
+            Booking second = Booking.builder().id(2L).status(BookingStatus.WORK_SCHEDULED).build();
+            when(bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(5L)).thenReturn(List.of(first, second));
+            when(answers.findByBookingIdInOrderByIdAsc(List.of(1L, 2L))).thenReturn(List.of(
+                    BookingAnswer.builder().bookingId(1L).questionKey("area").questionText("Which area?")
+                            .answerValue("tv-wall").answerLabel("TV Wall").quantity(1)
+                            .unitPricePaise(39900L).lineTotalPaise(39900L).build(),
+                    BookingAnswer.builder().bookingId(1L).questionKey("colour").answerValue("white").quantity(2).build(),
+                    BookingAnswer.builder().bookingId(2L).questionKey("area").questionText("Which area?")
+                            .answerValue("kitchen").answerLabel("Kitchen Walls").quantity(1).build()));
+
+            List<ProfessionalBookingResponse> jobs = service.myAssignedBookings(5L);
+
+            assertThat(jobs.get(0).requirements()).extracting(ProfessionalBookingResponse.Requirement::question)
+                    .containsExactly("Which area?", "colour"); // falls back to the key when no text was stored
+            assertThat(jobs.get(0).requirements()).extracting(ProfessionalBookingResponse.Requirement::answer)
+                    .containsExactly("TV Wall", "white");
+            assertThat(jobs.get(1).requirements()).hasSize(1);
+            // the partner-facing record has no field that could carry a price
+            assertThat(ProfessionalBookingResponse.Requirement.class.getRecordComponents())
+                    .extracting(java.lang.reflect.RecordComponent::getName)
+                    .containsExactly("question", "answer", "quantity");
+        }
+    }
+
+    @Nested
+    @DisplayName("partner payouts")
+    class PartnerPayouts {
+
+        private final User partner = User.builder().id(5L).role(Role.PROFESSIONAL).fullName("Ravi").build();
+
+        private Booking job(BookingStatus status) {
+            Booking booking = Booking.builder().id(1L).status(status).assignedProfessional(partner).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            lenient().when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            return booking;
+        }
+
+        private void assertRejected(Runnable call, HttpStatus expected) {
+            assertThatThrownBy(call::run)
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(expected);
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("needs an assigned partner")
+        void needsAPartner() {
+            Booking booking = Booking.builder().id(1L).status(BookingStatus.CONFIRMED).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertRejected(() -> service.setPartnerPayout(1L, 100000L, false), HttpStatus.CONFLICT);
+        }
+
+        @Test
+        @DisplayName("a cancelled job has no payout")
+        void cancelledHasNone() {
+            job(BookingStatus.CANCELLED);
+
+            assertRejected(() -> service.setPartnerPayout(1L, 100000L, false), HttpStatus.CONFLICT);
+        }
+
+        @Test
+        @DisplayName("the amount can be agreed before the work is done, without paying")
+        void amountBeforeCompletion() {
+            Booking booking = job(BookingStatus.WORK_IN_PROGRESS);
+
+            service.setPartnerPayout(1L, 150000L, false);
+
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(150000L);
+            assertThat(booking.getPartnerPaidAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("cannot be marked paid until the work is completed")
+        void paidNeedsCompletedWork() {
+            job(BookingStatus.WORK_IN_PROGRESS);
+
+            assertRejected(() -> service.setPartnerPayout(1L, 150000L, true), HttpStatus.CONFLICT);
+        }
+
+        @Test
+        @DisplayName("cannot be marked paid without a real amount")
+        void paidNeedsAnAmount() {
+            job(BookingStatus.WORK_COMPLETED);
+
+            assertRejected(() -> service.setPartnerPayout(1L, null, true), HttpStatus.BAD_REQUEST);
+            assertRejected(() -> service.setPartnerPayout(1L, 0L, true), HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @DisplayName("marking paid stamps the time once; repeating it keeps the original time")
+        void paidTimeIsStampedOnce() {
+            Booking booking = job(BookingStatus.WORK_COMPLETED);
+
+            service.setPartnerPayout(1L, 150000L, true);
+            Instant stamped = booking.getPartnerPaidAt();
+            assertThat(stamped).isNotNull();
+
+            service.setPartnerPayout(1L, 150000L, true);
+            assertThat(booking.getPartnerPaidAt()).isEqualTo(stamped);
+        }
+
+        @Test
+        @DisplayName("a paid amount cannot change until it is marked unpaid")
+        void paidAmountIsLocked() {
+            Booking booking = job(BookingStatus.WORK_COMPLETED);
+            booking.setPartnerPayoutPaise(150000L);
+            booking.setPartnerPaidAt(Instant.now());
+
+            assertRejected(() -> service.setPartnerPayout(1L, 170000L, true), HttpStatus.CONFLICT);
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(150000L);
+
+            // reopening it first is allowed, and clears the paid time
+            service.setPartnerPayout(1L, 170000L, false);
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(170000L);
+            assertThat(booking.getPartnerPaidAt()).isNull();
+        }
+
+        @Test
+        @DisplayName("moving a job to another partner drops the payout agreed with the first")
+        void reassigningClearsThePayout() {
+            Booking booking = job(BookingStatus.ASSIGNMENT_PENDING);
+            booking.setPartnerPayoutPaise(150000L);
+            User other = User.builder().id(6L).role(Role.PROFESSIONAL).build();
+            when(users.findById(6L)).thenReturn(Optional.of(other));
+
+            service.assignProfessional(1L, 6L);
+
+            assertThat(booking.getAssignedProfessional()).isSameAs(other);
+            assertThat(booking.getPartnerPayoutPaise()).isNull();
+        }
+
+        @Test
+        @DisplayName("assigning the same partner again keeps the payout")
+        void sameAssigneeKeepsThePayout() {
+            Booking booking = job(BookingStatus.ASSIGNMENT_PENDING);
+            booking.setPartnerPayoutPaise(150000L);
+            when(users.findById(5L)).thenReturn(Optional.of(partner));
+
+            service.assignProfessional(1L, 5L);
+
+            assertThat(booking.getPartnerPayoutPaise()).isEqualTo(150000L);
+        }
     }
 
     @Nested
@@ -623,6 +804,166 @@ class BookingServiceTest {
                     .isEqualTo(HttpStatus.NOT_FOUND);
 
             verifyNoInteractions(storage);
+        }
+    }
+
+    @Nested
+    @DisplayName("get")
+    class Get {
+
+        private final AuthenticatedUser admin = new AuthenticatedUser(1L, "admin@supplybase.in", Role.ADMIN);
+        private final AuthenticatedUser owner = new AuthenticatedUser(7L, "owner@example.com", Role.CUSTOMER);
+        private final AuthenticatedUser stranger = new AuthenticatedUser(8L, "stranger@example.com", Role.CUSTOMER);
+
+        @Test
+        void ownerCanReadTheirOwnBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            assertThat(service.get(1L, owner).id()).isEqualTo(1L);
+        }
+
+        @Test
+        void staffCanReadAnyBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            assertThat(service.get(1L, admin).id()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("a stranger gets 404, not 403 — existence is not theirs to know")
+        void strangerGetsNotFoundNotForbidden() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.get(1L, stranger))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("a visitor booking with no user is staff-only")
+        void bookingWithNoUserIsStaffOnly() {
+            Booking booking = Booking.builder().id(1L).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.get(1L, owner))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("the booking's real answers come back, not the unused workNature/workOption/workDetail fields")
+        void includesTheActualAnswersGivenInTheWizard() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build()).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            BookingAnswer answer = BookingAnswer.builder()
+                    .bookingId(1L)
+                    .questionKey("service_needed")
+                    .questionText("What do you need?")
+                    .answerValue("leak_repair")
+                    .answerLabel("Leak Repair")
+                    .build();
+            when(answers.findByBookingId(1L)).thenReturn(List.of(answer));
+
+            var response = service.get(1L, owner);
+
+            assertThat(response.answers()).hasSize(1);
+            assertThat(response.answers().get(0).questionText()).isEqualTo("What do you need?");
+            assertThat(response.answers().get(0).answerLabel()).isEqualTo("Leak Repair");
+        }
+    }
+
+    @Nested
+    @DisplayName("updateMine")
+    class UpdateMine {
+
+        private final AuthenticatedUser admin = new AuthenticatedUser(1L, "admin@supplybase.in", Role.ADMIN);
+        private final AuthenticatedUser owner = new AuthenticatedUser(7L, "owner@example.com", Role.CUSTOMER);
+        private final AuthenticatedUser stranger = new AuthenticatedUser(8L, "stranger@example.com", Role.CUSTOMER);
+
+        private final UpdateMyBookingRequest request = new UpdateMyBookingRequest(
+                "Asha Rao", "+91 98200 11223", null, "asha@example.com",
+                "New House, 2nd Cross", "Pune", "411001");
+
+        @Test
+        void ownerCanEditTheirOwnContactAndAddress() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.PAYMENT_PENDING).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            BookingResponse response = service.updateMine(1L, request, owner);
+
+            assertThat(response.name()).isEqualTo("Asha Rao");
+            assertThat(response.phone()).isEqualTo("9820011223");
+            assertThat(response.whatsapp()).isEqualTo("9820011223");
+            assertThat(response.email()).isEqualTo("asha@example.com");
+            assertThat(response.address()).isEqualTo("New House, 2nd Cross");
+            assertThat(response.location()).isEqualTo("Pune");
+            assertThat(response.pincode()).isEqualTo("411001");
+        }
+
+        @Test
+        void staffCanEditAnyBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.PAYMENT_PENDING).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            assertThat(service.updateMine(1L, request, admin).name()).isEqualTo("Asha Rao");
+        }
+
+        @Test
+        @DisplayName("a stranger gets 404, not 403 — same as get()")
+        void strangerGetsNotFoundNotForbidden() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.PAYMENT_PENDING).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.updateMine(1L, request, stranger))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("a cancelled or completed booking can no longer be edited")
+        void rejectsEditingAFinalBooking() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.CANCELLED).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+
+            assertThatThrownBy(() -> service.updateMine(1L, request, owner))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("an empty whatsapp falls back to the (normalised) phone, like create() does")
+        void blankWhatsappFallsBackToPhone() {
+            Booking booking = Booking.builder().id(1L).user(User.builder().id(7L).build())
+                    .status(BookingStatus.CONFIRMED).build();
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            UpdateMyBookingRequest noWhatsapp = new UpdateMyBookingRequest(
+                    "Asha Rao", "9820011223", "  ", null, "Address", "Pune", null);
+
+            assertThat(service.updateMine(1L, noWhatsapp, owner).whatsapp()).isEqualTo("9820011223");
         }
     }
 }

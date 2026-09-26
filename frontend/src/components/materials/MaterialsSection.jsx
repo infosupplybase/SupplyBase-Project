@@ -36,7 +36,15 @@ export default function MaterialsSection() {
         <Reveal as="ul" className="mb-grid" delay={80}>
           {brands.map((brand) => (
             <li key={brand.id} className="mb-item">
-              <div className="mb-card">
+              <div
+  className="
+    mb-card
+    !bg-white/55
+    backdrop-blur-xl
+    !border !border-white/40
+    !shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+  "
+>
                 {/* The logo carries the brand name already, so it is decorative
                     here — the caption below is the accessible text. Giving the
                     image its own alt would make a screen reader say every name

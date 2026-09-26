@@ -141,6 +141,9 @@ export const api = {
 
   project: (id) => request(`/api/projects/${id}`),
 
+  /** One booking in full, including the customer's wizard answers and prices (staff may read any). */
+  booking: (id) => request(`/api/bookings/${id}`),
+
   admin: {
     enquiries: {
       list: ({ status, page = 0, size = 20 } = {}) =>
@@ -156,6 +159,26 @@ export const api = {
       update: (id, payload) => request(`/api/admin/bookings/${id}`, { method: 'PATCH', body: payload }),
       assign: (id, professionalId) =>
         request(`/api/admin/bookings/${id}/assign`, { method: 'PATCH', body: { professionalId } }),
+      /** What the assigned partner earns for this job, and whether it has been paid. */
+      payout: (id) => request(`/api/admin/bookings/${id}/payout`),
+      /** Sets the whole payout state at once: `amountPaise` (null = not decided) and `paid`. */
+      setPayout: (id, amountPaise, paid) =>
+        request(`/api/admin/bookings/${id}/payout`, { method: 'PATCH', body: { amountPaise, paid } }),
+    },
+
+    /**
+     * Partners (professionals): applications and their jobs. `review` is the
+     * only way a partner becomes a PROFESSIONAL — approving grants the role,
+     * rejecting or suspending takes it away. A note is required for those two
+     * and is shown to the partner.
+     */
+    partners: {
+      list: ({ status, q, page = 0, size = 20 } = {}) =>
+        request(`/api/admin/partners${qs({ status, q, page, size })}`),
+      counts: () => request('/api/admin/partners/counts'),
+      get: (userId) => request(`/api/admin/partners/${userId}`),
+      review: (userId, status, note) =>
+        request(`/api/admin/partners/${userId}/status`, { method: 'PATCH', body: { status, note } }),
     },
 
     users: {

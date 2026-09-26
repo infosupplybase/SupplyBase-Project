@@ -5,6 +5,8 @@
    reusable controls, then the page sections, then the responsive rules that
    cut across all of them.
    ========================================================================= */
+/* Tailwind css */
+@import "tailwindcss";
 
 /* --- foundation ------------------------------------------------------- */
 @import './variables.css';
@@ -17,9 +19,18 @@
 /* --- page sections ---------------------------------------------------- */
 @import './header.css';
 @import './hero.css';
+@import './home.css';
 @import './services.css';
 @import './booking.css';
 @import './wizard.css';
+@import './interior-catalog.css';
+@import './electrician.css';
+@import './plumbing.css';
+@import './painting.css';
+@import './pop-ceiling.css';
+@import './waterproofing.css';
+@import './interior-design.css';
+@import './account.css';
 @import './footer.css';
 
 /* --- still being migrated off the old token names --------------------- */
@@ -28,3 +39,5 @@
 
 /* --- cross-cutting, must stay last so it can override ----------------- */
 @import './responsive.css';
+@import './bottom-nav.css';
+@import './depth.css';

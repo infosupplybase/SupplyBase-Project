@@ -3,6 +3,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
+import LocationSelector from './LocationSelector';
+import NotificationBell from './NotificationBell';
 import { mainNav, company } from '../../data/siteConfig';
 import { useAuth } from '../../context/AuthContext';
 
@@ -51,11 +53,12 @@ export default function Navbar() {
 
   return (
     <>
-      <header className={`header ${scrolled ? 'scrolled' : ''}`} onMouseLeave={() => setMegaOpen(false)}>
+      <div onMouseLeave={() => setMegaOpen(false)}>
+      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
         <div className="container">
           <div className="header-inner">
             <Link to="/" className="brand" aria-label={`${company.name} — home`}>
-              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
+              <img src="/assets/brand/logo.webp" alt={`${company.name} logo`} />
             </Link>
 
             <nav className="nav" aria-label="Main">
@@ -76,7 +79,7 @@ export default function Navbar() {
                       aria-expanded={megaOpen}
                     >
                       {item.label}
-                      <Icon name="chevron-down" size={15} className="nav-caret" />
+                      {/* <Icon name="chevron-down" size={15} className="nav-caret" /> */}
                     </NavLink>
                   </div>
                 ) : (
@@ -94,6 +97,8 @@ export default function Navbar() {
             </nav>
 
             <div className="header-actions">
+              <LocationSelector />
+              <NotificationBell />
               <Link to={user ? '/dashboard' : '/login'} className="login-btn">
                 <Icon name="user" size={17} />
                 {user ? 'MY ACCOUNT' : 'LOGIN'}
@@ -110,8 +115,13 @@ export default function Navbar() {
           </div>
         </div>
 
-        <ServiceMegaMenu open={megaOpen} onNavigate={() => setMegaOpen(false)} />
       </header>
+      {/* <ServiceMegaMenu
+  open={megaOpen}
+  scrolled={scrolled}
+  onNavigate={() => setMegaOpen(false)}
+/> */}
+</div>
 
       <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>

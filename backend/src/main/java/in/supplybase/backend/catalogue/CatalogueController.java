@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import in.supplybase.backend.catalogue.dto.CategoryResponse;
 import in.supplybase.backend.catalogue.dto.CreateCategoryRequest;
 import in.supplybase.backend.catalogue.dto.CreateQuestionRequest;
 import in.supplybase.backend.catalogue.dto.QuestionResponse;
+import in.supplybase.backend.catalogue.dto.SearchResultResponse;
 import in.supplybase.backend.catalogue.dto.ServiceFormResponse;
 import in.supplybase.backend.catalogue.dto.UpdateCategoryRequest;
 import in.supplybase.backend.catalogue.dto.UpdateCategoryActiveRequest;
@@ -42,6 +44,12 @@ public class CatalogueController {
     @GetMapping("/api/catalogue/services/{slug}/form")
     public ServiceFormResponse form(@PathVariable String slug) {
         return service.form(slug);
+    }
+
+    /** Search across active main categories and sub-services. */
+    @GetMapping("/api/catalogue/search")
+    public List<SearchResultResponse> search(@RequestParam(defaultValue = "") String q) {
+        return service.search(q);
     }
 
     /* ----------------------------------------------------------- staff */

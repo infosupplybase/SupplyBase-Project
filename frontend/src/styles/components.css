@@ -80,9 +80,10 @@
   --svc-soft: rgba(214, 165, 68, 0.11);
   display: flex;
   flex-direction: column;
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--grey-200);
   border-radius: var(--radius);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   padding: 26px 24px 20px;
   transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
   position: relative;
@@ -103,8 +104,8 @@
 }
 
 .service-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-8px);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
   border-color: rgba(214, 165, 68, 0.4);
 }
 
@@ -121,8 +122,9 @@
   border-radius: var(--radius-sm);
   background: var(--svc-soft);
   color: var(--svc);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   margin-bottom: 16px;
-  transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  transition: background 0.3s var(--ease), color 0.3s var(--ease), box-shadow 0.3s var(--ease);
 }
 
 .service-card:hover .service-card-icon {
@@ -253,6 +255,7 @@
   border: 1px solid var(--accent-line);
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   position: relative;
 }
 
@@ -310,6 +313,15 @@
   background: var(--charcoal);
   aspect-ratio: 4 / 3.1;
   box-shadow: var(--shadow);
+}
+
+.project-card {
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+
+.project-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
 }
 
 .project-card img {
@@ -397,6 +409,7 @@
   border: 1px solid var(--grey-300);
   border-radius: 40px;
   background: var(--white);
+  box-shadow: var(--shadow-sm);
   font-family: var(--font-display);
   font-size: 0.88rem;
   font-weight: 600;
@@ -409,6 +422,8 @@
 .filter-btn:hover {
   border-color: var(--gold);
   color: var(--gold-deep);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
 }
 
 .filter-btn {
@@ -420,6 +435,7 @@
   background: var(--cat);
   border-color: var(--cat);
   color: var(--on-cat);
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
 /* ----------------------------------------------------------- cta band */
@@ -463,41 +479,55 @@
 
 .page-hero {
   position: relative;
-  background: var(--bg-soft);
+  background: transparent;
   border-bottom: 1px solid var(--line-gold);
-  padding: calc(var(--header-h) + clamp(3rem, 6vw, 5rem)) 0 clamp(3rem, 6vw, 5rem);
+
+  height: 390px;
+  box-sizing: border-box;
+
+  padding: calc(var(--header-h) + 1.5rem) 0 2rem;
+
   overflow: hidden;
 }
+
 
 .page-hero-bg {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  overflow: hidden;
 }
 
 .page-hero-bg img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-  opacity: 0.18;
+  object-position: center 20%;
+  opacity: 0.55;
 }
 
 .page-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(95deg, rgba(250, 248, 244, 0.96) 20%, rgba(250, 248, 244, 0.8) 70%, rgba(250, 248, 244, 0.62));
+  display: none;
 }
 
 .page-hero-inner {
   position: relative;
   z-index: 2;
   max-width: 780px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .page-hero h1 {
   color: var(--ink);
   font-size: clamp(2rem, 4.6vw, 3.4rem);
-  margin-bottom: 0.7rem;
+  margin-bottom: 1.2rem;
 }
 
 .page-hero p {
@@ -505,24 +535,6 @@
   font-size: 1.05rem;
   max-width: 60ch;
   margin: 0;
-}
-
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-  font-size: 0.85rem;
-  color: var(--ink-muted);
-}
-
-.breadcrumbs a:hover {
-  color: var(--gold-deep);
-}
-
-.breadcrumbs span[aria-current] {
-  color: var(--accent);
 }
 
 /* --------------------------------------------------------------- faq */
@@ -587,10 +599,10 @@
 /* -------------------------------------------------------------- form */
 
 .form-card {
-  background: var(--white);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
   border: 1px solid var(--grey-200);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  box-shadow: var(--depth-inset-top), var(--shadow);
   padding: clamp(24px, 4vw, 38px);
 }
 
@@ -679,6 +691,7 @@
 .file-drop:hover {
   border-color: var(--gold);
   background: rgba(214, 165, 68, 0.04);
+  box-shadow: var(--shadow-sm);
 }
 
 .file-drop svg {
@@ -706,6 +719,7 @@
   border-radius: 50%;
   background: rgba(37, 211, 102, 0.12);
   color: #1ba750;
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -908,7 +922,7 @@
     display: none;
   }
   .hero-dots {
-    bottom: 168px;
+    bottom: 18px;
   }
   .trustbar-wrap {
     margin-top: -110px;
@@ -958,6 +972,10 @@
   .btn-row .btn {
     flex: 1 1 auto;
   }
+  /* .btn-row and .form-card used to reserve a right margin here so they
+     wouldn't render underneath the site-wide floating call/WhatsApp
+     buttons — FloatingActions is disabled sitewide now (see Layout.jsx),
+     so both can be genuinely full width. */
   .floating-actions {
     right: 14px;
     bottom: 14px;
@@ -984,5 +1002,88 @@
   }
   .stats {
     grid-template-columns: 1fr;
+  }
+}
+
+
+
+/* Contact page — reduce the gap between hero and enquiry section */
+.page-hero.contact-page-hero {
+  padding-bottom: 1rem;
+}
+
+.contact-section {
+  padding-top: 1rem;
+}
+
+
+/* ===== PAGE HERO — TALLER, REPOSITIONED (DESKTOP/TABLET ONLY) =====
+   Scoped to min-width: 721px, matching the mobile breakpoint in
+   pages.css — this block used to apply at every width with !important,
+   which silenced that file's own mobile .page-hero-inner rules and
+   pushed the "WHAT WE DO" box off the left edge of narrow screens
+   (left: 33% + translateX(-50%) only makes sense against a wide box). */
+
+@media (min-width: 721px) {
+  .page-hero {
+    position: relative;
+    height: 520px;
+    min-height: 520px;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  /* Background image */
+  .page-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+  }
+
+  .page-hero-bg img {
+    width: 100%;
+    height: 100%;
+    display: block;
+
+    object-fit: cover;
+
+    /* TOP PART OF IMAGE WILL STAY VISIBLE */
+    object-position: center 28%;
+
+    opacity: 0.60;
+  }
+
+  /* Moves the "WHAT WE DO" box down and left-of-center over the photo.
+     The box is centred on the 33% line, but never allowed to start left of
+     the 20px page gutter: `left: 33%` + `translateX(-50%)` on its own pushed
+     the box (and its text) off the left edge on every screen between 721px
+     and about 1180px wide — tablets, small laptops, a resized window. */
+  .page-hero-inner {
+    position: absolute;
+
+    left: max(20px, calc(33% - min(780px, 100% - 40px) / 2));
+    bottom: 45px;
+
+    z-index: 2;
+
+    width: min(780px, calc(100% - 40px));
+    max-width: 780px;
+
+    padding: 30px;
+
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 18px;
+
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.12);
+
+    box-sizing: border-box;
   }
 }

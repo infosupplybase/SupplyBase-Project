@@ -1,38 +1,44 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
+import PageHeader from '../components/admin/PageHeader';
+import DataTable from '../components/admin/DataTable';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Drawer from '../components/admin/Drawer';
-import api, { friendlyError } from '../lib/api';
+import { ErrorBanner, TableEmpty, TableLoading } from '../components/admin/TableStates';
+import rowProps from '../components/admin/rowProps';
+import { useToast } from '../components/admin/Toast';
 import { useAuth } from '../context/AuthContext';
+import useQueryParam, { usePageParam } from '../hooks/useQueryParam';
+import api, { friendlyError } from '../lib/api';
+import { label } from '../lib/format';
 
-const ROLES = ['CUSTOMER', 'PROFESSIONAL', 'ADMIN'];
-
-const label = (value) =>
-  String(value || '')
-    .toLowerCase()
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+const ROLES = [
+  { value: 'CUSTOMER', text: 'Customers', help: 'Books services and follows their own bookings.' },
+  { value: 'PROFESSIONAL', text: 'Partners', help: 'Works assigned jobs on the partner portal.' },
+  { value: 'ADMIN', text: 'Admins', help: 'Full access to this console.' },
+];
 
 const toneForRole = (role) => {
-  if (role === 'ADMIN') return 'accent';
-  if (role === 'PROFESSIONAL') return 'success';
+  if (role === 'ADMIN') return 'warning';
+  if (role === 'PROFESSIONAL') return 'accent';
   return 'neutral';
 };
 
 /**
- * Every account on the platform — customers, professionals and admins.
- * Staff can search/filter the list and, from the drawer, change a user's
- * role or enable/disable their account. The signed-in admin's own row is
- * locked here so nobody demotes or disables themselves by accident.
+ * Every account on the platform — customers, partners and admins. Staff can
+ * search, change a role, or disable an account. The signed-in admin's own
+ * account is locked here so nobody demotes or disables themselves by accident.
  */
 export default function AdminUsers() {
   const { user: currentUser } = useAuth();
+  const { notify } = useToast();
 
-  const [roleFilter, setRoleFilter] = useState('');
-  const [qInput, setQInput] = useState('');
-  const [q, setQ] = useState('');
-  const [page, setPage] = useState(0);
+  const [roleFilter, setRoleFilter] = useQueryParam('role');
+  const [q, setQ] = useQueryParam('q');
+  const [page, setPage] = usePageParam();
+  const [qInput, setQInput] = useState(q);
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,14 +51,12 @@ export default function AdminUsers() {
   const [statusSaving, setStatusSaving] = useState(false);
   const [statusError, setStatusError] = useState('');
 
-  // Debounce the free-text box before it becomes a `q` query param.
   useEffect(() => {
     const timer = setTimeout(() => {
-      setQ(qInput.trim());
-      setPage(0);
+      if (qInput.trim() !== q) setQ(qInput.trim());
     }, 300);
     return () => clearTimeout(timer);
-  }, [qInput]);
+  }, [qInput, q, setQ]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -75,18 +79,20 @@ export default function AdminUsers() {
     setStatusError('');
   };
 
-  const closeDrawer = () => setSelected(null);
-
   const isSelf = Boolean(selected && currentUser && selected.id === currentUser.id);
 
   const handleRoleSave = async (e) => {
     e.preventDefault();
-    if (isSelf) return;
+    if (isSelf || roleForm === selected.role) return;
+    if (roleForm === 'ADMIN' && !window.confirm(`Give ${selected.fullName || selected.email} full admin access to this console?`)) {
+      return;
+    }
     setRoleSaving(true);
     setRoleSaveError('');
     try {
       const updated = await api.admin.users.updateRole(selected.id, roleForm);
       setSelected(updated);
+      notify(`${updated.fullName || updated.email} is now ${label(updated.role).toLowerCase()}`);
       load();
     } catch (err) {
       setRoleSaveError(friendlyError(err));
@@ -97,11 +103,16 @@ export default function AdminUsers() {
 
   const handleToggleStatus = async () => {
     if (isSelf) return;
+    const disabling = selected.enabled;
+    if (disabling && !window.confirm(`Disable ${selected.fullName || selected.email}? They will not be able to sign in until you enable the account again.`)) {
+      return;
+    }
     setStatusSaving(true);
     setStatusError('');
     try {
       const updated = await api.admin.users.updateStatus(selected.id, !selected.enabled);
       setSelected(updated);
+      notify(`Account ${updated.enabled ? 'enabled' : 'disabled'}`);
       load();
     } catch (err) {
       setStatusError(friendlyError(err));
@@ -110,173 +121,200 @@ export default function AdminUsers() {
     }
   };
 
+  const tabs = [{ value: '', text: 'Everyone' }, ...ROLES];
+
   return (
     <div>
-      <div className="admin-header">
-        <div>
-          <h1>STAFF</h1>
-          <p>Customers, professionals and admins — one account list.</p>
-        </div>
-      </div>
+      <PageHeader
+        icon="users"
+        title="Users"
+        subtitle="Every account on Supplybase — customers, partners and admins. Search for someone, change what they can do, or disable an account."
+      />
 
       <div className="admin-toolbar">
-        <input
-          type="text"
-          className="admin-filter"
-          value={qInput}
-          onChange={(e) => setQInput(e.target.value)}
-          placeholder="Search name, email or phone…"
-          style={{ minWidth: 260 }}
-        />
-        <select
-          className="admin-filter"
-          value={roleFilter}
-          onChange={(e) => {
-            setRoleFilter(e.target.value);
-            setPage(0);
-          }}
-        >
-          <option value="">All roles</option>
-          {ROLES.map((r) => (
-            <option key={r} value={r}>
-              {label(r)}
-            </option>
+        <div className="admin-tabs" role="tablist" aria-label="Role">
+          {tabs.map((t) => (
+            <button
+              key={t.value || 'all'}
+              type="button"
+              role="tab"
+              aria-selected={roleFilter === t.value}
+              className={`admin-tab ${roleFilter === t.value ? 'active' : ''}`}
+              onClick={() => setRoleFilter(t.value)}
+            >
+              {t.text}
+            </button>
           ))}
-        </select>
+        </div>
+        <span className="admin-toolbar-spacer" />
+        <div className="admin-search-input">
+          <Icon name="search" size={17} />
+          <input
+            type="search"
+            value={qInput}
+            onChange={(e) => setQInput(e.target.value)}
+            placeholder="Search name, email or phone"
+            aria-label="Search accounts"
+          />
+        </div>
       </div>
 
-      {error && (
-        <div role="alert" className="alert alert-error">
-          <Icon name="info" size={18} />
-          <span>{error}</span>
-        </div>
-      )}
+      <ErrorBanner onRetry={load}>{error}</ErrorBanner>
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
+      <DataTable label="Accounts">
           <thead>
             <tr>
               <th>Name</th>
               <th>Contact</th>
+              <th>City</th>
               <th>Role</th>
-              <th>Status</th>
+              <th>Account</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={4} className="admin-table-empty">
-                  Loading…
-                </td>
-              </tr>
+              <TableLoading columns={5} />
             ) : data && data.content.length ? (
               data.content.map((row) => (
-                <tr key={row.id} className="admin-table-row" onClick={() => openRow(row)}>
-                  <td>{row.fullName || '—'}</td>
+                <tr key={row.id} {...rowProps(() => openRow(row), `Open account ${row.fullName || row.email}`)}>
+                  <td>
+                    <span className="admin-cell-main">{row.fullName || '—'}</span>
+                    <span className="admin-table-sub">
+                      <span className="admin-id">#{row.id}</span>
+                      {currentUser && row.id === currentUser.id ? ' · you' : ''}
+                    </span>
+                  </td>
                   <td>
                     {row.email || '—'}
-                    <br />
-                    <span className="admin-table-sub">{row.phone || '—'}</span>
+                    <span className="admin-table-sub">{row.phone || 'No phone'}</span>
+                  </td>
+                  <td>{row.city || '—'}</td>
+                  <td>
+                    <StatusBadge tone={toneForRole(row.role)}>{row.role === 'PROFESSIONAL' ? 'Partner' : label(row.role)}</StatusBadge>
                   </td>
                   <td>
-                    <StatusBadge tone={toneForRole(row.role)}>{label(row.role)}</StatusBadge>
-                  </td>
-                  <td>
-                    <StatusBadge tone={row.enabled ? 'success' : 'danger'}>
-                      {row.enabled ? 'Enabled' : 'Disabled'}
-                    </StatusBadge>
+                    <StatusBadge tone={row.enabled ? 'success' : 'danger'}>{row.enabled ? 'Active' : 'Disabled'}</StatusBadge>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan={4} className="admin-table-empty">
-                  No accounts match.
-                </td>
-              </tr>
+              <TableEmpty columns={5} icon="users" title="No accounts match">
+                {q || roleFilter ? 'Try a different search or role.' : 'Accounts appear here as people sign up.'}
+              </TableEmpty>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
-      {data && <Pagination page={data.number} totalPages={data.totalPages} onChange={setPage} />}
+      <Pagination data={data} onChange={setPage} />
 
-      <Drawer
-        open={Boolean(selected)}
-        onClose={closeDrawer}
-        title={selected ? selected.fullName || selected.email : ''}
-      >
+      <Drawer open={Boolean(selected)} onClose={() => setSelected(null)} title={selected ? selected.fullName || selected.email : ''}>
         {selected && (
           <>
+            <div className="admin-modal-top">
+              <StatusBadge tone={toneForRole(selected.role)}>
+                {selected.role === 'PROFESSIONAL' ? 'Partner' : label(selected.role)}
+              </StatusBadge>
+              <StatusBadge tone={selected.enabled ? 'success' : 'danger'}>{selected.enabled ? 'Active' : 'Disabled'}</StatusBadge>
+              <span className="admin-id">Account #{selected.id}</span>
+            </div>
+
             <dl className="admin-detail-list">
               <div>
-                <dt>Name</dt>
-                <dd>{selected.fullName || '—'}</dd>
-              </div>
-              <div>
                 <dt>Email</dt>
-                <dd>{selected.email || '—'}</dd>
+                <dd>
+                  {selected.email || '—'}
+                  {selected.email && !selected.emailVerified && <span className="admin-table-sub">Not verified yet</span>}
+                </dd>
               </div>
               <div>
                 <dt>Phone</dt>
                 <dd>{selected.phone || '—'}</dd>
+              </div>
+              <div>
+                <dt>Address</dt>
+                <dd>
+                  {[selected.addressLine1, selected.addressLine2, selected.landmark, selected.city, selected.pinCode]
+                    .filter(Boolean)
+                    .join(', ') || '—'}
+                </dd>
+              </div>
+              <div>
+                <dt>Sign-in</dt>
+                <dd>{selected.hasPassword ? 'Password' : 'Google / phone only'}</dd>
               </div>
             </dl>
 
             {isSelf && (
               <div role="alert" className="alert alert-info">
                 <Icon name="info" size={18} />
-                <span>
-                  This is your own account — role and status can&rsquo;t be changed here, so you
-                  can&rsquo;t lock yourself out.
-                </span>
+                <span>This is your own account — its role and status are locked here so you cannot lock yourself out.</span>
               </div>
             )}
 
-            <form onSubmit={handleRoleSave} style={{ marginBottom: 20 }}>
-              <div className="field" style={{ marginBottom: 12 }}>
-                <label htmlFor="usr-role">Role</label>
-                <select
-                  id="usr-role"
-                  value={roleForm}
-                  onChange={(e) => setRoleForm(e.target.value)}
-                  disabled={isSelf}
-                >
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {label(r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="shield" size={16} />
+                What they can do
+              </h3>
+              <form onSubmit={handleRoleSave}>
+                <div className="field" style={{ marginBottom: 12 }}>
+                  <label htmlFor="usr-role">Role</label>
+                  <select id="usr-role" value={roleForm} onChange={(e) => setRoleForm(e.target.value)} disabled={isSelf}>
+                    {ROLES.map((r) => (
+                      <option key={r.value} value={r.value}>
+                        {r.value === 'PROFESSIONAL' ? 'Partner' : label(r.value)} — {r.help}
+                      </option>
+                    ))}
+                  </select>
+                  {roleForm === 'PROFESSIONAL' && selected.role !== 'PROFESSIONAL' && (
+                    <span className="field-hint">
+                      To add a partner properly, have them apply on the partner portal and approve them on the{' '}
+                      <Link to="/partners">Partners page</Link> — that also records their trade and areas.
+                    </span>
+                  )}
+                </div>
 
-              {roleSaveError && (
-                <div role="alert" className="alert alert-error" style={{ marginBottom: 12 }}>
-                  <Icon name="info" size={18} />
-                  <span>{roleSaveError}</span>
+                {roleSaveError && (
+                  <div role="alert" className="alert alert-error">
+                    <Icon name="alert" size={18} />
+                    <span>{roleSaveError}</span>
+                  </div>
+                )}
+
+                <button type="submit" className="btn btn-dark btn-block" disabled={roleSaving || isSelf || roleForm === selected.role}>
+                  {roleSaving ? 'SAVING…' : 'SAVE ROLE'}
+                </button>
+              </form>
+            </section>
+
+            <section className="admin-form-section">
+              <h3 className="admin-form-section-title">
+                <Icon name="lock" size={16} />
+                Account access
+              </h3>
+              <p className="admin-form-hint">
+                {selected.enabled
+                  ? 'Disabling stops this person signing in. Nothing is deleted, and you can enable them again.'
+                  : 'This account cannot sign in. Enable it to give access back.'}
+              </p>
+
+              {statusError && (
+                <div role="alert" className="alert alert-error">
+                  <Icon name="alert" size={18} />
+                  <span>{statusError}</span>
                 </div>
               )}
 
-              <button type="submit" className="btn btn-dark btn-block" disabled={roleSaving || isSelf}>
-                {roleSaving ? 'SAVING…' : 'SAVE ROLE'}
+              <button
+                type="button"
+                className={`btn btn-block ${selected.enabled ? 'btn-danger' : 'btn-primary'}`}
+                onClick={handleToggleStatus}
+                disabled={statusSaving || isSelf}
+              >
+                <Icon name={selected.enabled ? 'lock' : 'check-circle'} size={16} />
+                {statusSaving ? 'SAVING…' : selected.enabled ? 'DISABLE ACCOUNT' : 'ENABLE ACCOUNT'}
               </button>
-            </form>
-
-            {statusError && (
-              <div role="alert" className="alert alert-error" style={{ marginBottom: 12 }}>
-                <Icon name="info" size={18} />
-                <span>{statusError}</span>
-              </div>
-            )}
-
-            <button
-              type="button"
-              className="btn btn-outline btn-block"
-              onClick={handleToggleStatus}
-              disabled={statusSaving || isSelf}
-            >
-              {statusSaving ? 'SAVING…' : selected.enabled ? 'DISABLE ACCOUNT' : 'ENABLE ACCOUNT'}
-            </button>
+            </section>
           </>
         )}
       </Drawer>

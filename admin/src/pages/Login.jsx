@@ -6,11 +6,10 @@ import { useAuth, friendlyError } from '../context/AuthContext';
 /**
  * Standalone sign-in for the admin app. Deliberately minimal compared to the
  * main site's Login page — no register tab, no Google button: staff accounts
- * are promoted by hand in the database, never self-registered, and this app
- * has no way to share the main site's React context across origins.
+ * are promoted by hand, never self-registered.
  */
 export default function Login() {
-  const { user, login, loading } = useAuth();
+  const { user, login, logout, loading } = useAuth();
   const navigate = useNavigate();
 
   const [identifier, setIdentifier] = useState('');
@@ -20,7 +19,12 @@ export default function Login() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) navigate('/', { replace: true });
+    document.title = 'Sign in · Supplybase Admin';
+  }, []);
+
+  // Already signed in as an admin (e.g. a returning tab) — straight in.
+  useEffect(() => {
+    if (!loading && user && user.role === 'ADMIN') navigate('/', { replace: true });
   }, [loading, user, navigate]);
 
   const handleSubmit = async (e) => {
@@ -34,7 +38,10 @@ export default function Login() {
     try {
       const signedIn = await login(identifier, password);
       if (signedIn.role !== 'ADMIN') {
-        setError('This account is not an administrator.');
+        // A customer or partner account: sign it straight back out, so the
+        // error below stays on screen instead of the guard bouncing the page.
+        await logout();
+        setError('This account is not an administrator. Use a staff account to sign in here.');
         setBusy(false);
         return;
       }
@@ -48,9 +55,11 @@ export default function Login() {
   return (
     <div className="admin-login-screen">
       <div className="admin-login-card">
-        <img src="/assets/brand/logo.png" alt="Supplybase Projects logo" />
-        <h1>ADMIN SIGN IN</h1>
-        <p>Staff access only.</p>
+        <div className="admin-login-logo">
+          <img src="/assets/brand/logo.png" alt="Supplybase" />
+        </div>
+        <h1>ADMIN CONSOLE</h1>
+        <p>Sign in with your staff account to manage bookings, partners and payments.</p>
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="field" style={{ marginBottom: 16 }}>
@@ -60,8 +69,9 @@ export default function Login() {
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="you@example.com or 98765 43210"
+              placeholder="you@supplybase.co.in or 98765 43210"
               autoComplete="username"
+              autoFocus
             />
           </div>
 
@@ -75,23 +85,14 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 autoComplete="current-password"
-                style={{ paddingRight: 46 }}
+                style={{ paddingRight: 48 }}
               />
               <button
                 type="button"
+                className="admin-password-toggle"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                style={{
-                  position: 'absolute',
-                  right: 8,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 0,
-                  color: 'var(--grey-500)',
-                  padding: 6,
-                  display: 'flex',
-                }}
+                aria-pressed={showPassword}
               >
                 <Icon name="eye" size={19} />
               </button>
@@ -100,16 +101,18 @@ export default function Login() {
 
           {error && (
             <div role="alert" className="alert alert-error">
-              <Icon name="info" size={18} />
+              <Icon name="alert" size={18} />
               <span>{error}</span>
             </div>
           )}
 
-          <button type="submit" className="btn btn-dark btn-block btn-lg" disabled={busy}>
+          <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={busy}>
             <Icon name="lock" size={17} />
             {busy ? 'SIGNING IN…' : 'SIGN IN'}
           </button>
         </form>
+
+        <p className="admin-login-foot">Staff access only. Customers and partners sign in on their own sites.</p>
       </div>
     </div>
   );

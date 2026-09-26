@@ -24,11 +24,15 @@ spring:
     password: ${DB_PASSWORD:supplybase}
 
     username: ${DB_USER:root}
+<<<<<<< HEAD
 
 
     password: ${DB_PASSWORD:root}
 
 
+=======
+    password: ${DB_PASSWORD:Root@123}
+>>>>>>> main
     driver-class-name: com.mysql.cj.jdbc.Driver
 
     hikari:

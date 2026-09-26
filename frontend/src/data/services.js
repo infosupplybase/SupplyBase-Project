@@ -1,27 +1,52 @@
 /**
  * SUPPLYBASE PROJECTS — SERVICES DATA
  * ----------------------------------
- * Every service page on the website is generated from this file.
- * To add a new service: copy one object, change the values, and it automatically appears in
- * the home page grid, the services page, the header mega menu and the footer,
- * and gets its own page at /services/<slug>.
+ * The live list of services is the catalogue API (see hooks/useServiceCatalogue).
+ * This file is the static copy of it: the fallback the footer, mobile menu and
+ * quote form show until the API answers (or if it can't be reached), and the
+ * lookup for names by slug (getServiceBySlug). Keep it in step with the
+ * catalogue — same services, same order (featuredServiceSlugs).
  *
  * megaMenuGroup: DESIGN | CONSTRUCTION | FINISHING | MEP | SPECIALIZED
+ *
+ * Scoped to the seven main services plus one catch-all: Interior Design,
+ * Interior by Choice, Painting, Waterproofing, POP Ceiling & Design,
+ * Plumber, Electrician, and Other Services — the same eight the backend's
+ * service_categories table now serves at GET /api/catalogue/services (see
+ * backend/.../V13__seven_main_service_categories.sql). "Other Services" is
+ * a single tile, same as Electrician; it opens a category list of the five
+ * services that don't fit the main seven (architectural-design,
+ * civil-construction, furniture, fabrication, finishing) rather than
+ * showing five more top-level tiles.
+ * The five services that live under Other Services stay `active: false`
+ * here rather than deleted — they are not top-level services, so they must
+ * not appear in any list built from this file.
+ * Every helper below (and every component that lists services) filters on
+ * that flag; a service object with no `active` field is active by default.
  */
 
 export const megaMenuGroups = ['DESIGN', 'CONSTRUCTION', 'FINISHING', 'MEP', 'SPECIALIZED'];
 
 /**
- * The four services shown on the home page. Everything else stays one click
- * away behind "View all services". Reorder or swap these slugs and the home
- * page follows — no component needs editing.
+ * The seven main services, in the approved order. Reorder or swap these
+ * slugs and the home page follows — no component needs editing.
  */
-export const featuredServiceSlugs = ['painting', 'plumbing', 'pop-false-ceiling', 'furniture'];
+export const featuredServiceSlugs = [
+  'interior-design',
+  'interior-by-choice',
+  'painting',
+  'waterproofing',
+  'pop-ceiling-design',
+  'plumbing',
+  'electrical',
+  'other-services',
+];
 
 export const services = [
   /* ------------------------------------------------------------------ 01 */
   {
     slug: 'architectural-design',
+    active: false,
     number: '01',
     name: 'Architectural & Design',
     shortName: 'Architectural & Design',
@@ -65,6 +90,7 @@ export const services = [
   /* ------------------------------------------------------------------ 02 */
   {
     slug: 'civil-construction',
+    active: false,
     number: '02',
     name: 'Civil Construction',
     shortName: 'Civil Construction',
@@ -148,12 +174,32 @@ export const services = [
     ],
   },
 
+  /* ------------------------------------------------------------------ 03b */
+  {
+    slug: 'interior-by-choice',
+    number: '03b',
+    name: 'Interior by Choice',
+    shortName: 'Interior by Choice',
+    icon: 'layers',
+    megaMenuGroup: 'DESIGN',
+    tagline: 'Browse ready-made designs, pick one, book a home visit.',
+    cardText: 'A catalogue of ready interior designs by space — pick one and book a ₹99 home visit.',
+    summary:
+      'Not every project starts from a blank page. Browse finished designs by space, pick the one closest to what you want, and book a paid home visit — the fee is adjusted into your final project cost if you go ahead.',
+    heroImage: '/assets/projects/modern-interior.webp',
+    gallery: ['/assets/projects/modern-interior.webp'],
+    subServices: [],
+    highlights: [],
+    process: [],
+    faqs: [],
+  },
+
   /* ------------------------------------------------------------------ 04 */
   {
     slug: 'painting',
     number: '04',
-    name: 'Painting Work',
-    shortName: 'Painting Work',
+    name: 'Painting',
+    shortName: 'Painting',
     icon: 'roller',
     megaMenuGroup: 'FINISHING',
     tagline: 'A finish that holds up.',
@@ -190,20 +236,61 @@ export const services = [
     ],
   },
 
+  /* ------------------------------------------------------------------ 04b */
+  {
+    slug: 'waterproofing',
+    number: '04b',
+    name: 'Waterproofing',
+    shortName: 'Waterproofing',
+    icon: 'droplet',
+    megaMenuGroup: 'FINISHING',
+    tagline: 'Stop the leak at the source.',
+    cardText: 'Terrace, bathroom, balcony, basement, wall and water tank waterproofing.',
+    summary:
+      'Water finds every gap preparation misses. We treat terraces, bathrooms, balconies, basements, walls and water tanks with the right membrane and slope for the surface, tested before anything is covered over.',
+    heroImage: '/assets/services/civil-construction.svg',
+    gallery: ['/assets/services/civil-construction.svg'],
+    subServices: [
+      { name: 'Terrace Waterproofing', text: 'Membrane and slope treatment for exposed roof decks.' },
+      { name: 'Bathroom & Toilet Waterproofing', text: 'Floor and wall treatment before tiling, sealed at every junction.' },
+      { name: 'Balcony Waterproofing', text: 'Weather-exposed balcony and utility area treatment.' },
+      { name: 'Basement Waterproofing', text: 'Below-grade treatment against seepage and rising damp.' },
+      { name: 'Water Tank Waterproofing', text: 'Overhead and underground tank lining and sealing.' },
+      { name: 'Wall & External Waterproofing', text: 'Facade and compound wall damp-proofing.' },
+    ],
+    highlights: [
+      'Correct membrane chosen for the surface, not one product for everything',
+      'Slope and drainage checked before any coat goes on',
+      'Every treated area tested for leaks before it is covered',
+      'Workmanship terms written into the quotation',
+    ],
+    process: [
+      { title: 'Site Inspection', text: 'Source of the leak or the area at risk is identified.' },
+      { title: 'Surface Preparation', text: 'Cleaning, crack filling and priming of the treated area.' },
+      { title: 'Membrane Application', text: 'Waterproofing coat or membrane applied to the agreed system.' },
+      { title: 'Testing & Handover', text: 'Water/flood test before the area is covered or tiled.' },
+    ],
+    faqs: [
+      { q: 'How long does terrace waterproofing last?', a: 'A properly applied system typically holds for five to ten years depending on exposure and maintenance.' },
+      { q: 'Can you waterproof without removing the existing tiles?', a: 'For most leak repairs, yes — we assess this on site and tell you honestly if removal is actually needed.' },
+      { q: 'Do you test before covering the work?', a: 'Yes, a water test is carried out in front of you before the area is tiled or covered.' },
+    ],
+  },
+
   /* ------------------------------------------------------------------ 05 */
   {
-    slug: 'pop-false-ceiling',
+    slug: 'pop-ceiling-design',
     number: '05',
-    name: 'POP & False Ceiling',
-    shortName: 'POP & False Ceiling',
+    name: 'POP Ceiling & Design',
+    shortName: 'POP Ceiling & Design',
     icon: 'ceiling',
     megaMenuGroup: 'FINISHING',
     tagline: 'Ceilings that carry the lighting design.',
     cardText: 'POP, gypsum and designer false ceilings with cove and LED lighting.',
     summary:
       'A false ceiling does more than hide wiring — it sets the lighting and the proportion of the room. We execute POP and gypsum ceilings, designer profiles, wall moulding, cornice and partition work, with the LED cove and light points planned into the design from the start.',
-    heroImage: '/assets/services/pop-false-ceiling.svg',
-    gallery: ['/assets/services/pop-false-ceiling.svg', '/assets/projects/modern-interior.svg'],
+    heroImage: '/assets/pop-ceiling/hero/living-room-cove.webp',
+    gallery: ['/assets/pop-ceiling/hero/living-room-cove.webp', '/assets/pop-ceiling/full-home/ceiling-design.webp'],
     subServices: [
       { name: 'POP Ceiling', text: 'Traditional plaster of Paris ceilings with a smooth, paint-ready finish.' },
       { name: 'Gypsum Ceiling', text: 'Gypsum board ceilings on GI framing — fast, clean and stable.' },
@@ -237,16 +324,16 @@ export const services = [
   {
     slug: 'electrical',
     number: '06',
-    name: 'Electrical Work',
-    shortName: 'Electrical Work',
+    name: 'Electrician',
+    shortName: 'Electrician',
     icon: 'bolt',
     megaMenuGroup: 'MEP',
     tagline: 'Safe wiring, planned properly.',
     cardText: 'Complete wiring, DB and panel work, lighting, switches and commercial electrical.',
     summary:
       'Electrical work is a safety job first and a convenience job second. We carry out complete concealed wiring, new installations, DB and panel work, lighting circuits and switch points — planned around how you will actually use the space, and executed with proper earthing and protection.',
-    heroImage: '/assets/services/electrical.svg',
-    gallery: ['/assets/services/electrical.svg'],
+    heroImage: '/assets/services/electrician/hero.webp',
+    gallery: ['/assets/services/electrician/home-electrical-services.webp', '/assets/services/electrician/fan-installation.webp', '/assets/services/electrician/light-installation.webp', '/assets/services/electrician/switch-socket-installation.webp', '/assets/services/electrician/wiring-rewiring-services.webp', '/assets/services/electrician/mcb-db-installation.webp'],
     subServices: [
       { name: 'Complete Wiring', text: 'Full concealed wiring for new homes, offices and shops.' },
       { name: 'New Installation', text: 'New points, circuits and load planning for renovations and extensions.' },
@@ -279,8 +366,8 @@ export const services = [
   {
     slug: 'plumbing',
     number: '07',
-    name: 'Plumbing Work',
-    shortName: 'Plumbing Work',
+    name: 'Plumber',
+    shortName: 'Plumber',
     icon: 'tap',
     megaMenuGroup: 'MEP',
     tagline: 'Lines laid right the first time.',
@@ -317,9 +404,30 @@ export const services = [
     ],
   },
 
+  /* ------------------------------------------------------------------ 07b */
+  {
+    slug: 'other-services',
+    number: '07b',
+    name: 'Other Services',
+    shortName: 'Other Services',
+    icon: 'settings',
+    megaMenuGroup: 'SPECIALIZED',
+    tagline: 'Everything else we do.',
+    cardText: 'Architectural design, civil construction, furniture, fabrication and finishing work.',
+    summary:
+      'Beyond the seven main services, we also handle architectural design, civil construction, custom furniture, MS/SS fabrication and finishing work — the same accountable team, the same one-partner model.',
+    heroImage: '/assets/hero-house.svg',
+    gallery: [],
+    subServices: [],
+    highlights: [],
+    process: [],
+    faqs: [],
+  },
+
   /* ------------------------------------------------------------------ 08 */
   {
     slug: 'furniture',
+    active: false,
     number: '08',
     name: 'Furniture Work',
     shortName: 'Furniture Work',
@@ -362,6 +470,7 @@ export const services = [
   /* ------------------------------------------------------------------ 09 */
   {
     slug: 'fabrication',
+    active: false,
     number: '09',
     name: 'Fabrication',
     shortName: 'Fabrication',
@@ -405,6 +514,7 @@ export const services = [
   /* ------------------------------------------------------------------ 10 */
   {
     slug: 'finishing',
+    active: false,
     number: '10',
     name: 'Finishing Work',
     shortName: 'Finishing Work',
@@ -447,18 +557,40 @@ export const services = [
 
 /* ---------------------------------------------------------------- helpers */
 
+/* Looks up by slug across every service, active or not — a project or a
+   quote referencing an inactive service (e.g. a past furniture job) should
+   still show its name and details, not "unknown service". */
 export const getServiceBySlug = (slug) => services.find((s) => s.slug === slug);
 
-/* Kept in featuredServiceSlugs order, not in services[] order, so the list
-   above controls which service leads. A slug that no longer exists is
-   dropped rather than rendering a hole. */
-export const getFeaturedServices = () =>
-  featuredServiceSlugs.map(getServiceBySlug).filter(Boolean);
+/* The list any current, live navigation or picker should render from, in the
+   same order as featuredServiceSlugs (and the live catalogue) — services[]
+   itself lists Electrician before Plumber, which used to make the footer,
+   menu and quote form disagree with the home page. Anything not featured
+   sorts last. */
+const featuredRank = (slug) => {
+  const index = featuredServiceSlugs.indexOf(slug);
+  return index === -1 ? featuredServiceSlugs.length : index;
+};
 
+export const activeServices = services
+  .filter((s) => s.active !== false)
+  .sort((a, b) => featuredRank(a.slug) - featuredRank(b.slug));
+
+/* Kept in featuredServiceSlugs order, not in services[] order, so the list
+   above controls which service leads. A slug that no longer exists, or is
+   inactive, is dropped rather than rendering a hole. */
+export const getFeaturedServices = () =>
+  featuredServiceSlugs.map(getServiceBySlug).filter((s) => s && s.active !== false);
+
+/* Empty groups are dropped rather than rendered as a heading with nothing
+   under it — with only four active services spread across five groups,
+   most groups are empty now. */
 export const getServicesByGroup = () =>
-  megaMenuGroups.map((group) => ({
-    group,
-    items: services.filter((s) => s.megaMenuGroup === group),
-  }));
+  megaMenuGroups
+    .map((group) => ({
+      group,
+      items: activeServices.filter((s) => s.megaMenuGroup === group),
+    }))
+    .filter(({ items }) => items.length > 0);
 
 export default services;

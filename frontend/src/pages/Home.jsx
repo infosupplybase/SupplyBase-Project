@@ -1,31 +1,43 @@
 import { Link } from 'react-router-dom';
-import HeroSlider from '../components/HeroSlider/HeroSlider';
-import ServiceSection from '../components/services/ServiceSection';
-import WhySupplybase from '../components/why/WhySupplybase';
-import MaterialsSection from '../components/materials/MaterialsSection';
+import HomeHero from '../components/home/HomeHero';
+import PopularServices from '../components/home/PopularServices';
+import ConsultationBanner from '../components/home/ConsultationBanner';
+import HowBookingWorks from '../components/services/HowBookingWorks';
+// Materials and Projects sections are disabled sitewide — see App.jsx.
+// import MaterialsSection from '../components/materials/MaterialsSection';
 import StatsSection from '../components/home/StatsSection';
-import ProjectGrid from '../components/projects/ProjectGrid';
+// import ProjectGrid from '../components/projects/ProjectGrid';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
-import { getFeaturedProjects } from '../data/projects';
+// import { getFeaturedProjects } from '../data/projects';
 
 export default function Home() {
-  const featured = getFeaturedProjects(4);
+  // const featured = getFeaturedProjects(4);
 
   return (
     /* page-home widens every .container on this page to the full viewport —
        see "full-width home page" in pages.css. Other pages stay centred. */
     <div className="page-home">
-      <HeroSlider />
+      <HomeHero />
 
-      <ServiceSection />
+      <PopularServices />
 
-      <WhySupplybase />
+      {/* Five plain steps, right under the services, so a first-time visitor
+          knows what happens after they tap one. */}
+      <section className="home-how" aria-label="How booking works">
+        <div className="container">
+          <HowBookingWorks />
+        </div>
+      </section>
 
-      <MaterialsSection />
+      <ConsultationBanner />
 
-      {/* ------------------------------------------------------ projects */}
+      {/* Materials section — disabled sitewide, see App.jsx.
+      <MaterialsSection /> */}
+
+      {/* ------------------------------------------------------ projects
+          Featured Projects section — disabled sitewide, see App.jsx.
       <section className="section">
         <div className="container">
           <div className="section-head-row">
@@ -49,6 +61,7 @@ export default function Home() {
           <ProjectGrid projects={featured} />
         </div>
       </section>
+      */}
 
       {/* --------------------------------------------------------- stats */}
       <StatsSection />

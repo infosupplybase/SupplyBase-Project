@@ -59,15 +59,15 @@ class CatalogueServiceTest {
     }
 
     @Test
-    @DisplayName("listCategories returns only active categories, in sort order")
+    @DisplayName("listCategories returns only active main categories, in sort order")
     void listCategoriesReturnsActiveOnly() {
-        when(categories.findByActiveTrueOrderBySortOrderAsc())
-                .thenReturn(List.of(category(1L, "painting-waterproofing", true)));
+        when(categories.findByActiveTrueAndParentSlugIsNullOrderBySortOrderAsc())
+                .thenReturn(List.of(category(1L, "painting", true)));
 
         List<CategoryResponse> result = service.listCategories();
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).slug()).isEqualTo("painting-waterproofing");
+        assertThat(result.get(0).slug()).isEqualTo("painting");
     }
 
     @Nested
@@ -88,13 +88,13 @@ class CatalogueServiceTest {
         @Test
         @DisplayName("resolves a known alias to its real slug")
         void aliasResolution() {
-            when(categories.findBySlugAndActiveTrue("painting")).thenReturn(Optional.empty());
-            when(categories.findBySlugAndActiveTrue("painting-waterproofing"))
-                    .thenReturn(Optional.of(category(1L, "painting-waterproofing", true)));
+            when(categories.findBySlugAndActiveTrue("electric")).thenReturn(Optional.empty());
+            when(categories.findBySlugAndActiveTrue("electrical"))
+                    .thenReturn(Optional.of(category(1L, "electrical", true)));
 
-            ServiceCategory result = service.requireCategory("painting");
+            ServiceCategory result = service.requireCategory("electric");
 
-            assertThat(result.getSlug()).isEqualTo("painting-waterproofing");
+            assertThat(result.getSlug()).isEqualTo("electrical");
         }
 
         @Test
@@ -249,8 +249,8 @@ class CatalogueServiceTest {
             when(categories.findBySlug("plumbing")).thenReturn(Optional.of(category(1L, "plumbing", true)));
             CreateQuestionRequest request = new CreateQuestionRequest(1, "issue", "What is the issue?",
                     "SINGLE", true, List.of(
-                            new CreateQuestionRequest.OptionInput("leak", "Leak", null, null),
-                            new CreateQuestionRequest.OptionInput("blockage", "Blockage", null, null)));
+                            new CreateQuestionRequest.OptionInput("leak", "Leak", null, null, null),
+                            new CreateQuestionRequest.OptionInput("blockage", "Blockage", null, null, null)));
 
             QuestionResponse response = service.createQuestion("plumbing", request);
 

@@ -21,7 +21,12 @@ import { useAuth, friendlyError } from '../context/AuthContext';
  *
  * NOTE: creating an account is public — anyone who completes the form can reach
  * /dashboard. To go back to invite-only, drop the /register route in App.jsx
- * and the CREATE ACCOUNT tab below; the sign-in half needs no other change.
+ * and the "Sign Up" link below; the sign-in half needs no other change.
+ *
+ * Phone number stays in the create-account form even though the reference
+ * design this was restyled from does not show one: the API requires it
+ * (register() takes phone as a positional arg and a person can sign in with
+ * it later) so dropping the field would silently break account creation.
  */
 const emptyForm = { name: '', email: '', phone: '', identifier: '', password: '', confirm: '' };
 
@@ -38,7 +43,9 @@ export default function Login() {
 
   const [form, setForm] = useState(emptyForm);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -170,256 +177,267 @@ export default function Login() {
 
   return (
     <div className="auth-screen">
-      <img
-        src={isRegister ? '/assets/projects/luxury-bungalow.svg' : '/assets/hero-house.svg'}
-        alt=""
-      />
+      <div className="auth-glow" aria-hidden="true" />
 
-      <div className="auth-modal" role="dialog" aria-modal="true" aria-label="Account">
-        <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
-          <Icon name="close" size={20} />
-        </button>
+      <div className="auth-card-wrap">
+        <div className="auth-card">
+          <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
+            <Icon name="close" size={18} />
+          </button>
 
-        <Link to="/" className="auth-logo">
-          <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
-        </Link>
-
-        <div className="auth-tabs" role="tablist">
-          <Link
-            to="/login"
-            role="tab"
-            aria-selected={!isRegister}
-            className={`auth-tab ${!isRegister ? 'active' : ''}`}
-          >
-            Sign In
+          <Link to="/" className="auth-logo">
+            <img src="/assets/brand/logo.webp" alt={`${company.name} logo`} />
           </Link>
-          <Link
-            to="/register"
-            role="tab"
-            aria-selected={isRegister}
-            className={`auth-tab ${isRegister ? 'active' : ''}`}
-          >
-            Create Account
-          </Link>
-        </div>
 
-        <h2>{isRegister ? 'Create Account' : 'Sign In'}</h2>
-        <p className="auth-intro">
-          {isRegister
-            ? 'It takes a minute. You will land straight on your project dashboard.'
-            : 'Access your project dashboard.'}
-        </p>
-
-        {googleEnabled && (
-          <>
-            <GoogleButton
-              onCredential={handleGoogle}
-              text={isRegister ? 'signup_with' : 'signin_with'}
-              onError={() => setError('Google sign-in did not complete. Please try again.')}
-            />
-            <div className="auth-divider">
-              <span>or {isRegister ? 'sign up' : 'sign in'} with email</span>
-            </div>
-          </>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          {isRegister && (
-            <div className={`field ${errors.name ? 'error' : ''}`} style={{ marginBottom: 16 }}>
-              <label htmlFor="auth-name">
-                Full Name <span className="req">*</span>
-              </label>
-              <input
-                id="auth-name"
-                type="text"
-                value={form.name}
-                onChange={update('name')}
-                placeholder="Your name"
-                autoComplete="name"
-              />
-              {errors.name && <span className="field-error">{errors.name}</span>}
-            </div>
-          )}
-
-          {isRegister ? (
-            <>
-              <div className={`field ${errors.email ? 'error' : ''}`} style={{ marginBottom: 16 }}>
-                <label htmlFor="auth-email">
-                  Email Address <span className="req">*</span>
-                </label>
-                <input
-                  id="auth-email"
-                  type="email"
-                  value={form.email}
-                  onChange={update('email')}
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                />
-                {errors.email && <span className="field-error">{errors.email}</span>}
-              </div>
-
-              <div className={`field ${errors.phone ? 'error' : ''}`} style={{ marginBottom: 16 }}>
-                <label htmlFor="auth-phone">
-                  Phone Number <span className="req">*</span>
-                </label>
-                <input
-                  id="auth-phone"
-                  type="tel"
-                  value={form.phone}
-                  onChange={update('phone')}
-                  placeholder="98765 43210"
-                  autoComplete="tel"
-                  inputMode="numeric"
-                />
-                {errors.phone ? (
-                  <span className="field-error">{errors.phone}</span>
-                ) : (
-                  <span className="field-hint">You can sign in with this number too.</span>
-                )}
-              </div>
-            </>
-          ) : (
-            /* One field for both. Which it is comes from what was typed, not
-               from a toggle someone has to set correctly first. */
-            <div className={`field ${errors.identifier ? 'error' : ''}`} style={{ marginBottom: 16 }}>
-              <label htmlFor="auth-identifier">Email or Phone Number</label>
-              <input
-                id="auth-identifier"
-                type="text"
-                value={form.identifier}
-                onChange={update('identifier')}
-                placeholder="you@example.com or 98765 43210"
-                autoComplete="username"
-              />
-              {errors.identifier && <span className="field-error">{errors.identifier}</span>}
-            </div>
-          )}
-
-          <div className={`field ${errors.password ? 'error' : ''}`}>
-            <label htmlFor="auth-password">
-              Password {isRegister && <span className="req">*</span>}
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                id="auth-password"
-                type={showPassword ? 'text' : 'password'}
-                value={form.password}
-                onChange={update('password')}
-                placeholder={isRegister ? 'At least eight characters' : '••••••••'}
-                autoComplete={isRegister ? 'new-password' : 'current-password'}
-                style={{ paddingRight: 46 }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                style={{
-                  position: 'absolute',
-                  right: 8,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 0,
-                  color: 'var(--grey-500)',
-                  padding: 6,
-                  display: 'flex',
-                }}
-              >
-                <Icon name="eye" size={19} />
-              </button>
-            </div>
-            {errors.password && <span className="field-error">{errors.password}</span>}
-          </div>
-
-          {isRegister && (
-            <div className={`field ${errors.confirm ? 'error' : ''}`} style={{ marginTop: 16 }}>
-              <label htmlFor="auth-confirm">
-                Confirm Password <span className="req">*</span>
-              </label>
-              <input
-                id="auth-confirm"
-                type={showPassword ? 'text' : 'password'}
-                value={form.confirm}
-                onChange={update('confirm')}
-                placeholder="Type it once more"
-                autoComplete="new-password"
-              />
-              {errors.confirm && <span className="field-error">{errors.confirm}</span>}
-            </div>
-          )}
-
-          <div className="login-meta">
+          <h1 className="auth-heading">
             {isRegister ? (
-              <label className="checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={accepted}
-                  onChange={(e) => setAccepted(e.target.checked)}
-                />
-                <span>
-                  I accept the{' '}
-                  <Link to="/terms" style={{ color: 'var(--gold-deep)', fontWeight: 600 }}>
-                    terms
-                  </Link>{' '}
-                  and{' '}
-                  <Link
-                    to="/privacy-policy"
-                    style={{ color: 'var(--gold-deep)', fontWeight: 600 }}
-                  >
-                    privacy policy
-                  </Link>
-                </span>
-              </label>
+              <>
+                Create <span className="auth-accent">Account</span>
+              </>
             ) : (
               <>
-                <label className="checkbox-row">
-                  <input type="checkbox" defaultChecked />
-                  Keep me signed in
-                </label>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  title={`Call ${contact.phoneDisplay}`}
-                  style={{
-                    background: 'none',
-                    border: 0,
-                    padding: 0,
-                    color: 'var(--gold-deep)',
-                    fontWeight: 600,
-                    fontSize: '0.88rem',
-                  }}
-                >
-                  Forgot password?
-                </button>
+                Welcome <span className="auth-accent">Back</span>
               </>
             )}
-          </div>
+          </h1>
+          <p className="auth-intro">
+            {isRegister
+              ? 'Join us today to access your secure workspace.'
+              : 'Enter your credentials to access your secure account.'}
+          </p>
 
-          {error && (
-            <div role="alert" className="alert alert-error">
-              <Icon name="info" size={18} />
-              <span>{error}</span>
+          <form onSubmit={handleSubmit} noValidate className="auth-form">
+            {isRegister && (
+              <div className={`field auth-field ${errors.name ? 'error' : ''}`}>
+                <label htmlFor="auth-name">
+                  Full Name <span className="req">*</span>
+                </label>
+                <div className="auth-input-wrap">
+                  <Icon name="user" size={17} className="auth-input-icon" />
+                  <input
+                    id="auth-name"
+                    type="text"
+                    value={form.name}
+                    onChange={update('name')}
+                    placeholder="Alex Johnson"
+                    autoComplete="name"
+                  />
+                </div>
+                {errors.name && <span className="field-error">{errors.name}</span>}
+              </div>
+            )}
+
+            {isRegister ? (
+              <>
+                <div className={`field auth-field ${errors.email ? 'error' : ''}`}>
+                  <label htmlFor="auth-email">
+                    Email Address <span className="req">*</span>
+                  </label>
+                  <div className="auth-input-wrap">
+                    <Icon name="mail" size={17} className="auth-input-icon" />
+                    <input
+                      id="auth-email"
+                      type="email"
+                      value={form.email}
+                      onChange={update('email')}
+                      placeholder="name@domain.com"
+                      autoComplete="email"
+                    />
+                  </div>
+                  {errors.email && <span className="field-error">{errors.email}</span>}
+                </div>
+
+                <div className={`field auth-field ${errors.phone ? 'error' : ''}`}>
+                  <label htmlFor="auth-phone">
+                    Phone Number <span className="req">*</span>
+                  </label>
+                  <div className="auth-input-wrap">
+                    <Icon name="phone" size={17} className="auth-input-icon" />
+                    <input
+                      id="auth-phone"
+                      type="tel"
+                      value={form.phone}
+                      onChange={update('phone')}
+                      placeholder="98765 43210"
+                      autoComplete="tel"
+                      inputMode="numeric"
+                    />
+                  </div>
+                  {errors.phone ? (
+                    <span className="field-error">{errors.phone}</span>
+                  ) : (
+                    <span className="field-hint">You can sign in with this number too.</span>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* One field for both. Which it is comes from what was typed, not
+                 from a toggle someone has to set correctly first. */
+              <div className={`field auth-field ${errors.identifier ? 'error' : ''}`}>
+                <label htmlFor="auth-identifier">Email Address</label>
+                <div className="auth-input-wrap">
+                  <Icon name="mail" size={17} className="auth-input-icon" />
+                  <input
+                    id="auth-identifier"
+                    type="text"
+                    value={form.identifier}
+                    onChange={update('identifier')}
+                    placeholder="name@domain.com or 98765 43210"
+                    autoComplete="username"
+                  />
+                </div>
+                {errors.identifier && <span className="field-error">{errors.identifier}</span>}
+              </div>
+            )}
+
+            <div className={isRegister ? 'auth-row-2' : ''}>
+              <div className={`field auth-field ${errors.password ? 'error' : ''}`}>
+                <label htmlFor="auth-password">
+                  Password {isRegister && <span className="req">*</span>}
+                </label>
+                <div className="auth-input-wrap">
+                  <Icon name="lock" size={17} className="auth-input-icon" />
+                  <input
+                    id="auth-password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={update('password')}
+                    placeholder={isRegister ? 'At least eight characters' : '••••••••'}
+                    autoComplete={isRegister ? 'new-password' : 'current-password'}
+                  />
+                  <button
+                    type="button"
+                    className="auth-input-toggle"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <Icon name={showPassword ? 'eye-off' : 'eye'} size={18} />
+                  </button>
+                </div>
+                {errors.password && <span className="field-error">{errors.password}</span>}
+              </div>
+
+              {isRegister && (
+                <div className={`field auth-field ${errors.confirm ? 'error' : ''}`}>
+                  <label htmlFor="auth-confirm">
+                    Confirm Password <span className="req">*</span>
+                  </label>
+                  <div className="auth-input-wrap">
+                    <Icon name="lock" size={17} className="auth-input-icon" />
+                    <input
+                      id="auth-confirm"
+                      type={showConfirm ? 'text' : 'password'}
+                      value={form.confirm}
+                      onChange={update('confirm')}
+                      placeholder="Type it once more"
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className="auth-input-toggle"
+                      onClick={() => setShowConfirm((v) => !v)}
+                      aria-label={showConfirm ? 'Hide password' : 'Show password'}
+                    >
+                      <Icon name={showConfirm ? 'eye-off' : 'eye'} size={18} />
+                    </button>
+                  </div>
+                  {errors.confirm && <span className="field-error">{errors.confirm}</span>}
+                </div>
+              )}
             </div>
-          )}
 
-          {notice && (
-            <div role="status" className="alert alert-success">
-              <Icon name="check-circle" size={18} />
-              <span>{notice}</span>
+            <div className="login-meta">
+              {isRegister ? (
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={accepted}
+                    onChange={(e) => setAccepted(e.target.checked)}
+                  />
+                  <span>
+                    I agree to the{' '}
+                    <Link to="/terms" className="auth-inline-link">
+                      Terms
+                    </Link>{' '}
+                    &amp;{' '}
+                    <Link to="/privacy-policy" className="auth-inline-link">
+                      Privacy Policy
+                    </Link>
+                  </span>
+                </label>
+              ) : (
+                <>
+                  <label className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                    />
+                    Remember me
+                  </label>
+                  <button
+                    type="button"
+                    className="auth-inline-link auth-forgot"
+                    onClick={handleReset}
+                    title={`Call ${contact.phoneDisplay}`}
+                  >
+                    Forgot password?
+                  </button>
+                </>
+              )}
             </div>
-          )}
 
-          <button type="submit" className="btn btn-dark btn-block btn-lg" disabled={busy}>
-            <Icon name={isRegister ? 'user' : 'lock'} size={17} />
-            {busy
-              ? isRegister
-                ? 'CREATING ACCOUNT…'
-                : 'SIGNING IN…'
-              : isRegister
-                ? 'CREATE ACCOUNT'
-                : 'SIGN IN'}
-          </button>
-        </form>
+            {error && (
+              <div role="alert" className="alert alert-error">
+                <Icon name="info" size={18} />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {notice && (
+              <div role="status" className="alert alert-success">
+                <Icon name="check-circle" size={18} />
+                <span>{notice}</span>
+              </div>
+            )}
+
+            <button type="submit" className="auth-submit" disabled={busy}>
+              {busy
+                ? isRegister
+                  ? 'Creating Account…'
+                  : 'Signing In…'
+                : isRegister
+                  ? 'Create Account'
+                  : 'Sign In'}
+              {!busy && <Icon name="arrow-right" size={18} />}
+            </button>
+
+            {googleEnabled && (
+              <>
+                <div className="auth-divider">
+                  <span>{isRegister ? 'or sign up with' : 'or continue with'}</span>
+                </div>
+                <GoogleButton
+                  onCredential={handleGoogle}
+                  text={isRegister ? 'signup_with' : 'signin_with'}
+                  onError={() => setError('Google sign-in did not complete. Please try again.')}
+                />
+              </>
+            )}
+          </form>
+
+          <p className="auth-switch">
+            {isRegister ? (
+              <>
+                Already have an account? <Link to="/login">Sign In</Link>
+              </>
+            ) : (
+              <>
+                Don&apos;t have an account? <Link to="/register">Sign Up</Link>
+              </>
+            )}
+          </p>
+        </div>
       </div>
     </div>
   );

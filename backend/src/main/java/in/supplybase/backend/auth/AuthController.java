@@ -22,6 +22,7 @@ import in.supplybase.backend.auth.dto.LoginRequest;
 import in.supplybase.backend.auth.dto.RefreshRequest;
 import in.supplybase.backend.auth.dto.RegisterRequest;
 import in.supplybase.backend.auth.dto.ResetPasswordRequest;
+import in.supplybase.backend.auth.dto.UpdateProfileRequest;
 import in.supplybase.backend.auth.dto.UpdateUserRoleRequest;
 import in.supplybase.backend.auth.dto.UpdateUserStatusRequest;
 import in.supplybase.backend.auth.dto.UserResponse;
@@ -73,6 +74,11 @@ public class AuthController {
     @GetMapping("/api/auth/me")
     public UserResponse me() {
         return authService.me(currentUser.require().id());
+    }
+
+    @PatchMapping("/api/auth/me")
+    public UserResponse updateMe(@Valid @RequestBody UpdateProfileRequest request) {
+        return authService.updateProfile(currentUser.require().id(), request);
     }
 
     /**

@@ -12,7 +12,11 @@ import { popOverviewIntro, popCategories, popTrustPoints, POP_HERO_IMAGE } from 
  * than a new one — see popCeilingContent.js's header comment for image
  * sourcing.
  */
+<<<<<<< HEAD
 export default function PopCeilingCategory({ modal = false, onSelectService }) {
+=======
+export default function PopCeilingCategory() {
+>>>>>>> main
   return (
     <>
       <PaintingHero
@@ -27,11 +31,15 @@ export default function PopCeilingCategory({ modal = false, onSelectService }) {
         <div className="container container-narrow">
           <div className="pnt-overview-list">
             {popCategories.map((cat) => (
+<<<<<<< HEAD
               <Link
                 key={cat.slug}
                 to={cat.route}
                 className="pnt-overview-card"
               >
+=======
+              <Link key={cat.slug} to={cat.route} className="pnt-overview-card">
+>>>>>>> main
                 <span className="pnt-overview-photo pce-overview-icon">
                   <Icon name={cat.icon} size={30} />
                 </span>

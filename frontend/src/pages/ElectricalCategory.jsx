@@ -14,14 +14,22 @@ import { electricianCategoryTiles } from '../data/electricianServices';
  * it opens the pre-existing generic site-visit wizard unchanged, since no
  * richer flow for it exists in the brief or the project.
  */
+<<<<<<< HEAD
 export default function ElectricalCategory({ modal = false, onSelectService }) {
+=======
+export default function ElectricalCategory() {
+>>>>>>> main
   return (
     <>
       <PageHero
         eyebrow="ELECTRICIAN"
         title="Electrical Services"
         text="Certified electricians for wiring, fans, switches, repairs and more — pick a service to get started."
+<<<<<<< HEAD
         image="/assets/services/electrician/hero.jpeg"
+=======
+        image="/assets/services/electrician/hero.webp"
+>>>>>>> main
         breadcrumbs={[
           { label: 'Services', to: '/services' },
           { label: 'Electrical' },

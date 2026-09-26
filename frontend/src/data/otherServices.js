@@ -1,37 +1,66 @@
+<<<<<<< HEAD
+=======
+/**
+ * SUPPLYBASE — OTHER SERVICES
+ * ---------------------------
+ * The category list shown at /services/other-services: everything outside
+ * the seven main services, reactivated on request after being scoped out
+ * earlier. Each tile opens the existing generic site-visit wizard at its
+ * own slug — these five categories kept their full question sets in the
+ * database the whole time; only their `active` flag changed.
+ */
+>>>>>>> main
 export const otherServiceTiles = [
   {
     slug: 'architectural-design',
     name: 'Architectural & Design',
     blurb: '2D drawings and 3D architectural visualisation',
     icon: 'building',
+<<<<<<< HEAD
     image: '/assets/services/architectural-design.jpeg',
+=======
+    image: '/assets/services/architectural-design.webp',
+>>>>>>> main
   },
   {
     slug: 'civil-construction',
     name: 'Civil Construction',
     blurb: 'New construction, RCC work, brickwork and plaster',
     icon: 'crane',
+<<<<<<< HEAD
     image: '/assets/services/construction.jpeg',
+=======
+    image: '/assets/services/construction.webp',
+>>>>>>> main
   },
   {
     slug: 'furniture',
     name: 'Furniture Work',
     blurb: 'Modular kitchens, wardrobes, TV units and beds',
     icon: 'wardrobe',
+<<<<<<< HEAD
     image: '/assets/services/otherservicesimage/furniture.png',
+=======
+    image: '/assets/services/otherservicesimage/furniture.webp',
+>>>>>>> main
   },
   {
     slug: 'fabrication',
     name: 'Fabrication',
     blurb: 'MS and SS gates, railings, grills and staircases',
     icon: 'welding',
+<<<<<<< HEAD
     image: '/assets/services/otherservicesimage/fabrication.png',
+=======
+    image: '/assets/services/otherservicesimage/fabrication.webp',
+>>>>>>> main
   },
   {
     slug: 'finishing',
     name: 'Finishing Work',
     blurb: 'Flooring, marble and granite, tiling and touch-up',
     icon: 'trowel',
+<<<<<<< HEAD
     image: '/assets/services/otherservicesimage/finishing.png',
   },
 ];
@@ -97,3 +126,8 @@ export const otherServiceOptionImages = {
   'sanitary-fixtures': '/assets/hero/plumbing.png',
   'final-touch-up': '/assets/hero/Others.png',
 };
+=======
+    image: '/assets/services/otherservicesimage/finishing.webp',
+  },
+];
+>>>>>>> main

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
 import ProblemLocationModal from './ProblemLocationModal';
+<<<<<<< HEAD
 import { otherServiceOptionImages } from '../../data/otherServices';
 
 import {
@@ -12,6 +13,8 @@ import {
   electricianUrgencyImages,
   electricianRequirementImages,
 } from '../../data/electricianImages';
+=======
+>>>>>>> main
 
 import {
   waterproofingImages,
@@ -28,6 +31,48 @@ import {
   popCeilingImages,
 } from '../../data/popCeilingImages';
 
+<<<<<<< HEAD
+=======
+import {
+  electricianImages,
+  electricianPropertyImages,
+  electricianLocationImages,
+  electricianIssueImages,
+  electricianLoadImages,
+  electricianUrgencyImages,
+  electricianRequirementImages,
+} from '../../data/electricianImages';
+
+import {
+  architecturalImages,
+  architecturalPropertyImages,
+  architecturalProjectStatusImages,
+} from '../../data/architecturalImages';
+
+import {
+  civilConstructionImages,
+  civilConstructionPropertyImages,
+  civilConstructionProjectStageImages,
+} from '../../data/civilConstructionImages';
+
+import {
+  furnitureImages,
+  furniturePropertyImages,
+  furnitureMaterialImages,
+} from '../../data/furnitureImages';
+
+import {
+  fabricationImages,
+  fabricationPropertyImages,
+  fabricationMaterialImages,
+} from '../../data/fabricationImages';
+
+import {
+  finishingImages,
+  finishingPropertyImages,
+} from '../../data/finishingImages';
+
+>>>>>>> main
 export default function QuestionField({
   question,
   value,
@@ -56,6 +101,7 @@ export default function QuestionField({
     : value
       ? [value]
       : [];
+<<<<<<< HEAD
   const isPopService = [
     'pop-ceiling-design',
     'pop_ceiling_design',
@@ -126,6 +172,8 @@ export default function QuestionField({
   const visibleHomeTypeValues = new Set(
     homeTypeOptions.map((option) => option.value)
   );
+=======
+>>>>>>> main
 
   const isChosen = (optionValue) =>
     selected.includes(optionValue);
@@ -167,8 +215,22 @@ export default function QuestionField({
    */
 
   const groups = [];
+<<<<<<< HEAD
 
   filteredRoomOptions.forEach((option) => {
+=======
+  const seenOptions = new Set();
+
+  (options || []).forEach((option) => {
+    const uniqueKey = `${option.group || ''}::${option.value ?? ''}::${option.label ?? ''}`;
+
+    if (seenOptions.has(uniqueKey)) {
+      return;
+    }
+
+    seenOptions.add(uniqueKey);
+
+>>>>>>> main
     const groupName = option.group || '';
 
     let group = groups.find(
@@ -202,6 +264,7 @@ export default function QuestionField({
       return undefined;
     }
 
+<<<<<<< HEAD
     return (
       imageMap[option.value] ||
       imageMap[option.label]
@@ -218,6 +281,26 @@ export default function QuestionField({
     return otherServiceOptionImages[option.value]
       || otherServiceOptionImages[normalize(option.value)]
       || otherServiceOptionImages[normalize(option.label)];
+=======
+    const normalizeKey = (value) =>
+      String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+    const direct = imageMap[option.value] || imageMap[option.label];
+    if (direct) return direct;
+
+    const normalizedMap = Object.fromEntries(
+      Object.entries(imageMap).map(([key, value]) => [normalizeKey(key), value])
+    );
+
+    return (
+      normalizedMap[normalizeKey(option.value)] ||
+      normalizedMap[normalizeKey(option.label)]
+    );
+>>>>>>> main
   };
 
   /**
@@ -227,12 +310,95 @@ export default function QuestionField({
    */
 
   const getOptionImage = (option) => {
+<<<<<<< HEAD
     if (
       ['architectural-design', 'civil-construction', 'furniture', 'fabrication', 'finishing']
         .includes(serviceSlug) &&
       (key === 'service_needed' || key === 'property_type' || key === 'project_stage')
     ) {
       return getOtherServiceImage(option);
+=======
+    /**
+     * ========================================================
+     * OTHER SERVICES — architectural design, civil construction,
+     * furniture, fabrication, finishing. Each has a property-type
+     * set, then either a stage set (architectural / civil) or a
+     * material set (furniture / fabrication), then a service set.
+     * ========================================================
+     */
+
+    const isPropertyKey =
+      key === 'property_type' ||
+      key === 'home_type' ||
+      key === 'bhk';
+
+    const isStageKey =
+      key === 'project_stage' ||
+      key === 'construction_stage' ||
+      key === 'construction_status' ||
+      key === 'project_status';
+
+    const isMaterialKey =
+      key === 'material_preference' ||
+      key === 'material_type' ||
+      key === 'preferred_material' ||
+      key === 'material';
+
+    if (serviceSlug === 'architectural-design') {
+      if (isPropertyKey) {
+        return findImage(architecturalPropertyImages, option);
+      }
+
+      if (isStageKey) {
+        return findImage(architecturalProjectStatusImages, option);
+      }
+
+      return findImage(architecturalImages, option);
+    }
+
+    if (serviceSlug === 'civil-construction') {
+      if (isPropertyKey) {
+        return findImage(civilConstructionPropertyImages, option);
+      }
+
+      if (isStageKey) {
+        return findImage(civilConstructionProjectStageImages, option);
+      }
+
+      return findImage(civilConstructionImages, option);
+    }
+
+    if (serviceSlug === 'furniture') {
+      if (isPropertyKey) {
+        return findImage(furniturePropertyImages, option);
+      }
+
+      if (isMaterialKey) {
+        return findImage(furnitureMaterialImages, option);
+      }
+
+      return findImage(furnitureImages, option);
+    }
+
+    if (serviceSlug === 'fabrication') {
+      if (isPropertyKey) {
+        return findImage(fabricationPropertyImages, option);
+      }
+
+      if (isMaterialKey) {
+        return findImage(fabricationMaterialImages, option);
+      }
+
+      return findImage(fabricationImages, option);
+    }
+
+    if (serviceSlug === 'finishing') {
+      if (isPropertyKey) {
+        return findImage(finishingPropertyImages, option);
+      }
+
+      return findImage(finishingImages, option);
+>>>>>>> main
     }
 
     /**
@@ -424,7 +590,10 @@ export default function QuestionField({
   const isSimpleRadioQuestion =
     key === 'previous_waterproofing' ||
     key === 'previous_when';
+<<<<<<< HEAD
   const hideVisibleHeading = isPopHomeTypeQuestion || (isMulti && text === 'Select rooms / areas');
+=======
+>>>>>>> main
 
   const [isProblemLocationOpen, setProblemLocationOpen] = useState(false);
 
@@ -470,6 +639,7 @@ export default function QuestionField({
 
   return (
     <fieldset className="question">
+<<<<<<< HEAD
 
       <legend className="sr-only">
         {text}
@@ -494,6 +664,34 @@ export default function QuestionField({
           )}
         </div>
       )}
+
+      {/* ======================================================
+          SINGLE / MULTI OPTIONS
+      ====================================================== */}
+=======
+
+      <legend className="sr-only">
+        {text}
+      </legend>
+
+      <div className="wizard-card-head">
+        <h2>
+          {text}
+
+          {required && (
+            <span className="req">
+              {' '}*
+            </span>
+          )}
+        </h2>
+
+        {isMulti && (
+          <p>
+            You can choose more than one.
+          </p>
+        )}
+      </div>
+>>>>>>> main
 
       {/* ======================================================
           SINGLE / MULTI OPTIONS
@@ -573,7 +771,11 @@ export default function QuestionField({
 
               <div className="tile-grid">
 
+<<<<<<< HEAD
                 {group.items.filter((option) => visibleHomeTypeValues.has(option.value)).map(
+=======
+                {group.items.map(
+>>>>>>> main
                   (option, optionIndex) => {
 
                     const image =
