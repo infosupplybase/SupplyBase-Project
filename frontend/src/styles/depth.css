@@ -299,3 +299,18 @@
 .painting-modal-scope .pnt-step-caption {
   color: var(--gold-deep);
 }
+
+/* ------------------------------------------- home banner (team photo) */
+
+/* On a phone the banner sits under the fixed header, and the team photo's
+   faces are near the top of the picture: start the photo below the header
+   and aim the crop at the faces, so nobody's head is hidden. */
+@media (max-width: 768px) {
+  .home-hero-media {
+    top: var(--header-h);
+  }
+
+  .home-hero-media img {
+    object-position: 58% 18%;
+  }
+}
