@@ -17,6 +17,7 @@ import { formatRupees } from '../lib/money';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -329,7 +330,7 @@ if (modal) {
 
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
-                <div><dt>Date &amp; Time</dt><dd>{receipt.date}, {receipt.time}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
                 <div><dt>Service</dt><dd>{flow.name}</dd></div>
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
