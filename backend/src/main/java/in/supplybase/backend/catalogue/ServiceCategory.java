@@ -58,10 +58,10 @@ public class ServiceCategory {
     @Column(name = "hero_image", length = 300)
     private String heroImage;
 
-    /** Paise, so it matches Razorpay and the payments table. 2500 = ₹25. */
+    /** Paise, so it matches Razorpay and the payments table. 9900 = ₹99. */
     @Column(name = "visit_fee_paise", nullable = false)
     @Builder.Default
-    private long visitFeePaise = 2500L;
+    private long visitFeePaise = 9900L;
 
     /**
      * The rough, disclosed-as-an-estimate job cost range shown on the booking

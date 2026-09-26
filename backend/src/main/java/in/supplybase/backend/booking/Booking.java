@@ -139,7 +139,7 @@ public class Booking {
 
     @Column(name = "visit_fee_paise", nullable = false)
     @Builder.Default
-    private long visitFeePaise = 2500L;
+    private long visitFeePaise = 9900L;
 
     /**
      * Sum of this booking's cart line items (see BookingAnswer.lineTotalPaise),

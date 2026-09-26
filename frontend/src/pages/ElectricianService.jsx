@@ -7,6 +7,7 @@ import api, { friendlyError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { contact } from '../data/siteConfig';
 import { electricianServiceIntros, ELECTRICIAN_STAGES } from '../data/electricianServices';
+import { formatVisit } from '../lib/visitTime';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -616,7 +617,7 @@ function ElectricianSummary({ category, form, answers, date, time, estimate }) {
         </div>
         <div>
           <dt>Site visit</dt>
-          <dd>{date} at {time}</dd>
+          <dd>{formatVisit(date, time)}</dd>
         </div>
         {rows.map((row) => (
           <div key={row.key}>
@@ -697,7 +698,7 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
               </div>
               <div>
                 <dt>Date &amp; Time</dt>
-                <dd>{receipt.date}, {receipt.time}</dd>
+                <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
               <div>
                 <dt>Service</dt>

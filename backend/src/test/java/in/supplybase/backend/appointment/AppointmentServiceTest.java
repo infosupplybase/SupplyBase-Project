@@ -259,6 +259,85 @@ class AppointmentServiceTest {
     }
 
     @Nested
+    @DisplayName("a date and time the customer chose themselves")
+    class CustomTime {
+
+        private LocalDate monday;
+
+        @BeforeEach
+        void openMondays() {
+            monday = farFutureDateOn(DayOfWeek.MONDAY);
+            when(blackouts.existsByDay(any(LocalDate.class))).thenReturn(false);
+            // 9 AM to 9 PM, hourly: the grid offers 9:00 ... 20:00.
+            when(rules.findByDayOfWeekAndActiveTrue(DayOfWeek.MONDAY.getValue()))
+                    .thenReturn(List.of(rule(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(21, 0), 60, 2)));
+            when(slots.findBySlotDate(any(LocalDate.class))).thenReturn(List.of());
+            when(slots.findBySlotDateAndSlotTimeAndCategoryId(any(), any(), any())).thenReturn(Optional.empty());
+        }
+
+        @Test
+        @DisplayName("books a quarter-hour time between the listed slots")
+        void betweenSlots() {
+            AppointmentSlot result = service.reserve(CATEGORY_ID, monday, LocalTime.of(14, 45));
+
+            assertThat(result.getSlotTime()).isEqualTo(LocalTime.of(14, 45));
+            assertThat(result.getBookedCount()).isEqualTo(1);
+            assertThat(result.getCapacity()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("accepts the opening time and the last start that still finishes by closing")
+        void edgesOfTheDay() {
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(9, 0))).isTrue();
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(20, 0))).isTrue();
+        }
+
+        @Test
+        @DisplayName("refuses a time before opening or one that would run past closing")
+        void outsideWorkingHours() {
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(8, 45))).isFalse();
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(20, 15))).isFalse();
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(23, 0))).isFalse();
+
+            assertThatThrownBy(() -> service.reserve(CATEGORY_ID, monday, LocalTime.of(21, 0)))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.CONFLICT);
+            verify(slots, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("refuses a time that is not on a quarter hour")
+        void offTheQuarterHour() {
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(10, 10))).isFalse();
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(10, 15, 30))).isFalse();
+        }
+
+        @Test
+        @DisplayName("refuses a date more than 90 days ahead, a closed day, or a day with no hours")
+        void unbookableDays() {
+            LocalDate tooFar = monday.plusWeeks(20);
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, tooFar, LocalTime.of(10, 0))).isFalse();
+
+            when(blackouts.existsByDay(monday)).thenReturn(true);
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, monday, LocalTime.of(10, 0))).isFalse();
+
+            LocalDate tuesday = monday.plusDays(1); // no Tuesday rule in this test
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, tuesday, LocalTime.of(10, 0))).isFalse();
+        }
+
+        @Test
+        @DisplayName("refuses a time too soon to arrange")
+        void tooSoon() {
+            LocalDate today = LocalDate.now(java.time.ZoneId.of("Asia/Kolkata"));
+            when(rules.findByDayOfWeekAndActiveTrue(today.getDayOfWeek().getValue()))
+                    .thenReturn(List.of(rule(today.getDayOfWeek(), LocalTime.MIDNIGHT, LocalTime.of(23, 0), 60, 2)));
+
+            // Midnight today has always passed, so it is never 12 hours away.
+            assertThat(service.isCustomTimeAllowed(CATEGORY_ID, today, LocalTime.MIDNIGHT)).isFalse();
+        }
+    }
+
+    @Nested
     @DisplayName("release")
     class Release {
 
