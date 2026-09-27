@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
@@ -14,6 +14,9 @@ import api, { friendlyError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 
 
@@ -36,6 +39,31 @@ const CONFIRM = 4;
 
 // const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
+
+// POP's catalogue also holds the questions of its two detailed journeys
+// (Full Home POP, Room POP). Its design style question is kept here for its
+// pictures; these are left out — they repeat what this form already asks
+// (home type, room type, a second design style, two more notes boxes), and
+// the additional options are not offered when booking.
+const REPEATED_QUESTIONS = {
+  'pop-ceiling-design': [
+    'pop_home_type',
+    'pop_room_type',
+    'pop_room_design_style',
+    'pop_room_notes',
+    'pop_design_notes',
+    'pop_addon',
+  ],
+};
+
+/** Whether this general form asks a catalogue question. */
+const isAskedHere = (q, slug) =>
+  Boolean(q) &&
+  q.inputType !== 'FILE' &&
+  !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+    String(q.key || '').startsWith(prefix)
+  ) &&
+  !(REPEATED_QUESTIONS[slug] || []).includes(q.key);
 
 const emptyDetails = {
   name: '',
@@ -75,30 +103,38 @@ export default function ServiceBooking({
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [stage, setStage] = useState(0);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:svc:${slug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
 
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
 
-  const [details, setDetails] = useState(emptyDetails);
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
 
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
 
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
 
   const [busy, setBusy] = useState(false);
 
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   /**
    * Notify parent modal about current step.
    */
+  // Kept in a ref: a new callback from the parent is not a step change.
+  const onStepChangeRef = useRef(onStepChange);
+  onStepChangeRef.current = onStepChange;
+
   useEffect(() => {
-    if (modal && onStepChange) {
-      onStepChange(stage, receipt);
+    if (modal && onStepChangeRef.current) {
+      onStepChangeRef.current(stage, receipt);
     }
-  }, [stage, receipt, modal, onStepChange]);
+  }, [stage, receipt, modal]);
 
   /**
    * Load service form.
@@ -136,11 +172,11 @@ export default function ServiceBooking({
         setForm(result);
 
         /*
-         * Switching service mid-flow must not carry answers to questions
-         * that the new service never asked.
+         * Each service keeps its own saved answers (the history-state keys
+         * include the slug), so switching service never carries answers
+         * over, and a refresh must not wipe what was restored. Only a fresh
+         * visit with ?preselect= starts with that option ticked.
          */
-        setStage(0);
-
         const validPreselect =
           preselect &&
           result.questions.some(
@@ -149,19 +185,14 @@ export default function ServiceBooking({
               q.options?.some((o) => o.value === preselect)
           );
 
-        setAnswers(
-          validPreselect
-            ? {
-                service_needed: [preselect],
-              }
-            : {}
-        );
+        if (validPreselect && !hasHistoryState(`${scope}:answers`)) {
+          setAnswers({
+            service_needed: [preselect],
+          });
+        }
 
-        setDate('');
-        setTime('');
         setErrors({});
         setError('');
-        setReceipt(null);
       })
       .catch((err) => {
         console.error('SERVICE FORM ERROR:', err);
@@ -179,7 +210,7 @@ export default function ServiceBooking({
     return () => {
       cancelled = true;
     };
-  }, [slug, preselect]);
+  }, [slug, preselect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Prefill details from signed-in account.
@@ -248,24 +279,15 @@ const stageQuestions = useMemo(() => {
   }
 
   const usable = form.questions
-    .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-          String(q.key || '').startsWith(prefix)
-        )
-    )
+    .filter((q) => isAskedHere(q, slug))
     // The catalogue can hold the same question twice (Waterproofing asks
     // "Tell us anything else about your work." at step 3 and again at step 6,
-    // both answering the one `notes` key). Same key and same wording means the
-    // same question, so it is asked once — the first one is kept.
+    // both answering the one `notes` key). Two questions with the same key
+    // fill the same answer, whatever their wording, so each key is asked
+    // once — the first one is kept.
     .filter(
       (question, index, questions) =>
-        index ===
-        questions.findIndex(
-          (q) => q.key === question.key && q.text === question.text
-        )
+        index === questions.findIndex((q) => q.key === question.key)
     )
     .map((q, index) => ({
       ...q,
@@ -286,12 +308,18 @@ const stageQuestions = useMemo(() => {
       q.key !== 'property_type'
   );
 
+  // "Tell us anything else" reads best as the last question of the step.
+  const notesLast = [
+    ...detailsQuestions.filter((q) => q.key !== 'notes'),
+    ...detailsQuestions.filter((q) => q.key === 'notes'),
+  ];
+
   return [
     service,
     property,
-    detailsQuestions,
+    notesLast,
   ];
-}, [form]);
+}, [form, slug]);
   /**
    * Set answer.
    *
@@ -408,10 +436,9 @@ const stageQuestions = useMemo(() => {
       nextErrors.city = 'Please enter your city';
     }
 
-    if (
-      details.pincode.trim() &&
-      !/^[1-9][0-9]{5}$/.test(details.pincode.trim())
-    ) {
+    if (!details.pincode.trim()) {
+      nextErrors.pincode = 'Please enter your pincode';
+    } else if (!/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
       nextErrors.pincode = 'Enter a 6-digit pincode';
     }
 
@@ -471,8 +498,10 @@ const stageQuestions = useMemo(() => {
   const goBack = () => {
     setError('');
 
-    setStage((currentStage) =>
-      Math.max(currentStage - 1, 0)
+    formBack(() =>
+      setStage((currentStage) =>
+        Math.max(currentStage - 1, 0)
+      )
     );
 
     if (!modal) {
@@ -754,7 +783,7 @@ const stageQuestions = useMemo(() => {
         <ol
           className={
             modal
-              ? 'wizard-steps !mb-5'
+              ? 'wizard-steps !mb-3'
               : 'wizard-steps'
           }
         >
@@ -806,7 +835,7 @@ const stageQuestions = useMemo(() => {
           <div
             className={
               modal
-                ? 'wizard-card !rounded-xl !shadow-none !p-5'
+                ? 'wizard-card !rounded-none !shadow-none !px-0 !pt-1 !pb-0'
                 : 'wizard-card'
             }
           >
@@ -973,6 +1002,7 @@ const stageQuestions = useMemo(() => {
                   <Field
                     id="bk-pincode"
                     label="Pincode"
+                    required
                     value={details.pincode}
                     onChange={setDetail('pincode')}
                     error={errors.pincode}
@@ -1015,10 +1045,10 @@ const stageQuestions = useMemo(() => {
                 Footer
             -------------------------------------------- */}
 
-            <div
+            <ModalFoot
               className={
                 modal
-                  ? 'wizard-foot !static !inset-auto !z-auto !mt-5 !mb-0 !flex !w-full !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+                  ? 'wizard-foot modal-sticky-foot !flex !w-full !gap-3 !border-0'
                   : 'wizard-foot'
               }
             >
@@ -1100,7 +1130,7 @@ const stageQuestions = useMemo(() => {
                   </button>
                 )
               )}
-            </div>
+            </ModalFoot>
           </div>
         </form>
       </div>
@@ -1170,17 +1200,7 @@ function Summary({
    * Filter out FILE questions and dedicated-flow questions.
    */
   const rows = form.questions
-    .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some(
-          (prefix) =>
-            String(q.key || '').startsWith(
-              prefix
-            )
-        )
-    )
+    .filter((q) => isAskedHere(q, category.slug))
     .map((q, questionIndex) => {
       const value = answers[q.key];
 
@@ -1243,7 +1263,7 @@ function Summary({
           <dt>Site visit</dt>
 
           <dd>
-            {date} at {time}
+            {formatVisit(date, time)}
           </dd>
         </div>
 
@@ -1377,8 +1397,7 @@ function Confirmation({
                 <dt>Date &amp; Time</dt>
 
                 <dd>
-                  {receipt.date},{' '}
-                  {receipt.time}
+                  {formatVisit(receipt.date, receipt.time)}
                 </dd>
               </div>
 

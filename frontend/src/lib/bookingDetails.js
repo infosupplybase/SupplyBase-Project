@@ -1,3 +1,4 @@
+
 /**
  * Shared customer-details shape + validation for every booking flow that
  * collects name/phone/address (ServiceBooking's own flow, plus the new
@@ -36,7 +37,10 @@ export function validateDetails(details) {
     next.phone = 'Enter a 10-digit mobile number';
   }
 
-  if (details.whatsapp.trim() && !isValidPhone(details.whatsapp)) {
+  if (
+    details.whatsapp.trim() &&
+    !isValidPhone(details.whatsapp)
+  ) {
     next.whatsapp = 'Enter a 10-digit number, or leave it blank';
   }
 
@@ -63,3 +67,4 @@ export function validateDetails(details) {
 
   return next;
 }
+

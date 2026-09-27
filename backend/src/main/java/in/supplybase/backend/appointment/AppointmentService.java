@@ -3,6 +3,7 @@ package in.supplybase.backend.appointment;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +40,17 @@ public class AppointmentService {
     public static final int BOOKABLE_DAYS = 30;
 
     /**
+     * A customer may also ask for their own date and time instead of one of
+     * the listed slots: any day up to this far ahead...
+     */
+    public static final int CUSTOM_BOOKABLE_DAYS = 90;
+
+    /** ...at a start time on a quarter hour, inside that day's working hours. */
+    public static final int CUSTOM_STEP_MINUTES = 15;
+
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Kolkata");
+
+    /**
      * A visit needs arranging, so today is never offered and tomorrow only
      * after the office would still have time to call.
      */
@@ -58,7 +70,7 @@ public class AppointmentService {
 
     @Transactional(readOnly = true)
     public List<DayAvailabilityResponse> availability(Long categoryId, LocalDate from, int days) {
-        LocalDate start = from == null ? LocalDate.now() : from;
+        LocalDate start = from == null ? LocalDate.now(BUSINESS_ZONE) : from;
         int span = Math.min(Math.max(days, 1), BOOKABLE_DAYS);
 
         List<DayAvailabilityResponse> out = new ArrayList<>(span);
@@ -92,7 +104,7 @@ public class AppointmentService {
             }
         }
 
-        LocalDateTime earliest = LocalDateTime.now().plusHours(MIN_NOTICE_HOURS);
+        LocalDateTime earliest = earliestBookable();
         List<SlotResponse> result = new ArrayList<>();
 
         for (AppointmentSlotRule rule : dayRules) {
@@ -130,7 +142,7 @@ public class AppointmentService {
         DayAvailabilityResponse day = forDay(categoryId, date);
         boolean offered = day.slots().stream()
                 .anyMatch(s -> s.time().equals(time) && s.available());
-        if (!offered) {
+        if (!offered && !isCustomTimeAllowed(categoryId, date, time)) {
             throw ApiException.conflict(
                     "This time slot is no longer available. Please select another time.");
         }
@@ -240,6 +252,43 @@ public class AppointmentService {
             throw ApiException.notFound("That blackout");
         }
         blackouts.deleteById(id);
+    }
+
+    /**
+     * A time the customer chose themselves rather than from the list: allowed
+     * when the office is open that day, the visit starts on a quarter hour and
+     * fits inside a working-hours rule (start at or after the opening time,
+     * finish by the closing time), it is far enough ahead to arrange, and it
+     * is no more than {@link #CUSTOM_BOOKABLE_DAYS} away. Whether there is
+     * still room at that exact time is checked by {@link #reserve} as usual.
+     */
+    public boolean isCustomTimeAllowed(Long categoryId, LocalDate date, LocalTime time) {
+        if (date == null || time == null) {
+            return false;
+        }
+        if (time.getSecond() != 0 || time.getNano() != 0 || time.getMinute() % CUSTOM_STEP_MINUTES != 0) {
+            return false;
+        }
+        if (date.isAfter(LocalDate.now(BUSINESS_ZONE).plusDays(CUSTOM_BOOKABLE_DAYS))) {
+            return false;
+        }
+        if (!LocalDateTime.of(date, time).isAfter(earliestBookable())) {
+            return false;
+        }
+        if (blackouts.existsByDay(date)) {
+            return false;
+        }
+        return rules.findByDayOfWeekAndActiveTrue(date.getDayOfWeek().getValue()).stream()
+                .filter(rule -> rule.getCategoryId() == null || rule.getCategoryId().equals(categoryId))
+                .anyMatch(rule -> !time.isBefore(rule.getStartTime())
+                        && !time.plusMinutes(rule.getSlotMinutes()).isAfter(rule.getEndTime())
+                        // a visit cannot run past midnight
+                        && time.plusMinutes(rule.getSlotMinutes()).isAfter(time));
+    }
+
+    /** The first moment a visit can be booked for: now in India, plus the notice period. */
+    private LocalDateTime earliestBookable() {
+        return LocalDateTime.now(BUSINESS_ZONE).plusHours(MIN_NOTICE_HOURS);
     }
 
     private int capacityFor(Long categoryId, LocalDate date) {

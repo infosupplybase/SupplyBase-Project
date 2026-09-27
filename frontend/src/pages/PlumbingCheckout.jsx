@@ -9,6 +9,9 @@ import api, { friendlyError } from '../lib/api';
 import { formatRupees } from '../lib/money';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -28,14 +31,18 @@ export default function PlumbingCheckout({
   const { user } = useAuth();
   const { items, count, subtotalPaise, clear } = useCart();
 
-  const [stage, setStage] = useState(SCHEDULE);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [details, setDetails] = useState(emptyDetails);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = 'f:plb-checkout';
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, SCHEDULE, { push: true });
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   useEffect(() => {
     if (user) {
@@ -85,7 +92,7 @@ export default function PlumbingCheckout({
       return;
     }
 
-    setStage((s) => Math.max(s - 1, SCHEDULE));
+    formBack(() => setStage((s) => Math.max(s - 1, SCHEDULE)));
 
     if (modal) {
       onStepChange?.();
@@ -250,10 +257,10 @@ export default function PlumbingCheckout({
               </div>
             )}
 
-            <div
+            <ModalFoot
               className={
                 modal
-  ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-2 !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+  ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-2 !gap-3 !border-0'
                   : `wizard-foot ${stage === 0 ? 'single' : ''}`
               }
             >
@@ -281,7 +288,7 @@ export default function PlumbingCheckout({
                   <Icon name="arrow-right" size={17} />
                 </button>
               )}
-            </div>
+            </ModalFoot>
           </div>
         </form>
       </div>
@@ -301,7 +308,7 @@ function CartSummary({ items, subtotalPaise, date, time }) {
       <dl className="review-list">
         <div>
           <dt>Site visit</dt>
-          <dd>{date} at {time}</dd>
+          <dd>{formatVisit(date, time)}</dd>
         </div>
         {items.map((item) => (
           <div key={item.itemSlug}>
@@ -372,7 +379,7 @@ function CheckoutConfirmation({
               </div>
               <div>
                 <dt>Date &amp; Time</dt>
-                <dd>{receipt.date}, {receipt.time}</dd>
+                <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
               {receipt.itemsTotalDisplay && (
                 <div>

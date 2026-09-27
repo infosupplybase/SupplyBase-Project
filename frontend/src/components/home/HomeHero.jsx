@@ -106,13 +106,12 @@ export default function HomeHero() {
       {/* Hero background image */}
       <div className="home-hero-media">
         <img
-          src="/assets/hero_img.jpeg"
-          alt="Luxury modern house"
-          width={1800}
-          height={1500}
-          fetchPriority="high"
+          src="/assets/hero-team.webp"
+          alt="Supplybase professionals at work in a home"
+          width={1600}
+          height={595}
+          fetchpriority="high"
         />
-
         <div className="home-hero-gradient" />
       </div>
 
@@ -120,12 +119,16 @@ export default function HomeHero() {
 
         {/* Hero text */}
         <div className="home-hero-copy">
-          <p className="home-hero-eyebrow">Home &amp; workspace services</p>
+          <p className="home-hero-eyebrow">
+            Home &amp; workspace services
+          </p>
 
           <h1>
             Home services for your
             {' '}
-            <span className="home-hero-accent">home &amp; workspace</span>
+            <span className="home-hero-accent">
+              home &amp; workspace
+            </span>
           </h1>
 
           <p className="home-hero-sub">
@@ -215,4 +218,6 @@ export default function HomeHero() {
 
       </div>
     </section>
-  );}
+  );
+}
+

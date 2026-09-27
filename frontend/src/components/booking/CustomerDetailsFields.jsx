@@ -1,10 +1,13 @@
+
 export function Field({ id, label, required, hint, error, ...rest }) {
   return (
     <div className={`field ${error ? 'error' : ''}`}>
       <label htmlFor={id}>
         {label} {required && <span className="req">*</span>}
       </label>
+
       <input id={id} {...rest} />
+
       {error ? (
         <span className="field-error">{error}</span>
       ) : (
@@ -14,9 +17,11 @@ export function Field({ id, label, required, hint, error, ...rest }) {
   );
 }
 
-/** The name/phone/whatsapp/email/address/city/pincode fields shared by every
-    booking flow (ServiceBooking's own wizard, plus the plumbing checkout and
-    consultation booking flows) — one copy of the markup, reused. */
+/**
+ * The name/phone/whatsapp/email/address/city/pincode fields shared by every
+ * booking flow (ServiceBooking's own wizard, plus the plumbing checkout and
+ * consultation booking flows) — one copy of the markup, reused.
+ */
 export default function CustomerDetailsFields({
   details,
   setDetail,
@@ -125,3 +130,4 @@ export default function CustomerDetailsFields({
     </>
   );
 }
+

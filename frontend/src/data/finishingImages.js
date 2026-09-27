@@ -4,28 +4,28 @@
 
 export const finishingImages = {
 	Flooring:
-		'/assets/services/civil-construction/flooring.webp',
+		'/assets/services/finishing-work/flooring.webp',
 
 	'Wall Finishing':
-		'/assets/services/finishing.webp',
+		'/assets/services/finishing-work/wall-finishing.webp',
 
 	'Tile Work':
-		'/assets/services/civil-construction/tiling.webp',
+		'/assets/services/finishing-work/tile-work.webp',
 
 	'Marble & Granite':
-		'/assets/projects/marble_luxury.webp',
+		'/assets/services/finishing-work/marble-granite.webp',
 
 	'Doors & Windows':
-		'/assets/services/architectural-design/existing-building-renovation.webp',
+		'/assets/services/finishing-work/doors-windows.webp',
 
 	'Sanitary Fixtures':
-		'/assets/services/finishing.webp',
+		'/assets/services/finishing-work/sanitary-fixtures.webp',
 
 	'Final Touch-up':
-		'/assets/projects/painting-finishing.webp',
+		'/assets/services/finishing-work/final-touchup.webp',
 
 	Other:
-		'/assets/services/finishing.webp',
+		'/assets/services/finishing-work/other.webp',
 };
 
 export const finishingPropertyImages = {
