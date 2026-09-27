@@ -19,6 +19,7 @@ import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -409,111 +410,54 @@ if (modal) {
   }
 
   /* ------------------------------------------------------------ details */
- /* ------------------------------------------------------------ details */
-/* ------------------------------------------------------------ details */
-if (stage === DETAILS) {
-  return (
-    <div
-      className={
-        modal
-          ? 'wizard-shell pnt-modal-flow !min-h-0 !w-full !pb-0'
-          : 'wizard-shell'
-      }
-    >
-      <div
-        className={
-          modal
-            ? 'wizard-container !min-h-0 !w-full !max-w-none !pb-0 !px-0'
-            : 'wizard-container'
-        }
-      >
-        <FlowTopBar flow={displayFlow} onBack={goBack} />
-
-          <StepIndicator
-          steps={[...configSteps, { title: 'Your Details' }]}
-          activeIndex={configSteps.length}
-        />
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-
-            if (canLeaveDetails()) {
-              goNext();
-            }
-          }}
-          noValidate
-          className={modal ? '!w-full !max-w-none' : ''}
-        >
-          <div
-            className={
-              modal
-                ? 'wizard-card !w-full !max-w-none !rounded-none !border-0 !bg-transparent !p-0 !shadow-none'
-                : 'wizard-card'
-            }
-          >
-            <div className="wizard-card-head">
-              <h2>Enter Your Details</h2>
-              <p>
-                We will contact you to confirm the appointment.
-              </p>
-            </div>
-
-            <CustomerDetailsFields
-              details={details}
-              setDetail={setDetail}
-              errors={errors}
-              idPrefix="pnt"
-            />
-
-            {submitError && (
-              <div
-                role="alert"
-                className="alert alert-error"
-                style={{ marginTop: 18 }}
-              >
-                <Icon name="info" size={18} />
-                <span>{submitError}</span>
+  if (stage === DETAILS) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Your Details</h2>
+                <p>We will contact you to confirm the appointment.</p>
               </div>
-            )}
-
-            <div
-              className={
-                modal
-                  ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[76px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
-                  : 'wizard-foot'
-              }
-            >
-              <button
-                type="button"
-                className={
-                  modal
-                    ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
-                    : 'btn btn-ghost btn-back'
-                }
-                onClick={goBack}
-              >
-                BACK
-              </button>
-
-              <button
-                type="submit"
-                className={
-                  modal
-                    ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[125px] md:!min-w-[125px] md:!flex-none md:!px-4'
-                    : 'btn btn-primary'
-                }
-              >
-                CONTINUE
-                <Icon name="arrow-right" size={17} />
-              </button>
+              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pnt" />
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <ModalFoot
+  className={
+    modal
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
+                <button
+  type="button"
+  className={
+    modal
+  ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
+  : 'btn btn-ghost btn-back'
+  }
+  onClick={goBack}
+>BACK</button>
+                <button
+  type="submit"
+  className={
+    modal
+  ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[150px] md:!min-w-[150px] md:!flex-none md:!px-4'
+  : 'btn btn-primary'
+  }
+>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   /* ----------------------------------------------------------- schedule */
   if (stage === SCHEDULE) {
@@ -557,10 +501,10 @@ if (stage === DETAILS) {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -584,7 +528,7 @@ if (stage === DETAILS) {
 >
                   {busy ? 'BOOKING…' : 'BOOK NOW'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -696,10 +640,10 @@ if (stage === DETAILS) {
             />
           )}
 
-          <div
+          <ModalFoot
   className={
     modal
-      ? 'pnt-step-actions !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
       : 'pnt-step-actions'
   }
 >
@@ -715,7 +659,7 @@ if (stage === DETAILS) {
 } onClick={goNext}>
               {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
 

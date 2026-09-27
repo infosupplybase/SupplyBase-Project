@@ -88,14 +88,18 @@ export default function PaintingCategory({
 )}
           </div>
 
-          <ul className="pnt-trust-row">
-            {paintingTrustPoints.map((t) => (
-              <li key={t.label}>
-                <Icon name={t.icon} size={24} />
-                <span>{t.label}</span>
-              </li>
-            ))}
-          </ul>
+          {/* On the page these four points are already in the hero; the
+              booking pop-up has no hero, so it shows them here instead. */}
+          {modal && (
+            <ul className="pnt-trust-row">
+              {paintingTrustPoints.map((t) => (
+                <li key={t.label}>
+                  <Icon name={t.icon} size={24} />
+                  <span>{t.label}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </section>
     </>

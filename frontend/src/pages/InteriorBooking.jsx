@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
@@ -56,11 +56,15 @@ const designSlug = propDesignSlug || params.designSlug;
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
+  // Kept in a ref: a new callback from the parent is not a step change.
+  const onStepChangeRef = useRef(onStepChange);
+  onStepChangeRef.current = onStepChange;
+
   useEffect(() => {
-  if (modal && onStepChange) {
-    onStepChange();
+  if (modal && onStepChangeRef.current) {
+    onStepChangeRef.current();
   }
-}, [step, receipt, modal, onStepChange]);
+}, [step, receipt, modal]);
 
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 

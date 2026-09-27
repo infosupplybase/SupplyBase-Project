@@ -11,6 +11,7 @@ import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -304,10 +305,10 @@ if (receipt) {
               </div>
             )}
 
-            <div
+            <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !flex !w-full !items-center !justify-end !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+      ? 'wizard-foot modal-sticky-foot !flex !w-full !items-center !justify-end !gap-3 !border-0'
       : `wizard-foot ${stage === 0 ? 'single' : ''}`
   }
 >
@@ -335,7 +336,7 @@ if (receipt) {
   <Icon name="arrow-right" size={17} />
 </button>
               )}
-            </div>
+            </ModalFoot>
           </div>
         </form>
       </div>

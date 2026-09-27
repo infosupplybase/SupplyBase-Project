@@ -225,7 +225,8 @@ export default function ElectricianService() {
     }
     if (!details.address.trim()) next.address = 'Please enter your address';
     if (!details.city.trim()) next.city = 'Please enter your city';
-    if (details.pincode.trim() && !/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
+    if (!details.pincode.trim()) next.pincode = 'Please enter your pincode';
+    else if (!/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
       next.pincode = 'Enter a 6-digit pincode';
     }
     setErrors(next);
@@ -520,7 +521,7 @@ export default function ElectricianService() {
 
                 <div className="form-grid" style={{ marginTop: 16 }}>
                   <Field id="ec-city" label="City" required value={details.city} onChange={setDetail('city')} error={errors.city} placeholder="Mumbai" />
-                  <Field id="ec-pincode" label="Pincode" value={details.pincode} onChange={setDetail('pincode')} error={errors.pincode} placeholder="400001" />
+                  <Field id="ec-pincode" label="Pincode" required value={details.pincode} onChange={setDetail('pincode')} error={errors.pincode} placeholder="400001" />
                 </div>
 
                 <ElectricianSummary category={category} form={form} answers={answers} date={date} time={time} estimate={estimate} />
