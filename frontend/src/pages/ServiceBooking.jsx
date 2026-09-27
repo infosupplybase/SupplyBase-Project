@@ -259,14 +259,12 @@ const stageQuestions = useMemo(() => {
     )
     // The catalogue can hold the same question twice (Waterproofing asks
     // "Tell us anything else about your work." at step 3 and again at step 6,
-    // both answering the one `notes` key). Same key and same wording means the
-    // same question, so it is asked once — the first one is kept.
+    // both answering the one `notes` key). Two questions with the same key
+    // fill the same answer, whatever their wording, so each key is asked
+    // once — the first one is kept.
     .filter(
       (question, index, questions) =>
-        index ===
-        questions.findIndex(
-          (q) => q.key === question.key && q.text === question.text
-        )
+        index === questions.findIndex((q) => q.key === question.key)
     )
     .map((q, index) => ({
       ...q,
