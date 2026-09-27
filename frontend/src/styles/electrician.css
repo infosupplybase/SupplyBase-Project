@@ -367,3 +367,317 @@
     width: 100%;
   }
 }
+
+/* Force the electrical intro/category grids to be 4 columns inside the
+   modal, matching the compact Urban Company layout. */
+.electrical-modal-section .plb-overview-grid,
+.electrical-intro-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: var(--space-3);
+}
+
+/* Slightly smaller photo so 4 cards fit without looking cramped */
+.electrical-modal-section .plb-overview-photo,
+.electrical-intro-grid .plb-overview-photo {
+  aspect-ratio: 4 / 3;
+}
+
+/* Shorter name/price text so nothing wraps awkwardly at narrow widths */
+.electrical-modal-section .plb-overview-name,
+.electrical-intro-grid .plb-overview-name {
+  font-size: 0.9rem;
+  padding: var(--space-2) var(--space-3) 0;
+}
+
+.electrical-modal-section .plb-overview-price,
+.electrical-intro-grid .plb-overview-price {
+  font-size: 0.95rem;
+  padding: 4px var(--space-3) 0;
+}
+
+.electrical-modal-section .plb-overview-price-note,
+.electrical-intro-grid .plb-overview-price-note {
+  font-size: 0.7rem;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+@media (max-width: 767px) {
+  .elc-badges {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .elc-get-started {
+    width: auto;
+  }
+
+  /* 3 per row on mobile */
+  .electrical-modal-section .plb-overview-grid,
+  .electrical-intro-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+
+  /* Shorter photo so 3 cards fit side by side without dominating */
+  .electrical-modal-section .plb-overview-photo,
+  .electrical-intro-grid .plb-overview-photo {
+    height: 68px;
+    max-height: 68px;
+  }
+
+  /* Tighten card body so text still fits under a 3-up grid */
+  .electrical-modal-section .plb-overview-name,
+  .electrical-intro-grid .plb-overview-name {
+    font-size: 0.68rem;
+    padding: 5px 6px 0;
+    gap: 2px;
+  }
+
+  .electrical-modal-section .plb-overview-name svg,
+  .electrical-intro-grid .plb-overview-name svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .electrical-modal-section .plb-overview-price,
+  .electrical-intro-grid .plb-overview-price {
+    font-size: 0.68rem;
+    padding: 1px 6px 0;
+  }
+
+  .electrical-modal-section .plb-overview-price-note,
+  .electrical-intro-grid .plb-overview-price-note {
+    font-size: 0.54rem;
+    padding: 0 6px 6px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* =========================================================================
+   INLINE ELECTRICAL FORM (Added inside the 4-up grid)
+   ========================================================================= */
+
+/* The whole grid becomes a single column when a card is expanded */
+.electrical-modal-section .plb-overview-grid.is-expanded {
+  grid-template-columns: 1fr !important;
+  gap: 16px;
+}
+
+/* Expanded card takes full width and removes the hover lift */
+.electrical-modal-section .plb-overview-card.is-expanded {
+  transform: none !important;
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
+  border-color: var(--gold);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header inside the expanded card */
+.elc-expanded-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.elc-expanded-header img {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
+
+.elc-expanded-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.elc-expanded-header-info h3 {
+  margin: 0 0 2px;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.elc-expanded-header-info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.elc-expanded-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--light-bg);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.elc-expanded-close:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* The list of sub-services (checkboxes) */
+.elc-subservice-list {
+  padding: 8px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.elc-subservice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.elc-subservice-item:hover {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+}
+
+.elc-subservice-item.selected {
+  border-color: var(--gold);
+  background: var(--gold-a12);
+}
+
+.elc-subservice-item input[type="checkbox"] {
+  margin-top: 3px;
+  accent-color: var(--gold);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.elc-subservice-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.elc-subservice-body strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.elc-subservice-body span {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+.elc-subservice-price {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold-deep);
+}
+
+/* Footer with total and Add to Cart */
+.elc-expanded-footer {
+  margin-top: auto;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--light-bg);
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+}
+
+.elc-expanded-total {
+  display: flex;
+  flex-direction: column;
+}
+
+.elc-expanded-total span {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.elc-expanded-total strong {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--ink);
+}
+
+/* Hide the arrow when expanded */
+.plb-overview-card.is-expanded .plb-overview-name svg {
+  display: none;
+}
+
+/* On mobile, if expanded, the form fits the screen width */
+@media (max-width: 767px) {
+  .elc-expanded-header {
+    padding: 12px;
+  }
+  .elc-expanded-header img {
+    width: 48px;
+    height: 48px;
+  }
+  .elc-subservice-list {
+    padding: 8px 12px 12px;
+  }
+  .elc-expanded-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .elc-expanded-footer .btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================================
+   ELECTRICAL CARD — "Added" flash
+   ========================================================================= */
+
+.plb-overview-card.is-added {
+  border-color: var(--success);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+}
+
+.elc-added-flash {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--success);
+  color: var(--white);
+  font-size: 0.68rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+/* The card needs a positioning context for the flash */
+.plb-overview-card {
+  position: relative;
+}
+@media (max-width: 767px) {
+  .electrical-modal-scope .plb-overview-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+}

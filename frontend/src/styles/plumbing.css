@@ -920,3 +920,45 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* =========================================================
+   ELECTRICAL FLOW INSIDE BOOK A SERVICE MODAL
+   Remove full-page section spacing so the cards sit
+   directly below the modal header.
+   ========================================================= */
+
+.electrical-modal-scope .plb-section,
+.electrical-modal-scope .electrical-modal-section {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.electrical-modal-scope .container {
+  padding-top: 0 !important;
+}
+
+.electrical-modal-scope .electrical-modal-intro {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+
+.electrical-modal-section {
+  padding: 24px 0 32px !important;
+}
+
+.electrical-modal-intro {
+  margin: 0 0 18px !important;
+}
+
+.electrical-modal-intro p {
+  margin: 0;
+}
+
+.electrical-modal-intro h2 {
+  margin: 4px 0 4px;
+}
+
+.electrical-overview-grid {
+  margin-top: 0 !important;
+}

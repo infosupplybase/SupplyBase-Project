@@ -3,168 +3,99 @@
  * ---------------------------------
  * The seven detailed electrician journeys, plus Light Installation which
  * keeps using the existing generic site-visit wizard rather than getting a
- * new one of its own (there's no separate detailed flow for it in the brief,
- * and none existed in the project before this).
+ * new one of its own.
  *
  * The actual questions, options and add-on prices for the seven detailed
  * services are NOT here — those are catalogue data (service_categories /
- * service_options in MySQL), fetched at runtime via api.serviceForm(slug),
- * the same way the original four services already work. This file only
- * holds the presentational shell around that dynamic form: the category
- * tile grid, and each service's intro screen (hero, trust badges, "what's
- * included").
+ * service_options in MySQL), fetched at runtime via api.serviceForm(slug).
+ * This file only holds the presentational shell around that dynamic form:
+ * the category tile grid, and each service's intro screen.
  */
 
 export const electricalCategoryIntro = {
   eyebrow: 'ELECTRICIAN SERVICES',
   title: 'Home Electrical Services',
   text: 'Certified electricians for every job — installation, repair and replacement, done safely and on time.',
-  image:  '/assets/services/electrician/home-electrical-services.webp',
+  image: '/assets/services/electrician/home-electrical-services.webp',
 };
 
-/** The category list shown at /services/electrical (PDF step 2). */
-// export const electricianCategoryTiles = [
-//   {
-//     slug: 'home-electrical-services',
-//     name: 'Home Electrical Services',
-//     blurb: 'Complete electrical solutions for your home',
-//     icon: 'bolt',
-//     detailed: true,
-//   },
-//   {
-//     slug: 'fan-installation',
-//     name: 'Fan Installation',
-//     blurb: 'Ceiling & exhaust fans',
-//     icon: 'fan',
-//     detailed: true,
-//   },
-//   {
-//     slug: 'light-installation',
-//     name: 'Light Installation',
-//     blurb: 'LED, panel, chandelier, etc.',
-//     icon: 'plus',
-//     detailed: false,
-//     // Retained exactly as it already worked — the generic site-visit wizard,
-//     // where "Lighting installation" is one of the electrician work options.
-//     route: '/booking/electrical',
-//   },
-//   {
-//     slug: 'switch-socket-installation',
-//     name: 'Switch & Socket Installation',
-//     blurb: 'Modular switches & sockets',
-//     icon: 'plug',
-//     detailed: true,
-//   },
-//   {
-//     slug: 'wiring-rewiring-services',
-//     name: 'Wiring & Rewiring',
-//     blurb: 'New wiring or old wiring replacement',
-//     icon: 'bolt',
-//     detailed: true,
-//   },
-//   {
-//     slug: 'electrical-repair-services',
-//     name: 'Electrical Repair',
-//     blurb: 'Fix faults, short circuit, tripping, etc.',
-//     icon: 'wrench',
-//     detailed: true,
-//   },
-//   {
-//     slug: 'mcb-db-installation',
-//     name: 'MCB & DB Installation',
-//     blurb: 'Distribution board, MCB, RCCB',
-//     icon: 'shield',
-//     detailed: true,
-//   },
-//   {
-//     slug: 'appliance-installation-services',
-//     name: 'Appliance Installation',
-//     blurb: 'Geyser, chimney, AC point, etc.',
-//     icon: 'package',
-//     detailed: true,
-//   },
-// ];
-
-
+/**
+ * The category list shown at /services/electrical.
+ * Names are intentionally short (Urban Company style) and blurbs are
+ * pricing hints so the card matches the Plumber overview grid.
+ */
 export const electricianCategoryTiles = [
   {
     slug: 'home-electrical-services',
-    name: 'Home Electrical Services',
-    blurb: 'Complete electrical solutions for your home',
-    // icon: 'bolt',
-    image: '/assets/services/electrician/home-electrical-services.webp',
+    name: 'Home',
+    blurb: 'On-site quote',
+    fromPrice: null,
+    image: '/assets/services/electrician/Home1.jpg',
     detailed: true,
   },
-
   {
     slug: 'fan-installation',
-    name: 'Fan Installation',
-    blurb: 'Ceiling & exhaust fans',
-    // icon: 'fan',
-    image: '/assets/services/electrician/fan-installation.webp',
+    name: 'Fan',
+    blurb: 'From ₹199',
+    fromPrice: 199,
+    image: '/assets/services/electrician/FAN.jpg',
     detailed: true,
   },
-
   {
     slug: 'light-installation',
-    name: 'Light Installation',
-    blurb: 'LED, panel, chandelier, etc.',
-    // icon: 'plus',
-    image: '/assets/services/electrician/light-installation.webp',
+    name: 'Light',
+    blurb: 'From ₹149',
+    fromPrice: 149,
+    image: '/assets/services/electrician/LIGHT.jpg',
     detailed: false,
     route: '/booking/electrical',
   },
-
   {
     slug: 'switch-socket-installation',
-    name: 'Switch & Socket Installation',
-    blurb: 'Modular switches & sockets',
-    // icon: 'plug',
-    image: '/assets/services/electrician/switch-socket-installation.webp',
+    name: 'Switch & Socket',
+    blurb: 'From ₹149',
+    fromPrice: 149,
+    image: '/assets/services/electrician/HOME.jpg',
     detailed: true,
   },
-
   {
     slug: 'wiring-rewiring-services',
-    name: 'Wiring & Rewiring',
-    blurb: 'New wiring or old wiring replacement',
-    // icon: 'bolt',
-    image: '/assets/services/electrician/wiring-rewiring-services.webp',
+    name: 'Wiring',
+    blurb: 'On-site quote',
+    fromPrice: null,
+    image: '/assets/services/electrician/WIRE.jpg',
     detailed: true,
   },
-
   {
     slug: 'electrical-repair-services',
-    name: 'Electrical Repair',
-    blurb: 'Fix faults, short circuit, tripping, etc.',
-    // icon: 'wrench',
-    image: '/assets/services/electrician/electrical-repair-services.webp',
+    name: 'Repair',
+    blurb: 'From ₹199',
+    fromPrice: 199,
+    image: '/assets/services/electrician/REPAIR.jpg',
     detailed: true,
   },
-
   {
     slug: 'mcb-db-installation',
-    name: 'MCB & DB Installation',
-    blurb: 'Distribution board, MCB, RCCB',
-    // icon: 'shield',
-    image: '/assets/services/electrician/mcb-db-installation.webp',
+    name: 'MCB & DB',
+    blurb: 'On-site quote',
+    fromPrice: null,
+    image: '/assets/services/electrician/DCBjpg.jpg',
     detailed: true,
   },
-
   {
     slug: 'appliance-installation-services',
-    name: 'Appliance Installation',
-    blurb: 'Geyser, chimney, AC point, etc.',
-    // icon: 'package',
-    image: '/assets/services/electrician/appliance-installation-services.webp',
+    name: 'Appliance',
+    blurb: 'From ₹299',
+    fromPrice: 299,
+    image: '/assets/services/electrician/APPLICACE.jpg',
     detailed: true,
   },
 ];
+
 /**
- * Intro screen content per detailed service (PDF step 3) — everything that
- * isn't a catalogue question. `whatsIncluded` and the trust badges are
- * marketing copy, not form data, so they stay in the frontend rather than
- * being modelled as unanswerable catalogue questions.
+ * Intro screen content per detailed service — everything that isn't a
+ * catalogue question. `whatsIncluded` and the trust badges are marketing
+ * copy, not form data, so they stay in the frontend.
  */
 export const electricianServiceIntros = {
   'home-electrical-services': {
@@ -201,29 +132,25 @@ export const electricianServiceIntros = {
       '1 year service support',
     ],
   },
-
   'light-installation': {
-  tagline: 'Professional installation of LED lights, panel lights, chandeliers and decorative lighting.',
-  image: '/assets/services/electrician/light-installation.webp',
-  badges: [
-    { icon: 'user', label: 'Verified Electricians' },
-    { icon: 'package', label: 'Quality Materials' },
-    { icon: 'shield', label: 'Safe Installation' },
-    { icon: 'clock', label: 'On-Time Service' },
-  ],
-  whatsIncluded: [
-    'LED and panel light installation',
-    'Chandelier and decorative light fitting',
-    'Proper wiring and connection',
-    'Ceiling and wall light installation',
-    'Testing for safety and functionality',
-    'Neat finishing and cleanup',
-    '1 year service support',
-  ],
-},
-
-
-
+    tagline: 'Professional installation of LED lights, panel lights, chandeliers and decorative lighting.',
+    image: '/assets/services/electrician/light-installation.webp',
+    badges: [
+      { icon: 'user', label: 'Verified Electricians' },
+      { icon: 'package', label: 'Quality Materials' },
+      { icon: 'shield', label: 'Safe Installation' },
+      { icon: 'clock', label: 'On-Time Service' },
+    ],
+    whatsIncluded: [
+      'LED and panel light installation',
+      'Chandelier and decorative light fitting',
+      'Proper wiring and connection',
+      'Ceiling and wall light installation',
+      'Testing for safety and functionality',
+      'Neat finishing and cleanup',
+      '1 year service support',
+    ],
+  },
   'switch-socket-installation': {
     tagline: 'Modern, safe and professional installation for all types of switches & sockets.',
     image: '/assets/services/electrician/switch-socket-installation.webp',

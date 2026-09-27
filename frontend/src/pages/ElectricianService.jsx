@@ -51,8 +51,14 @@ function formatMoney(n) {
  * updates with the add-ons picked, and real photo upload for the two
  * services that ask for one.
  */
-export default function ElectricianService() {
-  const { subSlug } = useParams();
+export default function ElectricianService({
+  modal = false,
+  subSlug: propSubSlug,
+  onBackToCategories,
+  onStepChange,
+}) {
+  const { subSlug: routeSubSlug } = useParams();
+  const subSlug = propSubSlug || routeSubSlug;
   const { user } = useAuth();
   const intro = electricianServiceIntros[subSlug];
 
@@ -250,13 +256,19 @@ export default function ElectricianService() {
     setError('');
     if (!canLeaveStage()) return;
     setStage((s) => Math.min(s + 1, CONFIRM));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (onStepChange) onStepChange();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goBack = () => {
     setError('');
+    if (stage === TYPE && modal && onBackToCategories) {
+      onBackToCategories();
+      return;
+    }
     formBack(() => setStage((s) => Math.max(s - 1, TYPE)));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (onStepChange) onStepChange();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const uploadPendingFiles = async (bookingNumber, phone) => {
@@ -330,26 +342,54 @@ export default function ElectricianService() {
   if (!intro) return <Navigate to="/services/electrical" replace />;
 
   /* ---------------------------------------------------------- intro splash */
+
+    /* ---------------------------------------------------------- intro splash */
   if (!started) {
     return (
-      <div className="elc-intro-wrap">
-        <div className="elc-intro-hero">
-          <img src={intro.image} alt="" />
-        </div>
-        <div className="container container-narrow">
-          <h1>{form ? form.category.name : ''}</h1>
-          <p className="elc-intro-tagline">{intro.tagline}</p>
+      <div className="plb-section !py-0 !pb-4">
+        <div className="container !w-full !max-w-none !px-0">
+          <div className="plb-overview-grid electrical-intro-grid">
+            <div className="plb-overview-card">
+              <span className="plb-overview-photo">
+                <img src={intro.image} alt="" loading="eager" />
+              </span>
+              <span className="plb-overview-name">
+                <span>{form ? form.category.name : ''}</span>
+              </span>
+            </div>
+          </div>
 
-          <div className="elc-badges">
+          <p className="elc-intro-tagline" style={{ marginTop: 18 }}>
+            {intro.tagline}
+          </p>
+
+          <div className="plb-overview-grid" style={{ marginTop: 18 }}>
             {intro.badges.map((b) => (
-              <div className="elc-badge" key={b.label}>
-                <Icon name={b.icon} size={20} />
-                <span>{b.label}</span>
+              <div
+                className="plb-overview-card"
+                key={b.label}
+                style={{ alignItems: 'center', padding: '18px 12px' }}
+              >
+                <Icon name={b.icon} size={22} />
+                <span
+                  style={{
+                    marginTop: 8,
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    color: 'var(--ink-soft)',
+                    textAlign: 'center',
+                  }}
+                >
+                  {b.label}
+                </span>
               </div>
             ))}
           </div>
 
-          <div className="elc-included">
+          <div
+            className="elc-included"
+            style={{ marginTop: 24, marginBottom: 24 }}
+          >
             <h2>What's Included?</h2>
             <ul>
               {intro.whatsIncluded.map((item) => (
@@ -378,15 +418,27 @@ export default function ElectricianService() {
             Get Started
             <Icon name="arrow-right" size={17} />
           </button>
-          <Link to="/services/electrical" className="elc-back-link">
-            <Icon name="arrow-left" size={15} />
-            Back to Electrical Services
-          </Link>
+
+          {modal && onBackToCategories ? (
+            <button
+              type="button"
+              className="elc-back-link"
+              onClick={onBackToCategories}
+            >
+              <Icon name="arrow-left" size={15} />
+              Back to Electrical Services
+            </button>
+          ) : (
+            <Link to="/services/electrical" className="elc-back-link">
+              <Icon name="arrow-left" size={15} />
+              Back to Electrical Services
+            </Link>
+          )}
         </div>
       </div>
     );
   }
-
+  
   /* -------------------------------------------------------------- confirm */
   if (receipt) {
     return <ElectricianConfirmation receipt={receipt} details={details} pendingFiles={pendingFiles} uploadState={uploadState} />;
@@ -396,7 +448,7 @@ export default function ElectricianService() {
   // questions arrive a moment later.
   if (!form) {
     return (
-      <div className="container container-narrow" style={{ padding: '120px 0 60px' }}>
+      <div className="container container-narrow" style={{ padding: modal ? '24px 0 40px' : '120px 0 60px' }}>
         {loadError ? (
           <div role="alert" className="alert alert-error">
             <Icon name="info" size={18} />
@@ -412,7 +464,7 @@ export default function ElectricianService() {
   const { category } = form;
 
   return (
-    <div className="wizard-shell">
+    <div className={`wizard-shell ${modal ? 'wizard-shell-modal' : ''}`}>
       <div className="wizard-container">
         <div className="wizard-top">
           <button type="button" className="wizard-back" onClick={stage === TYPE ? () => formBack(() => setStarted(false)) : goBack} aria-label="Go back">
@@ -696,7 +748,7 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
   };
 
   return (
-    <div className="wizard-shell">
+    <div className={`wizard-shell ${modal ? 'wizard-shell-modal' : ''}`}>
       <div className="wizard-container">
         <div className="wizard-card">
           <div className="confirmed">
