@@ -2,11 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import api, { friendlyError } from '../../lib/api';
-<<<<<<< HEAD
-
-/** Where a search hit actually lives. */
-function routeFor(result) {
-=======
 import { searchSubServices } from '../../lib/serviceSearch';
 
 /** Where a search hit actually lives. */
@@ -17,7 +12,6 @@ function routeFor(result) {
     return result.route;
   }
 
->>>>>>> main
   if (result.parentSlug === 'electrical') {
     return `/services/electrical/${result.slug}`;
   }
@@ -62,13 +56,6 @@ export default function HomeHero() {
     setSearching(true);
 
     const timer = setTimeout(() => {
-<<<<<<< HEAD
-      api
-        .searchCatalogue(q)
-        .then((data) => {
-          if (!cancelled) {
-            setResults(data);
-=======
       // The catalogue finds services; the sub-service search finds the jobs
       // inside them (toilet, tap, terrace, false ceiling…). Only the
       // catalogue failing is an error — the extras are a bonus.
@@ -79,7 +66,6 @@ export default function HomeHero() {
         .then(([services, jobs]) => {
           if (!cancelled) {
             setResults([...services, ...jobs]);
->>>>>>> main
           }
         })
         .catch((err) => {
@@ -132,21 +118,14 @@ export default function HomeHero() {
       {/* Hero background image */}
       <div className="home-hero-media">
         <img
-<<<<<<< HEAD
-          src="/assets/hero-house2.jpeg"
-          alt="Luxury modern house"
-          width={1800}
-          height={1500}
-=======
-          src="/assets/hero-house2.webp"
-          alt="Luxury modern house"
-          width={1800}
-          height={1500}
+          src="/assets/hero-team.webp"
+          alt="Supplybase professionals at work in a home"
+          width={1600}
+          height={595}
           // React 18 doesn't special-case this DOM property (that landed in
           // React 19), so the camelCase JSX prop name is passed straight
           // through as a literal, wrongly-cased HTML attribute unless it's
           // spelled the way the browser actually expects it.
->>>>>>> main
           fetchpriority="high"
         />
 

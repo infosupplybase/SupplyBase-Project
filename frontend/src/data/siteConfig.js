@@ -26,7 +26,7 @@ export const contact = {
   email: 'info.supplybase@gmail.com',
   addressLines: ['Mumbai, Maharashtra', 'India'],
   serviceAreas: ['Mumbai', 'Navi Mumbai', 'Thane', 'Kalyan', 'Panvel', 'Pune'],
-  workingHours: 'Monday – Saturday, 9:00 AM – 7:00 PM',
+  workingHours: 'Every day, 9:00 AM – 9:00 PM',
 };
 
 /**

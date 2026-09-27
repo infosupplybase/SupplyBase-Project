@@ -81,10 +81,11 @@ export const wpCategories = [
 export const wpBathroomServices = [
   { slug: 'bathroom-floor', name: 'Floor Waterproofing', tagline: 'Protects bathroom floors from seepage.', icon: 'droplet', route: '/services/waterproofing/bathroom-floor' },
   { slug: 'wall', name: 'Wall Waterproofing', tagline: 'Prevents water from penetrating bathroom walls.', icon: 'wall-stain', route: '/booking/waterproofing?preselect=Bathroom%20Wall%20Waterproofing' },
-  { slug: 'corner-joint', name: 'Corner & Joint Sealing', tagline: 'Seals joints, cracks and pipe openings.', icon: 'grout', route: '/booking/waterproofing?preselect=Bathroom%20Corner%20%26%20Joint%20Sealing' },
-  { slug: 'shower-area', name: 'Shower Area Waterproofing', tagline: 'Extra protection for wet zones.', icon: 'droplet', route: '/booking/waterproofing?preselect=Bathroom%20Shower%20Area%20Waterproofing' },
-  { slug: 'pipeline-fixture', name: 'Pipeline & Fixture Sealing', tagline: 'Seals around pipes and fittings.', icon: 'wrench', route: '/booking/waterproofing?preselect=Bathroom%20Pipeline%20%26%20Fixture%20Sealing' },
-  { slug: 'tile-resealing', name: 'Tile Re-sealing', tagline: 'Protects existing tiles and grout lines.', icon: 'layers', route: '/booking/waterproofing?preselect=Bathroom%20Tile%20Re-sealing' },
+  // Not offered for now — commented out, not deleted, so they can come back.
+  // { slug: 'corner-joint', name: 'Corner & Joint Sealing', tagline: 'Seals joints, cracks and pipe openings.', icon: 'grout', route: '/booking/waterproofing?preselect=Bathroom%20Corner%20%26%20Joint%20Sealing' },
+  // { slug: 'shower-area', name: 'Shower Area Waterproofing', tagline: 'Extra protection for wet zones.', icon: 'droplet', route: '/booking/waterproofing?preselect=Bathroom%20Shower%20Area%20Waterproofing' },
+  // { slug: 'pipeline-fixture', name: 'Pipeline & Fixture Sealing', tagline: 'Seals around pipes and fittings.', icon: 'wrench', route: '/booking/waterproofing?preselect=Bathroom%20Pipeline%20%26%20Fixture%20Sealing' },
+  // { slug: 'tile-resealing', name: 'Tile Re-sealing', tagline: 'Protects existing tiles and grout lines.', icon: 'layers', route: '/booking/waterproofing?preselect=Bathroom%20Tile%20Re-sealing' },
 ];
 
 const FEE_NOTE = 'Rates are indicative and may vary based on site condition, area and material selection. For projects above ₹5,000, a ₹99 home visit fee applies — adjusted in your final bill if you proceed.';

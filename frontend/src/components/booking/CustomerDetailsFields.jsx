@@ -52,7 +52,7 @@ export default function CustomerDetailsFields({ details, setDetail, errors, idPr
         <Field id={`${idPrefix}-city`} label="City" required value={details.city}
                onChange={setDetail('city')} error={errors.city}
                placeholder="Mumbai" />
-        <Field id={`${idPrefix}-pincode`} label="Pincode" value={details.pincode}
+        <Field id={`${idPrefix}-pincode`} label="Pincode" required value={details.pincode}
                onChange={setDetail('pincode')} error={errors.pincode}
                placeholder="400001" />
       </div>
