@@ -106,11 +106,15 @@ export default function HomeHero() {
       {/* Hero background image */}
       <div className="home-hero-media">
         <img
-          src="/assets/hero_img.jpeg"
-          alt="Luxury modern house"
-          width={1800}
-          height={1500}
-          fetchPriority="high"
+          src="/assets/hero-team.webp"
+          alt="Supplybase professionals at work in a home"
+          width={1600}
+          height={595}
+          // React 18 doesn't special-case this DOM property (that landed in
+          // React 19), so the camelCase JSX prop name is passed straight
+          // through as a literal, wrongly-cased HTML attribute unless it's
+          // spelled the way the browser actually expects it.
+          fetchpriority="high"
         />
 
         <div className="home-hero-gradient" />

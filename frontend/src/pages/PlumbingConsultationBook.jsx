@@ -9,6 +9,9 @@ import api, { friendlyError } from '../lib/api';
 import { formatRupees } from '../lib/money';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -32,14 +35,18 @@ export default function PlumbingConsultationBook({
   const { user } = useAuth();
   const { consultationTypes, loading, error: loadError } = usePlumbingCatalogue();
 
-  const [stage, setStage] = useState(SCHEDULE);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [details, setDetails] = useState(emptyDetails);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:plb-consult:${typeSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, SCHEDULE, { push: true });
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   const type = consultationTypes.find((t) => t.value === typeSlug);
 
@@ -115,7 +122,7 @@ if (modal) {
     return;
   }
 
-  setStage((s) => Math.max(s - 1, SCHEDULE));
+  formBack(() => setStage((s) => Math.max(s - 1, SCHEDULE)));
 
   if (modal) {
     onStepChange?.();
@@ -276,7 +283,7 @@ if (receipt) {
                   </div>
                   <div>
                     <dt>Visit</dt>
-                    <dd>{date} at {time}</dd>
+                    <dd>{formatVisit(date, time)}</dd>
                   </div>
                 </dl>
                 <div className="fee-panel">
@@ -298,10 +305,10 @@ if (receipt) {
               </div>
             )}
 
-            <div
+            <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !flex !w-full !items-center !justify-end !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+      ? 'wizard-foot modal-sticky-foot !flex !w-full !items-center !justify-end !gap-3 !border-0'
       : `wizard-foot ${stage === 0 ? 'single' : ''}`
   }
 >
@@ -329,7 +336,7 @@ if (receipt) {
   <Icon name="arrow-right" size={17} />
 </button>
               )}
-            </div>
+            </ModalFoot>
           </div>
         </form>
       </div>
@@ -374,7 +381,7 @@ function ConsultationConfirmation({
               </div>
               <div>
                 <dt>Date &amp; Time</dt>
-                <dd>{receipt.date}, {receipt.time}</dd>
+                <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
               <div>
                 <dt>Home Visit Fee</dt>

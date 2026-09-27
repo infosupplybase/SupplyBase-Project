@@ -63,6 +63,8 @@ class AuthServiceTest {
     @Mock
     private EmailVerificationTokenRepository emailVerificationTokens;
     @Mock
+    private EmailOtpRepository emailOtps;
+    @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
     private JwtService jwtService;
@@ -81,7 +83,7 @@ class AuthServiceTest {
         props = new AppProperties(List.of(), null, null, null, null,
                 "https://supplybase.example", null, null, null);
         service = new AuthService(users, refreshTokens, passwordResetTokens, emailVerificationTokens,
-                passwordEncoder, jwtService, googleVerifier, rateLimiter, props, mailSender);
+                emailOtps, passwordEncoder, jwtService, googleVerifier, rateLimiter, props, mailSender);
 
         when(rateLimiter.tryAcquire(anyString(), anyInt(), any(Duration.class))).thenReturn(true);
         when(jwtService.generateRefreshToken()).thenReturn("raw-refresh-token");

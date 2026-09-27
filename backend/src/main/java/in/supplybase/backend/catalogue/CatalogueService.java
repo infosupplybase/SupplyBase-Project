@@ -24,7 +24,8 @@ import in.supplybase.backend.common.Money;
 @Service
 public class CatalogueService {
 
-    private static final BigDecimal DEFAULT_VISIT_FEE = new BigDecimal("25.00");
+    /** Every service's home visit is ₹99 unless the admin sets otherwise. */
+    private static final BigDecimal DEFAULT_VISIT_FEE = new BigDecimal("99.00");
 
     private final ServiceCategoryRepository categories;
     private final ServiceOptionRepository options;

@@ -102,25 +102,12 @@ export default function CustomerDetailsFields({
       </div>
 
       <div className="form-grid" style={{ marginTop: 16 }}>
-        <Field
-          id={`${idPrefix}-city`}
-          label="City"
-          required
-          value={details.city}
-          onChange={setDetail('city')}
-          error={errors.city}
-          placeholder="Mumbai"
-        />
-
-        <Field
-          id={`${idPrefix}-pincode`}
-          label="Pincode"
-          required
-          value={details.pincode}
-          onChange={setDetail('pincode')}
-          error={errors.pincode}
-          placeholder="400001"
-        />
+        <Field id={`${idPrefix}-city`} label="City" required value={details.city}
+               onChange={setDetail('city')} error={errors.city}
+               placeholder="Mumbai" />
+        <Field id={`${idPrefix}-pincode`} label="Pincode" required value={details.pincode}
+               onChange={setDetail('pincode')} error={errors.pincode}
+               placeholder="400001" />
       </div>
     </>
   );

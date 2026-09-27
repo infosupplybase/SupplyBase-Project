@@ -34,6 +34,9 @@ import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -75,25 +78,21 @@ export default function PaintingFlow({
     coloursByTab,
   } = usePaintingCatalogue();
 
-  const [stage, setStage] = useState(1);
-  const [answers, setAnswers] = useState({});
-  const [details, setDetails] = useState(
-    user
-      ? {
-          ...emptyDetails,
-          name: user.fullName || '',
-          phone: user.phone || '',
-          email: user.email || '',
-        }
-      : emptyDetails
-  );
-
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:paint:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
+    ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
+    : emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [compareOpen, setCompareOpen] = useState(false);
 
   const configSteps = useMemo(() => flow?.steps || [], [flow]);
@@ -330,7 +329,7 @@ export default function PaintingFlow({
       return;
     }
 
-    setStage((s) => Math.max(s - 1, 1));
+  formBack(() => setStage((s) => Math.max(s - 1, 1)));
 
     if (modal) {
       onStepChange?.();
@@ -531,29 +530,10 @@ export default function PaintingFlow({
               </p>
 
               <dl className="confirmed-panel">
-                <div>
-                  <dt>Booking ID</dt>
-                  <dd className="booking-id">
-                    {receipt.bookingNumber}
-                  </dd>
-                </div>
-
-                <div>
-                  <dt>Date &amp; Time</dt>
-                  <dd>
-                    {receipt.date}, {receipt.time}
-                  </dd>
-                </div>
-
-                <div>
-                  <dt>Service</dt>
-                  <dd>{displayFlow?.name}</dd>
-                </div>
-
-                <div>
-                  <dt>Location</dt>
-                  <dd>{details.city}</dd>
-                </div>
+                <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
+                <div><dt>Service</dt><dd>{flow.name}</dd></div>
+                <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
               <div className="pnt-fee-note">
@@ -693,14 +673,13 @@ export default function PaintingFlow({
                   <span>{submitError}</span>
                 </div>
               )}
-
-              <div
-                className={
-                  modal
-                    ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[76px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
-                    : 'wizard-foot'
-                }
-              >
+              <ModalFoot
+  className={
+    modal
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
                 <button
                   type="button"
                   className={
@@ -714,17 +693,14 @@ export default function PaintingFlow({
                 </button>
 
                 <button
-                  type="submit"
-                  className={
-                    modal
-                      ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[125px] md:!min-w-[125px] md:!flex-none md:!px-4'
-                      : 'btn btn-primary'
-                  }
-                >
-                  CONTINUE
-                  <Icon name="arrow-right" size={17} />
-                </button>
-              </div>
+  type="submit"
+  className={
+    modal
+  ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[150px] md:!min-w-[150px] md:!flex-none md:!px-4'
+  : 'btn btn-primary'
+  }
+>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -792,14 +768,13 @@ export default function PaintingFlow({
                   <span>{submitError}</span>
                 </div>
               )}
-
-              <div
-                className={
-                  modal
-                    ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
-                    : 'wizard-foot'
-                }
-              >
+              <ModalFoot
+  className={
+    modal
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
                 <button
                   type="button"
                   className={
@@ -824,7 +799,7 @@ export default function PaintingFlow({
                   {busy ? 'BOOKING…' : 'BOOK NOW'}
                   <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -1002,41 +977,26 @@ export default function PaintingFlow({
             />
           )}
 
-          <div
-            className={
-              modal
-                ? 'pnt-step-actions !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
-                : 'pnt-step-actions'
-            }
-          >
-            <button
-              type="button"
-              className={
-                modal
-                  ? 'btn btn-ghost btn-back !w-[80px] !min-w-[80px] !px-2 md:!w-auto md:!min-w-0 md:!px-4'
-                  : 'btn btn-ghost btn-back'
-              }
-              onClick={goBack}
-            >
-              BACK
+          <ModalFoot
+  className={
+    modal
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      : 'pnt-step-actions'
+  }
+>
+            <button type="button" className={
+  modal
+    ? 'btn btn-ghost btn-back !w-[80px] !min-w-[80px] !px-2 md:!w-auto md:!min-w-0 md:!px-4'
+    : 'btn btn-ghost btn-back'
+} onClick={goBack}>BACK</button>
+            <button type="button" className={
+  modal
+    ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-3 !text-[11px] !whitespace-nowrap md:!ml-auto md:!w-[190px] md:!max-w-[190px] md:!flex-none md:!px-4 md:!text-sm'
+    : 'btn btn-primary'
+} onClick={goNext}>
+              {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
             </button>
-
-            <button
-              type="button"
-              className={
-                modal
-                  ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-3 !text-[11px] !whitespace-nowrap md:!ml-auto md:!w-[190px] md:!max-w-[190px] md:!flex-none md:!px-4 md:!text-sm'
-                  : 'btn btn-primary'
-              }
-              onClick={goNext}
-            >
-              {step.type === 'summary'
-                ? 'Book a Home Visit'
-                : 'Continue'}
-
-              <Icon name="arrow-right" size={17} />
-            </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
 
