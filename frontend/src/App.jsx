@@ -4,218 +4,516 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import Home from './pages/Home';
 import Services from './pages/Services';
 import ServiceBooking from './pages/ServiceBooking';
-// Projects and Materials sections are disabled sitewide — see the commented
-// routes below. Imports kept (not deleted) so re-enabling is a two-line diff.
+
+// Projects and Materials sections are disabled sitewide
 // import Projects from './pages/Projects';
 // import Materials from './pages/Materials';
+
 import InteriorByChoice from './pages/InteriorByChoice';
 import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
 import InteriorDesignDetail from './pages/InteriorDesignDetail';
 import InteriorBooking from './pages/InteriorBooking';
+
 import ElectricalCategory from './pages/ElectricalCategory';
 import ElectricianService from './pages/ElectricianService';
 import OtherServicesCategory from './pages/OtherServicesCategory';
+
 import PlumbingCategory from './pages/PlumbingCategory';
 import PlumbingTab from './pages/PlumbingTab';
 import PlumbingConsultationList from './pages/PlumbingConsultationList';
 import PlumbingConsultationBook from './pages/PlumbingConsultationBook';
 import PlumbingCart from './pages/PlumbingCart';
 import PlumbingCheckout from './pages/PlumbingCheckout';
+
 import PaintingCategory from './pages/PaintingCategory';
 import PaintingFlow from './pages/PaintingFlow';
+
 import PopCeilingCategory from './pages/PopCeilingCategory';
 import PopCeilingFlow from './pages/PopCeilingFlow';
+
 import WaterproofingCategory from './pages/WaterproofingCategory';
 import WaterproofingBathroom from './pages/WaterproofingBathroom';
 import WaterproofingFlow from './pages/WaterproofingFlow';
+
 import InteriorDesignCategory from './pages/InteriorDesignCategory';
 import InteriorDesignCatalogue from './pages/InteriorDesignCatalogue';
 import InteriorDesignFlow from './pages/InteriorDesignFlow';
-// import ProjectDetail from './pages/ProjectDetail';
+
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Quote from './pages/Quote';
 import Login from './pages/Login';
+
 import MyBookings from './pages/MyBookings';
 import BookingDetail from './pages/BookingDetail';
 import Profile from './pages/Profile';
+
 import PartnerRedirect from './pages/PartnerRedirect';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
 
 /**
  * ROUTES
+ *
+ * PUBLIC:
  * /                       Home
  * /services               All services
- * /services/:slug         Book a site visit for one service
- * /services/electrical    Electrical Services category list
- * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
- * /services/plumbing      Plumbing Services overview grid (8 categories + consultation)
- * /services/plumbing/cart, /checkout  The item cart and its checkout flow
- * /services/plumbing/consultation, /consultation/:typeSlug  Consultation list + booking
- * /services/plumbing/:tabSlug  One plumbing category's itemised service list
- * /services/painting      Painting Services overview grid (Full Home / Few Walls / Room / Renovation)
- * /services/painting/:flowSlug  One painting journey (full-home | few-walls | renovation)
- * /services/pop-ceiling-design  POP Ceiling & Design overview list (six subservices)
- * /services/pop-ceiling-design/:flowSlug  One of the two detailed POP journeys (full-home | room)
- * /services/waterproofing       Waterproofing overview list (six subservices)
- * /services/waterproofing/bathroom  Bathroom's own six-row list (only Floor Waterproofing is detailed)
- * /services/waterproofing/:flowSlug  One of six detailed journeys (terrace | exterior-wall |
- *                                 bathroom-floor | interior-wall | water-tank | basement)
- * /services/interior-design      Category grid (1 BHK / 2 BHK / 3 BHK / Villa) — separate
- *                                 from /interior-by-choice below, which is untouched
- * /services/interior-design/:categorySlug  Project grid for one category
- * /services/interior-design/:categorySlug/:projectSlug  One project's full flow
- * /booking/:slug          Same booking page, reached from the hero banners — also where
- *                          POP's four non-detailed subservices land, via ?preselect=<value>
- *                          (see ServiceBooking.jsx)
- * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
- * /book                   Redirects to /services (old standalone booking page, removed)
- * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
- * /about                  About us
- * /contact                Contact
- * /quote                  Get a quote  (?service=<slug> pre-selects a service)
- * /login                  Sign in       (no header/footer)
- * /register               Create account (same page, other tab)
- * /dashboard              Redirects to /dashboard/bookings
- * /dashboard/bookings     Every booking the signed-in client has made, with real status
- * /dashboard/profile      Edit name/phone, verify email, reset password, sign out
- * /partner/*              Forwards to the separate partners app (see partners/)
- * /privacy-policy, /terms Legal pages
+ * /services/electrical    Electrical category
+ * /services/plumbing      Plumbing category
+ * /services/painting      Painting category
+ * /services/pop-ceiling-design
+ * /services/waterproofing
+ * /services/interior-design
+ * /interior-by-choice
+ * /about
+ * /contact
+ * /quote
+ *
+ * PROTECTED / LOGIN REQUIRED:
+ * /services/:slug
+ * /booking/:slug
+ * /services/electrical/:subSlug
+ * /services/plumbing/checkout
+ * /services/plumbing/consultation/:typeSlug
+ * /services/painting/:flowSlug
+ * /services/pop-ceiling-design/:flowSlug
+ * /services/waterproofing/:flowSlug
+ * /services/interior-design/:categorySlug/:projectSlug
+ * /interior-by-choice/book
+ * /interior-by-choice/:spaceSlug/:designSlug/book
+ *
+ * ACCOUNT:
+ * /dashboard
+ * /dashboard/bookings
+ * /dashboard/bookings/:id
+ * /dashboard/profile
+ *
+ * AUTH:
+ * /login
+ * /register
  */
+
 export default function App() {
   return (
     <Routes>
-      {/* the account page sits outside the main layout — full-screen split page.
-          both paths render it; the tab that opens is taken from the URL. */}
+
+      {/* =========================================================
+          AUTHENTICATION
+          ========================================================= */}
+
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
-      {/* Professionals have their own app now (partners/). Old /partner links
-          forward there once VITE_PARTNERS_URL is set; until then they go home. */}
-      <Route path="/partner/*" element={<PartnerRedirect />} />
+
+      {/* =========================================================
+          PARTNER APP
+          ========================================================= */}
+
+      <Route
+        path="/partner/*"
+        element={<PartnerRedirect />}
+      />
+
+      {/* =========================================================
+          MAIN WEBSITE
+          ========================================================= */}
 
       <Route element={<Layout />}>
+
+        {/* =======================================================
+            HOME
+            ======================================================= */}
+
         <Route index element={<Home />} />
-        <Route path="services" element={<Services />} />
 
-        {/* Old catalogue slugs, renamed when the backend categories were
-            aligned with the marketing site (see V9 migration). Kept as
-            redirects so any bookmarked or previously-shared link still
-            lands on the real page instead of "service not found". */}
-        <Route path="services/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
-        <Route path="services/electrician" element={<Navigate to="/services/electrical" replace />} />
-        <Route path="services/interior-work" element={<Navigate to="/services/interior-design" replace />} />
-        <Route path="services/pop-false-ceiling" element={<Navigate to="/services/pop-ceiling-design" replace />} />
-        <Route path="booking/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
-        <Route path="booking/electrician" element={<Navigate to="/services/electrical" replace />} />
-        <Route path="booking/interior-work" element={<Navigate to="/services/interior-design" replace />} />
+        {/* =======================================================
+            SERVICES - PUBLIC
+            Users can browse services without logging in.
+            ======================================================= */}
 
-        {/* Interior by Choice has its own richer browse-then-book page at
-            /interior-by-choice; a link generated from the catalogue
-            (mega menu, search results, the seven-card grid) points at
-            /services/interior-by-choice like every other category, so it
-            redirects there instead of opening the generic booking wizard. */}
-        <Route path="services/interior-by-choice" element={<Navigate to="/interior-by-choice" replace />} />
+        <Route
+          path="services"
+          element={<Services />}
+        />
 
-        {/* Electrical Services: a category list (matching the approved
-            journey's step 2) in front of the generic wizard, with seven of
-            its eight tiles opening their own richer, catalogue-driven
-            booking flow instead. Declared ahead of services/:slug so these
-            exact paths win over that wildcard. */}
-        {/* services/electrician already redirects to services/electrical
-            above, so only that exact path needs to render the category
-            list here. */}
-        <Route path="services/electrical" element={<ElectricalCategory />} />
-        <Route path="services/electric" element={<ElectricalCategory />} />
-        <Route path="services/electrical/:subSlug" element={<ElectricianService />} />
+        {/* =======================================================
+            OLD / LEGACY SERVICE REDIRECTS
+            ======================================================= */}
 
-        {/* Other Services: the catch-all eighth tile, reactivated on
-            request. A category list in front of five existing generic
-            wizard pages, same shape as the electrical category list. */}
-        <Route path="services/other-services" element={<OtherServicesCategory />} />
+        <Route
+          path="services/painting-waterproofing"
+          element={
+            <Navigate
+              to="/services/painting"
+              replace
+            />
+          }
+        />
 
-        {/* Plumbing Services: an itemised cart catalogue (V14 migration)
-            replacing the old generic wizard for this one category. Exact
-            child paths declared ahead of services/:slug so they win over
-            that wildcard, same precedent as services/electrical above. */}
-        <Route path="services/plumbing" element={<PlumbingCategory />} />
-        <Route path="services/plumbing/cart" element={<PlumbingCart />} />
-        <Route path="services/plumbing/checkout" element={<PlumbingCheckout />} />
-        <Route path="services/plumbing/consultation" element={<PlumbingConsultationList />} />
-        <Route path="services/plumbing/consultation/:typeSlug" element={<PlumbingConsultationBook />} />
-        <Route path="services/plumbing/:tabSlug" element={<PlumbingTab />} />
+        <Route
+          path="services/electrician"
+          element={
+            <Navigate
+              to="/services/electrical"
+              replace
+            />
+          }
+        />
 
-        {/* Painting Services: three itemised booking journeys (V15
-            migration) replacing the old generic wizard for this one
-            category — same precedent as plumbing above. One page component
-            (PaintingFlow) driven by the :flowSlug param and paintingContent.js's
-            flow config, rather than one file per journey. */}
-        <Route path="services/painting" element={<PaintingCategory />} />
-        <Route path="services/painting/:flowSlug" element={<PaintingFlow />} />
+        <Route
+          path="services/interior-work"
+          element={
+            <Navigate
+              to="/services/interior-design"
+              replace
+            />
+          }
+        />
 
-        {/* POP Ceiling & Design: only two of its six subservices have a
-            detailed reference journey (V16 migration) — Full Home POP and
-            Room POP get their own dedicated flow here; the other four
-            (False Ceiling, POP Design Work, POP TV Wall, POP Repair &
-            Renovation) link to /booking/pop-ceiling-design?preselect=...,
-            the existing generic wizard below, with their subservice
-            preselected (see ServiceBooking.jsx). */}
-        <Route path="services/pop-ceiling-design" element={<PopCeilingCategory />} />
-        <Route path="services/pop-ceiling-design/:flowSlug" element={<PopCeilingFlow />} />
+        <Route
+          path="services/pop-false-ceiling"
+          element={
+            <Navigate
+              to="/services/pop-ceiling-design"
+              replace
+            />
+          }
+        />
 
-        {/* Waterproofing: six subservices, in the reference's own order.
-            Five open WaterproofingFlow directly; Bathroom opens its own
-            six-row sub-list first (WaterproofingBathroom), where only
-            Floor Waterproofing has a detailed flow of its own — the other
-            five link to /booking/waterproofing?preselect=..., same
-            fallback pattern as POP Ceiling's non-detailed subservices. */}
-        <Route path="services/waterproofing" element={<WaterproofingCategory />} />
-        <Route path="services/waterproofing/bathroom" element={<WaterproofingBathroom />} />
-        <Route path="services/waterproofing/:flowSlug" element={<WaterproofingFlow />} />
+        <Route
+          path="booking/painting-waterproofing"
+          element={
+            <Navigate
+              to="/services/painting"
+              replace
+            />
+          }
+        />
 
-        {/* Interior Design: separate from Interior by Choice (its own
-            routes below, untouched) — a category grid (1/2/3 BHK + Villa),
-            each opening a project grid, each project opening one
-            config-driven flow (package -> details -> customise ->
-            consultation -> confirm). */}
-        <Route path="services/interior-design" element={<InteriorDesignCategory />} />
-        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignCatalogue />} />
-        <Route path="services/interior-design/:categorySlug/:projectSlug" element={<InteriorDesignFlow />} />
+        <Route
+          path="booking/electrician"
+          element={
+            <Navigate
+              to="/services/electrical"
+              replace
+            />
+          }
+        />
 
-        <Route path="services/:slug" element={<ServiceBooking />} />
-        {/* The hero banners link to /booking/<slug>; same page, second door. */}
-        <Route path="booking/:slug" element={<ServiceBooking />} />
-        {/* Projects and Materials sections — disabled sitewide on request.
-            Routes commented out rather than removed so this is a quick
-            revert; every Link that pointed here is also commented out
-            (siteConfig.js's mainNav/quickLinks, Home.jsx, About.jsx,
-            AccountSidebar.jsx). */}
-        {/* <Route path="projects" element={<Projects />} /> */}
-        {/* <Route path="projects/:slug" element={<ProjectDetail />} /> */}
-        {/* <Route path="materials" element={<Materials />} /> */}
-        {/* The old standalone /book page had its own hard-coded list of
-            services that had drifted from the real ones. Every booking now
-            starts from a service, so old links go to the services page. */}
-        <Route path="book" element={<Navigate to="/services" replace />} />
+        <Route
+          path="booking/interior-work"
+          element={
+            <Navigate
+              to="/services/interior-design"
+              replace
+            />
+          }
+        />
 
-        {/* Interior by Choice — the ready-made design catalogue. Its own
-            small route tree, separate from the generic /services/:slug
-            wizard, since it's a browse-then-book flow rather than a
-            question-at-a-time site visit request. */}
-        <Route path="interior-by-choice" element={<InteriorByChoice />} />
-        <Route path="interior-by-choice/book" element={<InteriorBooking />} />
-        <Route path="interior-by-choice/:spaceSlug" element={<InteriorSpaceGallery />} />
-        <Route path="interior-by-choice/:spaceSlug/:designSlug" element={<InteriorDesignDetail />} />
-        <Route path="interior-by-choice/:spaceSlug/:designSlug/book" element={<InteriorBooking />} />
-        <Route path="about" element={<About />} />
-        <Route path="contact" element={<Contact />} />
-        <Route path="quote" element={<Quote />} />
-        {/* /dashboard has no page of its own — Bookings and Profile are
-            separate pages (own routes, own content), each reachable directly
-            from the bottom nav; a bare /dashboard visit (the desktop header's
-            "MY ACCOUNT" link) lands on Bookings, the more actionable of the
-            two. */}
-        <Route path="dashboard" element={<Navigate to="/dashboard/bookings" replace />} />
+        {/* =======================================================
+            INTERIOR BY CHOICE REDIRECT
+            ======================================================= */}
+
+        <Route
+          path="services/interior-by-choice"
+          element={
+            <Navigate
+              to="/interior-by-choice"
+              replace
+            />
+          }
+        />
+
+        {/* =======================================================
+            ELECTRICAL SERVICES
+            Category is PUBLIC.
+            Actual booking journey is PROTECTED.
+            ======================================================= */}
+
+        <Route
+          path="services/electrical"
+          element={<ElectricalCategory />}
+        />
+
+        <Route
+          path="services/electric"
+          element={<ElectricalCategory />}
+        />
+
+        <Route
+          path="services/electrical/:subSlug"
+          element={
+            <ProtectedRoute>
+              <ElectricianService />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =======================================================
+            OTHER SERVICES
+            Category is PUBLIC.
+            ======================================================= */}
+
+        <Route
+          path="services/other-services"
+          element={<OtherServicesCategory />}
+        />
+
+        {/* =======================================================
+            PLUMBING SERVICES
+            ======================================================= */}
+
+        {/* Public category */}
+        <Route
+          path="services/plumbing"
+          element={<PlumbingCategory />}
+        />
+
+        {/* Public cart - user can add/remove items */}
+        <Route
+          path="services/plumbing/cart"
+          element={<PlumbingCart />}
+        />
+
+        {/* Login required before checkout */}
+        <Route
+          path="services/plumbing/checkout"
+          element={
+            <ProtectedRoute>
+              <PlumbingCheckout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Public consultation list */}
+        <Route
+          path="services/plumbing/consultation"
+          element={<PlumbingConsultationList />}
+        />
+
+        {/* Login required to actually book consultation */}
+        <Route
+          path="services/plumbing/consultation/:typeSlug"
+          element={
+            <ProtectedRoute>
+              <PlumbingConsultationBook />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Public plumbing service/item list */}
+        <Route
+          path="services/plumbing/:tabSlug"
+          element={<PlumbingTab />}
+        />
+
+        {/* =======================================================
+            PAINTING SERVICES
+            ======================================================= */}
+
+        {/* Public category */}
+        <Route
+          path="services/painting"
+          element={<PaintingCategory />}
+        />
+
+        {/* Login required for booking journey */}
+        <Route
+          path="services/painting/:flowSlug"
+          element={
+            <ProtectedRoute>
+              <PaintingFlow />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =======================================================
+            POP CEILING & DESIGN
+            ======================================================= */}
+
+        {/* Public category */}
+        <Route
+          path="services/pop-ceiling-design"
+          element={<PopCeilingCategory />}
+        />
+
+        {/* Login required for detailed booking */}
+        <Route
+          path="services/pop-ceiling-design/:flowSlug"
+          element={
+            <ProtectedRoute>
+              <PopCeilingFlow />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =======================================================
+            WATERPROOFING
+            ======================================================= */}
+
+        {/* Public category */}
+        <Route
+          path="services/waterproofing"
+          element={<WaterproofingCategory />}
+        />
+
+        {/* Public bathroom category */}
+        <Route
+          path="services/waterproofing/bathroom"
+          element={<WaterproofingBathroom />}
+        />
+
+        {/* Login required for actual booking flow */}
+        <Route
+          path="services/waterproofing/:flowSlug"
+          element={
+            <ProtectedRoute>
+              <WaterproofingFlow />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =======================================================
+            INTERIOR DESIGN
+            ======================================================= */}
+
+        {/* Public category */}
+        <Route
+          path="services/interior-design"
+          element={<InteriorDesignCategory />}
+        />
+
+        {/* Public project catalogue */}
+        <Route
+          path="services/interior-design/:categorySlug"
+          element={<InteriorDesignCatalogue />}
+        />
+
+        {/* Login required for actual project booking flow */}
+        <Route
+          path="services/interior-design/:categorySlug/:projectSlug"
+          element={
+            <ProtectedRoute>
+              <InteriorDesignFlow />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =======================================================
+            GENERIC BOOKING
+            LOGIN REQUIRED
+            ======================================================= */}
+
+        <Route
+          path="services/:slug"
+          element={
+            <ProtectedRoute>
+              <ServiceBooking />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Hero banners use /booking/:slug */}
+        <Route
+          path="booking/:slug"
+          element={
+            <ProtectedRoute>
+              <ServiceBooking />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =======================================================
+            OLD /BOOK ROUTE
+            ======================================================= */}
+
+        <Route
+          path="book"
+          element={
+            <Navigate
+              to="/services"
+              replace
+            />
+          }
+        />
+
+        {/* =======================================================
+            INTERIOR BY CHOICE
+            Browse = PUBLIC
+            Booking = PROTECTED
+            ======================================================= */}
+
+        {/* Public catalogue */}
+        <Route
+          path="interior-by-choice"
+          element={<InteriorByChoice />}
+        />
+
+        {/* Login required */}
+        <Route
+          path="interior-by-choice/book"
+          element={
+            <ProtectedRoute>
+              <InteriorBooking />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Public space gallery */}
+        <Route
+          path="interior-by-choice/:spaceSlug"
+          element={<InteriorSpaceGallery />}
+        />
+
+        {/* Public design details */}
+        <Route
+          path="interior-by-choice/:spaceSlug/:designSlug"
+          element={<InteriorDesignDetail />}
+        />
+
+        {/* Login required */}
+        <Route
+          path="interior-by-choice/:spaceSlug/:designSlug/book"
+          element={
+            <ProtectedRoute>
+              <InteriorBooking />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* =======================================================
+            GENERAL PUBLIC PAGES
+            ======================================================= */}
+
+        <Route
+          path="about"
+          element={<About />}
+        />
+
+        <Route
+          path="contact"
+          element={<Contact />}
+        />
+
+        <Route
+          path="quote"
+          element={<Quote />}
+        />
+
+        {/* =======================================================
+            DASHBOARD
+            LOGIN REQUIRED
+            ======================================================= */}
+
+        <Route
+          path="dashboard"
+          element={
+            <Navigate
+              to="/dashboard/bookings"
+              replace
+            />
+          }
+        />
+
         <Route
           path="dashboard/bookings"
           element={
@@ -224,6 +522,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="dashboard/bookings/:id"
           element={
@@ -232,6 +531,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="dashboard/profile"
           element={
@@ -240,9 +540,30 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="terms" element={<Terms />} />
-        <Route path="*" element={<NotFound />} />
+
+        {/* =======================================================
+            LEGAL
+            ======================================================= */}
+
+        <Route
+          path="privacy-policy"
+          element={<PrivacyPolicy />}
+        />
+
+        <Route
+          path="terms"
+          element={<Terms />}
+        />
+
+        {/* =======================================================
+            404
+            ======================================================= */}
+
+        <Route
+          path="*"
+          element={<NotFound />}
+        />
+
       </Route>
     </Routes>
   );

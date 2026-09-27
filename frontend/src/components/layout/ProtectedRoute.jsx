@@ -12,13 +12,23 @@ export default function ProtectedRoute({ children }) {
   if (loading) {
     return (
       <div className="notfound">
-        <p style={{ color: 'var(--grey-500)' }}>Checking your sign-in…</p>
+        <p style={{ color: 'var(--grey-500)' }}>
+          Checking your sign-in…
+        </p>
       </div>
     );
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname + location.search,
+        }}
+      />
+    );
   }
 
   return children;

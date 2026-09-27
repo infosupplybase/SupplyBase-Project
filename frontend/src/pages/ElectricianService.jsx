@@ -9,6 +9,8 @@ import { contact } from '../data/siteConfig';
 import { electricianServiceIntros, ELECTRICIAN_STAGES } from '../data/electricianServices';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import { useLocationContext } from '../context/LocationContext';
+import GoogleLocationPicker from '../components/layout/GoogleLocationPicker';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -60,6 +62,9 @@ export default function ElectricianService({
   const { subSlug: routeSubSlug } = useParams();
   const subSlug = propSubSlug || routeSubSlug;
   const { user } = useAuth();
+  const { locationData } = useLocationContext();
+
+const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const intro = electricianServiceIntros[subSlug];
 
   // This form's step and answers live in the browser's history (see
@@ -83,6 +88,36 @@ export default function ElectricianService({
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [uploadState, setUploadState] = useState({}); // key -> 'uploading' | 'done' | 'error'
   const submittedRef = useRef(false);
+
+
+  useEffect(() => {
+  const buildingName = details.buildingName || '';
+  const roomNo = details.roomNo || '';
+  const floor = details.floor || '';
+  const locationAddress = locationData?.address || '';
+
+  const addressParts = [
+    buildingName.trim(),
+    roomNo.trim() ? `Room ${roomNo.trim()}` : '',
+    floor.trim() ? `Floor ${floor.trim()}` : '',
+    locationAddress,
+  ].filter(Boolean);
+
+  const finalAddress = addressParts.join(', ');
+
+  if (finalAddress !== details.address) {
+    setDetails((current) => ({
+      ...current,
+      address: finalAddress,
+    }));
+  }
+}, [
+  details.buildingName,
+  details.roomNo,
+  details.floor,
+  locationData?.address,
+]);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -229,7 +264,13 @@ export default function ElectricianService({
     if (details.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())) {
       next.email = 'That email address does not look right';
     }
-    if (!details.address.trim()) next.address = 'Please enter your address';
+if (!details.buildingName?.trim()) {
+  next.address = 'Please enter the building name';
+}
+
+if (!locationData?.address) {
+  next.address = 'Please select your project location';
+}
     if (!details.city.trim()) next.city = 'Please enter your city';
     if (details.pincode.trim() && !/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
       next.pincode = 'Enter a 6-digit pincode';
@@ -562,13 +603,102 @@ export default function ElectricianService({
                   <Field id="ec-email" label="Email Address (Optional)" type="email" value={details.email} onChange={setDetail('email')} error={errors.email} placeholder="Enter email address" />
                 </div>
 
-                <div className="field" style={{ marginTop: 16 }}>
-                  <label htmlFor="ec-address">
-                    Full Address <span className="req">*</span>
-                  </label>
-                  <textarea id="ec-address" rows={3} value={details.address} onChange={setDetail('address')} placeholder="Enter complete address" />
-                  {errors.address && <span className="field-error">{errors.address}</span>}
-                </div>
+                <div
+  className="field booking-address-field"
+  style={{ marginTop: 16 }}
+>
+  <div className="booking-address-label-row">
+    <label>
+      Project Address <span className="req">*</span>
+    </label>
+
+    <button
+      type="button"
+      className="booking-use-location"
+      onClick={() => setLocationPickerOpen(true)}
+    >
+      <Icon name="map-pin" size={14} />
+
+      {locationData?.address
+        ? 'Change location'
+        : 'Use current location'}
+    </button>
+  </div>
+
+  {locationData?.address && (
+    <div className="booking-selected-location">
+      <Icon name="map-pin" size={15} />
+
+      <div>
+        <span className="booking-location-label">
+          Selected location
+        </span>
+
+        <span className="booking-location-address">
+          {locationData.address}
+        </span>
+      </div>
+    </div>
+  )}
+
+  <div className="booking-address-inputs">
+    <div className="booking-building-field">
+      <label htmlFor="ec-building">
+        Building Name <span className="req">*</span>
+      </label>
+
+      <input
+        id="ec-building"
+        type="text"
+        value={details.buildingName || ''}
+        onChange={setDetail('buildingName')}
+        placeholder="Enter building name"
+      />
+    </div>
+
+    <div className="booking-small-fields">
+      <div>
+        <label htmlFor="ec-room">
+          Room No.
+        </label>
+
+        <input
+          id="ec-room"
+          type="text"
+          value={details.roomNo || ''}
+          onChange={setDetail('roomNo')}
+          placeholder="Room no."
+        />
+      </div>
+
+      <div>
+        <label htmlFor="ec-floor">
+          Floor
+        </label>
+
+        <input
+          id="ec-floor"
+          type="text"
+          value={details.floor || ''}
+          onChange={setDetail('floor')}
+          placeholder="Floor"
+        />
+      </div>
+    </div>
+  </div>
+
+  {errors.address && (
+    <span className="field-error">
+      {errors.address}
+    </span>
+  )}
+</div>
+
+<GoogleLocationPicker
+  open={locationPickerOpen}
+  onClose={() => setLocationPickerOpen(false)}
+  onSelect={() => setLocationPickerOpen(false)}
+/>
 
                 <div className="form-grid" style={{ marginTop: 16 }}>
                   <Field id="ec-city" label="City" required value={details.city} onChange={setDetail('city')} error={errors.city} placeholder="Mumbai" />
