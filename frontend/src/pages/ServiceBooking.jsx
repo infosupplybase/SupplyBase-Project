@@ -40,6 +40,30 @@ const CONFIRM = 4;
 // const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
+// POP's catalogue also holds the questions of its two detailed journeys
+// (Full Home POP, Room POP). Its design style and add-on questions are kept
+// here for their pictures; these repeat what this form already asks —
+// property (home type), rooms (room type), a second design style and two
+// more notes boxes — so they are left out.
+const REPEATED_QUESTIONS = {
+  'pop-ceiling-design': [
+    'pop_home_type',
+    'pop_room_type',
+    'pop_room_design_style',
+    'pop_room_notes',
+    'pop_design_notes',
+  ],
+};
+
+/** Whether this general form asks a catalogue question. */
+const isAskedHere = (q, slug) =>
+  Boolean(q) &&
+  q.inputType !== 'FILE' &&
+  !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+    String(q.key || '').startsWith(prefix)
+  ) &&
+  !(REPEATED_QUESTIONS[slug] || []).includes(q.key);
+
 const emptyDetails = {
   name: '',
   phone: '',
@@ -254,14 +278,7 @@ const stageQuestions = useMemo(() => {
   }
 
   const usable = form.questions
-    .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-          String(q.key || '').startsWith(prefix)
-        )
-    )
+    .filter((q) => isAskedHere(q, slug))
     // The catalogue can hold the same question twice (Waterproofing asks
     // "Tell us anything else about your work." at step 3 and again at step 6,
     // both answering the one `notes` key). Two questions with the same key
@@ -290,12 +307,18 @@ const stageQuestions = useMemo(() => {
       q.key !== 'property_type'
   );
 
+  // "Tell us anything else" reads best as the last question of the step.
+  const notesLast = [
+    ...detailsQuestions.filter((q) => q.key !== 'notes'),
+    ...detailsQuestions.filter((q) => q.key === 'notes'),
+  ];
+
   return [
     service,
     property,
-    detailsQuestions,
+    notesLast,
   ];
-}, [form]);
+}, [form, slug]);
   /**
    * Set answer.
    *
@@ -1176,17 +1199,7 @@ function Summary({
    * Filter out FILE questions and dedicated-flow questions.
    */
   const rows = form.questions
-    .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some(
-          (prefix) =>
-            String(q.key || '').startsWith(
-              prefix
-            )
-        )
-    )
+    .filter((q) => isAskedHere(q, category.slug))
     .map((q, questionIndex) => {
       const value = answers[q.key];
 
