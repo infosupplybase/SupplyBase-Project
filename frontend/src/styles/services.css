@@ -168,7 +168,7 @@
   background: var(--gold-a40);
 }
 
-/* On the dark "how it works" band an outer drop-shadow would vanish into
+/* On the dark "s" band an outer drop-shadow would vanish into
    the background, so the raised feel comes entirely from inset light —
    a highlight along the top-left rim, a shadow along the bottom-right. */
 .how-icon {
