@@ -539,3 +539,25 @@
     height: 16px;
   }
 }
+
+/* Less empty space under a banner on phones: the section right after it
+   started with the full section padding (56px+), then more gaps above the
+   account tabs and the heading below them. */
+@media (max-width: 720px) {
+  :is(.page-hero, .pnt-hero, .plb-hero) + section {
+    padding-top: 18px !important;
+  }
+
+  .acct-tabs {
+    margin-bottom: 14px;
+  }
+
+  .acct-tabs + * > .rule,
+  .acct-tabs + .rule {
+    margin-bottom: 10px;
+  }
+
+  .acct-tabs + * > h2 {
+    margin-bottom: 14px !important;
+  }
+}
