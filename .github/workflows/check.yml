@@ -1,0 +1,40 @@
+# Runs on every push to any branch, and on pull requests: fails (red cross
+# on GitHub) when a branch has unfinished merge-conflict markers or when one
+# of the three websites no longer builds — so a broken branch is spotted
+# before anyone pulls or merges it.
+name: Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  conflict-markers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No merge-conflict markers
+        run: |
+          if git grep -nE '^(<<<<<<< |>>>>>>> |=======$)' -- . ':(exclude)*.md'; then
+            echo "::error::Unfinished merge: the lines above still have conflict markers."
+            exit 1
+          fi
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [frontend, admin, partners]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      - run: npm run build
