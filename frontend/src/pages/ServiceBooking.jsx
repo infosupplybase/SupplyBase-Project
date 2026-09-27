@@ -41,10 +41,10 @@ const CONFIRM = 4;
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
 // POP's catalogue also holds the questions of its two detailed journeys
-// (Full Home POP, Room POP). Its design style and add-on questions are kept
-// here for their pictures; these repeat what this form already asks —
-// property (home type), rooms (room type), a second design style and two
-// more notes boxes — so they are left out.
+// (Full Home POP, Room POP). Its design style question is kept here for its
+// pictures; these are left out — they repeat what this form already asks
+// (home type, room type, a second design style, two more notes boxes), and
+// the additional options are not offered when booking.
 const REPEATED_QUESTIONS = {
   'pop-ceiling-design': [
     'pop_home_type',
@@ -52,7 +52,37 @@ const REPEATED_QUESTIONS = {
     'pop_room_design_style',
     'pop_room_notes',
     'pop_design_notes',
+    'pop_addon',
   ],
+};
+
+// Services not offered for now. They stay in the catalogue and are only
+// hidden from the "What service do you need?" choices — delete a line here
+// to offer that service again.
+const HIDDEN_SERVICES = {
+  waterproofing: [
+    'Balcony Waterproofing',
+    'Toilet Waterproofing',
+    'Kitchen Waterproofing',
+    'Podium Waterproofing',
+    'Wall Waterproofing',
+    'Bathroom Corner & Joint Sealing',
+    'Bathroom Pipeline & Fixture Sealing',
+    'Bathroom Shower Area Waterproofing',
+    'Bathroom Tile Re-sealing',
+  ],
+};
+
+/** The question without any service that is not offered for now. */
+const withoutHiddenServices = (q, slug) => {
+  const hidden = HIDDEN_SERVICES[slug];
+  if (!hidden || q.key !== 'service_needed' || !Array.isArray(q.options)) {
+    return q;
+  }
+  return {
+    ...q,
+    options: q.options.filter((o) => !hidden.includes(o.value)),
+  };
 };
 
 /** Whether this general form asks a catalogue question. */
@@ -289,7 +319,7 @@ const stageQuestions = useMemo(() => {
         index === questions.findIndex((q) => q.key === question.key)
     )
     .map((q, index) => ({
-      ...q,
+      ...withoutHiddenServices(q, slug),
       _questionId: `${q.key}-${index}`,
     }));
 
