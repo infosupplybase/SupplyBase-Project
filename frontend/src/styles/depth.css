@@ -81,7 +81,9 @@
   .btn:hover svg,
   .svc-card:hover,
   .svc-card:hover .svc-card-media img,
-  .service-tile:hover {
+  .service-tile:hover,
+  .process-step:hover,
+  .process-step:hover .process-icon {
     transform: none;
   }
 
@@ -302,15 +304,260 @@
 
 /* ------------------------------------------- home banner (team photo) */
 
-/* On a phone the banner sits under the fixed header, and the team photo's
-   faces are near the top of the picture: start the photo below the header
-   and aim the crop at the faces, so nobody's head is hidden. */
+/* On a phone the wide team photo (1600 × 595) used to be cropped to a
+   narrow slice, cutting people off at the sides. It now fits the phone's
+   width — the whole team, edge to edge — as a strip under the fixed header,
+   fading into the banner's dark background. The text and search follow
+   below as before, starting over the strip's faded lower edge (below the
+   faces) so the banner stays close to its old height. */
 @media (max-width: 768px) {
+  .home-hero {
+    align-items: flex-start;
+    padding-top: calc(var(--header-h) + 37.2vw - 56px);
+    padding-bottom: 20px;
+  }
+
   .home-hero-media {
     top: var(--header-h);
+    bottom: auto;
+    height: 37.2vw; /* 595 / 1600 of the width: the whole photo */
   }
 
   .home-hero-media img {
-    object-position: 58% 18%;
+    object-position: center;
+  }
+
+  /* The pill repeats the headline; without it the banner keeps its old
+     height with the photo added. */
+  .home-hero-eyebrow {
+    display: none;
+  }
+
+  .home-hero-gradient {
+    background: linear-gradient(
+      to bottom,
+      rgba(12, 14, 20, 0) 30%,
+      rgba(12, 14, 20, 0.7) 62%,
+      #0c0e14 100%
+    );
+  }
+}
+
+/* ------------------------------------------ Continue always within reach */
+
+/* Choosing an option should leave Continue right there, not somewhere below
+   a long list. On the booking pages each step's action bar sticks to the
+   bottom of the window: a solid strip with a divider line, so the buttons
+   never sit on top of a photo or an option. */
+
+/* Wide screens, on the page. */
+@media (min-width: 768px) {
+  .wizard-foot:not(.modal-sticky-foot),
+  .pnt-step-actions:not(.modal-sticky-foot) {
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    padding: 14px 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
+  }
+}
+
+/* Phones, on the page: .wizard-foot is already a fixed bar above the bottom
+   navigation (wizard.css / bottom-nav.css); the painting-style action row
+   gets the same reach, sitting just above that navigation. */
+@media (max-width: 767px) {
+  .pnt-step-actions:not(.modal-sticky-foot) {
+    position: sticky;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    z-index: 6;
+    padding: 12px 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
+  }
+}
+
+/* Inside the booking pop-up the bar is drawn in the pop-up's own footer
+   (.bm-foot, see ModalFoot.jsx): a fixed strip under the scrolling area,
+   like the header above it. The options scroll above it and never pass
+   under the buttons. */
+.bm-foot {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  padding: 14px 24px 18px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
+}
+
+/* Steps without buttons (catalogues, galleries) leave it empty. */
+.bm-foot:empty {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .bm-foot {
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* The bar itself is a plain row inside the footer. These bars carry
+   Tailwind !-utilities and page rules (a fixed bar on phones), hence the
+   doubled class and !important. */
+.bm-foot .modal-sticky-foot.modal-sticky-foot {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ------------------------------------------------- shorter page banners */
+
+/* The photo banner at the top of the inner pages (Services, About, Contact,
+   Profile, the service pages…) and its glass details card took up most of a
+   phone's screen before any content. Every banner is shorter now, with a
+   tighter card; the photo and wording stay the same. */
+
+/* Wide screens: at least 400px, taller only when a card needs it (About's
+   longer text), so a card never slides up behind the header. The card sits
+   at the bottom, lined up with the page content. */
+@media (min-width: 721px) {
+  .page-hero {
+    display: flex;
+    align-items: flex-end;
+    height: auto;
+    min-height: 400px;
+    padding: calc(var(--header-h) + 24px) 0 32px;
+  }
+
+  .page-hero > .container {
+    width: 100%;
+  }
+
+  .page-hero-inner {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: min(780px, 100%);
+    padding: 22px 26px;
+  }
+
+  .page-hero h1 {
+    margin-bottom: 0.6rem;
+  }
+}
+
+/* Phones: the banner is as tall as its card, not a fixed 440px. */
+@media (max-width: 720px) {
+  .page-hero {
+    height: auto;
+    min-height: 0;
+    padding: calc(var(--header-h) + 26px) 0 22px;
+  }
+
+  .page-hero-inner {
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .page-hero .breadcrumbs {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .page-hero .eyebrow {
+    margin-bottom: 2px;
+  }
+
+  .page-hero h1 {
+    font-size: 25px;
+    margin-bottom: 6px;
+  }
+
+  .page-hero p {
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+}
+
+/* Painting / POP and Plumbing banners. */
+.pnt-hero,
+.plb-hero {
+  min-height: 330px;
+}
+
+.pnt-hero-inner,
+.plb-hero-inner {
+  padding-bottom: var(--space-5);
+}
+
+@media (max-width: 767px) {
+  .pnt-hero,
+  .plb-hero {
+    min-height: 240px;
+  }
+
+  .pnt-hero .pnt-hero-inner,
+  .plb-hero .plb-hero-inner {
+    padding-top: calc(var(--header-h-mobile) + 20px);
+    padding-bottom: var(--space-4);
+    gap: 6px;
+  }
+
+  .pnt-hero-inner > p,
+  .plb-hero-inner > p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  /* Trust points two to a row instead of one per line. */
+  .pnt-hero-trust,
+  .plb-hero-trust {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin-top: 8px;
+  }
+
+  .pnt-hero-trust li,
+  .plb-hero-trust li {
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .pnt-hero-trust svg,
+  .plb-hero-trust svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Less empty space under a banner on phones: the section right after it
+   started with the full section padding (56px+), then more gaps above the
+   account tabs and the heading below them. */
+@media (max-width: 720px) {
+  :is(.page-hero, .pnt-hero, .plb-hero) + section {
+    padding-top: 18px !important;
+  }
+
+  .acct-tabs {
+    margin-bottom: 14px;
+  }
+
+  .acct-tabs + * > .rule,
+  .acct-tabs + .rule {
+    margin-bottom: 10px;
+  }
+
+  .acct-tabs + * > h2 {
+    margin-bottom: 14px !important;
   }
 }

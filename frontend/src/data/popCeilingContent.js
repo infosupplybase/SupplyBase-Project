@@ -171,7 +171,6 @@ export const popFlows = {
     steps: [
       { id: 'home_type', type: 'option', questionKey: 'pop_home_type', title: 'Select Your Home Type', icon: 'building' },
       { id: 'design_style', type: 'style', questionKey: 'pop_home_design_style', title: 'Choose Design Style', icon: 'layers' },
-      { id: 'addons', type: 'addon', questionKey: 'pop_addon', title: 'Additional Options (Optional)' },
       { id: 'summary', type: 'summary', title: 'Your Selection' },
     ],
   },
@@ -194,7 +193,6 @@ export const popFlows = {
     steps: [
       { id: 'room_type', type: 'option', questionKey: 'pop_room_type', title: 'Which Room Do You Need POP For?', icon: 'home-check', notesFor: 'other-room', notesLabel: 'Describe the room', notesPlaceholder: 'e.g. Pooja room, guest room, home office…' },
       { id: 'design_style', type: 'style', questionKey: 'pop_room_design_style', title: 'Choose Design Style', icon: 'layers', notesFor: 'custom-design', notesLabel: 'Your design brief (optional)', notesPlaceholder: 'Describe what you have in mind — style, colours, references you can share on your visit…' },
-      { id: 'addons', type: 'addon', questionKey: 'pop_addon', title: 'Add-On Services (Optional)' },
       { id: 'summary', type: 'summary', title: 'Your Selection' },
     ],
   },

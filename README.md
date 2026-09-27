@@ -33,6 +33,22 @@ cd admin && npm install && npm run dev      # http://localhost:3001
 
 `frontend` and `admin` each read their own `.env` — copy `.env.example` to `.env` in each folder first. Neither app can do anything useful without the backend running.
 
+### Pulling `main` into your branch (team)
+
+`npm install` in `frontend/`, `admin/` or `partners/` also switches on this repo's git hooks (`.githooks/`): a commit or push that still contains merge-conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) is stopped, with the lines listed. GitHub also checks every pushed branch (the **Check** workflow) — a red cross means the branch has conflict markers or no longer builds.
+
+```bash
+git add -A && git commit -m "My work"   # 1. save your own changes first
+git pull origin main                    # 2. bring in the latest main
+# 3. if git says CONFLICT: open each listed file, keep the right code,
+#    delete the <<<<<<< ======= >>>>>>> lines, then:
+git add -A && git commit
+cd frontend && npm install && npm run build   # 4. make sure it still builds
+git push                                      # 5. only then push
+```
+
+Never commit a file that still has those marker lines — everyone who pulls it gets a broken file.
+
 ## 2. Deploy it
 
 For the production setup, follow [`DEPLOYMENT.md`](DEPLOYMENT.md). It covers deploying `frontend/`, `admin/` and `partners/` as three separate static-site projects on Vercel, and `backend/` (with its MySQL database) self-hosted on a Hostinger VPS, including every environment variable each needs.

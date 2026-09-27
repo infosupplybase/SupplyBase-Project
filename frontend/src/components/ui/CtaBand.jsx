@@ -16,7 +16,7 @@ export default function CtaBand({
       <div className="container">
         <div className="cta-inner">
           <div>
-            <span className="eyebrow">ONE PARTNER. COMPLETE PROJECT.</span>
+            <span className="eyebrow">LET'S GET STARTED</span>
             <h2>{title}</h2>
             <p>{text}</p>
           </div>
