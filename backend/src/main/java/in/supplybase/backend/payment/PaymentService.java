@@ -34,15 +34,17 @@ public class PaymentService {
     private final UserRepository users;
     private final ProjectRepository projects;
     private final RazorpayService razorpay;
+    private final InvoiceService invoices;
 
     public PaymentService(PaymentRepository payments, PaymentEventRepository events,
                           UserRepository users, ProjectRepository projects,
-                          RazorpayService razorpay) {
+                          RazorpayService razorpay, InvoiceService invoices) {
         this.payments = payments;
         this.events = events;
         this.users = users;
         this.projects = projects;
         this.razorpay = razorpay;
+        this.invoices = invoices;
     }
 
     /* ------------------------------------------------------------ reads */
@@ -158,6 +160,55 @@ public class PaymentService {
 
         markPaid(payment, request.razorpayPaymentId(), request.razorpaySignature());
         return PaymentResponse.from(payments.save(payment));
+    }
+
+    /* ----------------------------------------------------------- refund */
+
+    /**
+     * Asks Razorpay to refund a payment. This only reads Payment to
+     * validate, then delegates to Razorpay — no DB write here. The actual
+     * PAID -> REFUNDED transition happens exclusively through the
+     * refund.processed/refund.created webhook (see applyEvent), so this
+     * method never touches payment.status itself.
+     */
+    @Transactional(readOnly = true)
+    public String initiateRefund(Long paymentId, Long amountPaise, AuthenticatedUser caller) {
+        Payment payment = payments.findById(paymentId)
+                .orElseThrow(() -> ApiException.notFound("That payment"));
+
+        if (payment.getStatus() != PaymentStatus.PAID) {
+            throw ApiException.badRequest("Only a paid payment can be refunded.");
+        }
+        if (payment.getRazorpayPaymentId() == null) {
+            throw ApiException.badRequest("This payment has no recorded Razorpay payment id to refund.");
+        }
+        if (amountPaise != null && amountPaise > payment.getAmountPaise()) {
+            throw ApiException.badRequest("The refund amount cannot exceed the original payment.");
+        }
+
+        return razorpay.refund(payment.getRazorpayPaymentId(), amountPaise);
+    }
+
+    /* ---------------------------------------------------------- invoice */
+
+    /**
+     * Looks up a payment, enforces ownership the same way startCheckout
+     * does, and renders its PDF invoice. Only a settled payment gets one —
+     * an invoice for money never paid doesn't mean anything.
+     */
+    @Transactional(readOnly = true)
+    public InvoiceFile getInvoicePdf(Long paymentId, AuthenticatedUser caller) {
+        Payment payment = payments.findById(paymentId)
+                .orElseThrow(() -> ApiException.notFound("That payment"));
+
+        if (!caller.isStaff() && !payment.getUser().getId().equals(caller.id())) {
+            throw ApiException.notFound("That payment");
+        }
+        if (!payment.isSettled()) {
+            throw ApiException.badRequest("An invoice is only available once a payment has been paid.");
+        }
+
+        return new InvoiceFile(payment.getReference(), invoices.generate(payment));
     }
 
     /* ---------------------------------------------------------- webhook */

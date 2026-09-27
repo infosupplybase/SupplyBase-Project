@@ -46,4 +46,22 @@ public class BookingAnswer {
 
     @Column(name = "answer_label", length = 300)
     private String answerLabel;
+
+    /**
+     * Cart line-item fields — populated only for a 'cart_item' /
+     * 'consultation_type' answer whose matched {@link in.supplybase.backend.catalogue.ServiceOption}
+     * carries a price. `unitPricePaise` and `lineTotalPaise` are copied from
+     * the catalogue at booking time (never trusted from the request), the
+     * same way `questionText` already is — see BookingService.storeAnswers.
+     * NULL for a plain form answer with no price.
+     */
+    @Column(nullable = false)
+    @Builder.Default
+    private int quantity = 1;
+
+    @Column(name = "unit_price_paise")
+    private Long unitPricePaise;
+
+    @Column(name = "line_total_paise")
+    private Long lineTotalPaise;
 }

@@ -3,6 +3,7 @@ package in.supplybase.backend.appointment;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,8 +15,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import in.supplybase.backend.appointment.dto.BlackoutResponse;
+import in.supplybase.backend.appointment.dto.CreateBlackoutRequest;
+import in.supplybase.backend.appointment.dto.CreateSlotRuleRequest;
 import in.supplybase.backend.appointment.dto.DayAvailabilityResponse;
 import in.supplybase.backend.appointment.dto.SlotResponse;
+import in.supplybase.backend.appointment.dto.SlotRuleResponse;
+import in.supplybase.backend.appointment.dto.UpdateSlotRuleRequest;
 import in.supplybase.backend.common.ApiException;
 
 /**
@@ -32,6 +38,17 @@ public class AppointmentService {
 
     /** How far ahead the calendar opens. */
     public static final int BOOKABLE_DAYS = 30;
+
+    /**
+     * A customer may also ask for their own date and time instead of one of
+     * the listed slots: any day up to this far ahead...
+     */
+    public static final int CUSTOM_BOOKABLE_DAYS = 90;
+
+    /** ...at a start time on a quarter hour, inside that day's working hours. */
+    public static final int CUSTOM_STEP_MINUTES = 15;
+
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("Asia/Kolkata");
 
     /**
      * A visit needs arranging, so today is never offered and tomorrow only
@@ -53,7 +70,7 @@ public class AppointmentService {
 
     @Transactional(readOnly = true)
     public List<DayAvailabilityResponse> availability(Long categoryId, LocalDate from, int days) {
-        LocalDate start = from == null ? LocalDate.now() : from;
+        LocalDate start = from == null ? LocalDate.now(BUSINESS_ZONE) : from;
         int span = Math.min(Math.max(days, 1), BOOKABLE_DAYS);
 
         List<DayAvailabilityResponse> out = new ArrayList<>(span);
@@ -87,7 +104,7 @@ public class AppointmentService {
             }
         }
 
-        LocalDateTime earliest = LocalDateTime.now().plusHours(MIN_NOTICE_HOURS);
+        LocalDateTime earliest = earliestBookable();
         List<SlotResponse> result = new ArrayList<>();
 
         for (AppointmentSlotRule rule : dayRules) {
@@ -125,7 +142,7 @@ public class AppointmentService {
         DayAvailabilityResponse day = forDay(categoryId, date);
         boolean offered = day.slots().stream()
                 .anyMatch(s -> s.time().equals(time) && s.available());
-        if (!offered) {
+        if (!offered && !isCustomTimeAllowed(categoryId, date, time)) {
             throw ApiException.conflict(
                     "This time slot is no longer available. Please select another time.");
         }
@@ -156,6 +173,122 @@ public class AppointmentService {
         }
         slot.setBookedCount(slot.getBookedCount() - 1);
         slots.save(slot);
+    }
+
+    /* ----------------------------------------------------------- staff */
+
+    @Transactional(readOnly = true)
+    public List<SlotRuleResponse> listRules() {
+        return rules.findAll().stream().map(SlotRuleResponse::from).toList();
+    }
+
+    @Transactional
+    public SlotRuleResponse createRule(CreateSlotRuleRequest request) {
+        if (!request.endTime().isAfter(request.startTime())) {
+            throw ApiException.badRequest("The end time must be after the start time.");
+        }
+        AppointmentSlotRule rule = AppointmentSlotRule.builder()
+                .categoryId(request.categoryId())
+                .dayOfWeek(request.dayOfWeek())
+                .startTime(request.startTime())
+                .endTime(request.endTime())
+                .slotMinutes(request.slotMinutes())
+                .maxBookings(request.maxBookings())
+                .active(true)
+                .build();
+        return SlotRuleResponse.from(rules.save(rule));
+    }
+
+    @Transactional
+    public SlotRuleResponse updateRule(Long id, UpdateSlotRuleRequest request) {
+        if (!request.endTime().isAfter(request.startTime())) {
+            throw ApiException.badRequest("The end time must be after the start time.");
+        }
+        AppointmentSlotRule rule = rules.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That rule"));
+        rule.setCategoryId(request.categoryId());
+        rule.setDayOfWeek(request.dayOfWeek());
+        rule.setStartTime(request.startTime());
+        rule.setEndTime(request.endTime());
+        rule.setSlotMinutes(request.slotMinutes());
+        rule.setMaxBookings(request.maxBookings());
+        return SlotRuleResponse.from(rules.save(rule));
+    }
+
+    /**
+     * Soft delete: a rule isn't referenced by FK from anything, but flipping
+     * active off rather than removing the row keeps it reversible, matching
+     * how the rest of this system treats deletes on rows others may depend on.
+     */
+    @Transactional
+    public void deleteRule(Long id) {
+        AppointmentSlotRule rule = rules.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That rule"));
+        rule.setActive(false);
+        rules.save(rule);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BlackoutResponse> listBlackouts() {
+        return blackouts.findAll().stream().map(BlackoutResponse::from).toList();
+    }
+
+    @Transactional
+    public BlackoutResponse createBlackout(CreateBlackoutRequest request) {
+        if (blackouts.existsByDay(request.day())) {
+            throw ApiException.conflict("That day already has a blackout.");
+        }
+        AppointmentBlackout blackout = AppointmentBlackout.builder()
+                .day(request.day())
+                .reason(request.reason())
+                .build();
+        return BlackoutResponse.from(blackouts.save(blackout));
+    }
+
+    /** Hard delete: a blackout is just "is the office open", nothing references it historically. */
+    @Transactional
+    public void deleteBlackout(Long id) {
+        if (!blackouts.existsById(id)) {
+            throw ApiException.notFound("That blackout");
+        }
+        blackouts.deleteById(id);
+    }
+
+    /**
+     * A time the customer chose themselves rather than from the list: allowed
+     * when the office is open that day, the visit starts on a quarter hour and
+     * fits inside a working-hours rule (start at or after the opening time,
+     * finish by the closing time), it is far enough ahead to arrange, and it
+     * is no more than {@link #CUSTOM_BOOKABLE_DAYS} away. Whether there is
+     * still room at that exact time is checked by {@link #reserve} as usual.
+     */
+    public boolean isCustomTimeAllowed(Long categoryId, LocalDate date, LocalTime time) {
+        if (date == null || time == null) {
+            return false;
+        }
+        if (time.getSecond() != 0 || time.getNano() != 0 || time.getMinute() % CUSTOM_STEP_MINUTES != 0) {
+            return false;
+        }
+        if (date.isAfter(LocalDate.now(BUSINESS_ZONE).plusDays(CUSTOM_BOOKABLE_DAYS))) {
+            return false;
+        }
+        if (!LocalDateTime.of(date, time).isAfter(earliestBookable())) {
+            return false;
+        }
+        if (blackouts.existsByDay(date)) {
+            return false;
+        }
+        return rules.findByDayOfWeekAndActiveTrue(date.getDayOfWeek().getValue()).stream()
+                .filter(rule -> rule.getCategoryId() == null || rule.getCategoryId().equals(categoryId))
+                .anyMatch(rule -> !time.isBefore(rule.getStartTime())
+                        && !time.plusMinutes(rule.getSlotMinutes()).isAfter(rule.getEndTime())
+                        // a visit cannot run past midnight
+                        && time.plusMinutes(rule.getSlotMinutes()).isAfter(time));
+    }
+
+    /** The first moment a visit can be booked for: now in India, plus the notice period. */
+    private LocalDateTime earliestBookable() {
+        return LocalDateTime.now(BUSINESS_ZONE).plusHours(MIN_NOTICE_HOURS);
     }
 
     private int capacityFor(Long categoryId, LocalDate date) {

@@ -33,6 +33,16 @@ public class ServiceCategory {
     @Column(nullable = false, unique = true, length = 60)
     private String slug;
 
+    /**
+     * NULL for one of the seven main categories. Set to another category's
+     * slug for a sub-service that has its own detailed booking flow (today,
+     * the seven electrician journeys, parented under "electrical") — it
+     * stays fully bookable at its own slug but is left out of the main
+     * catalogue listing.
+     */
+    @Column(name = "parent_slug", length = 60)
+    private String parentSlug;
+
     @Column(nullable = false, length = 80)
     private String name;
 
@@ -48,10 +58,23 @@ public class ServiceCategory {
     @Column(name = "hero_image", length = 300)
     private String heroImage;
 
-    /** Paise, so it matches Razorpay and the payments table. 2500 = ₹25. */
+    /** Paise, so it matches Razorpay and the payments table. 9900 = ₹99. */
     @Column(name = "visit_fee_paise", nullable = false)
     @Builder.Default
-    private long visitFeePaise = 2500L;
+    private long visitFeePaise = 9900L;
+
+    /**
+     * The rough, disclosed-as-an-estimate job cost range shown on the booking
+     * summary — base labour + materials before any add-on is chosen. Null for
+     * categories that don't quote one (a site-visit-first service like the
+     * original four), which is every category this column did not exist for
+     * until it was added.
+     */
+    @Column(name = "estimate_min_paise")
+    private Long estimateMinPaise;
+
+    @Column(name = "estimate_max_paise")
+    private Long estimateMaxPaise;
 
     @Column(name = "sort_order", nullable = false)
     @Builder.Default

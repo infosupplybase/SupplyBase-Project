@@ -1,0 +1,601 @@
+/* =========================================================================
+   SUPPLYBASE PROJECTS — HEADER
+   Dark bar, logo left, nav right, phone and login on the far right.
+   ========================================================================= */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-header);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow var(--t) var(--ease), background var(--t) var(--ease);
+}
+
+/* Solid, not translucent. A blurred header over a photographic hero turns
+   the logo into mush at exactly the moment it matters most. */
+.header.scrolled {
+  box-shadow: var(--shadow);
+}
+
+.header-inner {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* min-height so the logo is a full-size tap target even though the image
+   itself is shorter than 44px. */
+.brand {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap-min);
+  flex-shrink: 0;
+}
+
+.brand img {
+  width: auto;
+  /* The new mark is a compact badge (~1.3:1), not the old wide wordmark
+     banner (~6.3:1) — taller here reads far more clearly without the
+     header actually needing more width, since the badge's natural width
+     at any given height is a fraction of what the old logo needed. */
+  height: clamp(40px, 11vw, 56px);
+  /* 160px normally, but never wider than the flexed .brand actually has —
+     a fixed cap alone overflowed past the location/bell/burger cluster on
+     narrow phones (below ~360px) since .brand shrinks with the viewport
+     while a flat max-width does not. */
+  max-width: min(160px, 100%);
+}
+
+/* ------------------------------------------------------------------ nav */
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--tap-min);
+  padding: 0 14px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  /* --gold-deep, not --gold: --gold is only 2:1 contrast on white, fine as
+     a fill but unreadable as 15px type — see variables.css. */
+  color: var(--gold-deep);
+}
+
+/* The underline grows from the left rather than fading in — it reads as the
+   indicator moving to the new page, not two indicators briefly existing. */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 8px;
+  height: 2px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--t) var(--ease);
+}
+
+.nav-link.active::after,
+.nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+.nav-caret {
+  transition: transform var(--t) var(--ease);
+}
+
+.has-mega:hover .nav-caret,
+.nav-link.open .nav-caret {
+  transform: rotate(180deg);
+}
+
+/* -------------------------------------------------------------- actions */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.header-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--tap-min);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease);
+}
+
+.header-phone svg {
+  color: var(--gold-deep);
+  flex-shrink: 0;
+}
+
+.header-phone:hover {
+  color: var(--gold-deep);
+}
+
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--gold-deep);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--t) var(--ease), color var(--t) var(--ease), box-shadow var(--t) var(--ease);
+}
+
+.login-btn:hover {
+  background: var(--gold);
+  color: var(--on-gold);
+  box-shadow: var(--shadow-gold);
+}
+
+/* ------------------------------------------------- location + notifications */
+
+.location-select,
+.notif-bell {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.location-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--tap-min);
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  max-width: 150px;
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.location-btn:hover {
+  color: var(--gold-deep);
+  background: var(--light-bg);
+}
+
+.location-btn svg:first-child {
+  color: var(--gold-deep);
+  flex-shrink: 0;
+}
+
+.location-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-menu,
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: var(--z-drawer);
+  background: var(--dark);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.location-menu {
+  min-width: 200px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 6px;
+  list-style: none;
+}
+
+.location-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--on-dark-muted);
+  font-size: 14px;
+  text-align: left;
+}
+
+.location-menu button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+}
+
+.location-menu button.active {
+  color: var(--gold);
+}
+
+.location-menu button svg {
+  color: var(--gold);
+}
+
+.notif-bell-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.notif-bell-btn:hover {
+  color: var(--gold-deep);
+  background: var(--light-bg);
+}
+
+.notif-panel {
+  width: min(280px, 80vw);
+  padding: var(--space-4);
+}
+
+.notif-panel h4 {
+  color: var(--white);
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+
+.notif-panel p {
+  color: var(--on-dark-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .location-btn span {
+    max-width: 74px;
+  }
+}
+
+/* Below 400px the logo (a wide wordmark) and the location/bell/burger
+   cluster cannot both fit with a text label — the pin stays tappable
+   (it opens the same dropdown, which still names every city), the label
+   drops. */
+@media (max-width: 400px) {
+  .location-btn {
+    padding: 0 6px;
+  }
+  .location-btn span {
+    display: none;
+  }
+  .brand img {
+    height: clamp(32px, 9vw, 40px);
+    max-width: 118px;
+  }
+  .header-actions {
+    gap: 2px;
+  }
+}
+
+.burger {
+  display: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.burger:hover {
+  border-color: var(--gold);
+  color: var(--gold-deep);
+}
+
+/* ----------------------------------------------------------- mega menu */
+
+.has-mega {
+  position: static;
+}
+
+.mega {
+  position: absolute;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  background: var(--dark);
+  border-top: 2px solid var(--gold);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity var(--t) var(--ease), transform var(--t) var(--ease), visibility var(--t);
+}
+
+.mega.open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+
+.mega-inner {
+  display: grid;
+  /* Four groups have anything in them now (DESIGN, FINISHING, MEP,
+     SPECIALIZED — the last holding only the single "Other Services"
+     catch-all tile) — plus the fixed-width CTA column. */
+  grid-template-columns: repeat(4, 1fr) 260px;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--gutter);
+  max-width: var(--container);
+  margin: 0 auto;
+}
+
+.mega-group-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mega-item {
+  display: block;
+  padding: 9px 0;
+  font-size: 15px;
+  color: rgba(245, 245, 245, 0.75);
+  transition: color var(--t-fast) var(--ease), padding-left var(--t-fast) var(--ease);
+}
+
+.mega-item:hover {
+  color: var(--gold);
+  padding-left: 6px;
+}
+
+.mega-cta {
+  background: linear-gradient(160deg, var(--gold-a24), var(--gold-a08));
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.mega-cta h4 {
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 19px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.mega-cta p {
+  color: var(--on-dark-muted);
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+/* --------------------------------------------------------- mobile menu */
+
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  display: none;
+}
+
+.mobile-menu.open {
+  display: block;
+}
+
+.mobile-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  animation: sbFade var(--t) var(--ease);
+}
+
+.mobile-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(380px, 88vw);
+  background: var(--dark);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  overflow-y: auto;
+  animation: sbSlideIn var(--t-slow) var(--ease);
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes sbFade {
+  from { opacity: 0; }
+}
+
+@keyframes sbSlideIn {
+  from { transform: translateX(100%); }
+}
+
+.mobile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-head img {
+  height: 36px;
+  width: auto;
+}
+
+.mobile-close {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+}
+
+.mobile-nav {
+  padding: var(--space-3) var(--space-5) var(--space-6);
+  flex: 1;
+}
+
+.mobile-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-light);
+  text-align: left;
+}
+
+.mobile-link.active {
+  color: var(--gold);
+}
+
+.mobile-sub {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height var(--t-slow) var(--ease);
+}
+
+.mobile-sub.open {
+  max-height: 700px;
+}
+
+.mobile-sub a {
+  display: block;
+  min-height: var(--tap-min);
+  padding: 12px 0 12px 14px;
+  font-size: 15px;
+  color: rgba(245, 245, 245, 0.62);
+  border-left: 2px solid var(--gold-a40);
+  margin-left: 2px;
+}
+
+.mobile-sub a:hover,
+.mobile-sub a.active {
+  color: var(--gold);
+}
+
+.mobile-foot {
+  padding: var(--space-5);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.mobile-foot .contact-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--tap-min);
+  font-size: 15px;
+  color: var(--on-dark-muted);
+}
+
+.mobile-foot .contact-line svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------- responsive */
+
+/* 1024px, per the brief: below this the nav is hidden and the burger appears. */
+@media (max-width: 1024px) {
+  :root {
+    --header-h: var(--header-h-mobile);
+  }
+
+  .header-inner {
+    gap: 12px;
+  }
+
+  .nav,
+  .mega,
+  .login-btn {
+    display: none;
+  }
+
+  .brand {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .brand img {
+    width: auto;
+    height: clamp(36px, 10vw, 46px);
+    max-width: min(160px, 100%);
+  }
+
+  .header-actions {
+    margin-left: auto;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .burger {
+    display: flex;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+}
