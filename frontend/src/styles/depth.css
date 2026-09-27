@@ -358,10 +358,22 @@
   right: auto !important;
   z-index: 6 !important;
   margin-top: 16px !important;
-  padding: 16px 0 4px !important;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 18px) !important;
+  margin-bottom: 0 !important;
+  padding: 14px 0 18px !important;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 16px) !important;
   border: 0 !important;
-  /* The pop-up's scroll area has bottom padding; paint it white under the
-     bar so the next row of options does not peek out beneath the buttons. */
-  box-shadow: 0 48px 0 0 #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* A sticky bar stops at its scroll area's padding, so any bottom padding
+   left the buttons floating above the pop-up's edge with the options showing
+   underneath. With a bar on screen the bar itself is the bottom spacing. */
+.bm-scroll:has(.modal-sticky-foot) {
+  padding-bottom: 0;
+}
+
+/* The same for the card around the bar, so it still meets the edge at the
+   end of a long step. */
+.bm-scroll :has(> .modal-sticky-foot:last-child) {
+  padding-bottom: 0 !important;
 }
