@@ -360,9 +360,46 @@
   margin-top: 16px !important;
   margin-bottom: 0 !important;
   padding: 14px 0 18px !important;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 16px) !important;
+  background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
+}
+
+/* Frosted glass behind the buttons: the options scrolling underneath stay
+   visible, softly blurred, instead of a solid white strip. It is drawn wider
+   than the bar so it reaches both sides of the pop-up (which clips it). */
+.modal-sticky-foot.modal-sticky-foot::before {
+  content: '';
+  position: absolute;
+  inset: 0 -48px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.28),
+    rgba(255, 255, 255, 0.5)
+  );
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(14px) saturate(170%);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 -10px 28px rgba(15, 23, 42, 0.08);
+}
+
+/* Back: a glass button to match. */
+.modal-sticky-foot .btn:not(.btn-primary) {
+  background: rgba(255, 255, 255, 0.55) !important;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow:
+    0 6px 18px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.modal-sticky-foot .btn:not(.btn-primary):hover {
+  background: rgba(255, 255, 255, 0.75) !important;
 }
 
 /* A sticky bar stops at its scroll area's padding, so any bottom padding
