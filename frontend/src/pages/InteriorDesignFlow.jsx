@@ -397,7 +397,7 @@ export default function InteriorDesignFlow({
               <div
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 !bg-transparent !p-0 !shadow-none md:!flex md:!justify-between md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !mt-4 !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 md:!flex md:!justify-between md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -477,7 +477,7 @@ export default function InteriorDesignFlow({
               <div
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 !bg-transparent !p-0 !shadow-none md:!flex md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !mt-4 !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 md:!flex md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -585,7 +585,7 @@ export default function InteriorDesignFlow({
             <div
   className={
     modal
-      ? 'pnt-step-actions !flex !w-full !items-center !justify-between !gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !flex !w-full !items-center !justify-between !gap-3'
       : 'pnt-step-actions'
   }
 >
@@ -887,7 +887,7 @@ export default function InteriorDesignFlow({
           <div
   className={
     modal
-      ? 'pnt-step-actions !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
       : 'pnt-step-actions'
   }
 >

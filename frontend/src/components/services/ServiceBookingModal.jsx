@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
 import Icon from '../ui/Icon';
@@ -106,14 +106,18 @@ export default function ServiceBookingModal({ service, onClose }) {
 
   const modalScrollRef = useRef(null);
 
-  const scrollModalToTop = () => {
+  // One stable function: the forms scroll the pop-up to the top when their
+  // step changes, and a new function on every render (every tap saves the
+  // answer to history, which re-renders the pop-up) would look like a step
+  // change and throw the customer back to the top after each choice.
+  const scrollModalToTop = useCallback(() => {
     requestAnimationFrame(() => {
       modalScrollRef.current?.scrollTo({
         top: 0,
         behavior: 'auto',
       });
     });
-  };
+  }, []);
 
   return (
     <div

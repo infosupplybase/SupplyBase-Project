@@ -421,7 +421,7 @@ if (modal) {
               <div
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -483,7 +483,7 @@ if (modal) {
               <div
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -622,7 +622,7 @@ if (modal) {
           <div
   className={
     modal
-      ? 'pnt-step-actions !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
       : 'pnt-step-actions'
   }
 >

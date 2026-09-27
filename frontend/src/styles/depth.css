@@ -316,3 +316,52 @@
     object-position: 58% 18%;
   }
 }
+
+/* ------------------------------------------ Continue always within reach */
+
+/* Choosing an option should leave Continue right there, not somewhere below
+   a long list. Each step's action bar sticks to the bottom of the view while
+   the step is on screen. */
+
+/* Wide screens, on the page: stick to the bottom of the window. */
+@media (min-width: 768px) {
+  .wizard-foot:not(.modal-sticky-foot),
+  .pnt-step-actions:not(.modal-sticky-foot) {
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    padding: 16px 0 14px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 18px);
+  }
+}
+
+/* Phones, on the page: .wizard-foot is already a fixed bar above the bottom
+   navigation (wizard.css / bottom-nav.css); the painting-style action row
+   gets the same reach, sitting just above that navigation. */
+@media (max-width: 767px) {
+  .pnt-step-actions:not(.modal-sticky-foot) {
+    position: sticky;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    z-index: 6;
+    padding: 12px 0 10px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 16px);
+  }
+}
+
+/* Inside the booking pop-up: stick to the bottom of the pop-up's scrolling
+   area (these bars carry Tailwind !-utilities, hence the doubled class and
+   !important). */
+.modal-sticky-foot.modal-sticky-foot {
+  position: sticky !important;
+  bottom: 0 !important;
+  left: auto !important;
+  right: auto !important;
+  z-index: 6 !important;
+  margin-top: 16px !important;
+  padding: 16px 0 4px !important;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 18px) !important;
+  border: 0 !important;
+  /* The pop-up's scroll area has bottom padding; paint it white under the
+     bar so the next row of options does not peek out beneath the buttons. */
+  box-shadow: 0 48px 0 0 #ffffff !important;
+}

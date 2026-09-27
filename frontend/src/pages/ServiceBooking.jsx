@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
@@ -100,11 +100,15 @@ export default function ServiceBooking({
   /**
    * Notify parent modal about current step.
    */
+  // Kept in a ref: a new callback from the parent is not a step change.
+  const onStepChangeRef = useRef(onStepChange);
+  onStepChangeRef.current = onStepChange;
+
   useEffect(() => {
-    if (modal && onStepChange) {
-      onStepChange(stage, receipt);
+    if (modal && onStepChangeRef.current) {
+      onStepChangeRef.current(stage, receipt);
     }
-  }, [stage, receipt, modal, onStepChange]);
+  }, [stage, receipt, modal]);
 
   /**
    * Load service form.
@@ -1019,7 +1023,7 @@ const stageQuestions = useMemo(() => {
             <div
               className={
                 modal
-                  ? 'wizard-foot !static !inset-auto !z-auto !mt-5 !mb-0 !flex !w-full !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+                  ? 'wizard-foot modal-sticky-foot !mt-5 !mb-0 !flex !w-full !gap-3 !border-0'
                   : 'wizard-foot'
               }
             >

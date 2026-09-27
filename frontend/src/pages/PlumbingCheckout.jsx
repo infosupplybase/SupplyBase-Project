@@ -259,7 +259,7 @@ export default function PlumbingCheckout({
             <div
               className={
                 modal
-  ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-2 !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+  ? 'wizard-foot modal-sticky-foot !mt-4 !mb-0 !grid !w-full !grid-cols-2 !gap-3 !border-0'
                   : `wizard-foot ${stage === 0 ? 'single' : ''}`
               }
             >

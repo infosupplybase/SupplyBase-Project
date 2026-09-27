@@ -307,7 +307,7 @@ if (receipt) {
             <div
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !flex !w-full !items-center !justify-end !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+      ? 'wizard-foot modal-sticky-foot !mt-4 !mb-0 !flex !w-full !items-center !justify-end !gap-3 !border-0'
       : `wizard-foot ${stage === 0 ? 'single' : ''}`
   }
 >
