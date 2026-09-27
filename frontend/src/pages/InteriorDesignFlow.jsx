@@ -16,6 +16,7 @@ import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * /services/interior-design/:categorySlug/:projectSlug — one page, every
@@ -394,10 +395,10 @@ export default function InteriorDesignFlow({
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot modal-sticky-foot !mt-4 !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 md:!flex md:!justify-between md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 md:!flex md:!justify-between md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -424,7 +425,7 @@ export default function InteriorDesignFlow({
                   CONTINUE
                   <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -474,10 +475,10 @@ export default function InteriorDesignFlow({
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot modal-sticky-foot !mt-4 !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 md:!flex md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 md:!flex md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -503,7 +504,7 @@ export default function InteriorDesignFlow({
 >
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -582,7 +583,7 @@ export default function InteriorDesignFlow({
               </p>
             )}
 
-            <div
+            <ModalFoot
   className={
     modal
       ? 'pnt-step-actions modal-sticky-foot !flex !w-full !items-center !justify-between !gap-3'
@@ -616,7 +617,7 @@ export default function InteriorDesignFlow({
 >
                 Continue <Icon name="arrow-right" size={17} />
               </button>
-            </div>
+            </ModalFoot>
           </div>
         </section>
 
@@ -722,12 +723,12 @@ export default function InteriorDesignFlow({
               </div>
             )}
 
-            <div className="pnt-step-actions">
+            <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot' : 'pnt-step-actions'}>
               <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
               <button type="button" className="btn btn-primary" onClick={() => jumpToStage(CUSTOMISE)}>
                 Continue <Icon name="arrow-right" size={17} />
               </button>
-            </div>
+            </ModalFoot>
             <Link to="/quote?service=interior-design" className="pnt-compare-link" style={{ marginTop: 12 }}>
               <Icon name="chat" size={16} /> Get Detailed Quotation <Icon name="chevron-right" size={15} />
             </Link>
@@ -884,7 +885,7 @@ export default function InteriorDesignFlow({
             </a>
           </div>
 
-          <div
+          <ModalFoot
   className={
     modal
       ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
@@ -913,7 +914,7 @@ export default function InteriorDesignFlow({
             >
               Book Now ₹99 <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
 
