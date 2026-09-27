@@ -418,3 +418,146 @@
   border: 0 !important;
   box-shadow: none !important;
 }
+
+/* ------------------------------------------------- shorter page banners */
+
+/* The photo banner at the top of the inner pages (Services, About, Contact,
+   Profile, the service pages…) and its glass details card took up most of a
+   phone's screen before any content. Every banner is shorter now, with a
+   tighter card; the photo and wording stay the same. */
+
+/* Wide screens: at least 400px, taller only when a card needs it (About's
+   longer text), so a card never slides up behind the header. The card sits
+   at the bottom, lined up with the page content. */
+@media (min-width: 721px) {
+  .page-hero {
+    display: flex;
+    align-items: flex-end;
+    height: auto;
+    min-height: 400px;
+    padding: calc(var(--header-h) + 24px) 0 32px;
+  }
+
+  .page-hero > .container {
+    width: 100%;
+  }
+
+  .page-hero-inner {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: min(780px, 100%);
+    padding: 22px 26px;
+  }
+
+  .page-hero h1 {
+    margin-bottom: 0.6rem;
+  }
+}
+
+/* Phones: the banner is as tall as its card, not a fixed 440px. */
+@media (max-width: 720px) {
+  .page-hero {
+    height: auto;
+    min-height: 0;
+    padding: calc(var(--header-h) + 26px) 0 22px;
+  }
+
+  .page-hero-inner {
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .page-hero .breadcrumbs {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .page-hero .eyebrow {
+    margin-bottom: 2px;
+  }
+
+  .page-hero h1 {
+    font-size: 25px;
+    margin-bottom: 6px;
+  }
+
+  .page-hero p {
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+}
+
+/* Painting / POP and Plumbing banners. */
+.pnt-hero,
+.plb-hero {
+  min-height: 330px;
+}
+
+.pnt-hero-inner,
+.plb-hero-inner {
+  padding-bottom: var(--space-5);
+}
+
+@media (max-width: 767px) {
+  .pnt-hero,
+  .plb-hero {
+    min-height: 240px;
+  }
+
+  .pnt-hero .pnt-hero-inner,
+  .plb-hero .plb-hero-inner {
+    padding-top: calc(var(--header-h-mobile) + 20px);
+    padding-bottom: var(--space-4);
+    gap: 6px;
+  }
+
+  .pnt-hero-inner > p,
+  .plb-hero-inner > p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  /* Trust points two to a row instead of one per line. */
+  .pnt-hero-trust,
+  .plb-hero-trust {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin-top: 8px;
+  }
+
+  .pnt-hero-trust li,
+  .plb-hero-trust li {
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .pnt-hero-trust svg,
+  .plb-hero-trust svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Less empty space under a banner on phones: the section right after it
+   started with the full section padding (56px+), then more gaps above the
+   account tabs and the heading below them. */
+@media (max-width: 720px) {
+  :is(.page-hero, .pnt-hero, .plb-hero) + section {
+    padding-top: 18px !important;
+  }
+
+  .acct-tabs {
+    margin-bottom: 14px;
+  }
+
+  .acct-tabs + * > .rule,
+  .acct-tabs + .rule {
+    margin-bottom: 10px;
+  }
+
+  .acct-tabs + * > h2 {
+    margin-bottom: 14px !important;
+  }
+}
