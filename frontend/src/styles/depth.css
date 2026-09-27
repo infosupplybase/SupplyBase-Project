@@ -81,7 +81,9 @@
   .btn:hover svg,
   .svc-card:hover,
   .svc-card:hover .svc-card-media img,
-  .service-tile:hover {
+  .service-tile:hover,
+  .process-step:hover,
+  .process-step:hover .process-icon {
     transform: none;
   }
 

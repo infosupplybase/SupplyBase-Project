@@ -407,10 +407,9 @@ const stageQuestions = useMemo(() => {
       nextErrors.city = 'Please enter your city';
     }
 
-    if (
-      details.pincode.trim() &&
-      !/^[1-9][0-9]{5}$/.test(details.pincode.trim())
-    ) {
+    if (!details.pincode.trim()) {
+      nextErrors.pincode = 'Please enter your pincode';
+    } else if (!/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
       nextErrors.pincode = 'Enter a 6-digit pincode';
     }
 
@@ -974,6 +973,7 @@ const stageQuestions = useMemo(() => {
                   <Field
                     id="bk-pincode"
                     label="Pincode"
+                    required
                     value={details.pincode}
                     onChange={setDetail('pincode')}
                     error={errors.pincode}
