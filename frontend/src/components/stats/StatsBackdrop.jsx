@@ -13,15 +13,14 @@
  */
 export default function StatsBackdrop() {
   return (
-    <img loading="lazy" decoding="async"
+    <img
+      loading="lazy"
+      decoding="async"
       className="wss-backdrop"
       src="/assets/stats/construction-backdrop.webp"
       alt=""
       aria-hidden="true"
-      /* lowercase: React 18 does not know the camelCase `fetchPriority` prop
-         and silently drops it. */
       fetchpriority="low"
-      decoding="async"
       draggable="false"
     />
   );
