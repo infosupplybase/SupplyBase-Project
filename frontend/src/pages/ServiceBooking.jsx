@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 
 
@@ -1020,10 +1021,10 @@ const stageQuestions = useMemo(() => {
                 Footer
             -------------------------------------------- */}
 
-            <div
+            <ModalFoot
               className={
                 modal
-                  ? 'wizard-foot modal-sticky-foot !mt-5 !mb-0 !flex !w-full !gap-3 !border-0'
+                  ? 'wizard-foot modal-sticky-foot !flex !w-full !gap-3 !border-0'
                   : 'wizard-foot'
               }
             >
@@ -1105,7 +1106,7 @@ const stageQuestions = useMemo(() => {
                   </button>
                 )
               )}
-            </div>
+            </ModalFoot>
           </div>
         </form>
       </div>

@@ -320,18 +320,21 @@
 /* ------------------------------------------ Continue always within reach */
 
 /* Choosing an option should leave Continue right there, not somewhere below
-   a long list. Each step's action bar sticks to the bottom of the view while
-   the step is on screen. */
+   a long list. On the booking pages each step's action bar sticks to the
+   bottom of the window: a solid strip with a divider line, so the buttons
+   never sit on top of a photo or an option. */
 
-/* Wide screens, on the page: stick to the bottom of the window. */
+/* Wide screens, on the page. */
 @media (min-width: 768px) {
   .wizard-foot:not(.modal-sticky-foot),
   .pnt-step-actions:not(.modal-sticky-foot) {
     position: sticky;
     bottom: 0;
     z-index: 6;
-    padding: 16px 0 14px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 18px);
+    padding: 14px 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
   }
 }
 
@@ -343,74 +346,49 @@
     position: sticky;
     bottom: calc(60px + env(safe-area-inset-bottom, 0px));
     z-index: 6;
-    padding: 12px 0 10px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff 16px);
+    padding: 12px 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
   }
 }
 
-/* Inside the booking pop-up: stick to the bottom of the pop-up's scrolling
-   area (these bars carry Tailwind !-utilities, hence the doubled class and
-   !important). */
-.modal-sticky-foot.modal-sticky-foot {
-  position: sticky !important;
-  bottom: 0 !important;
-  left: auto !important;
-  right: auto !important;
-  z-index: 6 !important;
-  margin-top: 16px !important;
-  margin-bottom: 0 !important;
-  padding: 14px 0 18px !important;
-  background: transparent !important;
+/* Inside the booking pop-up the bar is drawn in the pop-up's own footer
+   (.bm-foot, see ModalFoot.jsx): a fixed strip under the scrolling area,
+   like the header above it. The options scroll above it and never pass
+   under the buttons. */
+.bm-foot {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  padding: 14px 24px 18px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
+}
+
+/* Steps without buttons (catalogues, galleries) leave it empty. */
+.bm-foot:empty {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .bm-foot {
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* The bar itself is a plain row inside the footer. These bars carry
+   Tailwind !-utilities and page rules (a fixed bar on phones), hence the
+   doubled class and !important. */
+.bm-foot .modal-sticky-foot.modal-sticky-foot {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
   border: 0 !important;
   box-shadow: none !important;
-}
-
-/* Frosted glass behind the buttons: the options scrolling underneath stay
-   visible, softly blurred, instead of a solid white strip. It is drawn wider
-   than the bar so it reaches both sides of the pop-up (which clips it). */
-.modal-sticky-foot.modal-sticky-foot::before {
-  content: '';
-  position: absolute;
-  inset: 0 -48px;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.28),
-    rgba(255, 255, 255, 0.5)
-  );
-  -webkit-backdrop-filter: blur(14px) saturate(170%);
-  backdrop-filter: blur(14px) saturate(170%);
-  border-top: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    0 -10px 28px rgba(15, 23, 42, 0.08);
-}
-
-/* Back: a glass button to match. */
-.modal-sticky-foot .btn:not(.btn-primary) {
-  background: rgba(255, 255, 255, 0.55) !important;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.85) !important;
-  box-shadow:
-    0 6px 18px rgba(15, 23, 42, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
-}
-
-.modal-sticky-foot .btn:not(.btn-primary):hover {
-  background: rgba(255, 255, 255, 0.75) !important;
-}
-
-/* A sticky bar stops at its scroll area's padding, so any bottom padding
-   left the buttons floating above the pop-up's edge with the options showing
-   underneath. With a bar on screen the bar itself is the bottom spacing. */
-.bm-scroll:has(.modal-sticky-foot) {
-  padding-bottom: 0;
-}
-
-/* The same for the card around the bar, so it still meets the edge at the
-   end of a long step. */
-.bm-scroll :has(> .modal-sticky-foot:last-child) {
-  padding-bottom: 0 !important;
 }
