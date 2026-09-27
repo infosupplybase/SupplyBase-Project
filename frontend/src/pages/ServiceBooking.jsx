@@ -17,6 +17,8 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import { useLocationContext } from '../context/LocationContext';
+import GoogleLocationPicker, { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
 
 
 
@@ -100,9 +102,16 @@ const emptyDetails = {
   whatsapp: '',
   email: '',
   address: '',
+  buildingName: '',
+  roomNo: '',
+  floorNo: '',
   city: '',
   pincode: '',
 };
+
+// A form restored from history (see useHistoryState) may predate the
+// building / room / floor fields.
+const text = (v) => String(v || '').trim();
 
 const isValidPhone = (v) =>
   /^[6-9]\d{9}$/.test(
@@ -123,6 +132,16 @@ export default function ServiceBooking({
   const slug = serviceSlug || routeSlug;
 
   const { user } = useAuth();
+
+  // With a Google Maps key the customer can pin the visit location on a map
+  // (or use their current location). Only a real pin counts — the header's
+  // plain city name is not an address.
+  const { locationData, setLocation } = useLocationContext();
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const pickedLocation =
+    hasGoogleMaps && locationData?.latitude != null && locationData?.longitude != null
+      ? locationData
+      : null;
 
   const [searchParams] = useSearchParams();
 
@@ -457,8 +476,14 @@ const stageQuestions = useMemo(() => {
         'That email address does not look right';
     }
 
-    if (!details.address.trim()) {
-      nextErrors.address = 'Please enter your address';
+    if (pickedLocation) {
+      if (!text(details.buildingName)) {
+        nextErrors.buildingName = 'Please enter the building name';
+      }
+    } else if (!text(details.address)) {
+      nextErrors.address = hasGoogleMaps
+        ? 'Select your location on the map, or type your address'
+        : 'Please enter your address';
     }
 
     if (!details.city.trim()) {
@@ -610,7 +635,16 @@ const stageQuestions = useMemo(() => {
 
         email: details.email || null,
 
-        address: details.address,
+        // Building / room / floor, the pinned location, then anything typed.
+        address: [
+          text(details.buildingName),
+          text(details.roomNo) ? `Room ${text(details.roomNo)}` : '',
+          text(details.floorNo) ? `Floor ${text(details.floorNo)}` : '',
+          pickedLocation?.address || '',
+          text(details.address),
+        ]
+          .filter(Boolean)
+          .join(', '),
 
         city: details.city,
 
@@ -984,6 +1018,107 @@ const stageQuestions = useMemo(() => {
                   />
                 </div>
 
+                {hasGoogleMaps && (
+                  <div
+                    className="field booking-address-field"
+                    style={{
+                      marginTop: 16,
+                    }}
+                  >
+                    <div className="booking-address-label-row">
+                      <label>
+                        Project Location <span className="req">*</span>
+                      </label>
+
+                      <button
+                        type="button"
+                        className="booking-use-location"
+                        onClick={() => setLocationPickerOpen(true)}
+                      >
+                        <Icon name="map-pin" size={14} />
+                        {pickedLocation ? 'Change location' : 'Use current location'}
+                      </button>
+                    </div>
+
+                    {pickedLocation ? (
+                      <div className="booking-selected-location">
+                        <Icon name="map-pin" size={15} />
+
+                        <div className="booking-location-text">
+                          <span className="booking-location-label">
+                            Selected location
+                          </span>
+
+                          <span className="booking-location-address">
+                            {pickedLocation.address}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="booking-location-empty"
+                        onClick={() => setLocationPickerOpen(true)}
+                      >
+                        <Icon name="map-pin" size={15} />
+                        Select your location on the map
+                      </button>
+                    )}
+
+                    {pickedLocation && (
+                      <div className="booking-address-inputs">
+                        <div className="field booking-building-field">
+                          <label htmlFor="bk-building">
+                            Building Name <span className="req">*</span>
+                          </label>
+
+                          <input
+                            id="bk-building"
+                            type="text"
+                            value={details.buildingName || ''}
+                            onChange={setDetail('buildingName')}
+                            placeholder="Enter building name"
+                          />
+
+                          {errors.buildingName && (
+                            <span className="field-error">
+                              {errors.buildingName}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="booking-small-fields">
+                          <div className="field">
+                            <label htmlFor="bk-room">Room No.</label>
+
+                            <input
+                              id="bk-room"
+                              type="text"
+                              value={details.roomNo || ''}
+                              onChange={setDetail('roomNo')}
+                              placeholder="Room no."
+                            />
+                          </div>
+
+                          <div className="field">
+                            <label htmlFor="bk-floor">Floor</label>
+
+                            <input
+                              id="bk-floor"
+                              type="text"
+                              value={details.floorNo || ''}
+                              onChange={setDetail('floorNo')}
+                              placeholder="Floor"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* The typed address: required without a map pin, optional
+                    extra detail (landmark, directions) with one. */}
                 <div
                   className="field"
                   style={{
@@ -991,10 +1126,13 @@ const stageQuestions = useMemo(() => {
                   }}
                 >
                   <label htmlFor="bk-address">
-                    Project Address{' '}
-                    <span className="req">
-                      *
-                    </span>
+                    {pickedLocation ? 'Address details (optional)' : 'Project Address'}
+                    {!pickedLocation && (
+                      <>
+                        {' '}
+                        <span className="req">*</span>
+                      </>
+                    )}
                   </label>
 
                   <textarea
@@ -1002,7 +1140,13 @@ const stageQuestions = useMemo(() => {
                     rows={3}
                     value={details.address}
                     onChange={setDetail('address')}
-                    placeholder="Enter complete address"
+                    placeholder={
+                      pickedLocation
+                        ? 'Landmark or directions for our team'
+                        : hasGoogleMaps
+                          ? 'Or type your complete address'
+                          : 'Enter complete address'
+                    }
                   />
 
                   {errors.address && (
@@ -1162,6 +1306,23 @@ const stageQuestions = useMemo(() => {
             </ModalFoot>
           </div>
         </form>
+
+        {hasGoogleMaps && (
+          <GoogleLocationPicker
+            open={locationPickerOpen}
+            onClose={() => setLocationPickerOpen(false)}
+            onSelect={(selectedLocation) => {
+              setLocation(selectedLocation);
+
+              setErrors((currentErrors) => ({
+                ...currentErrors,
+                address: undefined,
+              }));
+
+              setLocationPickerOpen(false);
+            }}
+          />
+        )}
       </div>
     </div>
   );

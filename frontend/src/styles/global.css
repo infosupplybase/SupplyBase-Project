@@ -355,3 +355,888 @@ button,
 label {
   overflow-wrap: anywhere;
 }
+/* =========================================
+   LOCATION SELECTOR
+========================================= */
+/* =========================================================
+   LOCATION SELECTOR - NAVBAR
+   ========================================================= */
+
+.location-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.location-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  height: 38px;
+
+  padding: 0 8px;
+
+  border: none;
+  background: transparent;
+
+  color: inherit;
+
+  cursor: pointer;
+}
+
+.location-btn:hover {
+  opacity: 0.85;
+}
+
+.location-btn-text {
+  max-width: 150px;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   GOOGLE LOCATION OVERLAY
+   ========================================================= */
+
+.google-location-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: rgba(0, 0, 0, 0.58);
+
+  backdrop-filter: blur(3px);
+}
+
+
+/* =========================================================
+   SMALL LOCATION MODAL
+   ========================================================= */
+
+.google-location-modal {
+  width: min(620px, 94vw);
+
+  max-height: 90vh;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.google-location-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  padding: 20px 22px 12px;
+
+  gap: 15px;
+}
+
+.google-location-brand {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #e89b00;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+}
+
+.google-location-header h2 {
+  margin: 0;
+
+  color: #1e1e1e;
+
+  font-size: 24px;
+  line-height: 1.1;
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+
+  letter-spacing: -0.5px;
+}
+
+.google-location-header p {
+  margin: 7px 0 0;
+
+  color: #777777;
+
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.google-location-close {
+  width: 36px;
+  height: 36px;
+
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #e5e5e5;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  color: #444444;
+
+  cursor: pointer;
+}
+
+.google-location-close:hover {
+  background: #f5f5f5;
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+.google-location-search {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: calc(100% - 44px);
+
+  min-height: 48px;
+
+  margin: 0 22px 10px;
+
+  padding: 0 12px;
+
+  border: 1px solid #dddddd;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-sizing: border-box;
+}
+
+.google-location-search > svg {
+  flex: 0 0 auto;
+
+  margin-right: 8px;
+
+  color: #666666;
+}
+
+.google-location-autocomplete {
+  flex: 1;
+
+  width: 100%;
+  min-width: 0;
+}
+
+
+/* =========================================================
+   GOOGLE PLACE AUTOCOMPLETE
+   ========================================================= */
+
+.google-location-autocomplete
+gmp-place-autocomplete {
+  display: block;
+
+  width: 100%;
+
+  color: #222222;
+}
+
+/*
+ * Important:
+ * Keep Google's autocomplete white instead
+ * of the black appearance in your screenshot.
+ */
+
+.google-location-autocomplete
+gmp-place-autocomplete {
+  --gmpx-color-surface: #ffffff;
+  --gmpx-color-on-surface: #222222;
+  --gmpx-color-on-surface-variant: #666666;
+  --gmpx-color-primary: #e49a00;
+}
+
+
+/* =========================================================
+   CURRENT LOCATION
+   ========================================================= */
+
+.google-current-location {
+  align-self: flex-start;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin: 0 22px 12px;
+
+  padding: 10px 14px;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background: #fff4df;
+
+  color: #d88900;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.google-current-location:hover:not(:disabled) {
+  background: #ffebc5;
+}
+
+.google-current-location:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   MAP
+   ========================================================= */
+
+.google-location-map-wrapper {
+  position: relative;
+
+  width: calc(100% - 44px);
+
+  height: 300px;
+
+  margin: 0 22px;
+
+  overflow: hidden;
+
+  border-radius: 12px;
+
+  background: #eeeeee;
+}
+
+.google-location-map {
+  width: 100%;
+  height: 100%;
+}
+
+.google-location-map-loading {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 255, 255, 0.75);
+
+  color: #555555;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.google-location-error {
+  width: calc(100% - 44px);
+
+  margin: 9px 22px 0;
+
+  padding: 9px 11px;
+
+  border-radius: 8px;
+
+  background: #fff0f0;
+
+  color: #d93025;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   SELECTED LOCATION
+   ========================================================= */
+
+.google-selected-location {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  width: calc(100% - 44px);
+
+  margin: 9px 22px 0;
+
+  padding: 10px 12px;
+
+  border: 1px solid #eeeeee;
+
+  border-radius: 9px;
+
+  background: #fafafa;
+
+  box-sizing: border-box;
+}
+
+.google-selected-icon {
+  width: 30px;
+  height: 30px;
+
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #fff2d7;
+
+  color: #df9000;
+}
+
+.google-selected-location strong {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: #333333;
+
+  font-size: 12px;
+}
+
+.google-selected-location p {
+  margin: 0;
+
+  color: #666666;
+
+  font-size: 12px;
+
+  line-height: 1.35;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.google-location-footer {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  padding: 12px 22px 18px;
+}
+
+.google-location-cancel,
+.google-location-confirm {
+  height: 42px;
+
+  padding: 0 18px;
+
+  border-radius: 9px;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.google-location-cancel {
+  border: 1px solid #dddddd;
+
+  background: #ffffff;
+
+  color: #555555;
+}
+
+.google-location-cancel:hover {
+  background: #f7f7f7;
+}
+
+.google-location-confirm {
+  border: 1px solid #efbd62;
+
+  background: #f4c66e;
+
+  color: #ffffff;
+}
+
+.google-location-confirm:hover:not(:disabled) {
+  background: #eeb657;
+}
+
+.google-location-confirm:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   AUTOCOMPLETE SUGGESTION DROPDOWN
+   ========================================================= */
+
+.pac-container {
+  z-index: 100000 !important;
+
+  border-radius: 0 0 10px 10px;
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.12);
+
+  font-family: inherit;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .google-location-overlay {
+    align-items: center;
+
+    padding: 12px;
+  }
+
+  .google-location-modal {
+    width: 100%;
+
+    max-height: 92vh;
+
+    border-radius: 14px;
+  }
+
+  .google-location-header {
+    padding: 17px 16px 10px;
+  }
+
+  .google-location-header h2 {
+    font-size: 21px;
+  }
+
+  .google-location-header p {
+    font-size: 12px;
+  }
+
+  .google-location-search {
+    width: calc(100% - 32px);
+
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .google-current-location {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .google-location-map-wrapper {
+    width: calc(100% - 32px);
+
+    height: 250px;
+
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .google-location-error,
+  .google-selected-location {
+    width: calc(100% - 32px);
+
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .google-location-footer {
+    padding: 10px 16px 15px;
+  }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .google-location-modal {
+    max-height: 94vh;
+  }
+
+  .google-location-header h2 {
+    font-size: 19px;
+  }
+
+  .google-location-map-wrapper {
+    height: 220px;
+  }
+
+  .google-location-footer {
+    gap: 6px;
+  }
+
+  .google-location-cancel,
+  .google-location-confirm {
+    height: 40px;
+
+    padding: 0 12px;
+
+    font-size: 11px;
+  }
+}
+
+.google-location-autocomplete-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.google-location-autocomplete {
+  width: 100%;
+  min-width: 0;
+}
+
+.google-location-search-clear {
+  position: absolute;
+
+  top: 50%;
+  right: 8px;
+
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #777;
+
+  cursor: pointer;
+
+  transform: translateY(-50%);
+
+  z-index: 5;
+}
+
+.google-location-search-clear:hover {
+  background: #f1f1f1;
+  color: #222;
+}
+
+/* =========================================================
+   BOOKING ADDRESS - LOCATION + BUILDING DETAILS
+   ========================================================= */
+
+.booking-address-field {
+  width: 100%;
+}
+
+.booking-address-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.booking-address-label-row label {
+  margin: 0;
+}
+
+
+/* Location button */
+
+.booking-use-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 6px 9px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #fff4df;
+  color: #d88900;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.booking-use-location:hover {
+  background: #ffebc5;
+}
+
+
+/* Selected Google location */
+
+.booking-selected-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  margin-bottom: 12px;
+  padding: 8px 10px;
+
+  border: 1px solid #eeeeee;
+  border-radius: 7px;
+
+  background: #fafafa;
+}
+
+.booking-selected-location > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  color: #e49a00;
+}
+
+.booking-location-text {
+  min-width: 0;
+}
+
+.booking-location-label {
+  display: block;
+
+  margin-bottom: 2px;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  color: #999999;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.booking-location-address {
+  display: block;
+
+  font-size: 12px;
+  line-height: 1.4;
+
+  color: #444444;
+}
+
+
+/* No location selected */
+
+.booking-location-empty {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  width: 100%;
+
+  margin-bottom: 12px;
+  padding: 9px 10px;
+
+  border: 1px dashed #dddddd;
+  border-radius: 7px;
+
+  background: #fafafa;
+
+  color: #777777;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  text-align: left;
+}
+
+.booking-location-empty:hover {
+  border-color: #e5a11a;
+
+  color: #d88900;
+
+  background: #fffaf0;
+}
+
+
+/* Building / Room / Floor */
+
+.booking-address-inputs {
+  width: 100%;
+}
+
+.booking-building-field {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.booking-small-fields {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 12px;
+
+  width: 100%;
+}
+
+.booking-small-fields .field {
+  min-width: 0;
+}
+
+
+/* Inputs */
+
+.booking-address-inputs input {
+  width: 100%;
+
+  height: 48px;
+
+  box-sizing: border-box;
+
+  padding: 0 14px;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #333333;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+.booking-address-inputs input::placeholder {
+  color: #999999;
+}
+
+.booking-address-inputs input:focus {
+  border-color: #e5a11a;
+
+  box-shadow: 0 0 0 2px rgba(229, 161, 26, 0.08);
+}
+
+
+/* Labels */
+
+.booking-address-inputs label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #444444;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  text-transform: uppercase;
+}
+
+
+/* Error */
+
+.booking-address-field .field-error {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #d93025;
+
+  font-size: 11px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .booking-address-label-row {
+    align-items: flex-start;
+  }
+
+  .booking-use-location {
+    font-size: 10px;
+  }
+
+  .booking-small-fields {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .booking-address-inputs input {
+    height: 46px;
+
+    padding: 0 11px;
+
+    font-size: 13px;
+  }
+}
