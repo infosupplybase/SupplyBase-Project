@@ -304,53 +304,42 @@
 
 /* ------------------------------------------- home banner (team photo) */
 
-/* On a phone the text used to sit right across the team's faces. Now the
-   photo gets the top of the banner (below the fixed header, the whole height
-   of the picture, so no one's head is cut) and the text and search sit at
-   the bottom over a dark fade — photo first, then words, nothing on top of
-   a face. The eyebrow repeats the headline, so phones skip it. */
+/* On a phone the wide team photo (1600 × 595) used to be cropped to a
+   narrow slice, cutting people off at the sides. It now fits the phone's
+   width — the whole team, edge to edge — as a strip under the fixed header,
+   fading into the banner's dark background. The text and search follow
+   below as before, starting over the strip's faded lower edge (below the
+   faces) so the banner stays close to its old height. */
 @media (max-width: 768px) {
   .home-hero {
-    min-height: calc(var(--header-h) + 520px);
-    align-items: flex-end;
-    padding-top: var(--header-h);
-    padding-bottom: 24px;
+    align-items: flex-start;
+    padding-top: calc(var(--header-h) + 37.2vw - 56px);
+    padding-bottom: 20px;
   }
 
   .home-hero-media {
     top: var(--header-h);
+    bottom: auto;
+    height: 37.2vw; /* 595 / 1600 of the width: the whole photo */
   }
 
   .home-hero-media img {
-    object-position: 62% center;
+    object-position: center;
+  }
+
+  /* The pill repeats the headline; without it the banner keeps its old
+     height with the photo added. */
+  .home-hero-eyebrow {
+    display: none;
   }
 
   .home-hero-gradient {
     background: linear-gradient(
       to bottom,
-      rgba(6, 8, 13, 0) 0%,
-      rgba(6, 8, 13, 0) 36%,
-      rgba(6, 8, 13, 0.72) 56%,
-      rgba(6, 8, 13, 0.95) 76%,
-      #06080d 100%
+      rgba(12, 14, 20, 0) 30%,
+      rgba(12, 14, 20, 0.7) 62%,
+      #0c0e14 100%
     );
-  }
-
-  .home-hero-eyebrow {
-    display: none;
-  }
-
-  .home-hero h1 {
-    font-size: 31px;
-    line-height: 1.12;
-  }
-
-  .home-hero-copy > .home-hero-sub {
-    color: rgba(255, 255, 255, 0.86);
-  }
-
-  .home-search {
-    margin-top: 18px;
   }
 }
 
