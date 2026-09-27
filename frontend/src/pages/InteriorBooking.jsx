@@ -7,6 +7,7 @@ import api, { friendlyError } from '../lib/api';
 import { useLocationContext } from '../context/LocationContext';
 import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
 import { formatVisitDate, formatVisitTime } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 const STEPS = ['Details', 'Schedule', 'Confirm'];
 const CATEGORY_SLUG = 'interior-by-choice';
@@ -42,14 +43,18 @@ const designSlug = propDesignSlug || params.designSlug;
   const space = spaceSlug ? getSpaceBySlug(spaceSlug) : null;
   const design = spaceSlug && designSlug ? getDesignBySlug(spaceSlug, designSlug) : null;
 
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState({ name: '', phone: '', address: '', notes: '' });
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:ibc:${spaceSlug}:${designSlug}`;
+  const formBack = useFormBack();
+  const [step, setStep] = useHistoryState(`${scope}:step`, 0, { push: true });
+  const [form, setForm] = useHistoryState(`${scope}:form`, { name: '', phone: '', address: '', notes: '' });
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   useEffect(() => {
   if (modal && onStepChange) {
@@ -96,7 +101,7 @@ const designSlug = propDesignSlug || params.designSlug;
         city: location,
       });
       setReceipt(result);
-setStep(2);
+setStep(2, { push: false });
 
 if (modal) {
   onStepChange?.();

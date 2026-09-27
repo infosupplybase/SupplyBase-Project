@@ -153,7 +153,7 @@ export const popRoomTypeImages = {
     '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
 
   Other:
-    '/assets/pop-ceiling/hero/other.png',
+    '/assets/pop-ceiling/hero/other.webp',
 };
 
 

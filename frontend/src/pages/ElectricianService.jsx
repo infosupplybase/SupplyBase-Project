@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { contact } from '../data/siteConfig';
 import { electricianServiceIntros, ELECTRICIAN_STAGES } from '../data/electricianServices';
 import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -55,21 +56,25 @@ export default function ElectricianService() {
   const { user } = useAuth();
   const intro = electricianServiceIntros[subSlug];
 
-  const [started, setStarted] = useState(false);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:elec:${subSlug}`;
+  const formBack = useFormBack();
+  const [started, setStarted] = useHistoryState(`${scope}:started`, false, { push: true });
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [stage, setStage] = useState(TYPE);
-  const [answers, setAnswers] = useState({});
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, TYPE, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const [pendingFiles, setPendingFiles] = useState({});
-  const [details, setDetails] = useState(emptyDetails);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [uploadState, setUploadState] = useState({}); // key -> 'uploading' | 'done' | 'error'
   const submittedRef = useRef(false);
 
@@ -82,14 +87,11 @@ export default function ElectricianService() {
       .then((result) => {
         if (cancelled) return;
         setForm(result);
-        setStarted(false);
-        setStage(TYPE);
-        setAnswers({});
+        // Step and answers are kept per sub-service in the browser's
+        // history, so they are not reset here: a refresh restores them.
+        // Chosen photos are real files and cannot be kept across a reload.
         setPendingFiles({});
-        setDate('');
-        setTime('');
         setErrors({});
-        setReceipt(null);
         submittedRef.current = false;
       })
       .catch((err) => {
@@ -253,7 +255,7 @@ export default function ElectricianService() {
 
   const goBack = () => {
     setError('');
-    setStage((s) => Math.max(s - 1, TYPE));
+    formBack(() => setStage((s) => Math.max(s - 1, TYPE)));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -390,13 +392,30 @@ export default function ElectricianService() {
     return <ElectricianConfirmation receipt={receipt} details={details} pendingFiles={pendingFiles} uploadState={uploadState} />;
   }
 
+  // Restored mid-way by a refresh: the step is known straight away, the
+  // questions arrive a moment later.
+  if (!form) {
+    return (
+      <div className="container container-narrow" style={{ padding: '120px 0 60px' }}>
+        {loadError ? (
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{loadError}</span>
+          </div>
+        ) : (
+          <p className="question-hint">Loading your booking…</p>
+        )}
+      </div>
+    );
+  }
+
   const { category } = form;
 
   return (
     <div className="wizard-shell">
       <div className="wizard-container">
         <div className="wizard-top">
-          <button type="button" className="wizard-back" onClick={stage === TYPE ? () => setStarted(false) : goBack} aria-label="Go back">
+          <button type="button" className="wizard-back" onClick={stage === TYPE ? () => formBack(() => setStarted(false)) : goBack} aria-label="Go back">
             <Icon name="arrow-left" size={20} />
           </button>
           <h1 className="wizard-title">{category.name}</h1>

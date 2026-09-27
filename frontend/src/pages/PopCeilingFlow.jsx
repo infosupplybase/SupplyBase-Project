@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 /**
  * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
@@ -37,17 +38,21 @@ export default function PopCeilingFlow() {
   const { user } = useAuth();
   const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
 
-  const [stage, setStage] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [details, setDetails] = useState(user
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:pop:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   const configSteps = useMemo(() => flow?.steps || [], [flow]);
   const DETAILS = 1 + configSteps.length;
@@ -129,7 +134,7 @@ export default function PopCeilingFlow() {
 
   const goBack = () => {
     setSubmitError('');
-    setStage((s) => Math.max(s - 1, 0));
+    formBack(() => setStage((s) => Math.max(s - 1, 0)));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

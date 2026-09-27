@@ -32,6 +32,8 @@ import { contact } from '../data/siteConfig';
 
 import { formatVisit } from '../lib/visitTime';
 
+import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
+
 
 
 
@@ -154,21 +156,29 @@ export default function ServiceBooking({
 
 
 
-  const [stage, setStage] = useState(0);
+  // This form's step and answers live in the browser's history (see
+
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+
+  const scope = `f:svc:${slug}`;
+
+  const formBack = useFormBack();
+
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
 
 
 
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
 
 
 
-  const [details, setDetails] = useState(emptyDetails);
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
 
 
 
-  const [date, setDate] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
 
-  const [time, setTime] = useState('');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
 
 
 
@@ -182,7 +192,7 @@ export default function ServiceBooking({
 
 
 
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
 
 
@@ -276,15 +286,15 @@ export default function ServiceBooking({
 
         /*
 
-         * Switching service mid-flow must not carry answers to questions
+         * Each service keeps its own saved answers (the history-state keys
 
-         * that the new service never asked.
+         * include the slug), so switching service never carries answers
+
+         * over, and a refresh must not wipe what was restored. Only a fresh
+
+         * visit with ?preselect= starts with that option ticked.
 
          */
-
-        setStage(0);
-
-
 
         const validPreselect =
 
@@ -302,31 +312,21 @@ export default function ServiceBooking({
 
 
 
-        setAnswers(
+        if (validPreselect && !hasHistoryState(`${scope}:answers`)) {
 
-          validPreselect
+          setAnswers({
 
-            ? {
+            service_needed: [preselect],
 
-                service_needed: [preselect],
+          });
 
-              }
-
-            : {}
-
-        );
+        }
 
 
-
-        setDate('');
-
-        setTime('');
 
         setErrors({});
 
         setError('');
-
-        setReceipt(null);
 
       })
 
@@ -362,7 +362,7 @@ export default function ServiceBooking({
 
     };
 
-  }, [slug, preselect]);
+  }, [slug, preselect]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
 
@@ -955,9 +955,13 @@ const stageQuestions = useMemo(() => {
 
 
 
-    setStage((currentStage) =>
+    formBack(() =>
 
-      Math.max(currentStage - 1, 0)
+      setStage((currentStage) =>
+
+        Math.max(currentStage - 1, 0)
+
+      )
 
     );
 
