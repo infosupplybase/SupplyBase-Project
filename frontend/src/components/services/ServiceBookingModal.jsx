@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
 import Icon from '../ui/Icon';
+import { ModalFooterContext } from './ModalFoot';
 import ServiceBooking from '../../pages/ServiceBooking';
 import InteriorBooking from '../../pages/InteriorBooking';
 import {
@@ -87,14 +88,22 @@ export default function ServiceBookingModal({ service, onClose }) {
 
   const modalScrollRef = useRef(null);
 
-  const scrollModalToTop = () => {
+  // The pop-up's footer: the forms draw their Back / Continue bar here
+  // (see ModalFoot), below the scrolling area rather than over it.
+  const [footerNode, setFooterNode] = useState(null);
+
+  // One stable function: the forms scroll the pop-up to the top when their
+  // step changes, and a new function on every render (every tap saves the
+  // answer to history, which re-renders the pop-up) would look like a step
+  // change and throw the customer back to the top after each choice.
+  const scrollModalToTop = useCallback(() => {
     requestAnimationFrame(() => {
       modalScrollRef.current?.scrollTo({
         top: 0,
         behavior: 'auto',
       });
     });
-  };
+  }, []);
 
   return (
     <div
@@ -126,6 +135,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                   : 'max-w-[500px]'
           }
 
+          flex
+          flex-col
           max-h-[88vh]
           h-auto
           overflow-hidden
@@ -135,8 +146,6 @@ export default function ServiceBookingModal({ service, onClose }) {
 
           max-sm:h-[92vh]
           max-sm:max-h-[92vh]
-          max-sm:flex
-          max-sm:flex-col
           max-sm:rounded-xl
         `}
         onClick={(e) => e.stopPropagation()}
@@ -177,7 +186,8 @@ export default function ServiceBookingModal({ service, onClose }) {
         </button>
 
         {/* MODAL HEADER */}
-        <div className="px-6 pt-6 pr-16">
+
+        <div className="shrink-0 px-6 pt-6 pr-16">
           <p
             className="
               mb-1
@@ -202,22 +212,23 @@ export default function ServiceBookingModal({ service, onClose }) {
           </h2>
         </div>
 
-        <div className="my-6 h-px bg-gray-200" />
+        <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
 
         {/* MODAL SCROLL AREA */}
+
+        <ModalFooterContext.Provider value={footerNode}>
         <div
           ref={modalScrollRef}
           className="
-            max-h-[calc(88vh-190px)]
+            bm-scroll
+            min-h-0
+            flex-auto
             overflow-y-auto
 
             px-6
-            pb-10
-            md:pb-12
+            pb-6
 
             max-sm:flex-1
-            max-sm:min-h-0
-            max-sm:max-h-none
 
             [scrollbar-width:none]
             [&::-webkit-scrollbar]:hidden
@@ -707,6 +718,12 @@ export default function ServiceBookingModal({ service, onClose }) {
             />
           )}
         </div>
+        </ModalFooterContext.Provider>
+
+        {/* MODAL FOOTER — filled by the current step's Back / Continue bar,
+            hidden while a step has none */}
+
+        <div ref={setFooterNode} className="bm-foot" />
       </div>
     </div>
   );

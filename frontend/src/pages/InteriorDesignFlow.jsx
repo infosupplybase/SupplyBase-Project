@@ -16,6 +16,7 @@ import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * /services/interior-design/:categorySlug/:projectSlug — one page, every
@@ -381,7 +382,7 @@ export default function InteriorDesignFlow({
     return (
       <div className={modal ? 'wizard-shell id-modal-flow' : 'wizard-shell'}>
         <div className="wizard-container">
-          <FlowTopBar project={project} onBack={goBack} />
+          <FlowTopBar project={project} onBack={goBack} modal={modal} />
           <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) jumpToStage(SCHEDULE); }} noValidate>
             <div className="wizard-card">
               <div className="wizard-card-head">
@@ -394,10 +395,10 @@ export default function InteriorDesignFlow({
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 !bg-transparent !p-0 !shadow-none md:!flex md:!justify-between md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 md:!flex md:!justify-between md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -424,7 +425,7 @@ export default function InteriorDesignFlow({
                   CONTINUE
                   <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -449,7 +450,7 @@ export default function InteriorDesignFlow({
       : 'wizard-container'
   }
 >
-          <FlowTopBar project={project} onBack={goBack} />
+          <FlowTopBar project={project} onBack={goBack} modal={modal} />
           <form onSubmit={handleSubmit} noValidate>
             <div className="wizard-card">
               <div className="wizard-card-head">
@@ -474,10 +475,10 @@ export default function InteriorDesignFlow({
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 !bg-transparent !p-0 !shadow-none md:!flex md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 md:!flex md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -503,7 +504,7 @@ export default function InteriorDesignFlow({
 >
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -582,10 +583,10 @@ export default function InteriorDesignFlow({
               </p>
             )}
 
-            <div
+            <ModalFoot
   className={
     modal
-      ? 'pnt-step-actions !flex !w-full !items-center !justify-between !gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !flex !w-full !items-center !justify-between !gap-3'
       : 'pnt-step-actions'
   }
 >
@@ -616,7 +617,7 @@ export default function InteriorDesignFlow({
 >
                 Continue <Icon name="arrow-right" size={17} />
               </button>
-            </div>
+            </ModalFoot>
           </div>
         </section>
 
@@ -658,9 +659,15 @@ export default function InteriorDesignFlow({
             : 'pnt-flow-shell'
         }
       >
-        <div className="container container-narrow">
-          <FlowTopBar project={project} onBack={goBack} plain />
-          <div className="pnt-step-card">
+        <div className={modal ? '!w-full !max-w-none !p-0' : 'container container-narrow'}>
+          <FlowTopBar project={project} onBack={goBack} plain modal={modal} />
+          <div
+            className={
+              modal
+                ? 'pnt-step-card !w-full !max-w-none !m-0 !p-0 !bg-transparent !bg-none !border-0 !shadow-none'
+                : 'pnt-step-card'
+            }
+          >
             <img src={project.image} alt={project.name} className="id-detail-hero" />
             <h2 className="pnt-step-title" style={{ marginTop: 16 }}>{project.name}</h2>
             <p className="question-hint"><Icon name="map-pin" size={14} /> {project.location} · {idPackageTiers.find((t) => t.key === tier)?.name} package
@@ -722,12 +729,12 @@ export default function InteriorDesignFlow({
               </div>
             )}
 
-            <div className="pnt-step-actions">
+            <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot' : 'pnt-step-actions'}>
               <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
               <button type="button" className="btn btn-primary" onClick={() => jumpToStage(CUSTOMISE)}>
                 Continue <Icon name="arrow-right" size={17} />
               </button>
-            </div>
+            </ModalFoot>
             <Link to="/quote?service=interior-design" className="pnt-compare-link" style={{ marginTop: 12 }}>
               <Icon name="chat" size={16} /> Get Detailed Quotation <Icon name="chevron-right" size={15} />
             </Link>
@@ -761,12 +768,12 @@ export default function InteriorDesignFlow({
           : 'pnt-flow-shell'
       }
     >
-      <div className="container container-narrow">
-        <FlowTopBar project={project} onBack={goBack} plain />
+      <div className={modal ? '!w-full !max-w-none !p-0' : 'container container-narrow'}>
+        <FlowTopBar project={project} onBack={goBack} plain modal={modal} />
         <div
           className={
             modal
-              ? 'pnt-step-card !w-full !max-w-none !mx-auto !pb-4 md:!p-[18px]'
+              ? 'pnt-step-card !w-full !max-w-none !m-0 !p-0 !bg-transparent !bg-none !border-0 !shadow-none'
               : 'pnt-step-card'
           }
         >
@@ -884,10 +891,10 @@ export default function InteriorDesignFlow({
             </a>
           </div>
 
-          <div
+          <ModalFoot
   className={
     modal
-      ? 'pnt-step-actions !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
       : 'pnt-step-actions'
   }
 >
@@ -913,7 +920,7 @@ export default function InteriorDesignFlow({
             >
               Book Now ₹99 <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
 
@@ -938,7 +945,11 @@ export default function InteriorDesignFlow({
   );
 }
 
-function FlowTopBar({ project, onBack, plain }) {
+function FlowTopBar({ project, onBack, plain, modal }) {
+  // The booking pop-up has its own header (title) and footer (Back), so
+  // there this bar would only be an empty band above the content.
+  if (modal) return null;
+
   return (
     <div className={plain ? 'pnt-top' : 'wizard-top'}>
       <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">

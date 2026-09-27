@@ -19,6 +19,7 @@ import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -418,10 +419,10 @@ if (modal) {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -442,7 +443,7 @@ if (modal) {
   : 'btn btn-primary'
   }
 >CONTINUE <Icon name="arrow-right" size={17} /></button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -480,10 +481,10 @@ if (modal) {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -507,7 +508,7 @@ if (modal) {
 >
                   {busy ? 'BOOKING…' : 'BOOK NOW'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -619,10 +620,10 @@ if (modal) {
             />
           )}
 
-          <div
+          <ModalFoot
   className={
     modal
-      ? 'pnt-step-actions !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
       : 'pnt-step-actions'
   }
 >
@@ -638,7 +639,7 @@ if (modal) {
 } onClick={goNext}>
               {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
 
