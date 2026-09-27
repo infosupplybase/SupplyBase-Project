@@ -334,6 +334,75 @@ const paths = {
       <path d="m10.5 9.5 5 2.5-5 2.5z" />
     </>
   ),
+
+  /* ------------------------------------------------------ admin chrome */
+  search: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.3-4.3" />
+    </>
+  ),
+  bell: (
+    <>
+      <path d="M18 16v-5a6 6 0 0 0-12 0v5l-2 3h16z" />
+      <path d="M9.5 19a2.5 2.5 0 0 0 5 0" />
+    </>
+  ),
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 3v2.2M12 18.8V21M4.9 4.9l1.55 1.55M17.55 17.55 19.1 19.1M3 12h2.2M18.8 12H21M4.9 19.1l1.55-1.55M17.55 6.45 19.1 4.9" />
+    </>
+  ),
+  edit: (
+    <>
+      <path d="M17 3a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      <path d="m15 5 4 4" />
+    </>
+  ),
+  dashboard: (
+    <>
+      <rect x="3" y="3" width="7.5" height="9" rx="1.5" />
+      <rect x="13.5" y="3" width="7.5" height="5" rx="1.5" />
+      <rect x="13.5" y="11" width="7.5" height="10" rx="1.5" />
+      <rect x="3" y="15" width="7.5" height="6" rx="1.5" />
+    </>
+  ),
+  logout: (
+    <>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 16l-4-4 4-4" />
+      <path d="M6 12h10" />
+    </>
+  ),
+  external: (
+    <>
+      <path d="M14 4h6v6" />
+      <path d="M20 4 10.5 13.5" />
+      <path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8" />
+      <path d="M4 4v4h4" />
+      <path d="M4 13a8 8 0 0 0 14.3 4.9L20 16" />
+      <path d="M20 20v-4h-4" />
+    </>
+  ),
+  alert: (
+    <>
+      <path d="M12 3.5 2.5 20h19z" />
+      <path d="M12 10v4.5" />
+      <path d="M12 17.2v.3" />
+    </>
+  ),
+  inbox: (
+    <>
+      <path d="M3 13.5 5.5 5h13l2.5 8.5V19a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19z" />
+      <path d="M3 13.5h5l1.5 2.5h5l1.5-2.5h5" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 22, strokeWidth = 1.6, className = '', ...rest }) {

@@ -34,7 +34,7 @@
  * line-item thumbnails this same project made earlier.
  */
 
-export const PAINTING_HERO_IMAGE = '/assets/painting/hero/painter-roller.jpg';
+export const PAINTING_HERO_IMAGE = '/assets/painting/hero/painter-roller.webp';
 
 export const paintingOverviewIntro = {
   eyebrow: 'PAINTING',
@@ -49,38 +49,31 @@ export const paintingTrustPoints = [
   { icon: 'check-circle', label: 'Warranty on Work' },
 ];
 
-/** The four category cards on /services/painting. "Room Painting" has no
-    detailed journey of its own in the reference or the existing site — it
-    reuses the Few Walls flow's area-first structure per the brief ("reuse
-    the appropriate room-selection flow without inventing unsupported
-    packages or prices"), rather than a fourth invented wizard. */
+/** The three category cards on /services/painting. There used to be a fourth,
+    "Room Painting", but it opened exactly the same screen as Few Walls (whose
+    first question is already "which area — living room, bedroom, kitchen…"),
+    so the same journey appeared twice under two names. Its room wording now
+    lives in Few Walls' tagline instead. */
 export const paintingCategories = [
   {
     slug: 'full-home',
     name: 'Full Home Painting',
     tagline: 'Complete painting for your entire home',
-    image: '/assets/projects/painting-finishing.jpeg',
+    image: '/assets/projects/painting-finishing.webp',
     route: '/services/painting/full-home',
   },
   {
     slug: 'few-walls',
-    name: 'Few Walls Painting',
-    tagline: 'Perfect for a quick refresh',
-    image: '/assets/projects/modern-interior.jpeg',
-    route: '/services/painting/few-walls',
-  },
-  {
-    slug: 'room',
-    name: 'Room Painting',
-    tagline: 'Bedroom, Living Room, Kitchen',
-    image: '/assets/popular-services/painting.png',
+    name: 'Few Walls or Room Painting',
+    tagline: 'A quick refresh for a bedroom, living room, kitchen or a few walls',
+    image: '/assets/projects/modern-interior.webp',
     route: '/services/painting/few-walls',
   },
   {
     slug: 'renovation',
     name: 'Renovation Painting',
     tagline: 'For old / damaged walls',
-    image: '/assets/painting/overview/renovation-painting.jpg',
+    image: '/assets/painting/overview/renovation-painting.webp',
     route: '/services/painting/renovation',
   },
 ];
@@ -183,7 +176,7 @@ export const paintingFlows = {
     heroTagline: 'Give your entire home a fresh, beautiful look.',
     introHeading: 'Complete Home Painting',
     introText: 'Give your entire home a fresh, beautiful look with professional painting.',
-    introImage: '/assets/projects/painting-finishing.jpeg',
+    introImage: '/assets/projects/painting-finishing.webp',
     introTrustPoints: [
       { icon: 'award', label: 'Premium Paint Brands' },
       { icon: 'users', label: 'Skilled Professionals' },
@@ -208,7 +201,7 @@ export const paintingFlows = {
     heroTagline: 'Give your favourite walls a fresh, new look.',
     introHeading: 'Few Walls Painting',
     introText: 'Give your favourite walls a fresh, new look with professional painting.',
-    introImage: '/assets/projects/modern-interior.jpeg',
+    introImage: '/assets/projects/modern-interior.webp',
     introTrustPoints: [
       { icon: 'award', label: 'Trusted Brands' },
       { icon: 'palette', label: 'Colour Consultation' },
@@ -234,7 +227,7 @@ export const paintingFlows = {
     introHeading: 'Renovation Painting',
     introText:
       'Say goodbye to old, stained and damaged walls. We repair, prepare and give your walls a fresh, long-lasting finish.',
-    introImage: '/assets/painting/overview/renovation-painting.jpg',
+    introImage: '/assets/painting/overview/renovation-painting.webp',
     introTrustPoints: [
       { icon: 'trowel', label: 'Surface Repair' },
       { icon: 'award', label: 'Premium Products' },

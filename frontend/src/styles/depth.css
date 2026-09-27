@@ -1,0 +1,563 @@
+/* =========================================================================
+   SUPPLYBASE — DEPTH AND PHONE POLISH
+   Loaded last (see index.css), so it can refine what the page stylesheets
+   set without editing each of them.
+
+   1. Raised, pressable buttons and cards (the "3D" look), built on the
+      shadow tokens in variables.css.
+   2. Touch screens: no hover lift that sticks after a tap, and a visible
+      press instead.
+   3. Home page: the service hint and the "How booking works" steps.
+   4. Services page: two cards per row on a phone instead of one very long
+      column.
+   5. The phone bottom bar: raised, with the current page on a gold tile.
+   6. A floor on text size so nothing on a phone is smaller than 12px.
+   ========================================================================= */
+
+/* ------------------------------------------------------ 1. buttons */
+
+/* A gold key: lit top edge, darker bottom lip, soft gold glow underneath. */
+.btn-primary {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -3px 0 rgba(120, 80, 0, 0.22), var(--shadow-gold);
+}
+
+.btn-primary:hover {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -3px 0 rgba(120, 80, 0, 0.22),
+    0 14px 26px -8px rgba(190, 140, 20, 0.55), 0 3px 8px rgba(190, 140, 20, 0.3);
+}
+
+/* Pressed: the lip disappears and the face sinks. */
+.btn-primary:active {
+  box-shadow: inset 0 2px 5px rgba(120, 80, 0, 0.3) !important;
+  transform: translateY(1px) !important;
+}
+
+.btn-outline:active,
+.btn-dark:active,
+.btn-ghost:active {
+  transform: translateY(1px) !important;
+}
+
+/* ------------------------------------------------------ 1. cards */
+
+/* Home service tiles: a lit card with the photo set into it. */
+.service-tile-grid {
+  perspective: 900px;
+}
+
+.service-tile {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  transform-style: preserve-3d;
+}
+
+.service-tile-photo {
+  box-shadow: 0 8px 16px -10px rgba(40, 30, 10, 0.55), 0 0 0 1px rgba(40, 30, 10, 0.06);
+}
+
+.service-tile-name {
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* Tips back slightly as it lifts, as if picked up by its bottom edge. */
+  .service-tile:hover,
+  .service-tile:focus-visible {
+    transform: translateY(-5px) rotateX(6deg);
+    box-shadow: var(--depth-inset-top), var(--shadow-lg);
+  }
+}
+
+.svc-card {
+  box-shadow: var(--depth-inset-top), var(--shadow);
+}
+
+/* ------------------------------------------------ 2. touch screens */
+
+@media (hover: none) {
+  /* A hover lift on a phone sticks after the tap and leaves the button or
+     card floating until the next tap elsewhere. */
+  .btn:hover,
+  .btn:hover svg,
+  .svc-card:hover,
+  .svc-card:hover .svc-card-media img,
+  .service-tile:hover,
+  .process-step:hover,
+  .process-step:hover .process-icon {
+    transform: none;
+  }
+
+  /* Instead: a quick, visible press on anything that is tapped. */
+  .service-tile:active,
+  .svc-card:active,
+  .elc-tile:active,
+  .plb-overview-card:active,
+  .pnt-overview-card:active,
+  .id-category-card:active,
+  .id-project-card:active,
+  .ibc-space-tile:active,
+  .problem-tile:active,
+  .choice-card:active,
+  .option-card:active {
+    transform: scale(0.98);
+    transition-duration: 0.08s;
+  }
+}
+
+/* ----------------------------------------------------- 3. home page */
+
+.popular-services-head {
+  margin-bottom: var(--space-5);
+}
+
+.popular-services-head .popular-services-title {
+  margin-bottom: 4px;
+}
+
+.popular-services-hint {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 15px;
+}
+
+.home-how {
+  padding: 0 0 var(--space-8);
+  background: var(--white);
+}
+
+/* The booking steps as a raised dark panel with gold tiles. */
+.home-how .hbw {
+  margin-top: 0;
+  background:
+    radial-gradient(600px 220px at 100% 0%, rgba(242, 193, 78, 0.16), transparent 70%),
+    linear-gradient(180deg, #1c1a14 0%, #0d0c0a 100%);
+  border: 1px solid rgba(242, 193, 78, 0.18);
+  border-radius: var(--radius-xl);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 26px 50px -22px rgba(0, 0, 0, 0.55);
+}
+
+.home-how .hbw-title {
+  font-size: 14px;
+}
+
+.home-how .hbw-icon {
+  border: 0;
+  border-radius: 16px;
+  background: var(--gold-tile);
+  box-shadow: var(--gold-tile-shadow);
+  color: #2a1d00;
+}
+
+.home-how .hbw-step p {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+@media (max-width: 640px) {
+  /* The timeline line runs down the middle of the (now square) tiles. */
+  .home-how .hbw-step:not(:last-child)::before {
+    left: 25px;
+  }
+}
+
+@media (max-width: 767px) {
+  .popular-services-head {
+    margin-bottom: 12px;
+  }
+
+  .popular-services-hint {
+    font-size: 13.5px;
+  }
+
+  .home-how {
+    padding-bottom: var(--space-6);
+  }
+}
+
+/* ------------------------------------------------- 4. services page */
+
+@media (max-width: 600px) {
+  .svc-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .svc-grid > * {
+    display: flex;
+  }
+
+  .svc-card {
+    width: 100%;
+  }
+
+  .svc-card-media {
+    aspect-ratio: 4 / 3;
+  }
+
+  .svc-card-body {
+    padding: 12px;
+  }
+
+  /* Two lines reserved, so the buttons line up across a row. */
+  .svc-card-body h3 {
+    font-size: 15px;
+    line-height: 1.2;
+    min-height: 2.4em;
+    margin-bottom: 10px;
+    overflow-wrap: anywhere;
+  }
+
+  .svc-card-foot {
+    padding-top: 10px;
+  }
+
+  .svc-card-foot .btn {
+    width: 100%;
+    height: 44px;
+    padding: 0 8px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ------------------------------------------------- 5. phone bottom bar */
+
+@media (max-width: 900px) {
+  .bottom-nav {
+    background: linear-gradient(180deg, #ffffff 0%, #fbf8f1 100%);
+    border-top: 1px solid rgba(40, 30, 10, 0.08);
+    box-shadow: inset 0 1px 0 #ffffff, 0 -10px 28px -10px rgba(40, 30, 10, 0.28);
+  }
+
+  .bottom-nav-item {
+    gap: 2px;
+    color: #5f594b;
+    font-size: 12px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bottom-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 28px;
+    border-radius: 999px;
+    transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  }
+
+  /* Where you are: the icon sits on a raised gold tile, the label in deep
+     gold (plain --gold is too faint to read as text on white). */
+  .bottom-nav-item.active {
+    color: var(--gold-deep);
+  }
+
+  .bottom-nav-item.active .bottom-nav-icon {
+    background: var(--gold-tile);
+    box-shadow: var(--gold-tile-shadow);
+    color: #2a1d00;
+  }
+
+  .bottom-nav-item:active .bottom-nav-icon {
+    transform: scale(0.94);
+  }
+
+  .bottom-nav-item:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: -3px;
+  }
+}
+
+/* ----------------------------------------------- 6. text size floor */
+
+.home-hero-eyebrow {
+  font-size: 12px;
+}
+
+@media (max-width: 767px) {
+  .plb-overview-price-note,
+  .pnt-step-num {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-tile:hover,
+  .service-tile:focus-visible {
+    transform: none;
+  }
+}
+
+/* ------------------------------------------ step caption (painting, POP) */
+
+.pnt-step-caption {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+
+.painting-modal-scope .pnt-step-caption {
+  color: var(--gold-deep);
+}
+
+/* ------------------------------------------- home banner (team photo) */
+
+/* On a phone the wide team photo (1600 × 595) used to be cropped to a
+   narrow slice, cutting people off at the sides. It now fits the phone's
+   width — the whole team, edge to edge — as a strip under the fixed header,
+   fading into the banner's dark background. The text and search follow
+   below as before, starting over the strip's faded lower edge (below the
+   faces) so the banner stays close to its old height. */
+@media (max-width: 768px) {
+  .home-hero {
+    align-items: flex-start;
+    padding-top: calc(var(--header-h) + 37.2vw - 56px);
+    padding-bottom: 20px;
+  }
+
+  .home-hero-media {
+    top: var(--header-h);
+    bottom: auto;
+    height: 37.2vw; /* 595 / 1600 of the width: the whole photo */
+  }
+
+  .home-hero-media img {
+    object-position: center;
+  }
+
+  /* The pill repeats the headline; without it the banner keeps its old
+     height with the photo added. */
+  .home-hero-eyebrow {
+    display: none;
+  }
+
+  .home-hero-gradient {
+    background: linear-gradient(
+      to bottom,
+      rgba(12, 14, 20, 0) 30%,
+      rgba(12, 14, 20, 0.7) 62%,
+      #0c0e14 100%
+    );
+  }
+}
+
+/* ------------------------------------------ Continue always within reach */
+
+/* Choosing an option should leave Continue right there, not somewhere below
+   a long list. On the booking pages each step's action bar sticks to the
+   bottom of the window: a solid strip with a divider line, so the buttons
+   never sit on top of a photo or an option. */
+
+/* Wide screens, on the page. */
+@media (min-width: 768px) {
+  .wizard-foot:not(.modal-sticky-foot),
+  .pnt-step-actions:not(.modal-sticky-foot) {
+    position: sticky;
+    bottom: 0;
+    z-index: 6;
+    padding: 14px 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
+  }
+}
+
+/* Phones, on the page: .wizard-foot is already a fixed bar above the bottom
+   navigation (wizard.css / bottom-nav.css); the painting-style action row
+   gets the same reach, sitting just above that navigation. */
+@media (max-width: 767px) {
+  .pnt-step-actions:not(.modal-sticky-foot) {
+    position: sticky;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    z-index: 6;
+    padding: 12px 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
+  }
+}
+
+/* Inside the booking pop-up the bar is drawn in the pop-up's own footer
+   (.bm-foot, see ModalFoot.jsx): a fixed strip under the scrolling area,
+   like the header above it. The options scroll above it and never pass
+   under the buttons. */
+.bm-foot {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  padding: 14px 24px 18px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
+}
+
+/* Steps without buttons (catalogues, galleries) leave it empty. */
+.bm-foot:empty {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .bm-foot {
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* The bar itself is a plain row inside the footer. These bars carry
+   Tailwind !-utilities and page rules (a fixed bar on phones), hence the
+   doubled class and !important. */
+.bm-foot .modal-sticky-foot.modal-sticky-foot {
+  position: static !important;
+  inset: auto !important;
+  z-index: auto !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ------------------------------------------------- shorter page banners */
+
+/* The photo banner at the top of the inner pages (Services, About, Contact,
+   Profile, the service pages…) and its glass details card took up most of a
+   phone's screen before any content. Every banner is shorter now, with a
+   tighter card; the photo and wording stay the same. */
+
+/* Wide screens: at least 400px, taller only when a card needs it (About's
+   longer text), so a card never slides up behind the header. The card sits
+   at the bottom, lined up with the page content. */
+@media (min-width: 721px) {
+  .page-hero {
+    display: flex;
+    align-items: flex-end;
+    height: auto;
+    min-height: 400px;
+    padding: calc(var(--header-h) + 24px) 0 32px;
+  }
+
+  .page-hero > .container {
+    width: 100%;
+  }
+
+  .page-hero-inner {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    width: min(780px, 100%);
+    padding: 22px 26px;
+  }
+
+  .page-hero h1 {
+    margin-bottom: 0.6rem;
+  }
+}
+
+/* Phones: the banner is as tall as its card, not a fixed 440px. */
+@media (max-width: 720px) {
+  .page-hero {
+    height: auto;
+    min-height: 0;
+    padding: calc(var(--header-h) + 26px) 0 22px;
+  }
+
+  .page-hero-inner {
+    padding: 14px 16px;
+    border-radius: 14px;
+  }
+
+  .page-hero .breadcrumbs {
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .page-hero .eyebrow {
+    margin-bottom: 2px;
+  }
+
+  .page-hero h1 {
+    font-size: 25px;
+    margin-bottom: 6px;
+  }
+
+  .page-hero p {
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+}
+
+/* Painting / POP and Plumbing banners. */
+.pnt-hero,
+.plb-hero {
+  min-height: 330px;
+}
+
+.pnt-hero-inner,
+.plb-hero-inner {
+  padding-bottom: var(--space-5);
+}
+
+@media (max-width: 767px) {
+  .pnt-hero,
+  .plb-hero {
+    min-height: 240px;
+  }
+
+  .pnt-hero .pnt-hero-inner,
+  .plb-hero .plb-hero-inner {
+    padding-top: calc(var(--header-h-mobile) + 20px);
+    padding-bottom: var(--space-4);
+    gap: 6px;
+  }
+
+  .pnt-hero-inner > p,
+  .plb-hero-inner > p {
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  /* Trust points two to a row instead of one per line. */
+  .pnt-hero-trust,
+  .plb-hero-trust {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+    margin-top: 8px;
+  }
+
+  .pnt-hero-trust li,
+  .plb-hero-trust li {
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .pnt-hero-trust svg,
+  .plb-hero-trust svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Less empty space under a banner on phones: the section right after it
+   started with the full section padding (56px+), then more gaps above the
+   account tabs and the heading below them. */
+@media (max-width: 720px) {
+  :is(.page-hero, .pnt-hero, .plb-hero) + section {
+    padding-top: 18px !important;
+  }
+
+  .acct-tabs {
+    margin-bottom: 14px;
+  }
+
+  .acct-tabs + * > .rule,
+  .acct-tabs + .rule {
+    margin-bottom: 10px;
+  }
+
+  .acct-tabs + * > h2 {
+    margin-bottom: 14px !important;
+  }
+}

@@ -125,7 +125,7 @@ export default function Profile() {
         eyebrow="YOUR ACCOUNT"
         title="MY PROFILE"
         text="Your details, how we reach you, and your account security."
-        image="/assets/services/service-hero.jpg"
+        image="/assets/services/service-hero.webp"
         breadcrumbs={[{ label: 'My Account', to: '/dashboard' }, { label: 'Profile' }]}
       />
 

@@ -13,12 +13,12 @@ import { company, whyUsPoints } from '../data/siteConfig';
 const pillars = [
   {
     title: 'Design',
-    image: '/assets/services/architectural-design.jpeg',
+    image: '/assets/services/architectural-design.webp',
     text: 'Architectural planning, 2D/3D designs, elevations, and working drawings.',
   },
   {
     title: 'Build',
-    image: '/assets/services/construction.jpeg',
+    image: '/assets/services/construction.webp',
     text: 'RCC, masonry, plastering, electrical, plumbing, and all essential building work.',
   },
   {
@@ -37,7 +37,7 @@ export default function About() {
         eyebrow="ABOUT US"
         title="ONE PARTNER. COMPLETE PROJECT."
         text={company.longIntro}
-        image="/assets/projects/hero-house1.jpeg"
+        image="/assets/projects/hero-house1.webp"
         breadcrumbs={[{ label: 'About Us' }]}
       />
 
@@ -150,7 +150,7 @@ export default function About() {
                 delay={i * 90}
               >
 
-                <img
+                <img loading="lazy" decoding="async"
                   src={pillar.image}
                   alt={pillar.title}
                   className="service-card-bg"
@@ -196,7 +196,7 @@ export default function About() {
                 delay={(i % 3) * 80}
               >
 
-                <img
+                <img loading="lazy" decoding="async"
                   src={point.image}
                   alt={point.title}
                   className="service-card-bg"

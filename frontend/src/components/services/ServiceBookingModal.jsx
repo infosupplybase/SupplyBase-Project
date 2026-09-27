@@ -1,5 +1,8 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
 import Icon from '../ui/Icon';
+import { ModalFooterContext } from './ModalFoot';
 import ServiceBooking from '../../pages/ServiceBooking';
 import InteriorBooking from '../../pages/InteriorBooking';
 import {
@@ -33,48 +36,93 @@ import OtherServicesCategory from '../../pages/OtherServicesCategory';
  * key={booking.openToken} service={booking.service} onClose={booking.close}
  * />}
  *
- * The `key={booking.openToken}` remounts the modal fresh on every open —
- * including reopening the same service right after closing it — so a
- * half-finished sub-flow (a picked interior space, a plumbing tab, a cart)
- * never leaks into the next booking.
+ * Which screen the booking is on lives in the browser's history (see
+ * hooks/useHistoryState): opening it and every screen inside it are history
+ * entries, so the browser's Back button goes back one screen (and closes the
+ * booking from its first screen) and a refresh reopens it where it was.
+ * `key={booking.openToken}` still remounts the modal fresh for each new
+ * booking, so a half-finished sub-flow never leaks into the next one.
  */
 export function useServiceBookingModal() {
-  const [service, setService] = useState(null);
-  const [openToken, setOpenToken] = useState(0);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const entry = (location.state && location.state.bookingModal) || null;
 
   return {
-    service,
-    openToken,
+    service: entry ? entry.service : null,
+    // Stable for as long as this booking is open (every screen inside it
+    // shares the entry it was opened from), new for the next one.
+    openToken: entry ? entry.base : 0,
     open: (nextService) => {
-      setService(nextService);
-      setOpenToken((token) => token + 1);
+      const base = (window.history.state && window.history.state.idx) || 0;
+      const usr = (window.history.state && window.history.state.usr) || {};
+      const { pathname, search, hash } = window.location;
+      // A history entry of its own: Back closes the booking instead of
+      // leaving the page, and a refresh reopens it where it was.
+      navigate(
+        { pathname, search, hash },
+        { state: { ...stripBooking(usr), bookingModal: { service: nextService, base }, __formPush: true } }
+      );
     },
-    close: () => setService(null),
+    close: () => {
+      const idx = window.history.state && window.history.state.idx;
+      const base = entry && entry.base;
+      if (typeof idx === 'number' && typeof base === 'number' && idx > base) {
+        // Unwind every screen of this booking in one go, back to the page
+        // as it was before it opened.
+        navigate(base - idx);
+      } else {
+        const usr = (window.history.state && window.history.state.usr) || {};
+        const { pathname, search, hash } = window.location;
+        navigate({ pathname, search, hash }, { replace: true, state: stripBooking(usr) });
+      }
+    },
   };
 }
 
+/** The history state with this booking's screens and forms removed. */
+function stripBooking(usr) {
+  const out = {};
+  Object.keys(usr).forEach((k) => {
+    if (k !== 'bookingModal' && k !== '__formPush' && !k.startsWith('bm:') && !k.startsWith('f:')) out[k] = usr[k];
+  });
+  return out;
+}
+
 export default function ServiceBookingModal({ service, onClose }) {
-  const [selectedInteriorSpace, setSelectedInteriorSpace] = useState(null);
-  const [selectedInteriorDesign, setSelectedInteriorDesign] = useState(null);
-  const [showInteriorBooking, setShowInteriorBooking] = useState(false);
-  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useState(null);
-  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useState(null);
-  const [selectedPaintingFlow, setSelectedPaintingFlow] = useState(null);
-  const [selectedPlumbingTab, setSelectedPlumbingTab] = useState(null);
-  const [plumbingView, setPlumbingView] = useState('category');
-  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useState(null);
-  const [selectedOtherService, setSelectedOtherService] = useState(null);
+  const [selectedInteriorSpace, setSelectedInteriorSpace] = useHistoryState('bm:interiorSpace', null, { push: true });
+  const [selectedInteriorDesign, setSelectedInteriorDesign] = useHistoryState('bm:interiorDesign', null, { push: true });
+  const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
+  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
+  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
+  const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
+  const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
+  const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
+  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
+  const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
+
+  // Every in-app BACK goes back through history, exactly like the
+  // browser's Back button, so the two always agree.
+  const formBack = useFormBack();
 
   const modalScrollRef = useRef(null);
 
-  const scrollModalToTop = () => {
+  // The pop-up's footer: the forms draw their Back / Continue bar here
+  // (see ModalFoot), below the scrolling area rather than over it.
+  const [footerNode, setFooterNode] = useState(null);
+
+  // One stable function: the forms scroll the pop-up to the top when their
+  // step changes, and a new function on every render (every tap saves the
+  // answer to history, which re-renders the pop-up) would look like a step
+  // change and throw the customer back to the top after each choice.
+  const scrollModalToTop = useCallback(() => {
     requestAnimationFrame(() => {
       modalScrollRef.current?.scrollTo({
         top: 0,
         behavior: 'auto',
       });
     });
-  };
+  }, []);
 
   return (
     <div
@@ -103,6 +151,8 @@ export default function ServiceBookingModal({ service, onClose }) {
     : 'max-w-[500px]'
 }
 
+          flex
+          flex-col
           max-h-[88vh]
           h-auto
           overflow-hidden
@@ -112,8 +162,6 @@ export default function ServiceBookingModal({ service, onClose }) {
 
           max-sm:h-[92vh]
           max-sm:max-h-[92vh]
-          max-sm:flex
-          max-sm:flex-col
           max-sm:rounded-xl
         `}
         onClick={(e) => e.stopPropagation()}
@@ -156,7 +204,7 @@ export default function ServiceBookingModal({ service, onClose }) {
 
         {/* MODAL HEADER */}
 
-        <div className="px-6 pt-6 pr-16">
+        <div className="shrink-0 px-6 pt-6 pr-16">
           <p
             className="
               mb-1
@@ -192,23 +240,23 @@ export default function ServiceBookingModal({ service, onClose }) {
           </p> */}
         </div>
 
-        <div className="my-6 h-px bg-gray-200" />
+        <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
 
         {/* MODAL SCROLL AREA */}
 
+        <ModalFooterContext.Provider value={footerNode}>
         <div
           ref={modalScrollRef}
           className="
-            max-h-[calc(88vh-190px)]
+            bm-scroll
+            min-h-0
+            flex-auto
             overflow-y-auto
 
             px-6
-            pb-10
-            md:pb-12
+            pb-6
 
             max-sm:flex-1
-            max-sm:min-h-0
-            max-sm:max-h-none
 
             [scrollbar-width:none]
             [&::-webkit-scrollbar]:hidden
@@ -226,7 +274,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                   spaceSlug={selectedInteriorSpace}
                   designSlug={selectedInteriorDesign}
                   onBack={() => {
-                    setShowInteriorBooking(false);
+                    formBack(() => setShowInteriorBooking(false));
                     scrollModalToTop();
                   }}
                   onStepChange={scrollModalToTop}
@@ -262,7 +310,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                           type="button"
                           className="btn btn-ghost btn-sm mb-4"
                           onClick={() => {
-                            setSelectedInteriorDesign(null);
+                            formBack(() => setSelectedInteriorDesign(null));
 
                             scrollModalToTop();
                           }}
@@ -291,7 +339,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                               rounded-xl
                             "
                           >
-                            <img
+                            <img loading="lazy" decoding="async"
                               src={design.image}
                               alt={design.name}
                               className="
@@ -404,8 +452,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                       type="button"
                       className="btn btn-ghost btn-sm mb-4"
                       onClick={() => {
-                        setSelectedInteriorSpace(null);
-                        setSelectedInteriorDesign(null);
+                        formBack(() => {
+                          setSelectedInteriorSpace(null);
+                          setSelectedInteriorDesign(null);
+                        });
 
                         scrollModalToTop();
                       }}
@@ -630,7 +680,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                               text-left
                             "
                           >
-                            <img
+                            <img loading="lazy" decoding="async"
                               src={space.image}
                               alt={space.name}
                               className="
@@ -685,7 +735,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                 categorySlug={selectedInteriorDesignCategory}
                 projectSlug={selectedInteriorDesignProject}
                 onBackToCatalogue={() => {
-                  setSelectedInteriorDesignProject(null);
+                  formBack(() => setSelectedInteriorDesignProject(null));
                   scrollModalToTop();
                 }}
                 onStepChange={scrollModalToTop}
@@ -699,8 +749,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                   scrollModalToTop();
                 }}
                 onBack={() => {
-                  setSelectedInteriorDesignCategory(null);
-                  setSelectedInteriorDesignProject(null);
+                  formBack(() => {
+                    setSelectedInteriorDesignCategory(null);
+                    setSelectedInteriorDesignProject(null);
+                  });
                   scrollModalToTop();
                 }}
               />
@@ -724,7 +776,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                   modal={true}
                   flowSlug={selectedPaintingFlow}
                   onBackToCategories={() => {
-                    setSelectedPaintingFlow(null);
+                    formBack(() => setSelectedPaintingFlow(null));
                     scrollModalToTop();
                   }}
                   onStepChange={scrollModalToTop}
@@ -762,8 +814,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                 modal={true}
                 tabSlug={selectedPlumbingTab}
                 onBackToCategories={() => {
-                  setSelectedPlumbingTab(null);
-                  setPlumbingView('category');
+                  formBack(() => {
+                    setSelectedPlumbingTab(null);
+                    setPlumbingView('category');
+                  });
                   scrollModalToTop();
                 }}
                 onOpenConsultation={() => {
@@ -780,9 +834,7 @@ export default function ServiceBookingModal({ service, onClose }) {
               <PlumbingCart
                 modal={true}
                 onBackToServices={() => {
-                  setPlumbingView(
-                    selectedPlumbingTab ? 'tab' : 'category'
-                  );
+                  formBack(() => setPlumbingView(selectedPlumbingTab ? 'tab' : 'category'));
                   scrollModalToTop();
                 }}
                 onCheckout={() => {
@@ -794,7 +846,7 @@ export default function ServiceBookingModal({ service, onClose }) {
               <PlumbingCheckout
                 modal={true}
                 onBackToCart={() => {
-                  setPlumbingView('cart');
+                  formBack(() => setPlumbingView('cart'));
                   scrollModalToTop();
                 }}
                 onStepChange={scrollModalToTop}
@@ -808,7 +860,7 @@ export default function ServiceBookingModal({ service, onClose }) {
               <PlumbingConsultationList
                 modal={true}
                 onBackToCategories={() => {
-                  setPlumbingView('category');
+                  formBack(() => setPlumbingView('category'));
                   scrollModalToTop();
                 }}
                 onSelectConsultationType={(typeSlug) => {
@@ -822,8 +874,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                 modal={true}
                 typeSlug={selectedPlumbingConsultation}
                 onBackToConsultations={() => {
-                  setSelectedPlumbingConsultation(null);
-                  setPlumbingView('consultations');
+                  formBack(() => {
+                    setSelectedPlumbingConsultation(null);
+                    setPlumbingView('consultations');
+                  });
                   scrollModalToTop();
                 }}
                 onStepChange={scrollModalToTop}
@@ -861,6 +915,12 @@ export default function ServiceBookingModal({ service, onClose }) {
             />
           )}
         </div>
+        </ModalFooterContext.Provider>
+
+        {/* MODAL FOOTER — filled by the current step's Back / Continue bar,
+            hidden while a step has none */}
+
+        <div ref={setFooterNode} className="bm-foot" />
       </div>
     </div>
   );

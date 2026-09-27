@@ -1,9 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Icon from '../components/ui/Icon';
+import PageHeader from '../components/admin/PageHeader';
+import DataTable from '../components/admin/DataTable';
 import StatusBadge from '../components/admin/StatusBadge';
 import Pagination from '../components/admin/Pagination';
 import Modal from '../components/admin/Modal';
+import PartnerPayoutSection from '../components/admin/PartnerPayoutSection';
+import { ErrorBanner, TableEmpty, TableLoading } from '../components/admin/TableStates';
+import rowProps from '../components/admin/rowProps';
+import { useToast } from '../components/admin/Toast';
+import { useAttention } from '../context/AttentionContext';
+import useQueryParam, { usePageParam } from '../hooks/useQueryParam';
 import api, { friendlyError } from '../lib/api';
+import { formatRupees } from '../lib/money';
+import {
+  BOOKING_STATUS_HELP,
+  bookingTone,
+  formatDate,
+  formatDay,
+  hoursUntilAutoCancel,
+  label,
+  telHref,
+  timeAgo,
+  todayIso,
+  whatsappHref,
+} from '../lib/format';
 
 const STATUSES = [
   'PAYMENT_PENDING',
@@ -23,35 +44,50 @@ const STATUSES = [
 ];
 const TYPES = ['SERVICE', 'PROJECT'];
 
-const label = (value) =>
-  String(value || '')
-    .toLowerCase()
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+/** The filters staff reach for most, as one-click chips. `count` names an AttentionContext number. */
+const QUICK_FILTERS = [
+  { status: '', text: 'All bookings' },
+  { status: 'PAYMENT_PENDING', text: 'New — to confirm', count: 'paymentPending' },
+  { status: 'BOOKING_REQUESTED', text: 'Requested', count: 'requested', hideWhenZero: true },
+  { status: 'CONFIRMED', text: 'Needs a partner', count: 'confirmed' },
+  { status: 'ASSIGNMENT_PENDING', text: 'Assignment pending', count: 'assignmentPending', hideWhenZero: true },
+  { status: 'WORK_IN_PROGRESS', text: 'Work in progress' },
+  { status: 'WORK_COMPLETED', text: 'Completed' },
+];
 
-const toneFor = (status) => {
-  if (status === 'CANCELLED') return 'danger';
-  if (status === 'WORK_COMPLETED') return 'success';
-  if (['PAYMENT_PENDING', 'BOOKING_REQUESTED', 'ASSIGNMENT_PENDING'].includes(status)) return 'warning';
-  return 'accent';
-};
+const FINAL = ['WORK_COMPLETED', 'CANCELLED'];
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
-
-const formatDate = (value) =>
-  value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+/** "Cancels in 5 h" for a booking the server will auto-cancel; nothing otherwise. */
+function ExpiryChip({ booking }) {
+  const hours = hoursUntilAutoCancel(booking);
+  if (hours == null) return null;
+  return (
+    <span
+      className={`admin-expiry${hours <= 6 ? ' urgent' : ''}`}
+      title="Unconfirmed bookings are cancelled automatically 24 hours after they are made"
+    >
+      <Icon name="clock" size={12} />
+      {hours === 0 ? 'Cancelling now' : `Cancels in ${hours} h`}
+    </span>
+  );
+}
 
 /**
  * Two ways to look at bookings: the filtered list staff work through day to
- * day, and the day sheet — every visit requested for one date, in slot order
- * — for planning who goes where tomorrow.
+ * day, and the day sheet — every visit requested for one date, in slot order.
+ * Filters and the open booking live in the URL, so the dashboard can link
+ * straight to "bookings that need a partner", and a refresh keeps your place.
  */
 export default function AdminBookings() {
-  const [mode, setMode] = useState('list'); // 'list' | 'day'
-  const [statusFilter, setStatusFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [page, setPage] = useState(0);
-  const [date, setDate] = useState(todayIso());
+  const { notify } = useToast();
+  const { counts, refresh: refreshCounts } = useAttention();
+
+  const [mode, setMode] = useQueryParam('mode', 'list');
+  const [statusFilter, setStatusFilter] = useQueryParam('status');
+  const [typeFilter, setTypeFilter] = useQueryParam('type');
+  const [date, setDate] = useQueryParam('date', todayIso());
+  const [openId, setOpenId] = useQueryParam('open');
+  const [page, setPage] = usePageParam();
 
   const [data, setData] = useState(null);
   const [dayRows, setDayRows] = useState(null);
@@ -59,6 +95,7 @@ export default function AdminBookings() {
   const [error, setError] = useState('');
 
   const [selected, setSelected] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [form, setForm] = useState({ status: '', adminNotes: '' });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -78,38 +115,68 @@ export default function AdminBookings() {
   const load = useCallback(() => {
     setLoading(true);
     setError('');
-    if (mode === 'day') {
-      api.admin.bookings
-        .forDate(date)
-        .then(setDayRows)
-        .catch((err) => setError(friendlyError(err)))
-        .finally(() => setLoading(false));
-    } else {
-      api.admin.bookings
-        .list({ status: statusFilter, type: typeFilter, page })
-        .then(setData)
-        .catch((err) => setError(friendlyError(err)))
-        .finally(() => setLoading(false));
-    }
+    const request =
+      mode === 'day'
+        ? api.admin.bookings.forDate(date).then(setDayRows)
+        : api.admin.bookings.list({ status: statusFilter, type: typeFilter, page }).then(setData);
+    request.catch((err) => setError(friendlyError(err))).finally(() => setLoading(false));
   }, [mode, date, statusFilter, typeFilter, page]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const rows = mode === 'day' ? dayRows || [] : data ? data.content : [];
-
-  const openRow = (booking) => {
-    setSelected(booking);
-    setForm({ status: booking.status, adminNotes: booking.adminNotes || '' });
+  /* The open booking is in the URL (?open=12), so a dashboard link or a
+     shared link opens it directly. The full record is fetched because the
+     list rows do not carry the customer's answers. */
+  useEffect(() => {
+    if (!openId) {
+      setSelected(null);
+      return undefined;
+    }
+    let cancelled = false;
+    setDetailLoading(true);
     setSaveError('');
     setAssignId('');
     setAssignError('');
-  };
+    api
+      .booking(openId)
+      .then((booking) => {
+        if (cancelled) return;
+        setSelected(booking);
+        setForm({ status: booking.status, adminNotes: booking.adminNotes || '' });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(friendlyError(err));
+        setOpenId('');
+      })
+      .finally(() => !cancelled && setDetailLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [openId, setOpenId]);
 
-  const closeDrawer = () => setSelected(null);
+  const rows = mode === 'day' ? dayRows || [] : data ? data.content : [];
+  const closeModal = () => setOpenId('');
 
+  const isFinal = selected && FINAL.includes(selected.status);
   const canAssign = selected && ['CONFIRMED', 'ASSIGNMENT_PENDING'].includes(selected.status);
+
+  const cartTotal = useMemo(() => {
+    if (!selected || !selected.answers) return null;
+    const priced = selected.answers.filter((a) => a.lineTotalPaise != null);
+    return priced.length ? priced.reduce((sum, a) => sum + a.lineTotalPaise, 0) : null;
+  }, [selected]);
+
+  // Update responses from assign/update carry no answers; keep the ones we fetched.
+  const afterChange = (updated, message) => {
+    setSelected((current) => ({ ...updated, answers: current ? current.answers : updated.answers }));
+    setForm({ status: updated.status, adminNotes: updated.adminNotes || '' });
+    notify(message);
+    refreshCounts();
+    load();
+  };
 
   const handleAssign = async (e) => {
     e.preventDefault();
@@ -118,10 +185,8 @@ export default function AdminBookings() {
     setAssignError('');
     try {
       const updated = await api.admin.bookings.assign(selected.id, Number(assignId));
-      setSelected(updated);
-      setForm((f) => ({ ...f, status: updated.status }));
       setAssignId('');
-      load();
+      afterChange(updated, `Assigned to ${updated.assignedProfessionalName}`);
     } catch (err) {
       setAssignError(friendlyError(err));
     } finally {
@@ -131,12 +196,18 @@ export default function AdminBookings() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (
+      form.status === 'CANCELLED' &&
+      selected.status !== 'CANCELLED' &&
+      !window.confirm('Cancel this booking? A cancelled booking cannot be reopened, and its time slot is released.')
+    ) {
+      return;
+    }
     setSaving(true);
     setSaveError('');
     try {
-      await api.admin.bookings.update(selected.id, form);
-      closeDrawer();
-      load();
+      const updated = await api.admin.bookings.update(selected.id, form);
+      afterChange(updated, `Booking ${updated.bookingNumber} saved`);
     } catch (err) {
       setSaveError(friendlyError(err));
     } finally {
@@ -144,32 +215,41 @@ export default function AdminBookings() {
     }
   };
 
+  const address = selected ? [selected.address, selected.location, selected.pincode].filter(Boolean).join(', ') : '';
+
   return (
     <div>
-      <div className="admin-header">
-        <div>
-          <h1>BOOKINGS</h1>
-          <p>Site visits and project bookings from the booking wizard.</p>
-        </div>
-      </div>
+      <PageHeader
+        icon="calendar"
+        title="Bookings"
+        subtitle="Every site visit and project booked on the website. Open one to confirm it, assign a partner and move it along."
+      />
 
       <div className="admin-toolbar">
-        <div className="admin-tabs">
+        <div className="admin-tabs" role="tablist" aria-label="View">
           <button
             type="button"
-            className={`admin-tab ${mode === 'list' ? 'active' : ''}`}
-            onClick={() => setMode('list')}
+            role="tab"
+            aria-selected={mode !== 'day'}
+            className={`admin-tab ${mode !== 'day' ? 'active' : ''}`}
+            onClick={() => setMode('')}
           >
+            <Icon name="layers" size={15} />
             All bookings
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={mode === 'day'}
             className={`admin-tab ${mode === 'day' ? 'active' : ''}`}
             onClick={() => setMode('day')}
           >
+            <Icon name="calendar" size={15} />
             Day sheet
           </button>
         </div>
+
+        <span className="admin-toolbar-spacer" />
 
         {mode === 'day' ? (
           <input
@@ -177,16 +257,15 @@ export default function AdminBookings() {
             className="admin-filter"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            aria-label="Date"
           />
         ) : (
           <>
             <select
               className="admin-filter"
               value={typeFilter}
-              onChange={(e) => {
-                setTypeFilter(e.target.value);
-                setPage(0);
-              }}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              aria-label="Booking type"
             >
               <option value="">All types</option>
               {TYPES.map((t) => (
@@ -198,12 +277,10 @@ export default function AdminBookings() {
             <select
               className="admin-filter"
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(0);
-              }}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              aria-label="Status"
             >
-              <option value="">All statuses</option>
+              <option value="">Any status</option>
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {label(s)}
@@ -214,256 +291,388 @@ export default function AdminBookings() {
         )}
       </div>
 
-      {error && (
-        <div role="alert" className="alert alert-error">
-          <Icon name="info" size={18} />
-          <span>{error}</span>
+      {mode !== 'day' && (
+        <div className="admin-chips" aria-label="Quick filters">
+          {QUICK_FILTERS.map((f) => {
+            const n = f.count && counts ? counts[f.count] : null;
+            if (f.hideWhenZero && !n && statusFilter !== f.status) return null;
+            return (
+              <button
+                key={f.status || 'all'}
+                type="button"
+                className={`admin-chip ${statusFilter === f.status ? 'active' : ''}`}
+                aria-pressed={statusFilter === f.status}
+                onClick={() => setStatusFilter(f.status)}
+              >
+                {f.text}
+                {n > 0 && <span className="admin-chip-count">{n}</span>}
+              </button>
+            );
+          })}
         </div>
       )}
 
-      <div className="admin-table-wrap">
-        <table className="admin-table">
+      <ErrorBanner onRetry={load}>{error}</ErrorBanner>
+
+      <DataTable label="Bookings">
           <thead>
             <tr>
-              <th>Booking</th>
+              <th>{mode === 'day' ? 'Time' : 'Booking'}</th>
               <th>Customer</th>
               <th>Service</th>
-              <th>Visit</th>
+              <th>{mode === 'day' ? 'Booking' : 'Visit'}</th>
+              <th>Partner</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={5} className="admin-table-empty">
-                  Loading…
-                </td>
-              </tr>
+              <TableLoading columns={6} />
             ) : rows.length ? (
               rows.map((row) => (
-                <tr key={row.id} className="admin-table-row" onClick={() => openRow(row)}>
+                <tr key={row.id} {...rowProps(() => setOpenId(String(row.id)), `Open booking ${row.bookingNumber}`)}>
+                  {mode === 'day' ? (
+                    <td>
+                      <strong>{row.preferredSlot || '—'}</strong>
+                    </td>
+                  ) : (
+                    <td>
+                      <strong>{row.bookingNumber}</strong>
+                      <span className="admin-table-sub">
+                        {label(row.bookingType)} · {timeAgo(row.createdAt)}
+                      </span>
+                    </td>
+                  )}
                   <td>
-                    {row.bookingNumber}
-                    <br />
-                    <span className="admin-table-sub">{label(row.bookingType)}</span>
-                  </td>
-                  <td>
-                    {row.name}
-                    <br />
+                    <span className="admin-cell-main">{row.name}</span>
                     <span className="admin-table-sub">{row.phone}</span>
                   </td>
-                  <td>{row.serviceLabel || '—'}</td>
                   <td>
-                    {formatDate(row.preferredDate)}
-                    <br />
-                    <span className="admin-table-sub">{row.preferredSlot || '—'}</span>
+                    {row.serviceLabel || '—'}
+                    {row.location && <span className="admin-table-sub">{row.location}</span>}
                   </td>
+                  {mode === 'day' ? (
+                    <td>
+                      <span className="admin-mono">{row.bookingNumber}</span>
+                    </td>
+                  ) : (
+                    <td>
+                      {formatDay(row.preferredDate)}
+                      <span className="admin-table-sub">{row.preferredSlot || '—'}</span>
+                    </td>
+                  )}
+                  <td>{row.assignedProfessionalName || <span className="admin-table-sub">Not assigned</span>}</td>
                   <td>
-                    <StatusBadge tone={toneFor(row.status)}>{label(row.status)}</StatusBadge>
+                    <StatusBadge tone={bookingTone(row.status)}>{label(row.status)}</StatusBadge>
+                    <div>
+                      <ExpiryChip booking={row} />
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan={5} className="admin-table-empty">
-                  {mode === 'day' ? 'No visits requested for this date.' : 'No bookings yet.'}
-                </td>
-              </tr>
+              <TableEmpty
+                columns={6}
+                icon="calendar"
+                title={
+                  mode === 'day'
+                    ? `No visits on ${formatDate(date)}`
+                    : statusFilter
+                      ? `No bookings are "${label(statusFilter)}"`
+                      : 'No bookings yet'
+                }
+              >
+                {mode === 'day'
+                  ? 'Pick another date above, or switch to All bookings.'
+                  : statusFilter
+                    ? 'Nothing is waiting in this status. Choose "All bookings" to see everything.'
+                    : 'Bookings made on the website will appear here.'}
+              </TableEmpty>
             )}
           </tbody>
-        </table>
-      </div>
+      </DataTable>
 
-      {mode === 'list' && data && (
-        <Pagination page={data.number} totalPages={data.totalPages} onChange={setPage} />
-      )}
+      {mode !== 'day' && <Pagination data={data} onChange={setPage} />}
 
-      <Modal
-        open={Boolean(selected)}
-        onClose={closeDrawer}
-        title={selected ? `Booking ${selected.bookingNumber}` : ''}
-      >
+      <Modal open={Boolean(openId)} onClose={closeModal} title={selected ? `Booking ${selected.bookingNumber}` : 'Booking'}>
+        {detailLoading && !selected && <p className="admin-picker-status">Loading booking…</p>}
+
         {selected && (
           <>
             <div className="admin-modal-top">
-              <StatusBadge tone={toneFor(selected.status)}>{label(selected.status)}</StatusBadge>
-              <span className="admin-table-sub">
-                {label(selected.bookingType)} booking
+              <StatusBadge tone={bookingTone(selected.status)}>{label(selected.status)}</StatusBadge>
+              <span className="admin-table-sub" style={{ marginTop: 0 }}>
+                {label(selected.bookingType)} booking · made {timeAgo(selected.createdAt)}
               </span>
+              <ExpiryChip booking={selected} />
             </div>
+
+            {BOOKING_STATUS_HELP[selected.status] && (
+              <div className="admin-status-help">
+                <Icon name="info" size={18} />
+                <span>{BOOKING_STATUS_HELP[selected.status]}</span>
+              </div>
+            )}
 
             <section className="admin-form-section">
               <h3 className="admin-form-section-title">
-                <Icon name="user" size={15} />
+                <Icon name="user" size={16} />
                 Customer
               </h3>
-              <div className="form-grid">
-                <div className="field">
-                  <label>Name</label>
-                  <div className="admin-readonly">{selected.name}</div>
+              <dl className="admin-detail-list" style={{ marginBottom: 0 }}>
+                <div>
+                  <dt>Name</dt>
+                  <dd>{selected.name}</dd>
                 </div>
-                <div className="field">
-                  <label>Phone</label>
-                  <div className="admin-readonly">{selected.phone}</div>
+                <div>
+                  <dt>Phone</dt>
+                  <dd>{selected.phone}</dd>
                 </div>
-                <div className="field">
-                  <label>WhatsApp</label>
-                  <div className="admin-readonly">{selected.whatsapp || '—'}</div>
+                {selected.whatsapp && selected.whatsapp !== selected.phone && (
+                  <div>
+                    <dt>WhatsApp</dt>
+                    <dd>{selected.whatsapp}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt>Email</dt>
+                  <dd>{selected.email || '—'}</dd>
                 </div>
-                <div className="field">
-                  <label>Email</label>
-                  <div className="admin-readonly">{selected.email || '—'}</div>
+                <div>
+                  <dt>Address</dt>
+                  <dd>{address || '—'}</dd>
                 </div>
+              </dl>
+              <div className="admin-contact-actions">
+                {telHref(selected.phone) && (
+                  <a href={telHref(selected.phone)}>
+                    <Icon name="phone" size={15} /> Call
+                  </a>
+                )}
+                {whatsappHref(selected.whatsapp || selected.phone) && (
+                  <a
+                    href={whatsappHref(
+                      selected.whatsapp || selected.phone,
+                      `Hello ${selected.name}, this is Supplybase about your booking ${selected.bookingNumber}.`
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon name="whatsapp" size={15} /> WhatsApp
+                  </a>
+                )}
+                {selected.email && (
+                  <a href={`mailto:${selected.email}`}>
+                    <Icon name="mail" size={15} /> Email
+                  </a>
+                )}
+                {address && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon name="map-pin" size={15} /> Map
+                  </a>
+                )}
               </div>
             </section>
 
             <section className="admin-form-section">
               <h3 className="admin-form-section-title">
-                <Icon name="map-pin" size={15} />
-                Property &amp; Job
+                <Icon name="layers" size={16} />
+                What the customer asked for
               </h3>
-              <div className="field" style={{ marginBottom: 16 }}>
-                <label>Address</label>
-                <div className="admin-readonly">{selected.address || selected.location || '—'}</div>
-              </div>
-              <div className="form-grid">
-                <div className="field">
-                  <label>Property type</label>
-                  <div className="admin-readonly">{selected.propertyType || '—'}</div>
+              <dl className="admin-detail-list">
+                <div>
+                  <dt>Service</dt>
+                  <dd>{selected.serviceLabel}</dd>
                 </div>
-                <div className="field">
-                  <label>Area</label>
-                  <div className="admin-readonly">
-                    {selected.areaSqft ? `${selected.areaSqft} sq ft` : '—'}
+                <div>
+                  <dt>Visit</dt>
+                  <dd>
+                    {formatDay(selected.preferredDate)} · {selected.preferredSlot || 'no time chosen'}
+                  </dd>
+                </div>
+                {selected.propertyType && (
+                  <div>
+                    <dt>Property</dt>
+                    <dd>{selected.propertyType}</dd>
                   </div>
-                </div>
-                <div className="field">
-                  <label>Budget</label>
-                  <div className="admin-readonly">{selected.budgetRange || '—'}</div>
-                </div>
-                <div className="field">
-                  <label>Materials</label>
-                  <div className="admin-readonly">{label(selected.materialSupplier) || '—'}</div>
-                </div>
-              </div>
-              <div className="field" style={{ marginTop: 16 }}>
-                <label>Work</label>
-                <div className="admin-readonly">
-                  {selected.workDetail || selected.workNature || selected.workOption || '—'}
-                </div>
-              </div>
-              {selected.attachmentsPending && (
-                <div className="field" style={{ marginTop: 16 }}>
-                  <label>Attachments</label>
-                  <div className="admin-readonly">Customer said files would follow separately.</div>
-                </div>
+                )}
+                {selected.areaSqft && (
+                  <div>
+                    <dt>Area</dt>
+                    <dd>{selected.areaSqft} sq ft</dd>
+                  </div>
+                )}
+                {selected.budgetRange && (
+                  <div>
+                    <dt>Budget</dt>
+                    <dd>{selected.budgetRange}</dd>
+                  </div>
+                )}
+                {selected.workDetail && (
+                  <div>
+                    <dt>Notes</dt>
+                    <dd>{selected.workDetail}</dd>
+                  </div>
+                )}
+                {selected.attachmentsPending && (
+                  <div>
+                    <dt>Photos</dt>
+                    <dd>The customer said they would send photos separately.</dd>
+                  </div>
+                )}
+              </dl>
+
+              {selected.answers && selected.answers.length > 0 ? (
+                <ul className="admin-answers">
+                  {selected.answers.map((a, i) => (
+                    <li key={`${a.questionText}-${i}`} className="admin-answer">
+                      <span className="admin-answer-q">{a.questionText}</span>
+                      <span className="admin-answer-a">
+                        {a.answerLabel}
+                        {a.quantity > 1 ? ` × ${a.quantity}` : ''}
+                      </span>
+                      <span className="admin-answer-price">
+                        {a.lineTotalPaise != null ? formatRupees(a.lineTotalPaise) : ''}
+                      </span>
+                    </li>
+                  ))}
+                  {cartTotal != null && (
+                    <li className="admin-answer-total">
+                      <span>Items total</span>
+                      <span>{formatRupees(cartTotal)}</span>
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <p className="admin-form-hint" style={{ margin: 0 }}>
+                  No wizard answers were stored for this booking.
+                </p>
               )}
             </section>
 
             <section className="admin-form-section">
               <h3 className="admin-form-section-title">
-                <Icon name="calendar" size={15} />
-                Schedule
-              </h3>
-              <div className="field">
-                <label>Preferred visit</label>
-                <div className="admin-readonly">
-                  {formatDate(selected.preferredDate)} — {selected.preferredSlot || '—'}
-                </div>
-              </div>
-            </section>
-
-            <section className="admin-form-section">
-              <h3 className="admin-form-section-title">
-                <Icon name="users" size={15} />
-                Assignment
+                <Icon name="helmet" size={16} />
+                Partner
               </h3>
               <div className="field" style={{ marginBottom: canAssign ? 16 : 0 }}>
-                <label>Assigned professional</label>
+                <span className="admin-field-label">Assigned partner</span>
                 <div className="admin-readonly">
                   {selected.assignedProfessionalName
-                    ? `${selected.assignedProfessionalName} — ${selected.assignedProfessionalPhone}`
-                    : 'Not yet assigned'}
+                    ? `${selected.assignedProfessionalName} — ${selected.assignedProfessionalPhone || 'no phone'}`
+                    : 'Not assigned yet'}
                 </div>
               </div>
 
-              {canAssign && (
+              {canAssign ? (
                 <form onSubmit={handleAssign}>
-                  <div className="field" style={{ marginBottom: 10 }}>
+                  <div className="field" style={{ marginBottom: 12 }}>
                     <label htmlFor="bk-assign">
-                      {selected.assignedProfessionalName ? 'Reassign to' : 'Assign a professional'}
+                      {selected.assignedProfessionalName ? 'Reassign to' : 'Assign a partner'}
                     </label>
-                    <select
-                      id="bk-assign"
-                      value={assignId}
-                      onChange={(e) => setAssignId(e.target.value)}
-                    >
-                      <option value="">Select a professional…</option>
+                    <select id="bk-assign" value={assignId} onChange={(e) => setAssignId(e.target.value)}>
+                      <option value="">Choose an approved partner…</option>
                       {professionals.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.fullName} — {p.phone}
+                          {p.fullName} — {p.phone || p.email}
                         </option>
                       ))}
                     </select>
+                    {professionals.length === 0 && (
+                      <span className="field-hint">No approved partners yet — approve one on the Partners page.</span>
+                    )}
                   </div>
 
                   {assignError && (
-                    <div role="alert" className="alert alert-error" style={{ marginBottom: 10 }}>
-                      <Icon name="info" size={18} />
+                    <div role="alert" className="alert alert-error">
+                      <Icon name="alert" size={18} />
                       <span>{assignError}</span>
                     </div>
                   )}
 
-                  <button type="submit" className="btn btn-outline" disabled={assigning || !assignId}>
-                    {assigning ? 'ASSIGNING…' : 'ASSIGN'}
+                  <button type="submit" className="btn btn-primary" disabled={assigning || !assignId}>
+                    <Icon name="helmet" size={16} />
+                    {assigning ? 'ASSIGNING…' : 'ASSIGN PARTNER'}
                   </button>
                 </form>
+              ) : (
+                !selected.assignedProfessionalName &&
+                !isFinal && (
+                  <p className="admin-form-hint" style={{ margin: '10px 0 0' }}>
+                    Confirm the booking first — a partner can be assigned once it is Confirmed.
+                  </p>
+                )
               )}
             </section>
 
+            {selected.assignedProfessionalId && (
+              <section className="admin-form-section">
+                <h3 className="admin-form-section-title">
+                  <Icon name="rupee" size={16} />
+                  Partner payout
+                </h3>
+                {/* Keyed on the partner: reassigning clears the payout, so reload it. */}
+                <PartnerPayoutSection key={selected.assignedProfessionalId} booking={selected} />
+              </section>
+            )}
+
             <section className="admin-form-section">
               <h3 className="admin-form-section-title">
-                <Icon name="check-circle" size={15} />
-                Status &amp; Notes
+                <Icon name="check-circle" size={16} />
+                Status &amp; notes
               </h3>
-              <form onSubmit={handleSave}>
-                <div className="field" style={{ marginBottom: 16 }}>
-                  <label htmlFor="bk-status">Status</label>
-                  <select
-                    id="bk-status"
-                    value={form.status}
-                    onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
-                  >
-                    {STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {label(s)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="field" style={{ marginBottom: 16 }}>
-                  <label htmlFor="bk-notes">Internal notes</label>
-                  <textarea
-                    id="bk-notes"
-                    rows={4}
-                    value={form.adminNotes}
-                    onChange={(e) => setForm((f) => ({ ...f, adminNotes: e.target.value }))}
-                    placeholder="Not visible to the customer"
-                  />
-                </div>
-
-                {saveError && (
-                  <div role="alert" className="alert alert-error" style={{ marginBottom: 16 }}>
-                    <Icon name="info" size={18} />
-                    <span>{saveError}</span>
+              {isFinal ? (
+                <p className="admin-form-hint" style={{ margin: 0 }}>
+                  This booking is {label(selected.status).toLowerCase()} and can no longer be changed.
+                  {selected.adminNotes ? ` Notes: ${selected.adminNotes}` : ''}
+                </p>
+              ) : (
+                <form onSubmit={handleSave}>
+                  <div className="field" style={{ marginBottom: 16 }}>
+                    <label htmlFor="bk-status">Status</label>
+                    <select
+                      id="bk-status"
+                      value={form.status}
+                      onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                    >
+                      {STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {label(s)}
+                        </option>
+                      ))}
+                    </select>
+                    {form.status !== selected.status && BOOKING_STATUS_HELP[form.status] && (
+                      <span className="field-hint">After saving: {BOOKING_STATUS_HELP[form.status]}</span>
+                    )}
                   </div>
-                )}
 
-                <button type="submit" className="btn btn-dark btn-block" disabled={saving}>
-                  {saving ? 'SAVING…' : 'SAVE CHANGES'}
-                </button>
-              </form>
+                  <div className="field" style={{ marginBottom: 16 }}>
+                    <label htmlFor="bk-notes">Internal notes</label>
+                    <textarea
+                      id="bk-notes"
+                      rows={3}
+                      value={form.adminNotes}
+                      onChange={(e) => setForm((f) => ({ ...f, adminNotes: e.target.value }))}
+                      placeholder="Only staff see this"
+                    />
+                  </div>
+
+                  {saveError && (
+                    <div role="alert" className="alert alert-error">
+                      <Icon name="alert" size={18} />
+                      <span>{saveError}</span>
+                    </div>
+                  )}
+
+                  <button type="submit" className="btn btn-dark btn-block" disabled={saving}>
+                    {saving ? 'SAVING…' : 'SAVE CHANGES'}
+                  </button>
+                </form>
+              )}
             </section>
           </>
         )}

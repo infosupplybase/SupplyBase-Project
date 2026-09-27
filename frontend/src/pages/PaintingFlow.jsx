@@ -17,6 +17,9 @@ import { formatRupees } from '../lib/money';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -42,17 +45,21 @@ export default function PaintingFlow({
   const { category, loading, error: loadError, optionsFor, productsByTier, coloursByTab } =
     usePaintingCatalogue();
 
-  const [stage, setStage] = useState(1);
-  const [answers, setAnswers] = useState({});
-  const [details, setDetails] = useState(user
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:paint:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [compareOpen, setCompareOpen] = useState(false);
 
   const configSteps = useMemo(() => flow?.steps || [], [flow]);
@@ -196,7 +203,7 @@ export default function PaintingFlow({
     return;
   }
 
-  setStage((s) => Math.max(s - 1, 1));
+  formBack(() => setStage((s) => Math.max(s - 1, 1)));
 
   if (modal) {
     onStepChange?.();
@@ -329,7 +336,7 @@ if (modal) {
 
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
-                <div><dt>Date &amp; Time</dt><dd>{receipt.date}, {receipt.time}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
                 <div><dt>Service</dt><dd>{flow.name}</dd></div>
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
@@ -412,10 +419,10 @@ if (modal) {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -436,7 +443,7 @@ if (modal) {
   : 'btn btn-primary'
   }
 >CONTINUE <Icon name="arrow-right" size={17} /></button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -474,10 +481,10 @@ if (modal) {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -501,7 +508,7 @@ if (modal) {
 >
                   {busy ? 'BOOKING…' : 'BOOK NOW'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -613,10 +620,10 @@ if (modal) {
             />
           )}
 
-          <div
+          <ModalFoot
   className={
     modal
-      ? 'pnt-step-actions !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
       : 'pnt-step-actions'
   }
 >
@@ -632,7 +639,7 @@ if (modal) {
 } onClick={goNext}>
               {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
 

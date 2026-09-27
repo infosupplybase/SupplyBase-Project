@@ -34,7 +34,7 @@ export default function PaintingHero({ eyebrow, title, tagline, trustPoints, ima
 
       <img
         className="pnt-hero-logo"
-        src="/assets/brand/logo.png"
+        src="/assets/brand/logo.webp"
         alt="SupplyBase — One Partner. Complete Project."
         width={480}
         height={363}

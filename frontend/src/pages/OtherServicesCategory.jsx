@@ -56,6 +56,9 @@ export default function OtherServicesCategory({
     }
   }}
 >
+                  <span className="elc-tile-image">
+                    <img src={tile.image} alt={tile.name} loading="lazy" />
+                  </span>
                   <span className="elc-tile-icon">
                     <Icon name={tile.icon} size={22} />
                   </span>
