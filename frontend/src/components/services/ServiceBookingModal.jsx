@@ -145,9 +145,9 @@ export default function ServiceBookingModal({ service, onClose }) {
           w-full
 
          ${service.slug === 'interior-by-choice'
-  ? 'max-w-[1000px]'
+  ? 'max-w-[800px]'
   : service.slug === 'interior-design'
-    ? 'max-w-[1000px]'
+    ? 'max-w-[800px]'
     : 'max-w-[550px]'
 }
 
@@ -240,7 +240,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           </p> */}
         </div>
 
-        <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
+        <div className="mt-1 mb-4 h-px shrink-0 bg-gray-200" />
 
         {/* MODAL SCROLL AREA */}
 
@@ -602,7 +602,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                   {/* ========================================= */}
 
                   <div className="pb-2 md:pb-8">
-                    <div
+                    {/* <div
                       className="
                         mb-5
                         rounded-xl
@@ -635,7 +635,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                         measurement and a custom
                         design as per your choice.
                       </p>
-                    </div>
+                    </div> */}
 
                     <h3
                       className="
