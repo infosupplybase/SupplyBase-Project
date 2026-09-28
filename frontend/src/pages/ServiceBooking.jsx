@@ -17,10 +17,9 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
-import { isValidPhone } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
-import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
-import { AddressFields } from '../components/booking/CustomerDetailsFields';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 
 
 
@@ -97,23 +96,6 @@ const isAskedHere = (q, slug) =>
     String(q.key || '').startsWith(prefix)
   ) &&
   !(REPEATED_QUESTIONS[slug] || []).includes(q.key);
-
-const emptyDetails = {
-  name: '',
-  phone: '',
-  whatsapp: '',
-  email: '',
-  address: '',
-  buildingName: '',
-  roomNo: '',
-  floorNo: '',
-  city: '',
-  pincode: '',
-};
-
-// A form restored from history (see useHistoryState) may predate the
-// building / room / floor fields.
-const text = (v) => String(v || '').trim();
 
 export default function ServiceBooking({
   serviceSlug,
@@ -430,58 +412,11 @@ const stageQuestions = useMemo(() => {
   };
 
   /**
-   * Validate customer details.
+   * Validate customer details — the same checks as every booking flow
+   * (lib/bookingDetails), which also know about a map pin.
    */
   const validateDetails = () => {
-    const nextErrors = {};
-
-    if (!details.name.trim()) {
-      nextErrors.name = 'Please enter your name';
-    }
-
-    if (!details.phone.trim()) {
-      nextErrors.phone = 'Please enter your mobile number';
-    } else if (!isValidPhone(details.phone)) {
-      nextErrors.phone = 'Enter a 10-digit mobile number';
-    }
-
-    if (
-      details.whatsapp.trim() &&
-      !isValidPhone(details.whatsapp)
-    ) {
-      nextErrors.whatsapp =
-        'Enter a 10-digit number, or leave it blank';
-    }
-
-    if (
-      details.email.trim() &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        details.email.trim()
-      )
-    ) {
-      nextErrors.email =
-        'That email address does not look right';
-    }
-
-    if (pickedLocation) {
-      if (!text(details.buildingName)) {
-        nextErrors.buildingName = 'Please enter the building name';
-      }
-    } else if (!text(details.address)) {
-      nextErrors.address = hasGoogleMaps
-        ? 'Select your location on the map, or type your address'
-        : 'Please enter your address';
-    }
-
-    if (!details.city.trim()) {
-      nextErrors.city = 'Please enter your city';
-    }
-
-    if (!details.pincode.trim()) {
-      nextErrors.pincode = 'Please enter your pincode';
-    } else if (!/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
-      nextErrors.pincode = 'Enter a 6-digit pincode';
-    }
+    const nextErrors = checkDetails(details, pickedLocation);
 
     setErrors(nextErrors);
 
@@ -623,15 +558,7 @@ const stageQuestions = useMemo(() => {
         email: details.email || null,
 
         // Building / room / floor, the pinned location, then anything typed.
-        address: [
-          text(details.buildingName),
-          text(details.roomNo) ? `Room ${text(details.roomNo)}` : '',
-          text(details.floorNo) ? `Floor ${text(details.floorNo)}` : '',
-          pickedLocation?.address || '',
-          text(details.address),
-        ]
-          .filter(Boolean)
-          .join(', '),
+        address: composeAddress(details, pickedLocation),
 
         city: details.city,
 
@@ -950,7 +877,7 @@ const stageQuestions = useMemo(() => {
               <>
                 <div className="wizard-card-head">
                   <h2>
-                    Enter Your Details
+                    Your Details
                   </h2>
 
                   <p>
@@ -959,85 +886,12 @@ const stageQuestions = useMemo(() => {
                   </p>
                 </div>
 
-                <div className="form-grid">
-                  <Field
-                    id="bk-name"
-                    label="Full Name"
-                    required
-                    value={details.name}
-                    onChange={setDetail('name')}
-                    error={errors.name}
-                    placeholder="Enter your name"
-                  />
-
-                  <Field
-                    id="bk-phone"
-                    label="Mobile Number"
-                    required
-                    type="tel"
-                    inputMode="numeric"
-                    value={details.phone}
-                    onChange={setDetail('phone')}
-                    error={errors.phone}
-                    placeholder="Enter mobile number"
-                  />
-
-                  <Field
-                    id="bk-whatsapp"
-                    label="WhatsApp Number (Optional)"
-                    type="tel"
-                    inputMode="numeric"
-                    value={details.whatsapp}
-                    onChange={setDetail('whatsapp')}
-                    error={errors.whatsapp}
-                    placeholder="Enter WhatsApp number"
-                    hint="Leave blank if it is the same as your mobile."
-                  />
-
-                  <Field
-                    id="bk-email"
-                    label="Email Address (Optional)"
-                    type="email"
-                    value={details.email}
-                    onChange={setDetail('email')}
-                    error={errors.email}
-                    placeholder="Enter email address"
-                  />
-                </div>
-
-                <AddressFields
+                <CustomerDetailsFields
                   details={details}
                   setDetail={setDetail}
                   errors={errors}
                   idPrefix="bk"
                 />
-
-                <div
-                  className="form-grid"
-                  style={{
-                    marginTop: 16,
-                  }}
-                >
-                  <Field
-                    id="bk-city"
-                    label="City"
-                    required
-                    value={details.city}
-                    onChange={setDetail('city')}
-                    error={errors.city}
-                    placeholder="Mumbai"
-                  />
-
-                  <Field
-                    id="bk-pincode"
-                    label="Pincode"
-                    required
-                    value={details.pincode}
-                    onChange={setDetail('pincode')}
-                    error={errors.pincode}
-                    placeholder="400001"
-                  />
-                </div>
 
                 <Summary
                   category={category}
@@ -1164,53 +1018,6 @@ const stageQuestions = useMemo(() => {
         </form>
 
       </div>
-    </div>
-  );
-}
-
-/* ==========================================================
-   Field
-========================================================== */
-
-function Field({
-  id,
-  label,
-  required,
-  hint,
-  error,
-  ...rest
-}) {
-  return (
-    <div
-      className={`field ${
-        error ? 'error' : ''
-      }`}
-    >
-      <label htmlFor={id}>
-        {label}{' '}
-        {required && (
-          <span className="req">
-            *
-          </span>
-        )}
-      </label>
-
-      <input
-        id={id}
-        {...rest}
-      />
-
-      {error ? (
-        <span className="field-error">
-          {error}
-        </span>
-      ) : (
-        hint && (
-          <span className="field-hint">
-            {hint}
-          </span>
-        )
-      )}
     </div>
   );
 }

@@ -1083,6 +1083,68 @@ gmp-place-autocomplete {
 }
 
 
+/* Use my current location — right under the map choice, one tap */
+
+.booking-current-location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  min-height: 44px;
+
+  margin-bottom: 12px;
+  padding: 10px 12px;
+
+  border: 1px solid var(--gold);
+  border-radius: 7px;
+
+  background: var(--gold-a08);
+  color: var(--gold-deep);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.booking-current-location:hover:not(:disabled) {
+  background: var(--gold-a24);
+  box-shadow: 0 0 0 3px var(--gold-a12);
+}
+
+.booking-current-location:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.booking-current-location svg {
+  flex-shrink: 0;
+}
+
+.booking-address-field .booking-current-location-error {
+  margin: -6px 0 12px;
+}
+
+.spin-slow {
+  animation: spin-slow 1.2s linear infinite;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow {
+    animation: none;
+  }
+}
+
+
 /* Building / Room / Floor */
 
 .booking-address-inputs {

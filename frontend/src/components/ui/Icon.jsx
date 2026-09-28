@@ -238,6 +238,13 @@ const paths = {
       <circle cx="12" cy="10" r="2.6" />
     </>
   ),
+  locate: (
+    <>
+      <circle cx="12" cy="12" r="7" />
+      <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+    </>
+  ),
   whatsapp: (
     <>
       <path d="M3.5 20.5 5 16.4A8.2 8.2 0 1 1 8 19.3z" />

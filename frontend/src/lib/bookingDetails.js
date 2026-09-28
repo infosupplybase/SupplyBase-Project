@@ -1,7 +1,8 @@
-/** Shared customer-details shape + validation for every booking flow that
-    collects name/phone/address (ServiceBooking's own flow, plus the new
-    plumbing checkout and consultation booking flows) — kept in one place so
-    the validation rules can't drift between them. */
+import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
+
+/** Shared customer-details shape + validation for every booking flow (they
+    all render components/booking/CustomerDetailsFields) — kept in one place
+    so the validation rules can't drift between them. */
 export const emptyDetails = {
   name: '',
   phone: '',
@@ -37,25 +38,27 @@ export const isValidPhone = (v) => {
  * With a pin the building name is required and the typed address is an
  * optional extra; without one the typed address is required, as before.
  */
-export function validateDetails(details, pickedLocation = null) {
+export function validateDetails(details, pickedLocation = null, { typedAddressOnly = false } = {}) {
   const next = {};
-  if (!details.name.trim()) next.name = 'Please enter your name';
-  if (!details.phone.trim()) next.phone = 'Please enter your mobile number';
+  if (!text(details.name)) next.name = 'Please enter your name';
+  if (!text(details.phone)) next.phone = 'Please enter your mobile number';
   else if (!isValidPhone(details.phone)) next.phone = 'Enter a 10-digit mobile number';
-  if (details.whatsapp.trim() && !isValidPhone(details.whatsapp)) {
+  if (text(details.whatsapp) && !isValidPhone(details.whatsapp)) {
     next.whatsapp = 'Enter a 10-digit number, or leave it blank';
   }
-  if (details.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())) {
+  if (text(details.email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text(details.email))) {
     next.email = 'That email address does not look right';
   }
   if (pickedLocation) {
     if (!text(details.buildingName)) next.buildingName = 'Please enter the building name';
   } else if (!text(details.address)) {
-    next.address = 'Please enter your address';
+    next.address = hasGoogleMaps && !typedAddressOnly
+      ? 'Select your location on the map, or type your address'
+      : 'Please enter your address';
   }
-  if (!details.city.trim()) next.city = 'Please enter your city';
-  if (!details.pincode.trim()) next.pincode = 'Please enter your pincode';
-  else if (!/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
+  if (!text(details.city)) next.city = 'Please enter your city';
+  if (!text(details.pincode)) next.pincode = 'Please enter your pincode';
+  else if (!/^[1-9][0-9]{5}$/.test(text(details.pincode))) {
     next.pincode = 'Enter a 6-digit pincode';
   }
   return next;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import GoogleLocationPicker, { hasGoogleMaps } from '../layout/GoogleLocationPicker';
+import GoogleLocationPicker, { getCurrentLocation, hasGoogleMaps } from '../layout/GoogleLocationPicker';
 import { useLocationContext, usePickedLocation } from '../../context/LocationContext';
 
 export function Field({ id, label, required, hint, error, ...rest }) {
@@ -21,16 +21,39 @@ export function Field({ id, label, required, hint, error, ...rest }) {
 
 /**
  * The visit address. With a Google Maps key the customer can pin the
- * location on a map (or use their current location); once pinned we ask the
- * building, room and floor, and the typed box becomes optional directions.
- * Without a key — or if the map cannot be used — the typed address is the
- * address, as before. Validation and the address sent with the booking come
- * from validateDetails / composeAddress (lib/bookingDetails).
+ * location on a map, or tap "Use my current location" below it (which also
+ * fills an empty City and Pincode when Google can name the spot); once
+ * pinned we ask the building, room and floor, and the typed box becomes
+ * optional directions. Without a key — or if the map cannot be used — the
+ * typed address is the address, as before. Validation and the address sent
+ * with the booking come from validateDetails / composeAddress
+ * (lib/bookingDetails).
  */
 export function AddressFields({ details, setDetail, errors, idPrefix = 'bk' }) {
   const { setLocation } = useLocationContext();
   const pickedLocation = usePickedLocation();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState('');
+
+  const locateMe = async () => {
+    setLocating(true);
+    setLocateError('');
+    try {
+      const here = await getCurrentLocation();
+      setLocation({ address: here.address, latitude: here.latitude, longitude: here.longitude });
+      // Only fill what the customer has not typed themselves.
+      const fill = (key, value) => {
+        if (value && !String(details[key] || '').trim()) setDetail(key)({ target: { value } });
+      };
+      fill('city', here.city);
+      fill('pincode', here.pincode);
+    } catch (err) {
+      setLocateError(err.message || 'Unable to get your current location.');
+    } finally {
+      setLocating(false);
+    }
+  };
 
   return (
     <>
@@ -41,14 +64,16 @@ export function AddressFields({ details, setDetail, errors, idPrefix = 'bk' }) {
               Project Location <span className="req">*</span>
             </label>
 
-            <button
-              type="button"
-              className="booking-use-location"
-              onClick={() => setPickerOpen(true)}
-            >
-              <Icon name="map-pin" size={14} />
-              {pickedLocation ? 'Change location' : 'Use current location'}
-            </button>
+            {pickedLocation && (
+              <button
+                type="button"
+                className="booking-use-location"
+                onClick={() => setPickerOpen(true)}
+              >
+                <Icon name="map-pin" size={14} />
+                Change on map
+              </button>
+            )}
           </div>
 
           {pickedLocation ? (
@@ -68,6 +93,22 @@ export function AddressFields({ details, setDetail, errors, idPrefix = 'bk' }) {
               <Icon name="map-pin" size={15} />
               Select your location on the map
             </button>
+          )}
+
+          <button
+            type="button"
+            className="booking-current-location"
+            onClick={locateMe}
+            disabled={locating}
+            aria-busy={locating}
+          >
+            <Icon name="locate" size={17} className={locating ? 'spin-slow' : ''} />
+            {locating ? 'Finding your location…' : 'Use my current location'}
+          </button>
+          {locateError && (
+            <span className="field-error booking-current-location-error" role="alert">
+              {locateError}
+            </span>
           )}
 
           {pickedLocation && (
@@ -129,7 +170,7 @@ export function AddressFields({ details, setDetail, errors, idPrefix = 'bk' }) {
         <textarea
           id={`${idPrefix}-address`}
           rows={3}
-          value={details.address}
+          value={details.address || ''}
           onChange={setDetail('address')}
           placeholder={
             pickedLocation
@@ -156,39 +197,42 @@ export function AddressFields({ details, setDetail, errors, idPrefix = 'bk' }) {
   );
 }
 
-/** The name/phone/whatsapp/email/address/city/pincode fields shared by every
-    booking flow (ServiceBooking's own wizard, plus the plumbing checkout and
-    consultation booking flows) — one copy of the markup, reused. */
+/** The name/phone/whatsapp/email/address/city/pincode fields every booking
+    flow asks — one copy of the markup, so every service shows the same
+    form. Values default to '' because a form restored from history (see
+    useHistoryState) may predate a field. */
 export default function CustomerDetailsFields({ details, setDetail, errors, idPrefix = 'bk' }) {
+  const value = (key) => details[key] || '';
+
   return (
     <>
       <div className="form-grid">
-        <Field id={`${idPrefix}-name`} label="Full Name" required value={details.name}
+        <Field id={`${idPrefix}-name`} label="Full Name" required value={value('name')}
                onChange={setDetail('name')} error={errors.name}
-               placeholder="Enter your name" />
+               placeholder="Enter your name" autoComplete="name" />
         <Field id={`${idPrefix}-phone`} label="Mobile Number" required type="tel"
-               inputMode="numeric" value={details.phone}
+               inputMode="numeric" value={value('phone')}
                onChange={setDetail('phone')} error={errors.phone}
-               placeholder="Enter mobile number" />
+               placeholder="Enter mobile number" autoComplete="tel" />
         <Field id={`${idPrefix}-whatsapp`} label="WhatsApp Number (Optional)" type="tel"
-               inputMode="numeric" value={details.whatsapp}
+               inputMode="numeric" value={value('whatsapp')}
                onChange={setDetail('whatsapp')} error={errors.whatsapp}
                placeholder="Enter WhatsApp number"
                hint="Leave blank if it is the same as your mobile." />
         <Field id={`${idPrefix}-email`} label="Email Address (Optional)" type="email"
-               value={details.email} onChange={setDetail('email')}
-               error={errors.email} placeholder="Enter email address" />
+               value={value('email')} onChange={setDetail('email')}
+               error={errors.email} placeholder="Enter email address" autoComplete="email" />
       </div>
 
       <AddressFields details={details} setDetail={setDetail} errors={errors} idPrefix={idPrefix} />
 
       <div className="form-grid" style={{ marginTop: 16 }}>
-        <Field id={`${idPrefix}-city`} label="City" required value={details.city}
+        <Field id={`${idPrefix}-city`} label="City" required value={value('city')}
                onChange={setDetail('city')} error={errors.city}
-               placeholder="Mumbai" />
-        <Field id={`${idPrefix}-pincode`} label="Pincode" required value={details.pincode}
-               onChange={setDetail('pincode')} error={errors.pincode}
-               placeholder="400001" />
+               placeholder="Mumbai" autoComplete="address-level2" />
+        <Field id={`${idPrefix}-pincode`} label="Pincode" required value={value('pincode')}
+               inputMode="numeric" onChange={setDetail('pincode')} error={errors.pincode}
+               placeholder="400001" autoComplete="postal-code" />
       </div>
     </>
   );
