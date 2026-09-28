@@ -4,7 +4,11 @@ import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import SlotPicker from '../components/booking/SlotPicker';
 import api, { friendlyError } from '../lib/api';
-import { useLocationContext } from '../context/LocationContext';
+import { useLocationContext, usePickedLocation } from '../context/LocationContext';
+import { AddressFields } from '../components/booking/CustomerDetailsFields';
+import { composeAddress } from '../lib/bookingDetails';
+// Same rule as every booking form, so a number valid there is valid here.
+import { isValidPhone } from '../lib/bookingDetails';
 import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
 import { formatVisitDate, formatVisitTime } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
@@ -12,10 +16,6 @@ import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 const STEPS = ['Details', 'Schedule', 'Confirm'];
 const CATEGORY_SLUG = 'interior-by-choice';
 
-/** Ten digits once the +91, spaces and brackets are stripped — same rule the
-    site-visit wizard uses, so a phone number valid there is valid here. */
-const isValidPhone = (value) =>
-  /^[6-9]\d{9}$/.test(String(value || '').replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
 
 /**
  * /interior-by-choice/book and /interior-by-choice/:spaceSlug/:designSlug/book
@@ -40,6 +40,7 @@ export default function InteriorBooking({
 const spaceSlug = propSpaceSlug || params.spaceSlug;
 const designSlug = propDesignSlug || params.designSlug;
   const { city: location } = useLocationContext();
+  const pickedLocation = usePickedLocation();
   const space = spaceSlug ? getSpaceBySlug(spaceSlug) : null;
   const design = spaceSlug && designSlug ? getDesignBySlug(spaceSlug, designSlug) : null;
 
@@ -72,7 +73,11 @@ const designSlug = propDesignSlug || params.designSlug;
     const next = {};
     if (!form.name.trim()) next.name = 'Enter your name';
     if (!isValidPhone(form.phone)) next.phone = 'Enter a valid 10-digit mobile number';
-    if (!form.address.trim()) next.address = 'Enter your address';
+    if (pickedLocation) {
+      if (!String(form.buildingName || '').trim()) next.buildingName = 'Enter the building name';
+    } else if (!form.address.trim()) {
+      next.address = 'Enter your address';
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -101,7 +106,7 @@ const designSlug = propDesignSlug || params.designSlug;
         preferredTime: time,
         name: form.name.trim(),
         phone: form.phone,
-        address: form.address.trim(),
+        address: composeAddress(form, pickedLocation),
         city: location,
       });
       setReceipt(result);
@@ -192,11 +197,7 @@ if (modal) {
                 <input type="tel" placeholder="+91" value={form.phone} onChange={setField('phone')} />
                 {errors.phone && <span className="field-error">{errors.phone}</span>}
               </div>
-              <div className={`field ${errors.address ? 'error' : ''}`}>
-                <label>Full Address <span className="req">*</span></label>
-                <input type="text" placeholder="Enter your complete address" value={form.address} onChange={setField('address')} />
-                {errors.address && <span className="field-error">{errors.address}</span>}
-              </div>
+              <AddressFields details={form} setDetail={setField} errors={errors} idPrefix="ib" />
               <p className="field-hint" style={{ marginTop: -8, marginBottom: 16 }}>
                 Service area: <strong>{location}</strong>
               </p>
@@ -264,7 +265,7 @@ if (modal) {
                 </div>
                 <div>
                   <span>Address</span>
-                  <strong>{form.address}</strong>
+                  <strong>{composeAddress(form, pickedLocation)}</strong>
                 </div>
                 <div>
                   <span>Visit Fee</span>

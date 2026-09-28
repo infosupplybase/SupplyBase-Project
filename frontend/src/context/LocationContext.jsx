@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { contact } from '../data/siteConfig';
+import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
 
 const STORAGE_KEY = 'sb.location';
 
@@ -122,4 +123,19 @@ export function useLocationContext() {
   }
 
   return ctx;
+}
+
+/**
+ * The visit location the customer pinned on the map, or null. Only a real
+ * pin counts (it has coordinates) — the header's plain city name is not an
+ * address — and only when this build has a Google Maps key.
+ */
+export function usePickedLocation() {
+  const { locationData } = useLocationContext();
+
+  return hasGoogleMaps &&
+    locationData?.latitude != null &&
+    locationData?.longitude != null
+    ? locationData
+    : null;
 }

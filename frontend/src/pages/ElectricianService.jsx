@@ -9,6 +9,9 @@ import { contact } from '../data/siteConfig';
 import { electricianServiceIntros, ELECTRICIAN_STAGES } from '../data/electricianServices';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import { AddressFields } from '../components/booking/CustomerDetailsFields';
+import { composeAddress, validateDetails as checkDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -17,20 +20,6 @@ const SCHEDULE = 3;
 const CONFIRM = 4;
 
 const emptyDetails = { name: '', phone: '', whatsapp: '', email: '', address: '', city: '', pincode: '' };
-
-/**
- * Only strips a country-code prefix when the digit count actually implies
- * one is there (12 digits = 91 + a 10-digit number, 11 = a leading 0) — a
- * blind `.replace(/^91/, '')` on any input, which is what the original
- * booking wizard's version of this check does, incorrectly mangles a real
- * 10-digit number that happens to start with 91 (e.g. 9123456780).
- */
-const isValidPhone = (v) => {
-  let digits = String(v || '').replace(/\D/g, '');
-  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
-  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
-  return /^[6-9]\d{9}$/.test(digits);
-};
 
 /** ₹1,234.50 -> "1,234.50", dropping a trailing ".00" for a cleaner read. */
 function formatMoney(n) {
@@ -68,6 +57,7 @@ export default function ElectricianService() {
   const [stage, setStage] = useHistoryState(`${scope}:stage`, TYPE, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const [pendingFiles, setPendingFiles] = useState({});
+  const pickedLocation = usePickedLocation();
   const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
@@ -212,23 +202,9 @@ export default function ElectricianService() {
     return Object.keys(next).length === 0;
   };
 
+  // The shared checks (lib/bookingDetails), which also know about a map pin.
   const validateDetails = () => {
-    const next = {};
-    if (!details.name.trim()) next.name = 'Please enter your name';
-    if (!details.phone.trim()) next.phone = 'Please enter your mobile number';
-    else if (!isValidPhone(details.phone)) next.phone = 'Enter a 10-digit mobile number';
-    if (details.whatsapp.trim() && !isValidPhone(details.whatsapp)) {
-      next.whatsapp = 'Enter a 10-digit number, or leave it blank';
-    }
-    if (details.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())) {
-      next.email = 'That email address does not look right';
-    }
-    if (!details.address.trim()) next.address = 'Please enter your address';
-    if (!details.city.trim()) next.city = 'Please enter your city';
-    if (!details.pincode.trim()) next.pincode = 'Please enter your pincode';
-    else if (!/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
-      next.pincode = 'Enter a 6-digit pincode';
-    }
+    const next = checkDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -308,7 +284,7 @@ export default function ElectricianService() {
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
@@ -511,13 +487,7 @@ export default function ElectricianService() {
                   <Field id="ec-email" label="Email Address (Optional)" type="email" value={details.email} onChange={setDetail('email')} error={errors.email} placeholder="Enter email address" />
                 </div>
 
-                <div className="field" style={{ marginTop: 16 }}>
-                  <label htmlFor="ec-address">
-                    Full Address <span className="req">*</span>
-                  </label>
-                  <textarea id="ec-address" rows={3} value={details.address} onChange={setDetail('address')} placeholder="Enter complete address" />
-                  {errors.address && <span className="field-error">{errors.address}</span>}
-                </div>
+                <AddressFields details={details} setDetail={setDetail} errors={errors} idPrefix="ec" />
 
                 <div className="form-grid" style={{ marginTop: 16 }}>
                   <Field id="ec-city" label="City" required value={details.city} onChange={setDetail('city')} error={errors.city} placeholder="Mumbai" />

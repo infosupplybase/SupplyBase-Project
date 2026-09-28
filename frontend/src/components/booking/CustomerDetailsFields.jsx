@@ -1,3 +1,8 @@
+import { useState } from 'react';
+import Icon from '../ui/Icon';
+import GoogleLocationPicker, { hasGoogleMaps } from '../layout/GoogleLocationPicker';
+import { useLocationContext, usePickedLocation } from '../../context/LocationContext';
+
 export function Field({ id, label, required, hint, error, ...rest }) {
   return (
     <div className={`field ${error ? 'error' : ''}`}>
@@ -11,6 +16,143 @@ export function Field({ id, label, required, hint, error, ...rest }) {
         hint && <span className="field-hint">{hint}</span>
       )}
     </div>
+  );
+}
+
+/**
+ * The visit address. With a Google Maps key the customer can pin the
+ * location on a map (or use their current location); once pinned we ask the
+ * building, room and floor, and the typed box becomes optional directions.
+ * Without a key — or if the map cannot be used — the typed address is the
+ * address, as before. Validation and the address sent with the booking come
+ * from validateDetails / composeAddress (lib/bookingDetails).
+ */
+export function AddressFields({ details, setDetail, errors, idPrefix = 'bk' }) {
+  const { setLocation } = useLocationContext();
+  const pickedLocation = usePickedLocation();
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  return (
+    <>
+      {hasGoogleMaps && (
+        <div className="field booking-address-field" style={{ marginTop: 16 }}>
+          <div className="booking-address-label-row">
+            <label>
+              Project Location <span className="req">*</span>
+            </label>
+
+            <button
+              type="button"
+              className="booking-use-location"
+              onClick={() => setPickerOpen(true)}
+            >
+              <Icon name="map-pin" size={14} />
+              {pickedLocation ? 'Change location' : 'Use current location'}
+            </button>
+          </div>
+
+          {pickedLocation ? (
+            <div className="booking-selected-location">
+              <Icon name="map-pin" size={15} />
+              <div className="booking-location-text">
+                <span className="booking-location-label">Selected location</span>
+                <span className="booking-location-address">{pickedLocation.address}</span>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="booking-location-empty"
+              onClick={() => setPickerOpen(true)}
+            >
+              <Icon name="map-pin" size={15} />
+              Select your location on the map
+            </button>
+          )}
+
+          {pickedLocation && (
+            <div className="booking-address-inputs">
+              <div className="field booking-building-field">
+                <label htmlFor={`${idPrefix}-building`}>
+                  Building Name <span className="req">*</span>
+                </label>
+                <input
+                  id={`${idPrefix}-building`}
+                  type="text"
+                  value={details.buildingName || ''}
+                  onChange={setDetail('buildingName')}
+                  placeholder="Enter building name"
+                />
+                {errors.buildingName && (
+                  <span className="field-error">{errors.buildingName}</span>
+                )}
+              </div>
+
+              <div className="booking-small-fields">
+                <div className="field">
+                  <label htmlFor={`${idPrefix}-room`}>Room No.</label>
+                  <input
+                    id={`${idPrefix}-room`}
+                    type="text"
+                    value={details.roomNo || ''}
+                    onChange={setDetail('roomNo')}
+                    placeholder="Room no."
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor={`${idPrefix}-floor`}>Floor</label>
+                  <input
+                    id={`${idPrefix}-floor`}
+                    type="text"
+                    value={details.floorNo || ''}
+                    onChange={setDetail('floorNo')}
+                    placeholder="Floor"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="field" style={{ marginTop: 16 }}>
+        <label htmlFor={`${idPrefix}-address`}>
+          {pickedLocation ? 'Address details (optional)' : 'Project Address'}
+          {!pickedLocation && (
+            <>
+              {' '}
+              <span className="req">*</span>
+            </>
+          )}
+        </label>
+        <textarea
+          id={`${idPrefix}-address`}
+          rows={3}
+          value={details.address}
+          onChange={setDetail('address')}
+          placeholder={
+            pickedLocation
+              ? 'Landmark or directions for our team'
+              : hasGoogleMaps
+                ? 'Or type your complete address'
+                : 'Enter complete address'
+          }
+        />
+        {errors.address && <span className="field-error">{errors.address}</span>}
+      </div>
+
+      {hasGoogleMaps && (
+        <GoogleLocationPicker
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onSelect={(selectedLocation) => {
+            setLocation(selectedLocation);
+            setPickerOpen(false);
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -38,15 +180,7 @@ export default function CustomerDetailsFields({ details, setDetail, errors, idPr
                error={errors.email} placeholder="Enter email address" />
       </div>
 
-      <div className="field" style={{ marginTop: 16 }}>
-        <label htmlFor={`${idPrefix}-address`}>
-          Project Address <span className="req">*</span>
-        </label>
-        <textarea id={`${idPrefix}-address`} rows={3} value={details.address}
-                  onChange={setDetail('address')}
-                  placeholder="Enter complete address" />
-        {errors.address && <span className="field-error">{errors.address}</span>}
-      </div>
+      <AddressFields details={details} setDetail={setDetail} errors={errors} idPrefix={idPrefix} />
 
       <div className="form-grid" style={{ marginTop: 16 }}>
         <Field id={`${idPrefix}-city`} label="City" required value={details.city}

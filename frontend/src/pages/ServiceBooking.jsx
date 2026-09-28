@@ -17,8 +17,10 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
-import { useLocationContext } from '../context/LocationContext';
-import GoogleLocationPicker, { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
+import { isValidPhone } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
+import { AddressFields } from '../components/booking/CustomerDetailsFields';
 
 
 
@@ -113,14 +115,6 @@ const emptyDetails = {
 // building / room / floor fields.
 const text = (v) => String(v || '').trim();
 
-const isValidPhone = (v) =>
-  /^[6-9]\d{9}$/.test(
-    String(v || '')
-      .replace(/\D/g, '')
-      .replace(/^91/, '')
-      .replace(/^0/, '')
-  );
-
 export default function ServiceBooking({
   serviceSlug,
   modal = false,
@@ -133,15 +127,8 @@ export default function ServiceBooking({
 
   const { user } = useAuth();
 
-  // With a Google Maps key the customer can pin the visit location on a map
-  // (or use their current location). Only a real pin counts — the header's
-  // plain city name is not an address.
-  const { locationData, setLocation } = useLocationContext();
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-  const pickedLocation =
-    hasGoogleMaps && locationData?.latitude != null && locationData?.longitude != null
-      ? locationData
-      : null;
+  // The visit location pinned on the map (with a Google Maps key), or null.
+  const pickedLocation = usePickedLocation();
 
   const [searchParams] = useSearchParams();
 
@@ -1018,143 +1005,12 @@ const stageQuestions = useMemo(() => {
                   />
                 </div>
 
-                {hasGoogleMaps && (
-                  <div
-                    className="field booking-address-field"
-                    style={{
-                      marginTop: 16,
-                    }}
-                  >
-                    <div className="booking-address-label-row">
-                      <label>
-                        Project Location <span className="req">*</span>
-                      </label>
-
-                      <button
-                        type="button"
-                        className="booking-use-location"
-                        onClick={() => setLocationPickerOpen(true)}
-                      >
-                        <Icon name="map-pin" size={14} />
-                        {pickedLocation ? 'Change location' : 'Use current location'}
-                      </button>
-                    </div>
-
-                    {pickedLocation ? (
-                      <div className="booking-selected-location">
-                        <Icon name="map-pin" size={15} />
-
-                        <div className="booking-location-text">
-                          <span className="booking-location-label">
-                            Selected location
-                          </span>
-
-                          <span className="booking-location-address">
-                            {pickedLocation.address}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="booking-location-empty"
-                        onClick={() => setLocationPickerOpen(true)}
-                      >
-                        <Icon name="map-pin" size={15} />
-                        Select your location on the map
-                      </button>
-                    )}
-
-                    {pickedLocation && (
-                      <div className="booking-address-inputs">
-                        <div className="field booking-building-field">
-                          <label htmlFor="bk-building">
-                            Building Name <span className="req">*</span>
-                          </label>
-
-                          <input
-                            id="bk-building"
-                            type="text"
-                            value={details.buildingName || ''}
-                            onChange={setDetail('buildingName')}
-                            placeholder="Enter building name"
-                          />
-
-                          {errors.buildingName && (
-                            <span className="field-error">
-                              {errors.buildingName}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="booking-small-fields">
-                          <div className="field">
-                            <label htmlFor="bk-room">Room No.</label>
-
-                            <input
-                              id="bk-room"
-                              type="text"
-                              value={details.roomNo || ''}
-                              onChange={setDetail('roomNo')}
-                              placeholder="Room no."
-                            />
-                          </div>
-
-                          <div className="field">
-                            <label htmlFor="bk-floor">Floor</label>
-
-                            <input
-                              id="bk-floor"
-                              type="text"
-                              value={details.floorNo || ''}
-                              onChange={setDetail('floorNo')}
-                              placeholder="Floor"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* The typed address: required without a map pin, optional
-                    extra detail (landmark, directions) with one. */}
-                <div
-                  className="field"
-                  style={{
-                    marginTop: 16,
-                  }}
-                >
-                  <label htmlFor="bk-address">
-                    {pickedLocation ? 'Address details (optional)' : 'Project Address'}
-                    {!pickedLocation && (
-                      <>
-                        {' '}
-                        <span className="req">*</span>
-                      </>
-                    )}
-                  </label>
-
-                  <textarea
-                    id="bk-address"
-                    rows={3}
-                    value={details.address}
-                    onChange={setDetail('address')}
-                    placeholder={
-                      pickedLocation
-                        ? 'Landmark or directions for our team'
-                        : hasGoogleMaps
-                          ? 'Or type your complete address'
-                          : 'Enter complete address'
-                    }
-                  />
-
-                  {errors.address && (
-                    <span className="field-error">
-                      {errors.address}
-                    </span>
-                  )}
-                </div>
+                <AddressFields
+                  details={details}
+                  setDetail={setDetail}
+                  errors={errors}
+                  idPrefix="bk"
+                />
 
                 <div
                   className="form-grid"
@@ -1307,22 +1163,6 @@ const stageQuestions = useMemo(() => {
           </div>
         </form>
 
-        {hasGoogleMaps && (
-          <GoogleLocationPicker
-            open={locationPickerOpen}
-            onClose={() => setLocationPickerOpen(false)}
-            onSelect={(selectedLocation) => {
-              setLocation(selectedLocation);
-
-              setErrors((currentErrors) => ({
-                ...currentErrors,
-                address: undefined,
-              }));
-
-              setLocationPickerOpen(false);
-            }}
-          />
-        )}
       </div>
     </div>
   );
