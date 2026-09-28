@@ -44,6 +44,8 @@ export default function InteriorDesignFlow({
   projectSlug: propProjectSlug,
   onBackToCatalogue,
   onStepChange,
+  startAtDetails = false,
+  customRequirements = '',
 }) {
   const params = useParams();
 
@@ -58,7 +60,11 @@ export default function InteriorDesignFlow({
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
   const scope = `f:id:${categorySlug}:${projectSlug}`;
   const formBack = useFormBack();
-  const [stage, setStage] = useHistoryState(`${scope}:stage`, PACKAGE, { push: true });
+  const [stage, setStage] = useHistoryState(
+  `${scope}:stage`,
+  startAtDetails ? CONSULT_DETAILS : PACKAGE,
+  { push: true }
+);
   const [tier, setTier] = useHistoryState(`${scope}:tier`, 'standard');
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailTab, setDetailTab] = useState('overview');
@@ -84,26 +90,26 @@ export default function InteriorDesignFlow({
     return ID_REFERENCE_PACKAGES[tier];
   }, [hasPricing, tier]);
 
-  if (!category || !project) {
-    if (modal) return null;
+  if ((!category || !project) && !startAtDetails) {
+  if (modal) return null;
 
-    return (
-      <Navigate
-        to="/services/interior-design"
-        replace
-      />
-    );
+  return (
+    <Navigate
+      to="/services/interior-design"
+      replace
+    />
+  );
+}
+
+const jumpToStage = (s) => {
+  setStage(s);
+
+  if (modal) {
+    onStepChange?.();
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
-  const jumpToStage = (s) => {
-    setStage(s);
-
-    if (modal) {
-      onStepChange?.();
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
+};
 
   const goBack = () => {
     setSubmitError('');
@@ -134,54 +140,112 @@ export default function InteriorDesignFlow({
     setSubmitError('');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (busy) return;
-    if (!date || !time) {
-      setErrors({ slot: 'Please choose a date and a time' });
-      return;
-    }
+ const handleSubmit = async (e) => {
+  console.log('🔥 CONFIRM BOOKING CLICKED - handleSubmit running');
 
-    setBusy(true);
-    setSubmitError('');
-    try {
-      const tierMeta = idPackageTiers.find((t) => t.key === tier);
-      const parts = [
-        `Project: ${category.name} — ${project.name} (${project.location})`,
-        `Package: ${tierMeta?.name || tier}${packagePrice ? ` (${packagePrice.priceDisplay})` : ' (quotation after site visit)'}`,
-      ];
-      if (style) parts.push(`Style: ${idStyles.find((s) => s.key === style)?.name || style}`);
-      if (colour) parts.push(`Colour theme: ${idColourThemes.find((c) => c.key === colour)?.name || colour}`);
-      if (requirements.trim()) parts.push(requirements.trim());
+  e.preventDefault();
 
-      const result = await api.createBooking({
-        serviceSlug: 'interior-design',
-        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 500), label: 'Selected project, package and requirements' }],
-        preferredDate: date,
-        preferredTime: time,
-        name: details.name,
-        phone: details.phone,
-        whatsapp: details.whatsapp || null,
-        email: details.email || null,
-        address: details.address,
-        city: details.city,
-        pincode: details.pincode || null,
-      });
-      setReceipt(result);
-      setStage(CONFIRM);
+  if (busy) return;
 
-      if (modal) {
-        onStepChange?.();
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!date || !time) {
+    setErrors({ slot: 'Please choose a date and a time' });
+    return;
+  }
+
+  setBusy(true);
+  setSubmitError('');
+
+  try {
+    const tierMeta = idPackageTiers.find((t) => t.key === tier);
+
+    const parts = [];
+
+    // CUSTOM INTERIOR DESIGN FLOW
+    if (customRequirements.trim()) {
+      parts.push(`Requirements: ${customRequirements.trim()}`);
+    } else {
+      // NORMAL INTERIOR DESIGN FLOW
+      if (category && project) {
+        parts.push(
+          `Project: ${category.name} — ${project.name} (${project.location})`
+        );
       }
-    } catch (err) {
-      if (err && err.fieldErrors) setErrors(err.fieldErrors);
-      setSubmitError(friendlyError(err));
-    } finally {
-      setBusy(false);
+
+      parts.push(
+        `Package: ${tierMeta?.name || tier}${
+          packagePrice
+            ? ` (${packagePrice.priceDisplay})`
+            : ' (quotation after site visit)'
+        }`
+      );
+
+      if (style) {
+        parts.push(
+          `Style: ${idStyles.find((s) => s.key === style)?.name || style}`
+        );
+      }
+
+      if (colour) {
+        parts.push(
+          `Colour theme: ${
+            idColourThemes.find((c) => c.key === colour)?.name || colour
+          }`
+        );
+      }
+
+      const finalRequirements = requirements.trim();
+
+      if (finalRequirements) {
+        parts.push(finalRequirements);
+      }
     }
-  };
+
+    console.log('🔥 FINAL parts:', parts);
+    console.log('🔥 Step 3 - about to call createBooking');
+
+    const result = await api.createBooking({
+      serviceSlug: 'interior-design',
+      answers: [
+        {
+          key: 'notes',
+          value: parts.join(' · ').slice(0, 400),
+          label: 'Selected project, package and requirements',
+        },
+      ],
+      preferredDate: date,
+      preferredTime: time,
+      name: details.name,
+      phone: details.phone,
+      whatsapp: details.whatsapp || null,
+      email: details.email || null,
+      address: details.address,
+      city: details.city,
+      pincode: details.pincode || null,
+      areaSqft: undefined,
+    });
+
+    console.log('📥 Booking response received:', result);
+
+    setReceipt(result);
+    setStage(CONFIRM);
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  } catch (err) {
+    console.error('❌ Booking submit error:', err);
+
+    if (err && err.fieldErrors) {
+      setErrors(err.fieldErrors);
+    }
+
+    setSubmitError(friendlyError(err));
+  } finally {
+    setBusy(false);
+  }
+};
 
   /* ---------------------------------------------------------- confirmed */
   if (stage === CONFIRM && receipt) {
@@ -219,7 +283,17 @@ export default function InteriorDesignFlow({
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
                 <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
-                <div><dt>Project</dt><dd>{project.name} — {tier}</dd></div>
+                {customRequirements ? (
+  <div>
+    <dt>Requirements</dt>
+    <dd>{customRequirements}</dd>
+  </div>
+) : (
+  <div>
+    <dt>Project</dt>
+    <dd>{project?.name || 'Interior Design'} — {tier}</dd>
+  </div>
+)}
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
@@ -956,12 +1030,23 @@ export default function InteriorDesignFlow({
 function FlowTopBar({ project, onBack, plain }) {
   return (
     <div className={plain ? 'pnt-top' : 'wizard-top'}>
-      <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">
+      <button
+        type="button"
+        className={plain ? 'pnt-back' : 'wizard-back'}
+        onClick={onBack}
+        aria-label="Go back"
+      >
         <Icon name="arrow-left" size={20} />
       </button>
-      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{project.name}</h1>
+
+      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>
+        {project?.name || 'Custom Interior Design'}
+      </h1>
+
       <a
-        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help with ${project.name}.`)}`}
+        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+          `Hello Supplybase, I need help with ${project?.name || 'Custom Interior Design'}.`
+        )}`}
         target="_blank"
         rel="noopener noreferrer"
         className={plain ? 'pnt-help' : 'wizard-help'}

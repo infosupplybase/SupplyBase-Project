@@ -14,6 +14,7 @@ import {
 import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
 import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
 import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
+import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
 import PaintingCategory from '../../pages/PaintingCategory';
 import PaintingFlow from '../../pages/PaintingFlow';
 import PlumbingCategory from '../../pages/PlumbingCategory';
@@ -95,6 +96,11 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
+  const [showCustomInteriorDesign, setShowCustomInteriorDesign] =
+  useHistoryState('bm:idCustom', false, { push: true });
+  const [showCustomInteriorDetails, setShowCustomInteriorDetails] =
+  useHistoryState('bm:idCustomDetails', false, { push: true });
+  const [customInteriorRequirements, setCustomInteriorRequirements] = useState('');
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
   const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
@@ -729,34 +735,58 @@ export default function ServiceBookingModal({ service, onClose }) {
               )}
             </>
           ) : service.slug === 'interior-design' ? (
-            selectedInteriorDesignProject ? (
-              <InteriorDesignFlow
-                modal={true}
-                categorySlug={selectedInteriorDesignCategory}
-                projectSlug={selectedInteriorDesignProject}
-                onBackToCatalogue={() => {
-                  formBack(() => setSelectedInteriorDesignProject(null));
-                  scrollModalToTop();
-                }}
-                onStepChange={scrollModalToTop}
-              />
-            ) : selectedInteriorDesignCategory ? (
-              <InteriorDesignCatalogue
-                modal={true}
-                categorySlug={selectedInteriorDesignCategory}
-                onSelectProject={(projectSlug) => {
-                  setSelectedInteriorDesignProject(projectSlug);
-                  scrollModalToTop();
-                }}
-                onBack={() => {
-                  formBack(() => {
-                    setSelectedInteriorDesignCategory(null);
-                    setSelectedInteriorDesignProject(null);
-                  });
-                  scrollModalToTop();
-                }}
-              />
-            ) : (
+
+ showCustomInteriorDesign ? (
+  <InteriorDesignCustomFlow
+    modal={true}
+    onBack={() => {
+      formBack(() => setShowCustomInteriorDesign(false));
+      scrollModalToTop();
+    }}
+    onContinue={(requirements) => {
+      setCustomInteriorRequirements(requirements);
+      setShowCustomInteriorDesign(false);
+      setShowCustomInteriorDetails(true);
+      scrollModalToTop();
+    }}
+  />
+) : showCustomInteriorDetails ? (
+  <InteriorDesignFlow
+    modal={true}
+    startAtDetails={true}
+    categorySlug={selectedInteriorDesignCategory}
+    projectSlug={selectedInteriorDesignProject}
+    customRequirements={customInteriorRequirements}
+    onStepChange={scrollModalToTop}
+  />
+) : selectedInteriorDesignProject ? (
+  <InteriorDesignFlow
+    modal={true}
+    categorySlug={selectedInteriorDesignCategory}
+    projectSlug={selectedInteriorDesignProject}
+    onBackToCatalogue={() => {
+      formBack(() => setSelectedInteriorDesignProject(null));
+      scrollModalToTop();
+    }}
+    onStepChange={scrollModalToTop}
+  />
+) : selectedInteriorDesignCategory ? (
+  <InteriorDesignCatalogue
+    modal={true}
+    categorySlug={selectedInteriorDesignCategory}
+    onSelectProject={(projectSlug) => {
+      setSelectedInteriorDesignProject(projectSlug);
+      scrollModalToTop();
+    }}
+    onBack={() => {
+      formBack(() => {
+        setSelectedInteriorDesignCategory(null);
+        setSelectedInteriorDesignProject(null);
+      });
+      scrollModalToTop();
+    }}
+  />
+) : (
               <InteriorDesignCategory
                 modal={true}
                 onSelectCategory={(categorySlug) => {
@@ -764,9 +794,9 @@ export default function ServiceBookingModal({ service, onClose }) {
                   setSelectedInteriorDesignProject(null);
                   scrollModalToTop();
                 }}
-                onCustom={() => {
-                  console.log('Custom interior design');
-                }}
+              onCustom={() => {
+  setShowCustomInteriorDesign(true);
+}}
               />
             )
           ) : service.slug === 'painting' ? (
