@@ -182,15 +182,14 @@
   align-items: center;
 }
 
-/* A pill that reads like a form field: pin, "Your location" over the place
-   name, chevron. The caption says what the control is before anyone has to
-   guess from a bare city name. */
+/* A pill: pin, then "Your location" over the place name. The caption says
+   what the control is before anyone has to guess from a bare city name. */
 .location-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   height: var(--tap-min);
-  padding: 0 12px 0 5px;
+  padding: 0 16px 0 5px;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
   background: var(--white);
@@ -255,21 +254,6 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
-}
-
-.location-btn-caret {
-  color: var(--ink-muted);
-  flex-shrink: 0;
-  transition: transform var(--t) var(--ease), color var(--t-fast) var(--ease);
-}
-
-.location-btn:hover .location-btn-caret,
-.location-btn.open .location-btn-caret {
-  color: var(--gold-deep);
-}
-
-.location-btn.open .location-btn-caret {
-  transform: rotate(180deg);
 }
 
 /* Not chosen yet: the caption asks, in gold, and a soft ring pulses out of
@@ -400,7 +384,7 @@
   .location-btn {
     gap: 6px;
     height: 40px;
-    padding: 0 10px 0 4px;
+    padding: 0 12px 0 4px;
   }
   .location-btn-pin {
     width: 30px;
@@ -424,18 +408,12 @@
   }
 }
 
-/* Narrow phones: a shorter name and no chevron (the pill still looks
-   tappable). Only below 340px does the name drop and the pin stand alone —
-   it opens the same picker, which names the location in full. */
+/* Narrow phones: a shorter name. Only below 340px does the name drop and
+   the pin stand alone — it opens the same picker, which names the location
+   in full. */
 @media (max-width: 400px) {
-  .location-btn {
-    padding-right: 10px;
-  }
   .location-btn-text {
     max-width: 96px;
-  }
-  .location-btn-caret {
-    display: none;
   }
   .brand img {
     height: clamp(32px, 9vw, 40px);

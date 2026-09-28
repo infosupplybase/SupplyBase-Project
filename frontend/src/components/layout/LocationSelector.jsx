@@ -11,9 +11,9 @@ export default function LocationSelector() {
   return hasGoogleMaps ? <GoogleLocationButton /> : <ServiceAreaMenu />;
 }
 
-/** The pill itself: a pin, a small caption over the short place name, and a
-    chevron. Until the customer picks a location the caption asks them to,
-    and the pin pulses gently so the control is noticed. */
+/** The pill itself: a pin and a small caption over the short place name.
+    Until the customer picks a location the caption asks them to, and the
+    pin pulses gently so the control is noticed. */
 function LocationButton({ open, ...props }) {
   const { location, shortLocation, locationChosen } = useLocationContext();
 
@@ -38,7 +38,6 @@ function LocationButton({ open, ...props }) {
         </span>
         <span className="location-btn-text">{shortLocation}</span>
       </span>
-      <Icon name="chevron-down" size={14} className="location-btn-caret" />
     </button>
   );
 }
