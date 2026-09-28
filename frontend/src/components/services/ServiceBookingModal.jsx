@@ -153,8 +153,8 @@ export default function ServiceBookingModal({ service, onClose }) {
        ${service.slug === 'interior-by-choice'
   ? 'max-w-[1000px]'
   : service.slug === 'interior-design'
-    ? 'max-w-[760px]'
-    : 'max-w-[500px]'
+    ? 'max-w-[1000px]'
+    : 'max-w-[550px]'
 }
 
           flex

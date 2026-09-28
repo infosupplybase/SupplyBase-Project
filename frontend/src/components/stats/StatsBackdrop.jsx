@@ -21,7 +21,6 @@ export default function StatsBackdrop() {
       /* lowercase: React 18 does not know the camelCase `fetchPriority` prop
          and silently drops it. */
       fetchpriority="low"
-      decoding="async"
       draggable="false"
     />
   );

@@ -1,0 +1,4 @@
+# Git hooks are shell scripts: they must keep Unix line endings on every
+# machine, or they fail on Linux/macOS (and in Git Bash) with "\r" errors.
+.githooks/* text eol=lf
+*.sh text eol=lf

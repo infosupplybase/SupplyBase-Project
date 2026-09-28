@@ -56,6 +56,35 @@ const REPEATED_QUESTIONS = {
   ],
 };
 
+// Services not offered for now. They stay in the catalogue and are only
+// hidden from the "What service do you need?" choices — delete a line here
+// to offer that service again.
+const HIDDEN_SERVICES = {
+  waterproofing: [
+    'Balcony Waterproofing',
+    'Toilet Waterproofing',
+    'Kitchen Waterproofing',
+    'Podium Waterproofing',
+    'Wall Waterproofing',
+    'Bathroom Corner & Joint Sealing',
+    'Bathroom Pipeline & Fixture Sealing',
+    'Bathroom Shower Area Waterproofing',
+    'Bathroom Tile Re-sealing',
+  ],
+};
+
+/** The question without any service that is not offered for now. */
+const withoutHiddenServices = (q, slug) => {
+  const hidden = HIDDEN_SERVICES[slug];
+  if (!hidden || q.key !== 'service_needed' || !Array.isArray(q.options)) {
+    return q;
+  }
+  return {
+    ...q,
+    options: q.options.filter((o) => !hidden.includes(o.value)),
+  };
+};
+
 /** Whether this general form asks a catalogue question. */
 const isAskedHere = (q, slug) =>
   Boolean(q) &&
@@ -290,7 +319,7 @@ const stageQuestions = useMemo(() => {
         index === questions.findIndex((q) => q.key === question.key)
     )
     .map((q, index) => ({
-      ...q,
+      ...withoutHiddenServices(q, slug),
       _questionId: `${q.key}-${index}`,
     }));
 
