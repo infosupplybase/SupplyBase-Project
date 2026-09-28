@@ -10,7 +10,8 @@ import {
   ID_REFERENCE_PACKAGES, ID_REFERENCE_STATS, ID_REFERENCE_PROJECT_SLUG,
   idWhatsNext, idProcessSteps, idFaqs,
 } from '../data/interiorDesignContent';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -74,6 +75,7 @@ export default function InteriorDesignFlow({
   const [requirements, setRequirements] = useHistoryState(`${scope}:requirements`, '');
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  const pickedLocation = usePickedLocation();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -129,7 +131,7 @@ const jumpToStage = (s) => {
   };
 
   const canLeaveDetails = () => {
-    const next = validateDetails(details);
+    const next = validateDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -203,31 +205,21 @@ const jumpToStage = (s) => {
     console.log('🔥 FINAL parts:', parts);
     console.log('🔥 Step 3 - about to call createBooking');
 
-    const result = await api.createBooking({
-      serviceSlug: 'interior-design',
-      answers: [
-        {
-          key: 'notes',
-          value: parts.join(' · ').slice(0, 400),
-          label: 'Selected project, package and requirements',
-        },
-      ],
-      preferredDate: date,
-      preferredTime: time,
-      name: details.name,
-      phone: details.phone,
-      whatsapp: details.whatsapp || null,
-      email: details.email || null,
-      address: details.address,
-      city: details.city,
-      pincode: details.pincode || null,
-      areaSqft: undefined,
-    });
-
-    console.log('📥 Booking response received:', result);
-
-    setReceipt(result);
-    setStage(CONFIRM);
+      const result = await api.createBooking({
+        serviceSlug: 'interior-design',
+        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 500), label: 'Selected project, package and requirements' }],
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name,
+        phone: details.phone,
+        whatsapp: details.whatsapp || null,
+        email: details.email || null,
+        address: composeAddress(details, pickedLocation),
+        city: details.city,
+        pincode: details.pincode || null,
+      });
+      setReceipt(result);
+      setStage(CONFIRM);
 
     if (modal) {
       onStepChange?.();

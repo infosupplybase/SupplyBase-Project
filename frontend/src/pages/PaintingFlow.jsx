@@ -12,7 +12,8 @@ import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import usePaintingCatalogue from '../hooks/usePaintingCatalogue';
 import { paintingFlows } from '../data/paintingContent';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
 import { formatRupees } from '../lib/money';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
@@ -59,6 +60,7 @@ const displayFlow = paintingCategoryName
   const formBack = useFormBack();
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const pickedLocation = usePickedLocation();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -221,7 +223,7 @@ const displayFlow = paintingCategoryName
 };
 
   const canLeaveDetails = () => {
-    const next = validateDetails(details);
+    const next = validateDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -273,7 +275,7 @@ const displayFlow = paintingCategoryName
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });

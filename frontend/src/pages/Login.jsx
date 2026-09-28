@@ -4,6 +4,7 @@ import Icon from '../components/ui/Icon';
 import GoogleButton from '../components/auth/GoogleButton';
 import { company, contact } from '../data/siteConfig';
 import { useAuth, friendlyError } from '../context/AuthContext';
+import { isValidPhone } from '../lib/bookingDetails';
 
 /**
  * Account page — sign in and create account, on one screen.
@@ -30,8 +31,6 @@ import { useAuth, friendlyError } from '../context/AuthContext';
  */
 const emptyForm = { name: '', email: '', phone: '', identifier: '', password: '', confirm: '' };
 
-/** Ten digits after the +91 and the spaces are taken out. */
-const isValidPhone = (value) => /^[6-9]\d{9}$/.test(String(value).replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
 
 export default function Login() {
   const { user, login, register, loginWithGoogle, googleEnabled } = useAuth();

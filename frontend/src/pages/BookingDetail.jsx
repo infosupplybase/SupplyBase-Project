@@ -128,7 +128,8 @@ export default function BookingDetail() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const nextErrors = validateDetails(form);
+    // This edit form has only the typed address, no map.
+    const nextErrors = validateDetails(form, null, { typedAddressOnly: true });
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
