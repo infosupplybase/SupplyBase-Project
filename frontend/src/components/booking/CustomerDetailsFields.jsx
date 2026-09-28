@@ -214,13 +214,7 @@ export default function CustomerDetailsFields({ details, setDetail, errors, idPr
                inputMode="numeric" value={value('phone')}
                onChange={setDetail('phone')} error={errors.phone}
                placeholder="Enter mobile number" autoComplete="tel" />
-        <Field id={`${idPrefix}-whatsapp`} label={
-  <>
-    WhatsApp Number
-    <br />
-    (Optional)
-  </>
-} type="tel"
+        <Field id={`${idPrefix}-whatsapp`} label="WhatsApp Number (Optional)" type="tel"
                inputMode="numeric" value={value('whatsapp')}
                onChange={setDetail('whatsapp')} error={errors.whatsapp}
                placeholder="Enter WhatsApp number"

@@ -39,15 +39,15 @@ public class AppointmentController {
      * Public. The booking form asks this rather than holding its own idea of
      * when the office is open.
      */
-    @GetMapping("/api/appointments/available-slots")
-    public List<DayAvailabilityResponse> availableSlots(
-            @RequestParam String service,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(defaultValue = "14") int days) {
-        Long categoryId = catalogue.requireCategory(service).getId();
-        return appointments.availability(categoryId, from, days);
-    }
+   @GetMapping("/api/appointments/available-slots")
+public List<DayAvailabilityResponse> availableSlots(
+        @RequestParam("service") String service,
+        @RequestParam(value = "from", required = false)
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(value = "days", defaultValue = "14") int days) {
+    Long categoryId = catalogue.requireCategory(service).getId();
+    return appointments.availability(categoryId, from, days);
+}
 
     /* ----------------------------------------------------------- staff */
 
