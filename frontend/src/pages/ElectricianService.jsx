@@ -9,8 +9,8 @@ import { contact } from '../data/siteConfig';
 import { electricianServiceIntros, ELECTRICIAN_STAGES } from '../data/electricianServices';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
-import { AddressFields } from '../components/booking/CustomerDetailsFields';
-import { composeAddress, validateDetails as checkDetails } from '../lib/bookingDetails';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 
 const TYPE = 0;
@@ -18,8 +18,6 @@ const DETAILS = 1;
 const ADDONS = 2;
 const SCHEDULE = 3;
 const CONFIRM = 4;
-
-const emptyDetails = { name: '', phone: '', whatsapp: '', email: '', address: '', city: '', pincode: '' };
 
 /** ₹1,234.50 -> "1,234.50", dropping a trailing ".00" for a cleaner read. */
 function formatMoney(n) {
@@ -476,23 +474,11 @@ export default function ElectricianService() {
             {stage === CONFIRM && (
               <>
                 <div className="wizard-card-head">
-                  <h2>Enter Your Details</h2>
+                  <h2>Your Details</h2>
                   <p>We will contact you to confirm the appointment.</p>
                 </div>
 
-                <div className="form-grid">
-                  <Field id="ec-name" label="Full Name" required value={details.name} onChange={setDetail('name')} error={errors.name} placeholder="Enter your name" />
-                  <Field id="ec-phone" label="Mobile Number" required type="tel" inputMode="numeric" value={details.phone} onChange={setDetail('phone')} error={errors.phone} placeholder="Enter mobile number" />
-                  <Field id="ec-whatsapp" label="WhatsApp Number (Optional)" type="tel" inputMode="numeric" value={details.whatsapp} onChange={setDetail('whatsapp')} error={errors.whatsapp} placeholder="Enter WhatsApp number" hint="Leave blank if it is the same as your mobile." />
-                  <Field id="ec-email" label="Email Address (Optional)" type="email" value={details.email} onChange={setDetail('email')} error={errors.email} placeholder="Enter email address" />
-                </div>
-
-                <AddressFields details={details} setDetail={setDetail} errors={errors} idPrefix="ec" />
-
-                <div className="form-grid" style={{ marginTop: 16 }}>
-                  <Field id="ec-city" label="City" required value={details.city} onChange={setDetail('city')} error={errors.city} placeholder="Mumbai" />
-                  <Field id="ec-pincode" label="Pincode" required value={details.pincode} onChange={setDetail('pincode')} error={errors.pincode} placeholder="400001" />
-                </div>
+                <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="ec" />
 
                 <ElectricianSummary category={category} form={form} answers={answers} date={date} time={time} estimate={estimate} />
               </>
@@ -531,18 +517,6 @@ export default function ElectricianService() {
 }
 
 /* -------------------------------------------------------------- helpers */
-
-function Field({ id, label, required, hint, error, ...rest }) {
-  return (
-    <div className={`field ${error ? 'error' : ''}`}>
-      <label htmlFor={id}>
-        {label} {required && <span className="req">*</span>}
-      </label>
-      <input id={id} {...rest} />
-      {error ? <span className="field-error">{error}</span> : hint && <span className="field-hint">{hint}</span>}
-    </div>
-  );
-}
 
 function FileField({ question, files, onPick, onRemove, error }) {
   const inputId = `file-${question.key}`;

@@ -265,7 +265,7 @@ if (receipt) {
             {stage === DETAILS && (
               <>
                 <div className="wizard-card-head">
-                  <h2>Enter Your Details</h2>
+                  <h2>Your Details</h2>
                   <p>We will contact you to confirm the appointment.</p>
                 </div>
                 <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pcb" />
