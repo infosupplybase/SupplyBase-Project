@@ -355,51 +355,7 @@ button,
 label {
   overflow-wrap: anywhere;
 }
-/* =========================================
-   LOCATION SELECTOR
-========================================= */
-/* =========================================================
-   LOCATION SELECTOR - NAVBAR
-   ========================================================= */
-
-.location-select {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.location-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-
-  height: 38px;
-
-  padding: 0 8px;
-
-  border: none;
-  background: transparent;
-
-  color: inherit;
-
-  cursor: pointer;
-}
-
-.location-btn:hover {
-  opacity: 0.85;
-}
-
-.location-btn-text {
-  max-width: 150px;
-
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  font-size: 14px;
-  font-weight: 500;
-}
-
+/* The navbar location button itself is styled in header.css. */
 
 /* =========================================================
    GOOGLE LOCATION OVERLAY

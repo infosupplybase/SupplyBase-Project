@@ -11,25 +11,50 @@ export default function LocationSelector() {
   return hasGoogleMaps ? <GoogleLocationButton /> : <ServiceAreaMenu />;
 }
 
+/** The pill itself: a pin, a small caption over the short place name, and a
+    chevron. Until the customer picks a location the caption asks them to,
+    and the pin pulses gently so the control is noticed. */
+function LocationButton({ open, ...props }) {
+  const { location, shortLocation, locationChosen } = useLocationContext();
+
+  return (
+    <button
+      type="button"
+      className={`location-btn ${locationChosen ? '' : 'unset'} ${open ? 'open' : ''}`}
+      title={locationChosen ? `${location} (tap to change)` : 'Choose where you need the service'}
+      aria-label={
+        locationChosen
+          ? `Service location: ${location}. Change location`
+          : 'Set your service location'
+      }
+      {...props}
+    >
+      <span className="location-btn-pin" aria-hidden="true">
+        <Icon name="map-pin" size={16} />
+      </span>
+      <span className="location-btn-body">
+        <span className="location-btn-caption">
+          {locationChosen ? 'Your location' : 'Set location'}
+        </span>
+        <span className="location-btn-text">{shortLocation}</span>
+      </span>
+      <Icon name="chevron-down" size={14} className="location-btn-caret" />
+    </button>
+  );
+}
+
 function GoogleLocationButton() {
-  const { location, setLocation } = useLocationContext();
+  const { setLocation } = useLocationContext();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <>
       <div className="location-select">
-        <button
-          type="button"
-          className="location-btn"
+        <LocationButton
+          open={pickerOpen}
           onClick={() => setPickerOpen(true)}
-          aria-label="Select location"
-        >
-          <Icon name="map-pin" size={16} />
-          <span className="location-btn-text" title={location}>
-            {location}
-          </span>
-          <Icon name="chevron-down" size={13} />
-        </button>
+          aria-haspopup="dialog"
+        />
       </div>
 
       <GoogleLocationPicker
@@ -65,22 +90,18 @@ function ServiceAreaMenu() {
 
   return (
     <div className="location-select" ref={ref}>
-      <button
-        type="button"
-        className="location-btn"
+      <LocationButton
+        open={open}
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-      >
-        <Icon name="map-pin" size={16} />
-        <span className="location-btn-text" title={location}>
-          {location}
-        </span>
-        <Icon name="chevron-down" size={13} />
-      </button>
+      />
 
       {open && (
         <ul className="location-menu" role="listbox" aria-label="Choose your service area">
+          <li className="location-menu-title" role="presentation">
+            Where do you need the service?
+          </li>
           {serviceAreas.map((area) => (
             <li key={area}>
               <button
