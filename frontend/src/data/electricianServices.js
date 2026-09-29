@@ -25,20 +25,20 @@ export const electricalCategoryIntro = {
  * pricing hints so the card matches the Plumber overview grid.
  */
 export const electricianCategoryTiles = [
-  {
-    slug: 'home-electrical-services',
-    name: 'Home',
-    blurb: 'On-site quote',
-    fromPrice: null,
-    image: '/assets/services/electrician/Home1.jpg',
-    detailed: true,
-  },
+  // {
+  //   slug: 'home-electrical-services',
+  //   name: 'Home',
+  //   blurb: 'On-site quote',
+  //   fromPrice: null,
+  //   image: '/assets/services/electrician/Home1.jpg',
+  //   detailed: true,
+  // },
   {
     slug: 'fan-installation',
     name: 'Fan',
     blurb: 'From ₹199',
     fromPrice: 199,
-    image: '/assets/services/electrician/FAN.jpg',
+    image: '/assets/services/electrician/FAN.png',
     detailed: true,
   },
   {

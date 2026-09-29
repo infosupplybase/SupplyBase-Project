@@ -41,6 +41,25 @@ function formatMoney(n) {
   return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
+function formatServiceTitle(slug) {
+  if (!slug) return 'ELECTRICIAN';
+
+  const specialNames = {
+    'bldc-smart-fan-installation': 'BLDC / SMART FAN INSTALLATION',
+    'mcb-db-installation': 'MCB AND DB',
+  };
+
+  if (specialNames[slug]) {
+    return specialNames[slug];
+  }
+
+  return slug
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+    .toUpperCase();
+}
+
 /**
  * /services/electrical/:subSlug — one of the seven detailed electrician
  * journeys: intro, then a catalogue-driven wizard (Type -> Details ->
@@ -511,10 +530,12 @@ if (!locationData?.address) {
           <button type="button" className="wizard-back" onClick={stage === TYPE ? () => formBack(() => setStarted(false)) : goBack} aria-label="Go back">
             <Icon name="arrow-left" size={20} />
           </button>
-          <h1 className="wizard-title">{category.name}</h1>
+          <h1 className="wizard-title">
+            {formatServiceTitle(subSlug)}
+          </h1>
           <a
             href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
-              `Hello Supplybase, I need help booking ${category.name}.`
+              `Hello Supplybase, I need help booking ${formatServiceTitle(subSlug)}.`
             )}`}
             target="_blank"
             rel="noopener noreferrer"

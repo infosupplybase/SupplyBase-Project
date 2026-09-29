@@ -1,48 +1,67 @@
 /* =========================================================================
-   SUPPLYBASE — ELECTRICIAN SERVICES
-   Category list + the detailed-service intro splash. The wizard itself
-   (steps, fields, fee panel, confirmation) reuses wizard.css unchanged —
-   only what's new lives here, prefixed `elc-` so nothing collides.
+   SUPPLYBASE — ELECTRICIAN SERVICES  (consolidated & cleaned)
+   Category list, intro splash, estimate, uploads, and the modal card grid.
+   The wizard itself reuses wizard.css unchanged. All new classes are
+   prefixed `elc-` / `electrical-` so nothing collides.
+
+   Layout rules for the modal grid:
+     - Equal-width columns (3 up desktop + mobile), equal-height rows
+     - Every card: icon panel -> name -> price -> note, same order & spacing
+     - Text centred; arrow pinned to the right of the name so it never
+       shifts the label off-centre
    ========================================================================= */
+
+:root {
+  --elc-card-radius: 16px;
+  --elc-card-border: #ebe6d8;
+  --elc-panel-bg: #faf6ea;
+  --elc-gap: 16px;
+}
 
 .elc-section {
   padding: var(--section-y) 0;
 }
 
-/* ------------------------------------------------------------- category list */
+/* =========================================================================
+   CATEGORY LIST (legacy tile list)
+   ========================================================================= */
 
 .elc-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  width: 100%;
 }
 
 .elc-tile {
   display: flex;
   align-items: center;
   gap: var(--space-4);
+  width: 100%;
+  box-sizing: border-box;
   padding: var(--space-4);
   background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease),
+              transform var(--t-fast) var(--ease);
 }
 
 .elc-tile:hover {
   border-color: var(--gold);
   box-shadow: var(--depth-inset-top), var(--shadow);
-  transform: translateY(-6px);
+  transform: translateY(-3px);
 }
 
-.elc-tile-icon {
-  
+.elc-tile-icon,
+.elc-tile-arrow {
   display: none;
- 
 }
 
 .elc-tile-body {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -50,22 +69,35 @@
 }
 
 .elc-tile-body strong {
+  display: block;
   font-size: 1rem;
   color: var(--ink);
+  writing-mode: horizontal-tb;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .elc-tile-body span {
+  display: block;
   font-size: 0.86rem;
   color: var(--ink-muted);
+  writing-mode: horizontal-tb;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
-.elc-tile-arrow {
-  flex-shrink: 0;
-  color: var(--ink-muted);
-  display: none;
+.elc-tile img {
+  display: block;
+  flex: 0 0 220px;
+  width: 220px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
 }
 
-/* ----------------------------------------------------------- intro splash */
+/* =========================================================================
+   INTRO SPLASH
+   ========================================================================= */
 
 .elc-intro-wrap {
   padding-bottom: var(--section-y);
@@ -168,14 +200,16 @@
 .elc-back-link {
   display: flex;
   align-items: center;
-  gap: 6px;
   justify-content: center;
+  gap: 6px;
   margin-top: var(--space-4);
   font-size: 0.88rem;
   color: var(--ink-muted);
 }
 
-/* ------------------------------------------------------------- estimate */
+/* =========================================================================
+   ESTIMATE
+   ========================================================================= */
 
 .elc-estimate {
   display: flex;
@@ -210,7 +244,9 @@
   max-width: 360px;
 }
 
-/* --------------------------------------------------------------- uploads */
+/* =========================================================================
+   UPLOADS
+   ========================================================================= */
 
 .elc-file-field {
   position: relative;
@@ -267,6 +303,7 @@
   font-size: 0.68rem;
   font-weight: 600;
   cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
 .elc-file-add:hover {
@@ -281,213 +318,183 @@
   margin: -4px 0 16px;
 }
 
-/* ---------------------------------------------------------------- mobile */
+/* =========================================================================
+   ELECTRICAL MODAL — SERVICE CARD GRID
+   (single source of truth; replaces the three earlier conflicting blocks)
+   ========================================================================= */
 
-@media (max-width: 767px) {
-  .elc-badges {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  /* .elc-tile, .elc-back-link and .elc-get-started used to reserve a 70px
-     right margin here so they wouldn't render underneath the site-wide
-     floating call/WhatsApp buttons — FloatingActions is disabled sitewide
-     now (see Layout.jsx), so that reservation is gone too; these can be
-     genuinely full width. */
-  .elc-get-started {
-    width: auto;
-  }
+.plb-overview-card {
+  position: relative;
 }
 
-
-/* =========================================================
-   ELECTRICIAN CATEGORY CARDS — FIX NARROW / VERTICAL TEXT
-   ========================================================= */
-
-.elc-list {
-  width: 100%;
-  max-width: 100%;
-}
-
-.elc-tile {
+.electrical-modal-section .plb-overview-grid,
+.electrical-intro-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-auto-rows: 1fr;              /* equal-height rows */
+  justify-items: stretch;           /* every card fills its column */
+  align-items: stretch;
+  gap: var(--elc-gap) !important;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* ---- card shell ---- */
+.electrical-modal-section .plb-overview-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  grid-column: auto;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid var(--elc-card-border);
+  border-radius: var(--elc-card-radius);
+  box-shadow: 0 1px 2px rgba(20, 16, 4, 0.04), 0 6px 18px rgba(20, 16, 4, 0.05);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease),
+              transform var(--t-fast) var(--ease);
+}
+
+.electrical-modal-section .plb-overview-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 2px 4px rgba(20, 16, 4, 0.05), 0 12px 26px rgba(20, 16, 4, 0.09);
+  transform: translateY(-3px);
+}
+
+.electrical-modal-section .plb-overview-card:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ---- icon panel: fixed height, centred, blends the icon's own backdrop ---- */
+.electrical-modal-section .plb-overview-photo {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 16px;
+  justify-content: center;
+  width: 56px !important;
+  height: 56px !important;
+  max-height: none;
+  aspect-ratio: auto;
+  margin: 20px auto 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: transparent !important;   /* no tile behind the icon */
+  border: 0;
+  border-radius: 0;
 }
 
-.elc-tile-body {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: auto;
-}
-
-.elc-tile-body strong,
-.elc-tile-body span {
+.electrical-modal-section .plb-overview-photo img {
   display: block;
-  width: 100%;
-  white-space: normal;
-  writing-mode: horizontal-tb;
-  word-break: normal;
-  overflow-wrap: break-word;
+  width: 44px !important;
+  height: 44px !important;
+  object-fit: contain;
+  background: transparent;
+  /* Push the image's baked-in cream/off-white backdrop to pure white, then
+     multiply against the white card so only the dark line-art remains. */
+  filter: brightness(1.08) contrast(1.15);
+  mix-blend-mode: multiply;
 }
 
-/* If category image is inside the tile */
-.elc-tile img {
-  display: block;
-  flex: 0 0 220px;
-  width: 220px;
-  height: 140px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-}
-
-/* Mobile */
-@media (max-width: 767px) {
-  .elc-tile {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .elc-tile img {
-    flex: none;
-    width: 100%;
-    height: 180px;
-  }
-
-  .elc-tile-body {
-    width: 100%;
-  }
-
-  .elc-tile-body strong,
-  .elc-tile-body span {
-    width: 100%;
-  }
-}
-
-/* Force the electrical intro/category grids to be 4 columns inside the
-   modal, matching the compact Urban Company layout. */
-.electrical-modal-section .plb-overview-grid,
-.electrical-intro-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-  gap: var(--space-3);
-}
-
-/* Slightly smaller photo so 4 cards fit without looking cramped */
-.electrical-modal-section .plb-overview-photo,
-.electrical-intro-grid .plb-overview-photo {
-  aspect-ratio: 4 / 3;
-}
-
-/* Shorter name/price text so nothing wraps awkwardly at narrow widths */
-.electrical-modal-section .plb-overview-name,
-.electrical-intro-grid .plb-overview-name {
-  font-size: 0.9rem;
-  padding: var(--space-2) var(--space-3) 0;
-}
-
-.electrical-modal-section .plb-overview-price,
-.electrical-intro-grid .plb-overview-price {
+/* ---- name: fixed two-line slot so every price lines up ---- */
+.electrical-modal-section .plb-overview-name {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 12px 28px 0 !important;  /* side padding keeps text clear of the arrow */
+  box-sizing: border-box;
   font-size: 0.95rem;
-  padding: 4px var(--space-3) 0;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--ink);
+  text-align: center;
+  text-wrap: balance;
 }
 
-.electrical-modal-section .plb-overview-price-note,
-.electrical-intro-grid .plb-overview-price-note {
-  font-size: 0.7rem;
-  padding: 0 var(--space-3) var(--space-3);
+.electrical-modal-section .plb-overview-name svg {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 14px;
+  height: 14px;
+  margin-top: 6px;                  /* offsets the top padding so it centres on the label */
+  transform: translateY(-50%);
+  color: var(--ink-muted);
+  transition: transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
-@media (max-width: 767px) {
-  .elc-badges {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.electrical-modal-section .plb-overview-card:hover .plb-overview-name svg {
+  color: var(--gold-deep);
+  transform: translate(2px, -50%);
+}
 
-  .elc-get-started {
-    width: auto;
-  }
+/* ---- price + note pinned to the bottom, always aligned across cards ---- */
+.electrical-modal-section .plb-overview-price {
+  margin-top: auto;
+  padding: 6px 12px 0 !important;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  color: var(--gold-deep);
+  text-align: center;
+}
 
-  /* 3 per row on mobile */
-  .electrical-modal-section .plb-overview-grid,
-  .electrical-intro-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 6px;
-  }
-
-  /* Shorter photo so 3 cards fit side by side without dominating */
-  .electrical-modal-section .plb-overview-photo,
-  .electrical-intro-grid .plb-overview-photo {
-    height: 68px;
-    max-height: 68px;
-  }
-
-  /* Tighten card body so text still fits under a 3-up grid */
-  .electrical-modal-section .plb-overview-name,
-  .electrical-intro-grid .plb-overview-name {
-    font-size: 0.68rem;
-    padding: 5px 6px 0;
-    gap: 2px;
-  }
-
-  .electrical-modal-section .plb-overview-name svg,
-  .electrical-intro-grid .plb-overview-name svg {
-    width: 11px;
-    height: 11px;
-  }
-
-  .electrical-modal-section .plb-overview-price,
-  .electrical-intro-grid .plb-overview-price {
-    font-size: 0.68rem;
-    padding: 1px 6px 0;
-  }
-
-  .electrical-modal-section .plb-overview-price-note,
-  .electrical-intro-grid .plb-overview-price-note {
-    font-size: 0.54rem;
-    padding: 0 6px 6px;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.electrical-modal-section .plb-overview-price-note {
+  padding: 2px 12px 16px !important;
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  text-align: center;
 }
 
 /* =========================================================================
-   INLINE ELECTRICAL FORM (Added inside the 4-up grid)
+   INLINE EXPANDED FORM (card opens into a single full-width panel)
    ========================================================================= */
 
-/* The whole grid becomes a single column when a card is expanded */
 .electrical-modal-section .plb-overview-grid.is-expanded {
   grid-template-columns: 1fr !important;
-  gap: 16px;
+  grid-auto-rows: auto;
+  gap: 16px !important;
 }
 
-/* Expanded card takes full width and removes the hover lift */
 .electrical-modal-section .plb-overview-card.is-expanded {
   transform: none !important;
-  box-shadow: var(--depth-inset-top), var(--shadow-lg);
+  text-align: left;
+  cursor: default;
   border-color: var(--gold);
-  display: flex;
-  flex-direction: column;
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
 }
 
-/* Header inside the expanded card */
+.plb-overview-card.is-expanded .plb-overview-name svg {
+  display: none;
+}
+
 .elc-expanded-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   padding: 16px;
   border-bottom: 1px solid var(--border);
 }
 
 .elc-expanded-header img {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
   border-radius: var(--radius-sm);
-  object-fit: cover;
+  object-fit: contain;
+  background: transparent;
+  filter: brightness(1.08) contrast(1.15);
+  mix-blend-mode: multiply;
 }
 
 .elc-expanded-header-info {
@@ -518,6 +525,7 @@
   background: var(--light-bg);
   color: var(--ink-muted);
   cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
 .elc-expanded-close:hover {
@@ -525,19 +533,19 @@
   color: var(--danger);
 }
 
-/* The list of sub-services (checkboxes) */
+/* ---- sub-service checklist ---- */
 .elc-subservice-list {
-  padding: 8px 16px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 12px 16px 16px;
 }
 
 .elc-subservice-item {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -555,11 +563,11 @@
 }
 
 .elc-subservice-item input[type="checkbox"] {
-  margin-top: 3px;
-  accent-color: var(--gold);
+  flex-shrink: 0;
   width: 16px;
   height: 16px;
-  flex-shrink: 0;
+  margin-top: 3px;
+  accent-color: var(--gold);
 }
 
 .elc-subservice-body {
@@ -569,15 +577,15 @@
 
 .elc-subservice-body strong {
   display: block;
+  margin-bottom: 2px;
   font-size: 0.92rem;
   color: var(--ink);
-  margin-bottom: 2px;
 }
 
 .elc-subservice-body span {
   font-size: 0.78rem;
-  color: var(--ink-muted);
   line-height: 1.4;
+  color: var(--ink-muted);
 }
 
 .elc-subservice-price {
@@ -587,18 +595,18 @@
   color: var(--gold-deep);
 }
 
-/* Footer with total and Add to Cart */
+/* ---- footer: total + add to cart ---- */
 .elc-expanded-footer {
-  margin-top: auto;
-  padding: 16px;
-  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  margin-top: auto;
+  padding: 16px;
   background: var(--light-bg);
-  border-bottom-left-radius: var(--radius);
-  border-bottom-right-radius: var(--radius);
+  border-top: 1px solid var(--border);
+  border-bottom-left-radius: var(--elc-card-radius);
+  border-bottom-right-radius: var(--elc-card-radius);
 }
 
 .elc-expanded-total {
@@ -608,9 +616,9 @@
 
 .elc-expanded-total span {
   font-size: 0.75rem;
-  color: var(--ink-muted);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
 }
 
 .elc-expanded-total strong {
@@ -619,37 +627,7 @@
   color: var(--ink);
 }
 
-/* Hide the arrow when expanded */
-.plb-overview-card.is-expanded .plb-overview-name svg {
-  display: none;
-}
-
-/* On mobile, if expanded, the form fits the screen width */
-@media (max-width: 767px) {
-  .elc-expanded-header {
-    padding: 12px;
-  }
-  .elc-expanded-header img {
-    width: 48px;
-    height: 48px;
-  }
-  .elc-subservice-list {
-    padding: 8px 12px 12px;
-  }
-  .elc-expanded-footer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  .elc-expanded-footer .btn {
-    width: 100%;
-  }
-}
-
-/* =========================================================================
-   ELECTRICAL CARD — "Added" flash
-   ========================================================================= */
-
+/* ---- "Added" flash ---- */
 .plb-overview-card.is-added {
   border-color: var(--success);
   box-shadow: var(--depth-inset-top), var(--shadow);
@@ -671,13 +649,239 @@
   pointer-events: none;
 }
 
-/* The card needs a positioning context for the flash */
-.plb-overview-card {
-  position: relative;
+@media (prefers-reduced-motion: reduce) {
+  .electrical-modal-section .plb-overview-card,
+  .electrical-modal-section .plb-overview-name svg,
+  .elc-tile {
+    transition: none;
+  }
+  .electrical-modal-section .plb-overview-card:hover,
+  .elc-tile:hover {
+    transform: none;
+  }
 }
+
+/* =========================================================================
+   TABLET
+   ========================================================================= */
+
+@media (max-width: 1023px) {
+  .electrical-modal-section .plb-overview-grid,
+  .electrical-intro-grid {
+    gap: 12px !important;
+  }
+}
+
+/* =========================================================================
+   MOBILE
+   ========================================================================= */
+
 @media (max-width: 767px) {
-  .electrical-modal-scope .plb-overview-grid {
+  .elc-badges {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .elc-get-started {
+    width: auto;
+  }
+
+  .elc-tile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .elc-tile img {
+    flex: none;
+    width: 100%;
+    height: 180px;
+  }
+
+  /* 3-up grid, compact but still aligned */
+  .electrical-modal-section .plb-overview-grid,
+  .electrical-modal-scope .plb-overview-grid,
+  .electrical-intro-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 6px;
+    gap: 8px !important;
+  }
+
+  .electrical-modal-section .plb-overview-card {
+    border-radius: 12px;
+  }
+
+  .electrical-modal-section .plb-overview-photo {
+    width: 44px !important;
+    height: 44px !important;
+    margin-top: 12px;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .electrical-modal-section .plb-overview-photo img {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .electrical-modal-section .plb-overview-name {
+    min-height: 44px;
+    padding: 8px 6px 0 !important;
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  /* arrow is redundant at this size — frees room for the label */
+  .electrical-modal-section .plb-overview-name svg {
+    display: none;
+  }
+
+  .electrical-modal-section .plb-overview-price {
+    padding: 4px 6px 0 !important;
+    font-size: 0.78rem;
+  }
+
+  .electrical-modal-section .plb-overview-price-note {
+    padding: 1px 6px 10px !important;
+    font-size: 0.58rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* expanded form */
+  .elc-expanded-header {
+    padding: 12px;
+  }
+
+  .elc-expanded-header img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .elc-subservice-list {
+    padding: 8px 12px 12px;
+  }
+
+  .elc-expanded-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .elc-expanded-footer .btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   ELECTRICAL CHECKOUT — INTERIOR BY CHOICE STYLE
+   ========================================================= */
+
+.electrical-selected-service {
+  margin-bottom: 22px;
+}
+
+.electrical-selected-icon {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #fff4d8;
+  color: #d99400;
+}
+
+.electrical-schedule-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.electrical-schedule-actions .btn-secondary {
+  flex: 0 0 140px;
+}
+
+.electrical-schedule-actions .btn-primary {
+  flex: 1;
+}
+
+.electrical-review-card {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.electrical-review-heading {
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #666;
+}
+
+.electrical-review-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.electrical-review-row:last-child {
+  border-bottom: 0;
+}
+
+.electrical-review-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.electrical-review-row span {
+  color: #777;
+  font-size: 14px;
+}
+
+.electrical-review-row strong {
+  color: #171717;
+  font-size: 15px;
+}
+
+.electrical-review-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #ddd;
+}
+
+.electrical-review-total span {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.electrical-review-total strong {
+  color: #9a6b00;
+  font-size: 20px;
+}
+
+@media (max-width: 640px) {
+  .electrical-schedule-actions {
+    gap: 8px;
+  }
+
+  .electrical-schedule-actions .btn-secondary {
+    flex: 0 0 100px;
+  }
+
+  .electrical-review-row {
+    gap: 12px;
   }
 }

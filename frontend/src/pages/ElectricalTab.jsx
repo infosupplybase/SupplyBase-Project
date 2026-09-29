@@ -84,9 +84,13 @@ export default function ElectricalTab({
           </div>
         )}
 
+        
+
         {/* STICKY CART BAR */}
         <StickyCartBar modal={true} onViewCart={onViewCart} />
       </div>
     </section>
+
+    
   );
 }

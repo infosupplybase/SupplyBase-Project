@@ -36,11 +36,30 @@ function migrateRetiredItems(items) {
   return merged;
 }
 
-function readStoredItems() {
+function readStoredItems(cartType) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? migrateRetiredItems(parsed) : [];
+    const key =
+      STORAGE_KEYS[cartType] ||
+      STORAGE_KEYS.plumbing;
+
+    const raw = localStorage.getItem(key);
+
+    const parsed = raw
+      ? JSON.parse(raw)
+      : [];
+
+    const items = Array.isArray(parsed)
+      ? parsed
+      : [];
+
+    if (cartType === 'plumbing') {
+      return migrateRetiredItems(items).filter(
+        (item) =>
+          !item.itemSlug?.startsWith('elec-')
+      );
+    }
+
+    return items;
   } catch {
     return [];
   }
