@@ -132,7 +132,7 @@ export const electricalGroups = [
         label: 'LED Strip / Profile Light Installation',
         hint: 'Installation of LED strip or profile lighting.',
         price: 299,
-        image: '/assets/services/electrician/07_LED_Strip_Profile_Light_Installation.png',
+        image: '/assets/services/electrician/07_LED_Strip_Profile_Light.png',
       },
       {
         value: 'elec-light-outdoor',
