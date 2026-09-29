@@ -1,34 +1,20 @@
-# ---------------------------------------------------------------------------
-# SUPPLYBASE PROJECTS API
-#
-# Nothing secret is written in this file. Every credential is read from an
-# environment variable, with a development-only fallback after the ':'.
-# Copy .env.example to .env and fill it in — see backend/README.md.
-# ---------------------------------------------------------------------------
 spring:
   application:
     name: supplybase-api
 
   config:
-    # Reads backend/.env as a property source, so `./mvnw spring-boot:run` works
-    # with no shell exports and no extra dependency. `optional:` means a missing
-    # .env is not an error — in production the same names come from real
-    # environment variables, which take precedence over anything in the file.
     import: optional:file:./.env[.properties]
 
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:supplybase}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8
     username: ${DB_USER:root}
-    password: ${DB_PASSWORD:Root@123}
+    password: "${DB_PASSWORD}"
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
       pool-name: supplybase-pool
 
   jpa:
-    # never `update` or `create`: Flyway owns the schema, and letting Hibernate
-    # also mutate it means two tools fighting over the same tables. `validate`
-    # makes the app refuse to start if the entities and the migrations disagree.
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -51,13 +37,12 @@ spring:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
     username: ${MAIL_USER:}
-    password: ${MAIL_PASSWORD:}
+    password: "${MAIL_PASSWORD:}"
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
 server:
-  # Render and Railway provide PORT. SERVER_PORT remains useful locally.
   port: ${PORT:${SERVER_PORT:8080}}
   error:
     include-message: always
@@ -73,58 +58,38 @@ management:
       probes:
         enabled: true
   health:
-    # ENQUIRY_EMAIL/MAIL_USER are optional (see .env.example) — without real
-    # credentials this indicator's SMTP connection test fails and would
-    # otherwise take the whole /actuator/health status DOWN even though the
-    # app itself is healthy.
     mail:
       enabled: false
 
 app:
-  # Where the React site runs. Anything not matching is refused by CORS.
-  # These are PATTERNS: [*] covers whichever port Vite ends up on in
-  # development. Set CORS_ORIGINS to exact origins in production.
   cors-allowed-origins: ${CORS_ORIGINS:http://localhost:[*],http://127.0.0.1:[*]}
-  # The single frontend origin used to build links emailed out (password
-  # reset, email verification). Not a CORS list, just one URL.
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
   jwt:
-    # No fixed fallback on purpose — see JwtService.resolveSecret for why a
-    # value baked in here would itself be a security hole. Left unset, a
-    # fresh secret is generated for each run instead (fine for local dev;
-    # every session dies on the next restart, so set a real one for anything
-    # that needs to stay signed in). MUST be set in production.
-    secret: ${JWT_SECRET:}
+    secret: "${JWT_SECRET:}"
     access-token-minutes: ${JWT_ACCESS_MINUTES:15}
     refresh-token-days: ${JWT_REFRESH_DAYS:30}
     issuer: supplybase-projects
+
   google:
-    # Google Cloud Console -> APIs & Services -> Credentials -> OAuth client ID
-    # (type: Web application). This is the PUBLIC client id; there is no secret
-    # here, because ID-token sign-in never needs one.
     client-id: ${GOOGLE_CLIENT_ID:}
+
   razorpay:
     key-id: ${RAZORPAY_KEY_ID:}
-    key-secret: ${RAZORPAY_KEY_SECRET:}
-    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+    key-secret: "${RAZORPAY_KEY_SECRET:}"
+    webhook-secret: "${RAZORPAY_WEBHOOK_SECRET:}"
     currency: INR
+
   notifications:
-    # Where new enquiries are emailed. Blank disables the email entirely.
     enquiry-recipient: ${ENQUIRY_EMAIL:}
+
   bootstrap:
-    # Set both to create (or promote) the first ADMIN account on startup.
-    # Leave blank in production once an admin exists — this only ever acts
-    # while zero admins are in the database.
     admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
-    admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    admin-password: "${BOOTSTRAP_ADMIN_PASSWORD:}"
+
   booking:
-    # How long a PAYMENT_PENDING or BOOKING_REQUESTED booking is held before
-    # BookingExpiryJob auto-cancels it and releases its appointment seat.
     expiry-hours: ${BOOKING_EXPIRY_HOURS:24}
-  # Local-disk root for uploaded project documents and booking files. Fine for
-  # local/current use, but this does NOT survive a redeploy on Render/Railway's
-  # ephemeral filesystem — swap FileStorageService for S3-compatible storage
-  # before relying on uploads persisting across deploys.
+
   storage-root-dir: ${STORAGE_ROOT_DIR:./uploads}
 
 logging:

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
@@ -16,6 +17,8 @@ import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
 
 /**
  * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
@@ -32,8 +35,9 @@ import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
  * always null, and EstimateSummary already renders "To be confirmed on
  * site visit" whenever that's the case.
  */
-export default function PopCeilingFlow() {
-  const { flowSlug } = useParams();
+export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
+  const params = useParams();
+  const flowSlug = propFlowSlug || params.flowSlug;
   const flow = popFlows[flowSlug];
   const { user } = useAuth();
   const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
@@ -51,6 +55,7 @@ export default function PopCeilingFlow() {
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const [choiceError, setChoiceError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
@@ -62,6 +67,7 @@ export default function PopCeilingFlow() {
   const setAnswer = (key) => (value) => {
     setAnswers((a) => ({ ...a, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
+    setChoiceError('');
     setSubmitError('');
   };
 
@@ -109,16 +115,18 @@ export default function PopCeilingFlow() {
       });
   }, [flow, configSteps, answers, optionsFor]);
 
-  if (!flow) return <Navigate to="/services/pop-ceiling-design" replace />;
+  if (!flow) return modal ? null : <Navigate to="/services/pop-ceiling-design" replace />;
 
   const jumpToStep = (i) => {
     setStage(i);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const validateStep = (step) => {
     if ((step.type === 'option' || step.type === 'style') && !answers[step.questionKey]) {
       setErrors({ [step.questionKey]: 'Please choose an option' });
+      if (modal) setChoiceError('Choose an option to continue.');
       return false;
     }
     return true;
@@ -129,13 +137,19 @@ export default function PopCeilingFlow() {
     const step = configSteps[stage - 1];
     if (step && !validateStep(step)) return;
     setStage((s) => Math.min(s + 1, CONFIRM));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goBack = () => {
     setSubmitError('');
+    if (modal && stage === 0) {
+      onBackToCategories?.();
+      return;
+    }
     formBack(() => setStage((s) => Math.max(s - 1, 0)));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const canLeaveDetails = () => {
@@ -193,7 +207,8 @@ export default function PopCeilingFlow() {
       });
       setReceipt(result);
       setStage(CONFIRM);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (modal) onStepChange?.();
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setSubmitError(friendlyError(err));
@@ -227,17 +242,54 @@ export default function PopCeilingFlow() {
 
   /* -------------------------------------------------------------- intro */
   if (stage === 0) {
+    if (modal) {
+      return (
+        <div className="pop-modal-intro">
+          <img
+            src={flow.intro.image}
+            alt={`${flow.title} ceiling design`}
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 20 }}
+          />
+          <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
+            {flow.intro.heading}
+          </h2>
+          <p style={{ color: 'var(--ink-muted)', fontSize: 14, marginBottom: 14 }}>
+            {flow.heroTagline}
+          </p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+            GET STARTED <Icon name="arrow-right" size={17} />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={onBackToCategories}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px auto 0' }}
+          >
+            <Icon name="arrow-left" size={15} /> BACK TO POP SERVICES
+          </button>
+          <div className="pnt-included" style={{ marginTop: 18 }}>
+            <h3>What&rsquo;s Included?</h3>
+            <ul>
+              {flow.whatsIncluded.map((item) => (
+                <li key={item}><Icon name="check" size={14} strokeWidth={3} />{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
     return (
       <>
-        <PaintingHero
+        {!modal && <PaintingHero
           eyebrow={flow.intro.eyebrow}
           title={flow.title}
           tagline={flow.heroTagline}
           image={flow.intro.image}
           trustPoints={[]}
-        />
+        />}
         <section className="pnt-section">
           <div className="container container-narrow">
+            {modal && <button type="button" className="btn btn-ghost btn-sm" onClick={onBackToCategories}>BACK TO POP SERVICES</button>}
             <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
 
             <ul className="pnt-intro-trust">
@@ -301,7 +353,7 @@ export default function PopCeilingFlow() {
                 <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
                   <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
                 </a>
-                <Link to="/services/pop-ceiling-design" className="btn btn-ghost btn-back">BACK TO POP CEILING</Link>
+                {modal ? <button type="button" className="btn btn-ghost btn-back" onClick={onBackToCategories}>BACK TO POP CEILING</button> : <Link to="/services/pop-ceiling-design" className="btn btn-ghost btn-back">BACK TO POP CEILING</Link>}
               </div>
             </div>
           </div>
@@ -389,10 +441,16 @@ export default function PopCeilingFlow() {
   const notesKey = showNotes ? notesKeyFor(step) : null;
 
   return (
-    <div className="pnt-flow-shell">
+    <div className={modal ? 'pnt-flow-shell pop-modal-scope' : 'pnt-flow-shell'}>
       <div className="container container-narrow">
         <FlowTopBar flow={flow} onBack={goBack} plain />
-        <StepIndicator steps={configSteps} activeIndex={stage - 1} />
+        {modal ? (
+          <p className="pop-modal-progress" aria-live="polite">
+            STEP {stage} OF {configSteps.length} <span>{step.title}</span>
+          </p>
+        ) : (
+          <StepIndicator steps={configSteps} activeIndex={stage - 1} />
+        )}
 
         <div className="pnt-step-card">
           {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
@@ -401,17 +459,28 @@ export default function PopCeilingFlow() {
             <>
               <div className="pnt-option-list">
                 {optionsFor(step.questionKey).map((opt) => (
-                  <OptionCard
-                    key={opt.value}
-                    option={opt}
-                    name={step.questionKey}
-                    icon={step.type === 'style' ? (DESIGN_STYLE_ICONS[opt.value] || step.icon) : step.icon}
-                    checked={answers[step.questionKey] === opt.value}
-                    onSelect={setAnswer(step.questionKey)}
-                  />
+                  modal ? (
+                    <PopImageOption
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      image={getPopOptionImage(step.questionKey, opt, flow.intro.image)}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  ) : (
+                    <OptionCard
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      icon={step.type === 'style' ? (DESIGN_STYLE_ICONS[opt.value] || step.icon) : step.icon}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  )
                 ))}
               </div>
-              {errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
 
               {showNotes && (
                 <div className="field" style={{ marginTop: 16 }}>
@@ -445,15 +514,46 @@ export default function PopCeilingFlow() {
             />
           )}
 
-          <div className="pnt-step-actions">
-            <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
+          <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot pop-modal-actions' : 'pnt-step-actions'}>
+            {!modal && <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>}
             <button type="button" className="btn btn-primary" onClick={goNext}>
               {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
+      {modal && choiceError && createPortal(
+        <div className="pop-choice-toast" role="alert">
+          <Icon name="info" size={20} />
+          <span>{choiceError}</span>
+          <button type="button" onClick={() => setChoiceError('')} aria-label="Dismiss message">×</button>
+        </div>,
+        document.body
+      )}
     </div>
+  );
+}
+
+function getPopOptionImage(questionKey, option, fallback) {
+  const images = questionKey === 'pop_home_type'
+    ? popHomeTypeImages
+    : questionKey === 'pop_room_type'
+      ? popRoomTypeImages
+      : popDesignStyleImages;
+  return images[option.value] || images[option.label] || fallback;
+}
+
+function PopImageOption({ option, name, image, checked, onSelect }) {
+  return (
+    <label className={`pop-image-option ${checked ? 'selected' : ''}`}>
+      <input type="radio" name={name} value={option.value} checked={checked} onChange={() => onSelect(option.value)} />
+      <img src={image} alt="" width={200} height={105} loading="lazy" />
+      <span className="pop-image-option-content">
+        <strong>{option.label}</strong>
+        {option.hint && <small>{option.hint}</small>}
+      </span>
+      <span className="pop-image-option-check" aria-hidden="true"><Icon name="check" size={14} /></span>
+    </label>
   );
 }
 
