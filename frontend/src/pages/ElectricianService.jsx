@@ -9,30 +9,15 @@ import { contact } from '../data/siteConfig';
 import { electricianServiceIntros, ELECTRICIAN_STAGES } from '../data/electricianServices';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
-import { useLocationContext } from '../context/LocationContext';
-import GoogleLocationPicker from '../components/layout/GoogleLocationPicker';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
 
 const TYPE = 0;
 const DETAILS = 1;
 const ADDONS = 2;
 const SCHEDULE = 3;
 const CONFIRM = 4;
-
-const emptyDetails = { name: '', phone: '', whatsapp: '', email: '', address: '', city: '', pincode: '' };
-
-/**
- * Only strips a country-code prefix when the digit count actually implies
- * one is there (12 digits = 91 + a 10-digit number, 11 = a leading 0) — a
- * blind `.replace(/^91/, '')` on any input, which is what the original
- * booking wizard's version of this check does, incorrectly mangles a real
- * 10-digit number that happens to start with 91 (e.g. 9123456780).
- */
-const isValidPhone = (v) => {
-  let digits = String(v || '').replace(/\D/g, '');
-  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
-  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
-  return /^[6-9]\d{9}$/.test(digits);
-};
 
 /** ₹1,234.50 -> "1,234.50", dropping a trailing ".00" for a cleaner read. */
 function formatMoney(n) {
@@ -98,6 +83,7 @@ const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [stage, setStage] = useHistoryState(`${scope}:stage`, TYPE, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const [pendingFiles, setPendingFiles] = useState({});
+  const pickedLocation = usePickedLocation();
   const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
@@ -272,7 +258,9 @@ const [locationPickerOpen, setLocationPickerOpen] = useState(false);
     return Object.keys(next).length === 0;
   };
 
+  // The shared checks (lib/bookingDetails), which also know about a map pin.
   const validateDetails = () => {
+<<<<<<< ours
     const next = {};
     if (!details.name.trim()) next.name = 'Please enter your name';
     if (!details.phone.trim()) next.phone = 'Please enter your mobile number';
@@ -294,6 +282,9 @@ if (!locationData?.address) {
     if (details.pincode.trim() && !/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
       next.pincode = 'Enter a 6-digit pincode';
     }
+=======
+    const next = checkDetails(details, pickedLocation);
+>>>>>>> theirs
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -379,7 +370,7 @@ if (!locationData?.address) {
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
@@ -613,118 +604,11 @@ if (!locationData?.address) {
             {stage === CONFIRM && (
               <>
                 <div className="wizard-card-head">
-                  <h2>Enter Your Details</h2>
+                  <h2>Your Details</h2>
                   <p>We will contact you to confirm the appointment.</p>
                 </div>
 
-                <div className="form-grid">
-                  <Field id="ec-name" label="Full Name" required value={details.name} onChange={setDetail('name')} error={errors.name} placeholder="Enter your name" />
-                  <Field id="ec-phone" label="Mobile Number" required type="tel" inputMode="numeric" value={details.phone} onChange={setDetail('phone')} error={errors.phone} placeholder="Enter mobile number" />
-                  <Field id="ec-whatsapp" label="WhatsApp Number (Optional)" type="tel" inputMode="numeric" value={details.whatsapp} onChange={setDetail('whatsapp')} error={errors.whatsapp} placeholder="Enter WhatsApp number" hint="Leave blank if it is the same as your mobile." />
-                  <Field id="ec-email" label="Email Address (Optional)" type="email" value={details.email} onChange={setDetail('email')} error={errors.email} placeholder="Enter email address" />
-                </div>
-
-                <div
-  className="field booking-address-field"
-  style={{ marginTop: 16 }}
->
-  <div className="booking-address-label-row">
-    <label>
-      Project Address <span className="req">*</span>
-    </label>
-
-    <button
-      type="button"
-      className="booking-use-location"
-      onClick={() => setLocationPickerOpen(true)}
-    >
-      <Icon name="map-pin" size={14} />
-
-      {locationData?.address
-        ? 'Change location'
-        : 'Use current location'}
-    </button>
-  </div>
-
-  {locationData?.address && (
-    <div className="booking-selected-location">
-      <Icon name="map-pin" size={15} />
-
-      <div>
-        <span className="booking-location-label">
-          Selected location
-        </span>
-
-        <span className="booking-location-address">
-          {locationData.address}
-        </span>
-      </div>
-    </div>
-  )}
-
-  <div className="booking-address-inputs">
-    <div className="booking-building-field">
-      <label htmlFor="ec-building">
-        Building Name <span className="req">*</span>
-      </label>
-
-      <input
-        id="ec-building"
-        type="text"
-        value={details.buildingName || ''}
-        onChange={setDetail('buildingName')}
-        placeholder="Enter building name"
-      />
-    </div>
-
-    <div className="booking-small-fields">
-      <div>
-        <label htmlFor="ec-room">
-          Room No.
-        </label>
-
-        <input
-          id="ec-room"
-          type="text"
-          value={details.roomNo || ''}
-          onChange={setDetail('roomNo')}
-          placeholder="Room no."
-        />
-      </div>
-
-      <div>
-        <label htmlFor="ec-floor">
-          Floor
-        </label>
-
-        <input
-          id="ec-floor"
-          type="text"
-          value={details.floor || ''}
-          onChange={setDetail('floor')}
-          placeholder="Floor"
-        />
-      </div>
-    </div>
-  </div>
-
-  {errors.address && (
-    <span className="field-error">
-      {errors.address}
-    </span>
-  )}
-</div>
-
-<GoogleLocationPicker
-  open={locationPickerOpen}
-  onClose={() => setLocationPickerOpen(false)}
-  onSelect={() => setLocationPickerOpen(false)}
-/>
-
-                <div className="form-grid" style={{ marginTop: 16 }}>
-                  <Field id="ec-city" label="City" required value={details.city} onChange={setDetail('city')} error={errors.city} placeholder="Mumbai" />
-                  <Field id="ec-pincode" label="Pincode" value={details.pincode} onChange={setDetail('pincode')} error={errors.pincode} placeholder="400001" />
-                </div>
+                <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="ec" />
 
                 <ElectricianSummary category={category} form={form} answers={answers} date={date} time={time} estimate={estimate} />
               </>
@@ -763,18 +647,6 @@ if (!locationData?.address) {
 }
 
 /* -------------------------------------------------------------- helpers */
-
-function Field({ id, label, required, hint, error, ...rest }) {
-  return (
-    <div className={`field ${error ? 'error' : ''}`}>
-      <label htmlFor={id}>
-        {label} {required && <span className="req">*</span>}
-      </label>
-      <input id={id} {...rest} />
-      {error ? <span className="field-error">{error}</span> : hint && <span className="field-hint">{hint}</span>}
-    </div>
-  );
-}
 
 function FileField({ question, files, onPick, onRemove, error }) {
   const inputId = `file-${question.key}`;

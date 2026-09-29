@@ -33,12 +33,10 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 
 import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
-
-import { useLocationContext } from '../context/LocationContext';
-import GoogleLocationPicker from '../components/layout/GoogleLocationPicker';
-
-
-
+import ModalFoot from '../components/services/ModalFoot';
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 
 
 
@@ -79,48 +77,6 @@ const CONFIRM = 4;
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
 
-const emptyDetails = {
-
-  name: '',
-
-  phone: '',
-
-  whatsapp: '',
-
-  email: '',
-
-  address: '',
-
-  buildingName: '',
-
-  roomNo: '',
-
-  floorNo: '',
-
-  city: '',
-
-  pincode: '',
-
-};
-
-
-
-const isValidPhone = (v) =>
-
-  /^[6-9]\d{9}$/.test(
-
-    String(v || '')
-
-      .replace(/\D/g, '')
-
-      .replace(/^91/, '')
-
-      .replace(/^0/, '')
-
-  );
-
-
-
 export default function ServiceBooking({
 
   serviceSlug,
@@ -143,11 +99,8 @@ export default function ServiceBooking({
 
   const { user } = useAuth();
 
-  const { locationData, setLocation } = useLocationContext();
-
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-
-
+  // The visit location pinned on the map (with a Google Maps key), or null.
+  const pickedLocation = usePickedLocation();
 
   const [searchParams] = useSearchParams();
 
@@ -763,106 +716,12 @@ const stageQuestions = useMemo(() => {
 
 
   /**
-
-   * Validate customer details.
-
+   * Validate customer details — the same checks as every booking flow
+   * (lib/bookingDetails), which also know about a map pin.
    */
 
   const validateDetails = () => {
-
-    const nextErrors = {};
-
-
-
-    if (!details.name.trim()) {
-
-      nextErrors.name = 'Please enter your name';
-
-    }
-
-
-
-    if (!details.phone.trim()) {
-
-      nextErrors.phone = 'Please enter your mobile number';
-
-    } else if (!isValidPhone(details.phone)) {
-
-      nextErrors.phone = 'Enter a 10-digit mobile number';
-
-    }
-
-
-
-    if (
-
-      details.whatsapp.trim() &&
-
-      !isValidPhone(details.whatsapp)
-
-    ) {
-
-      nextErrors.whatsapp =
-
-        'Enter a 10-digit number, or leave it blank';
-
-    }
-
-
-
-    if (
-
-      details.email.trim() &&
-
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-
-        details.email.trim()
-
-      )
-
-    ) {
-
-      nextErrors.email =
-
-        'That email address does not look right';
-
-    }
-
-
-
-    if (!locationData?.address && !details.address.trim()) {
-
-      nextErrors.address = 'Please select your location';
-
-    }
-
-    if (!details.buildingName.trim()) {
-
-      nextErrors.buildingName = 'Please enter the building name';
-
-    }
-
-
-
-    if (!details.city.trim()) {
-
-      nextErrors.city = 'Please enter your city';
-
-    }
-
-
-
-    if (
-
-      details.pincode.trim() &&
-
-      !/^[1-9][0-9]{5}$/.test(details.pincode.trim())
-
-    ) {
-
-      nextErrors.pincode = 'Enter a 6-digit pincode';
-
-    }
+    const nextErrors = checkDetails(details, pickedLocation);
 
 
 
@@ -1142,16 +1001,8 @@ const stageQuestions = useMemo(() => {
 
         email: details.email || null,
 
-
-
-        address: [
-          details.buildingName.trim(),
-          details.roomNo.trim() ? `Room ${details.roomNo.trim()}` : '',
-          details.floorNo.trim() ? `Floor ${details.floorNo.trim()}` : '',
-          locationData?.address || details.address.trim(),
-        ]
-          .filter(Boolean)
-          .join(', '),
+        // Building / room / floor, the pinned location, then anything typed.
+        address: composeAddress(details, pickedLocation),
 
         city: details.city,
 
@@ -1786,9 +1637,7 @@ const stageQuestions = useMemo(() => {
                 <div className="wizard-card-head">
 
                   <h2>
-
-                    Enter Your Details
-
+                    Your Details
                   </h2>
 
 
@@ -1803,201 +1652,12 @@ const stageQuestions = useMemo(() => {
 
                 </div>
 
-
-
-                <div className="form-grid">
-
-                  <Field
-
-                    id="bk-name"
-
-                    label="Full Name"
-
-                    required
-
-                    value={details.name}
-
-                    onChange={setDetail('name')}
-
-                    error={errors.name}
-
-                    placeholder="Enter your name"
-
-                  />
-
-
-
-                  <Field
-
-                    id="bk-phone"
-
-                    label="Mobile Number"
-
-                    required
-
-                    type="tel"
-
-                    inputMode="numeric"
-
-                    value={details.phone}
-
-                    onChange={setDetail('phone')}
-
-                    error={errors.phone}
-
-                    placeholder="Enter mobile number"
-
-                  />
-
-
-
-                  <Field
-
-                    id="bk-whatsapp"
-
-                    label="WhatsApp Number (Optional)"
-
-                    type="tel"
-
-                    inputMode="numeric"
-
-                    value={details.whatsapp}
-
-                    onChange={setDetail('whatsapp')}
-
-                    error={errors.whatsapp}
-
-                    placeholder="Enter WhatsApp number"
-
-                    hint="Leave blank if it is the same as your mobile."
-
-                  />
-
-
-
-                  <Field
-
-                    id="bk-email"
-
-                    label="Email Address (Optional)"
-
-                    type="email"
-
-                    value={details.email}
-
-                    onChange={setDetail('email')}
-
-                    error={errors.email}
-
-                    placeholder="Enter email address"
-
-                  />
-
-                </div>
-
-
-
-               <div
-  className="field booking-address-field"
-  style={{
-    marginTop: 16,
-  }}
->
-  <div className="booking-address-label-row">
-    <label>
-      Project Address <span className="req">*</span>
-    </label>
-
-    <button
-      type="button"
-      className="booking-use-location"
-      onClick={() => setLocationPickerOpen(true)}
-    >
-      <Icon name="map-pin" size={14} />
-      {locationData?.address ? 'Change location' : 'Use current location'}
-    </button>
-  </div>
-
-  {locationData?.address ? (
-    <div className="booking-selected-location">
-      <Icon name="map-pin" size={15} />
-
-      <div className="booking-location-text">
-        <span className="booking-location-label">
-          Selected location
-        </span>
-
-        <span className="booking-location-address">
-          {locationData.address}
-        </span>
-      </div>
-    </div>
-  ) : (
-    <button
-      type="button"
-      className="booking-location-empty"
-      onClick={() => setLocationPickerOpen(true)}
-    >
-      <Icon name="map-pin" size={15} />
-      Select your location first
-    </button>
-  )}
-
-  <div className="booking-address-inputs">
-    <div className="field booking-building-field">
-      <label htmlFor="bk-building">
-        Building Name <span className="req">*</span>
-      </label>
-
-      <input
-        id="bk-building"
-        type="text"
-        value={details.buildingName}
-        onChange={setDetail('buildingName')}
-        placeholder="Enter building name"
-      />
-
-      {errors.buildingName && (
-        <span className="field-error">
-          {errors.buildingName}
-        </span>
-      )}
-    </div>
-
-    <div className="booking-small-fields">
-      <div className="field">
-        <label htmlFor="bk-room">Room No.</label>
-
-        <input
-          id="bk-room"
-          type="text"
-          value={details.roomNo}
-          onChange={setDetail('roomNo')}
-          placeholder="Room no."
-        />
-      </div>
-
-      <div className="field">
-        <label htmlFor="bk-floor">Floor</label>
-
-        <input
-          id="bk-floor"
-          type="text"
-          value={details.floorNo}
-          onChange={setDetail('floorNo')}
-          placeholder="Floor"
-        />
-      </div>
-    </div>
-  </div>
-
-  {errors.address && (
-    <span className="field-error">
-      {errors.address}
-    </span>
-  )}
-</div>
-
+                <CustomerDetailsFields
+                  details={details}
+                  setDetail={setDetail}
+                  errors={errors}
+                  idPrefix="bk"
+                />
 
                 <Summary
 
@@ -2245,27 +1905,6 @@ const stageQuestions = useMemo(() => {
 
         </form>
 
-        <GoogleLocationPicker
-          open={locationPickerOpen}
-          onClose={() => setLocationPickerOpen(false)}
-          onSelect={(selectedLocation) => {
-            setLocation(selectedLocation);
-
-            setDetails((currentDetails) => ({
-              ...currentDetails,
-              address:
-                selectedLocation?.address || currentDetails.address,
-            }));
-
-            setErrors((currentErrors) => ({
-              ...currentErrors,
-              address: undefined,
-            }));
-
-            setLocationPickerOpen(false);
-          }}
-        />
-
       </div>
 
     </div>
@@ -2277,101 +1916,6 @@ const stageQuestions = useMemo(() => {
 
 
 /* ==========================================================
-
-   Field
-
-========================================================== */
-
-
-
-function Field({
-
-  id,
-
-  label,
-
-  required,
-
-  hint,
-
-  error,
-
-  ...rest
-
-}) {
-
-  return (
-
-    <div
-
-      className={`field ${
-
-        error ? 'error' : ''
-
-      }`}
-
-    >
-
-      <label htmlFor={id}>
-
-        {label}{' '}
-
-        {required && (
-
-          <span className="req">
-
-            *
-
-          </span>
-
-        )}
-
-      </label>
-
-
-
-      <input
-
-        id={id}
-
-        {...rest}
-
-      />
-
-
-
-      {error ? (
-
-        <span className="field-error">
-
-          {error}
-
-        </span>
-
-      ) : (
-
-        hint && (
-
-          <span className="field-hint">
-
-            {hint}
-
-          </span>
-
-        )
-
-      )}
-
-    </div>
-
-  );
-
-}
-
-
-
-/* ==========================================================
-
    Summary
 
 ========================================================== */

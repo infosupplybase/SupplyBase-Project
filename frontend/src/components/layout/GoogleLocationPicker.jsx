@@ -100,6 +100,86 @@ function loadGoogleMaps() {
   return googleMapsPromise;
 }
 
+function geolocationMessage(geoError) {
+  if (geoError?.code === 1) {
+    return 'Location permission was denied. Please allow location access in your browser.';
+  }
+  if (geoError?.code === 2) {
+    return 'Your current location is temporarily unavailable.';
+  }
+  if (geoError?.code === 3) {
+    return 'Location request timed out. Please try again.';
+  }
+  return 'Unable to get your current location.';
+}
+
+/**
+ * The street address, city and pincode at a point, from Google's Geocoder —
+ * or null if it cannot say (the key may not have the Geocoding API enabled),
+ * in which case callers fall back to the bare coordinates.
+ */
+async function reverseGeocode(latitude, longitude) {
+  try {
+    const googleMaps = await loadGoogleMaps();
+    const { Geocoder } = await googleMaps.importLibrary('geocoding');
+    const { results } = await new Geocoder().geocode({
+      location: { lat: latitude, lng: longitude },
+    });
+    // A plus-code result ("4XQ7+2C Kalyan") is useless to a visiting team.
+    const best = (results || []).find((r) => !r.types?.includes('plus_code')) || results?.[0];
+    if (!best) return null;
+
+    const part = (type) =>
+      best.address_components?.find((c) => c.types.includes(type))?.long_name || '';
+
+    return {
+      address: best.formatted_address || '',
+      city:
+        part('locality') ||
+        part('administrative_area_level_3') ||
+        part('administrative_area_level_2'),
+      pincode: part('postal_code'),
+    };
+  } catch (err) {
+    console.warn('Reverse geocoding failed:', err);
+    return null;
+  }
+}
+
+/**
+ * The customer's current location from the browser: { address, latitude,
+ * longitude, city, pincode }. The address is a real street address when
+ * Google can name the spot, otherwise "Current location (lat, lng)"; city and
+ * pincode are '' when unknown. Throws an Error with a customer-facing message
+ * when the browser cannot or may not share the location.
+ */
+export async function getCurrentLocation() {
+  if (!navigator.geolocation) {
+    throw new Error('Your browser does not support location services.');
+  }
+
+  const coords = await new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve(position.coords),
+      (geoError) => reject(new Error(geolocationMessage(geoError))),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+    );
+  });
+
+  const { latitude, longitude } = coords;
+  const place = await reverseGeocode(latitude, longitude);
+
+  return {
+    address:
+      place?.address ||
+      `Current location (${latitude.toFixed(5)}, ${longitude.toFixed(5)})`,
+    latitude,
+    longitude,
+    city: place?.city || '',
+    pincode: place?.pincode || '',
+  };
+}
+
 export default function GoogleLocationPicker({
   open,
   onClose,
@@ -491,82 +571,26 @@ export default function GoogleLocationPicker({
   }, [open, onClose]);
 
   /*
-   * Use current browser location
-   *
-   * No Google Geocoder is used here.
+   * Use current browser location, named by Google's Geocoder when it can
+   * (see getCurrentLocation).
    */
-  const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setError(
-        'Your browser does not support location services.'
-      );
-      return;
-    }
-
+  const handleUseCurrentLocation = async () => {
     setLocationLoading(true);
     setError('');
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const latitude =
-          position.coords.latitude;
+    try {
+      const here = await getCurrentLocation();
 
-        const longitude =
-          position.coords.longitude;
-
-        const address =
-          `Current location (${latitude.toFixed(
-            5
-          )}, ${longitude.toFixed(5)})`;
-
-        updateSelectedLocation(
-          latitude,
-          longitude,
-          address
-        );
-
-        setLocationLoading(false);
-      },
-
-      (geoError) => {
-        console.error(
-          'Browser geolocation error:',
-          geoError
-        );
-
-        let message =
-          'Unable to get your current location.';
-
-        if (
-          geoError.code ===
-          geoError.PERMISSION_DENIED
-        ) {
-          message =
-            'Location permission was denied. Please allow location access in your browser.';
-        } else if (
-          geoError.code ===
-          geoError.POSITION_UNAVAILABLE
-        ) {
-          message =
-            'Your current location is temporarily unavailable.';
-        } else if (
-          geoError.code ===
-          geoError.TIMEOUT
-        ) {
-          message =
-            'Location request timed out. Please try again.';
-        }
-
-        setError(message);
-        setLocationLoading(false);
-      },
-
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 30000,
-      }
-    );
+      updateSelectedLocation(
+        here.latitude,
+        here.longitude,
+        here.address
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLocationLoading(false);
+    }
   };
 
   /*

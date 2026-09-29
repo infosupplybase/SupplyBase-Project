@@ -7,12 +7,11 @@ import SlotPicker from '../components/booking/SlotPicker';
 import GoogleLocationPicker from '../components/layout/GoogleLocationPicker';
 
 import api, { friendlyError } from '../lib/api';
-import { useLocationContext } from '../context/LocationContext';
-import {
-  getSpaceBySlug,
-  getDesignBySlug,
-  HOME_VISIT_FEE,
-} from '../data/interiorCatalog';
+import { usePickedLocation } from '../context/LocationContext';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+// The same form and checks as every other booking flow.
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
+import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
 import { formatVisitDate, formatVisitTime } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
@@ -20,16 +19,6 @@ const STEPS = ['Details', 'Schedule', 'Confirm'];
 
 const CATEGORY_SLUG = 'interior-by-choice';
 
-/**
- * Ten digits once the +91, spaces and brackets are stripped.
- */
-const isValidPhone = (value) =>
-  /^[6-9]\d{9}$/.test(
-    String(value || '')
-      .replace(/\D/g, '')
-      .replace(/^91/, '')
-      .replace(/^0/, '')
-  );
 
 /**
  * /interior-by-choice/book
@@ -47,13 +36,9 @@ export default function InteriorBooking({
 }) {
   const params = useParams();
 
-  const spaceSlug = propSpaceSlug || params.spaceSlug;
-  const designSlug = propDesignSlug || params.designSlug;
-
-  const { location, locationData } = useLocationContext();
-
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-
+const spaceSlug = propSpaceSlug || params.spaceSlug;
+const designSlug = propDesignSlug || params.designSlug;
+  const pickedLocation = usePickedLocation();
   const space = spaceSlug ? getSpaceBySlug(spaceSlug) : null;
 
   const design =
@@ -68,35 +53,10 @@ export default function InteriorBooking({
   const scope = `f:ibc:${spaceSlug}:${designSlug}`;
 
   const formBack = useFormBack();
-
-  const [step, setStep] = useHistoryState(
-    `${scope}:step`,
-    0,
-    { push: true }
-  );
-
-  const [form, setForm] = useHistoryState(`${scope}:form`, {
-    name: '',
-    phone: '',
-    address: '',
-    buildingName: '',
-    roomNo: '',
-    floorNo: '',
-    city: '',
-    pincode: '',
-    notes: '',
-  });
-
-  const [date, setDate] = useHistoryState(
-    `${scope}:date`,
-    ''
-  );
-
-  const [time, setTime] = useHistoryState(
-    `${scope}:time`,
-    ''
-  );
-
+  const [step, setStep] = useHistoryState(`${scope}:step`, 0, { push: true });
+  const [form, setForm] = useHistoryState(`${scope}:form`, { ...emptyDetails, notes: '' });
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
 
   const [error, setError] = useState('');
@@ -171,46 +131,13 @@ export default function InteriorBooking({
   // Generic field setter
   // -------------------------------------------------------------
 
-  const setField = (key) => (e) =>
-    setForm((current) => ({
-      ...current,
-      [key]: e.target.value,
-    }));
-
-  // -------------------------------------------------------------
-  // Validate customer details
-  // -------------------------------------------------------------
+  const setField = (key) => (e) => {
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+    setErrors((err) => ({ ...err, [key]: undefined }));
+  };
 
   const validateDetails = () => {
-    const next = {};
-
-    if (!form.name.trim()) {
-      next.name = 'Enter your name';
-    }
-
-    if (!isValidPhone(form.phone)) {
-      next.phone = 'Enter a valid 10-digit mobile number';
-    }
-
-    if (!form.buildingName?.trim()) {
-      next.buildingName = 'Enter your building name';
-    }
-
-    if (!locationData?.address) {
-      next.address = 'Please select your project location';
-    }
-
-    if (!form.city?.trim()) {
-      next.city = 'Enter your city';
-    }
-
-    if (
-      form.pincode?.trim() &&
-      !/^[1-9][0-9]{5}$/.test(form.pincode.trim())
-    ) {
-      next.pincode = 'Enter a valid 6-digit pincode';
-    }
-
+    const next = checkDetails(form, pickedLocation);
     setErrors(next);
 
     return Object.keys(next).length === 0;
@@ -239,20 +166,15 @@ export default function InteriorBooking({
 
       return;
     }
-
-    const selectedLabel = design
-      ? `${space.name} – ${design.name}`
-      : space
-        ? space.name
-        : 'Not selected from the catalogue';
-
-    const notesParts = [
-      `Selected design: ${selectedLabel}.`,
-    ];
-
-    if (form.notes.trim()) {
-      notesParts.push(form.notes.trim());
+    // A form restored from history may predate City / Pincode: ask for them.
+    if (!validateDetails()) {
+      setStep(0);
+      return;
     }
+
+    const selectedLabel = design ? `${space.name} – ${design.name}` : space ? space.name : 'Not selected from the catalogue';
+    const notesParts = [`Selected design: ${selectedLabel}.`];
+    if (String(form.notes || '').trim()) notesParts.push(form.notes.trim());
 
     setBusy(true);
     setError('');
@@ -277,17 +199,11 @@ export default function InteriorBooking({
         name: form.name.trim(),
 
         phone: form.phone,
-
-        // Final combined address
-        address: form.address.trim(),
-
-        // City entered by customer
-        city: form.city.trim() || location,
-
-        // Keep pincode available if backend later supports it
-        ...(form.pincode?.trim()
-          ? { pincode: form.pincode.trim() }
-          : {}),
+        whatsapp: form.whatsapp || null,
+        email: form.email || null,
+        address: composeAddress(form, pickedLocation),
+        city: String(form.city || '').trim(),
+        pincode: String(form.pincode || '').trim() || null,
       });
 
       setReceipt(result);
@@ -441,291 +357,10 @@ export default function InteriorBooking({
           {step === 0 && (
             <div className="ibc-form-panel">
               <h3>Your Details</h3>
-
-              {/* FULL NAME */}
-
-              <div
-                className={`field ${
-                  errors.name ? 'error' : ''
-                }`}
-              >
-                <label>
-                  Full Name{' '}
-                  <span className="req">*</span>
-                </label>
-
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  value={form.name}
-                  onChange={setField('name')}
-                />
-
-                {errors.name && (
-                  <span className="field-error">
-                    {errors.name}
-                  </span>
-                )}
-              </div>
-
-              {/* PHONE */}
-
-              <div
-                className={`field ${
-                  errors.phone ? 'error' : ''
-                }`}
-              >
-                <label>
-                  Phone Number{' '}
-                  <span className="req">*</span>
-                </label>
-
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="+91"
-                  value={form.phone}
-                  onChange={setField('phone')}
-                />
-
-                {errors.phone && (
-                  <span className="field-error">
-                    {errors.phone}
-                  </span>
-                )}
-              </div>
-
-              {/* =================================================
-                  PROJECT ADDRESS
-              ================================================= */}
-
-              <div
-                className="field booking-address-field"
-                style={{ marginTop: 16 }}
-              >
-                <div className="booking-address-label-row">
-                  <label>
-                    Project Address{' '}
-                    <span className="req">*</span>
-                  </label>
-
-                  <button
-                    type="button"
-                    className="booking-use-location"
-                    onClick={() =>
-                      setLocationPickerOpen(true)
-                    }
-                  >
-                    <Icon
-                      name="map-pin"
-                      size={14}
-                    />
-
-                    {locationData?.address
-                      ? 'Change location'
-                      : 'Use current location'}
-                  </button>
-                </div>
-
-                {/* GOOGLE SELECTED LOCATION */}
-
-                {locationData?.address && (
-                  <div className="booking-selected-location">
-                    <Icon
-                      name="map-pin"
-                      size={15}
-                    />
-
-                    <div>
-                      <span className="booking-location-label">
-                        Selected location
-                      </span>
-
-                      <span className="booking-location-address">
-                        {locationData.address}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* BUILDING / ROOM / FLOOR */}
-
-                <div className="booking-address-inputs">
-                  {/* BUILDING NAME */}
-
-                  <div className="booking-building-field">
-                    <label htmlFor="ibc-building">
-                      Building Name{' '}
-                      <span className="req">*</span>
-                    </label>
-
-                    <input
-                      id="ibc-building"
-                      type="text"
-                      value={
-                        form.buildingName || ''
-                      }
-                      onChange={setField(
-                        'buildingName'
-                      )}
-                      placeholder="Enter building name"
-                    />
-
-                    {errors.buildingName && (
-                      <span className="field-error">
-                        {errors.buildingName}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* ROOM + FLOOR */}
-
-                  <div className="booking-small-fields">
-                    <div>
-                      <label htmlFor="ibc-room">
-                        Room No.
-                      </label>
-
-                      <input
-                        id="ibc-room"
-                        type="text"
-                        value={
-                          form.roomNo || ''
-                        }
-                        onChange={setField(
-                          'roomNo'
-                        )}
-                        placeholder="Room no."
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="ibc-floor">
-                        Floor
-                      </label>
-
-                      <input
-                        id="ibc-floor"
-                        type="text"
-                        value={
-                          form.floorNo || ''
-                        }
-                        onChange={setField(
-                          'floorNo'
-                        )}
-                        placeholder="Floor"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* LOCATION ERROR */}
-
-                {errors.address && (
-                  <span className="field-error">
-                    {errors.address}
-                  </span>
-                )}
-              </div>
-
-              {/* =================================================
-                  GOOGLE LOCATION PICKER
-              ================================================= */}
-
-              <GoogleLocationPicker
-                open={locationPickerOpen}
-                onClose={() =>
-                  setLocationPickerOpen(false)
-                }
-                onSelect={() =>
-                  setLocationPickerOpen(false)
-                }
-              />
-
-              {/* =================================================
-                  CITY + PINCODE
-              ================================================= */}
-
-              <div
-                className="form-grid"
-                style={{ marginTop: 16 }}
-              >
-                {/* CITY */}
-
-                <div
-                  className={`field ${
-                    errors.city ? 'error' : ''
-                  }`}
-                >
-                  <label htmlFor="ibc-city">
-                    City{' '}
-                    <span className="req">*</span>
-                  </label>
-
-                  <input
-                    id="ibc-city"
-                    type="text"
-                    value={form.city || ''}
-                    onChange={setField('city')}
-                    placeholder="Mumbai"
-                  />
-
-                  {errors.city && (
-                    <span className="field-error">
-                      {errors.city}
-                    </span>
-                  )}
-                </div>
-
-                {/* PINCODE */}
-
-                <div
-                  className={`field ${
-                    errors.pincode ? 'error' : ''
-                  }`}
-                >
-                  <label htmlFor="ibc-pincode">
-                    Pincode
-                  </label>
-
-                  <input
-                    id="ibc-pincode"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={
-                      form.pincode || ''
-                    }
-                    onChange={setField(
-                      'pincode'
-                    )}
-                    placeholder="400001"
-                  />
-
-                  {errors.pincode && (
-                    <span className="field-error">
-                      {errors.pincode}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* =================================================
-                  REQUIREMENTS
-              ================================================= */}
-
-              <div className="field">
-                <label>
-                  Any specific requirements?
-                  {' '}
-                  (Optional)
-                </label>
-
-                <textarea
-                  rows={3}
-                  value={form.notes}
-                  onChange={setField('notes')}
-                />
+              <CustomerDetailsFields details={form} setDetail={setField} errors={errors} idPrefix="ib" />
+              <div className="field" style={{ marginTop: 16 }}>
+                <label htmlFor="ib-notes">Any specific requirements? (Optional)</label>
+                <textarea id="ib-notes" rows={3} value={form.notes || ''} onChange={setField('notes')} />
               </div>
 
               {/* CONTINUE */}
@@ -865,13 +500,8 @@ export default function InteriorBooking({
                 {/* ADDRESS */}
 
                 <div>
-                  <span>
-                    Address
-                  </span>
-
-                  <strong>
-                    {form.address}
-                  </strong>
+                  <span>Address</span>
+                  <strong>{composeAddress(form, pickedLocation)}</strong>
                 </div>
 
                 {/* VISIT FEE */}

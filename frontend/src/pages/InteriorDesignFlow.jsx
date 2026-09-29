@@ -10,7 +10,8 @@ import {
   ID_REFERENCE_PACKAGES, ID_REFERENCE_STATS, ID_REFERENCE_PROJECT_SLUG,
   idWhatsNext, idProcessSteps, idFaqs,
 } from '../data/interiorDesignContent';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -67,6 +68,7 @@ export default function InteriorDesignFlow({
   const [requirements, setRequirements] = useHistoryState(`${scope}:requirements`, '');
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  const pickedLocation = usePickedLocation();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -122,7 +124,7 @@ export default function InteriorDesignFlow({
   };
 
   const canLeaveDetails = () => {
-    const next = validateDetails(details);
+    const next = validateDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -162,7 +164,7 @@ export default function InteriorDesignFlow({
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });

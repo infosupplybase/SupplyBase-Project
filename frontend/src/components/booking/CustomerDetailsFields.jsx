@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Icon from '../ui/Icon';
-import { useLocationContext } from '../../context/LocationContext';
-import GoogleLocationPicker from '../layout/GoogleLocationPicker';
+import GoogleLocationPicker, { getCurrentLocation, hasGoogleMaps } from '../layout/GoogleLocationPicker';
+import { useLocationContext, usePickedLocation } from '../../context/LocationContext';
 
 export function Field({ id, label, required, hint, error, ...rest }) {
   return (
@@ -21,235 +21,221 @@ export function Field({ id, label, required, hint, error, ...rest }) {
   );
 }
 
-export default function CustomerDetailsFields({
-  details,
-  setDetail,
-  errors,
-  idPrefix = 'bk',
-}) {
-  const { locationData } = useLocationContext();
+/**
+ * The visit address. With a Google Maps key the customer can pin the
+ * location on a map, or tap "Use my current location" below it (which also
+ * fills an empty City and Pincode when Google can name the spot); once
+ * pinned we ask the building, room and floor, and the typed box becomes
+ * optional directions. Without a key — or if the map cannot be used — the
+ * typed address is the address, as before. Validation and the address sent
+ * with the booking come from validateDetails / composeAddress
+ * (lib/bookingDetails).
+ */
+export function AddressFields({ details, setDetail, errors, idPrefix = 'bk' }) {
+  const { setLocation } = useLocationContext();
+  const pickedLocation = usePickedLocation();
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState('');
 
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-
-  const [buildingName, setBuildingName] = useState(
-    details.buildingName || ''
-  );
-
-  const [roomNo, setRoomNo] = useState(details.roomNo || '');
-
-  const [floor, setFloor] = useState(details.floor || '');
-
-  /*
-   * Keep the individual address fields inside the parent's booking state.
-   */
-  useEffect(() => {
-    setDetail('buildingName')({
-      target: { value: buildingName },
-    });
-
-    setDetail('roomNo')({
-      target: { value: roomNo },
-    });
-
-    setDetail('floor')({
-      target: { value: floor },
-    });
-  }, [buildingName, roomNo, floor]);
-
-  /*
-   * Build the final address that the existing API already expects.
-   *
-   * Example:
-   * ABC Heights, Room 402, Floor 4, Kalyan, Maharashtra, India
-   */
-  useEffect(() => {
-    const locationAddress = locationData?.address || '';
-
-    const addressParts = [
-      buildingName.trim(),
-      roomNo.trim() ? `Room ${roomNo.trim()}` : '',
-      floor.trim() ? `Floor ${floor.trim()}` : '',
-      locationAddress,
-    ].filter(Boolean);
-
-    const finalAddress = addressParts.join(', ');
-
-    setDetail('address')({
-      target: { value: finalAddress },
-    });
-  }, [buildingName, roomNo, floor, locationData?.address]);
-
-  const handleLocationSelect = (selectedLocation) => {
-    setLocationPickerOpen(false);
-
-    /*
-     * The location itself is stored globally by LocationContext.
-     * The effect above then rebuilds details.address automatically.
-     */
+  const locateMe = async () => {
+    setLocating(true);
+    setLocateError('');
+    try {
+      const here = await getCurrentLocation();
+      setLocation({ address: here.address, latitude: here.latitude, longitude: here.longitude });
+      // Only fill what the customer has not typed themselves.
+      const fill = (key, value) => {
+        if (value && !String(details[key] || '').trim()) setDetail(key)({ target: { value } });
+      };
+      fill('city', here.city);
+      fill('pincode', here.pincode);
+    } catch (err) {
+      setLocateError(err.message || 'Unable to get your current location.');
+    } finally {
+      setLocating(false);
+    }
   };
 
   return (
     <>
-      <div className="form-grid">
-        <Field
-          id={`${idPrefix}-name`}
-          label="Full Name"
-          required
-          value={details.name}
-          onChange={setDetail('name')}
-          error={errors.name}
-          placeholder="Enter your name"
-        />
+      {hasGoogleMaps && (
+        <div className="field booking-address-field" style={{ marginTop: 16 }}>
+          <div className="booking-address-label-row">
+            <label>
+              Project Location <span className="req">*</span>
+            </label>
 
-        <Field
-          id={`${idPrefix}-phone`}
-          label="Mobile Number"
-          required
-          type="tel"
-          inputMode="numeric"
-          value={details.phone}
-          onChange={setDetail('phone')}
-          error={errors.phone}
-          placeholder="Enter mobile number"
-        />
+            {pickedLocation && (
+              <button
+                type="button"
+                className="booking-use-location"
+                onClick={() => setPickerOpen(true)}
+              >
+                <Icon name="map-pin" size={14} />
+                Change on map
+              </button>
+            )}
+          </div>
 
-        <Field
-          id={`${idPrefix}-whatsapp`}
-          label="WhatsApp Number (Optional)"
-          type="tel"
-          inputMode="numeric"
-          value={details.whatsapp}
-          onChange={setDetail('whatsapp')}
-          error={errors.whatsapp}
-          placeholder="Enter WhatsApp number"
-          hint="Leave blank if it is the same as your mobile."
-        />
-
-        <Field
-          id={`${idPrefix}-email`}
-          label="Email Address (Optional)"
-          type="email"
-          value={details.email}
-          onChange={setDetail('email')}
-          error={errors.email}
-          placeholder="Enter email address"
-        />
-      </div>
-
-      {/* PROJECT ADDRESS */}
-      <div
-        className="field booking-address-field"
-        style={{ marginTop: 16 }}
-      >
-        <div className="booking-address-label-row">
-          <label>
-            Project Address <span className="req">*</span>
-          </label>
+          {pickedLocation ? (
+            <div className="booking-selected-location">
+              <Icon name="map-pin" size={15} />
+              <div className="booking-location-text">
+                <span className="booking-location-label">Selected location</span>
+                <span className="booking-location-address">{pickedLocation.address}</span>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="booking-location-empty"
+              onClick={() => setPickerOpen(true)}
+            >
+              <Icon name="map-pin" size={15} />
+              Select your location on the map
+            </button>
+          )}
 
           <button
             type="button"
-            className="booking-use-location"
-            onClick={() => setLocationPickerOpen(true)}
+            className="booking-current-location"
+            onClick={locateMe}
+            disabled={locating}
+            aria-busy={locating}
           >
-            <Icon name="map-pin" size={14} />
-
-            {locationData?.address
-              ? 'Change location'
-              : 'Use current location'}
+            <Icon name="locate" size={17} className={locating ? 'spin-slow' : ''} />
+            {locating ? 'Finding your location…' : 'Use my current location'}
           </button>
+          {locateError && (
+            <span className="field-error booking-current-location-error" role="alert">
+              {locateError}
+            </span>
+          )}
+
+          {pickedLocation && (
+            <div className="booking-address-inputs">
+              <div className="field booking-building-field">
+                <label htmlFor={`${idPrefix}-building`}>
+                  Building Name <span className="req">*</span>
+                </label>
+                <input
+                  id={`${idPrefix}-building`}
+                  type="text"
+                  value={details.buildingName || ''}
+                  onChange={setDetail('buildingName')}
+                  placeholder="Enter building name"
+                />
+                {errors.buildingName && (
+                  <span className="field-error">{errors.buildingName}</span>
+                )}
+              </div>
+
+              <div className="booking-small-fields">
+                <div className="field">
+                  <label htmlFor={`${idPrefix}-room`}>Room No.</label>
+                  <input
+                    id={`${idPrefix}-room`}
+                    type="text"
+                    value={details.roomNo || ''}
+                    onChange={setDetail('roomNo')}
+                    placeholder="Room no."
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor={`${idPrefix}-floor`}>Floor</label>
+                  <input
+                    id={`${idPrefix}-floor`}
+                    type="text"
+                    value={details.floorNo || ''}
+                    onChange={setDetail('floorNo')}
+                    placeholder="Floor"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+      )}
 
-        {locationData?.address && (
-          <div className="booking-selected-location">
-            <Icon name="map-pin" size={15} />
-
-            <div>
-              <span className="booking-location-label">
-                Selected location
-              </span>
-
-              <span className="booking-location-address">
-                {locationData.address}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* BUILDING NAME */}
-        <div className="booking-address-inputs">
-          <div className="booking-building-field">
-            <label htmlFor={`${idPrefix}-building`}>
-              Building Name <span className="req">*</span>
-            </label>
-
-            <input
-              id={`${idPrefix}-building`}
-              type="text"
-              value={buildingName}
-              onChange={(e) => setBuildingName(e.target.value)}
-              placeholder="Enter building name"
-            />
-          </div>
-
-          {/* ROOM + FLOOR */}
-          <div className="booking-small-fields">
-            <div>
-              <label htmlFor={`${idPrefix}-room`}>
-                Room No.
-              </label>
-
-              <input
-                id={`${idPrefix}-room`}
-                type="text"
-                value={roomNo}
-                onChange={(e) => setRoomNo(e.target.value)}
-                placeholder="Room no."
-              />
-            </div>
-
-            <div>
-              <label htmlFor={`${idPrefix}-floor`}>
-                Floor
-              </label>
-
-              <input
-                id={`${idPrefix}-floor`}
-                type="text"
-                value={floor}
-                onChange={(e) => setFloor(e.target.value)}
-                placeholder="Floor"
-              />
-            </div>
-          </div>
-        </div>
-
-        {errors.address && (
-          <span className="field-error">
-            {errors.address}
-          </span>
-        )}
+      <div className="field" style={{ marginTop: 16 }}>
+        <label htmlFor={`${idPrefix}-address`}>
+          {pickedLocation ? 'Address details (optional)' : 'Project Address'}
+          {!pickedLocation && (
+            <>
+              {' '}
+              <span className="req">*</span>
+            </>
+          )}
+        </label>
+        <textarea
+          id={`${idPrefix}-address`}
+          rows={3}
+          value={details.address || ''}
+          onChange={setDetail('address')}
+          placeholder={
+            pickedLocation
+              ? 'Landmark or directions for our team'
+              : hasGoogleMaps
+                ? 'Or type your complete address'
+                : 'Enter complete address'
+          }
+        />
+        {errors.address && <span className="field-error">{errors.address}</span>}
       </div>
+
+      {hasGoogleMaps && (
+        <GoogleLocationPicker
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onSelect={(selectedLocation) => {
+            setLocation(selectedLocation);
+            setPickerOpen(false);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+/** The name/phone/whatsapp/email/address/city/pincode fields every booking
+    flow asks — one copy of the markup, so every service shows the same
+    form. Values default to '' because a form restored from history (see
+    useHistoryState) may predate a field. */
+export default function CustomerDetailsFields({ details, setDetail, errors, idPrefix = 'bk' }) {
+  const value = (key) => details[key] || '';
+
+  return (
+    <>
+      <div className="form-grid">
+        <Field id={`${idPrefix}-name`} label="Full Name" required value={value('name')}
+               onChange={setDetail('name')} error={errors.name}
+               placeholder="Enter your name" autoComplete="name" />
+        <Field id={`${idPrefix}-phone`} label="Mobile Number" required type="tel"
+               inputMode="numeric" value={value('phone')}
+               onChange={setDetail('phone')} error={errors.phone}
+               placeholder="Enter mobile number" autoComplete="tel" />
+        <Field id={`${idPrefix}-whatsapp`} label="WhatsApp Number (Optional)" type="tel"
+               inputMode="numeric" value={value('whatsapp')}
+               onChange={setDetail('whatsapp')} error={errors.whatsapp}
+               placeholder="Enter WhatsApp number"
+               hint="Leave blank if it is the same as your mobile." />
+        <Field id={`${idPrefix}-email`} label="Email Address (Optional)" type="email"
+               value={value('email')} onChange={setDetail('email')}
+               error={errors.email} placeholder="Enter email address" autoComplete="email" />
+      </div>
+
+      <AddressFields details={details} setDetail={setDetail} errors={errors} idPrefix={idPrefix} />
 
       {/* CITY + PINCODE */}
       <div className="form-grid" style={{ marginTop: 16 }}>
-        <Field
-          id={`${idPrefix}-city`}
-          label="City"
-          required
-          value={details.city}
-          onChange={setDetail('city')}
-          error={errors.city}
-          placeholder="Mumbai"
-        />
-
-        <Field
-          id={`${idPrefix}-pincode`}
-          label="Pincode"
-          value={details.pincode}
-          onChange={setDetail('pincode')}
-          error={errors.pincode}
-          placeholder="400001"
-        />
+        <Field id={`${idPrefix}-city`} label="City" required value={value('city')}
+               onChange={setDetail('city')} error={errors.city}
+               placeholder="Mumbai" autoComplete="address-level2" />
+        <Field id={`${idPrefix}-pincode`} label="Pincode" required value={value('pincode')}
+               inputMode="numeric" onChange={setDetail('pincode')} error={errors.pincode}
+               placeholder="400001" autoComplete="postal-code" />
       </div>
 
       <GoogleLocationPicker

@@ -7,7 +7,8 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { formatRupees } from '../lib/money';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
@@ -37,6 +38,7 @@ export default function PlumbingCheckout({
   const [stage, setStage] = useHistoryState(`${scope}:stage`, SCHEDULE, { push: true });
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const pickedLocation = usePickedLocation();
   const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
@@ -102,7 +104,7 @@ export default function PlumbingCheckout({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const nextErrors = validateDetails(details);
+    const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
@@ -123,7 +125,7 @@ export default function PlumbingCheckout({
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
@@ -238,7 +240,7 @@ export default function PlumbingCheckout({
             {stage === DETAILS && (
               <>
                 <div className="wizard-card-head">
-                  <h2>Enter Your Details</h2>
+                  <h2>Your Details</h2>
                   <p>We will contact you to confirm the appointment.</p>
                 </div>
                 <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pco" />

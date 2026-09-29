@@ -8,7 +8,8 @@ import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import useWaterproofingCatalogue from '../hooks/useWaterproofingCatalogue';
 import { wpFlows } from '../data/waterproofingContent';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -39,6 +40,7 @@ export default function WaterproofingFlow() {
   const formBack = useFormBack();
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
   const [brand, setBrand] = useHistoryState(`${scope}:brand`, '');
+  const pickedLocation = usePickedLocation();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -89,7 +91,7 @@ export default function WaterproofingFlow() {
   };
 
   const canLeaveDetails = () => {
-    const next = validateDetails(details);
+    const next = validateDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -125,7 +127,7 @@ export default function WaterproofingFlow() {
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
