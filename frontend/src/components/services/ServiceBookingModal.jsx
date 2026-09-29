@@ -15,8 +15,11 @@ import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
 import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
 import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
 import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
+import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
 import PaintingCategory from '../../pages/PaintingCategory';
 import PaintingFlow from '../../pages/PaintingFlow';
+import PopCeilingCategory from '../../pages/PopCeilingCategory';
+import PopCeilingFlow from '../../pages/PopCeilingFlow';
 import PlumbingCategory from '../../pages/PlumbingCategory';
 import PlumbingTab from '../../pages/PlumbingTab';
 import PlumbingCart from '../../pages/PlumbingCart';
@@ -24,6 +27,11 @@ import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
 import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import ElectricalCategory from '../../pages/ElectricalCategory';
+import ElectricalTab from '../../pages/ElectricalTab';
+import ElectricalCart from '../../pages/ElectricalCart';
+import ElectricalCheckout from '../../pages/ElectricalCheckout';
+import { getElectricalGroup } from '../../data/electricalContent';
 
 /**
  * Opens the "Book a service" modal, shared by every page that lets someone
@@ -102,8 +110,12 @@ export default function ServiceBookingModal({ service, onClose }) {
   useHistoryState('bm:idCustomDetails', false, { push: true });
   const [customInteriorRequirements, setCustomInteriorRequirements] = useState('');
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
+  const [selectedPopFlow, setSelectedPopFlow] = useHistoryState('bm:popFlow', null, { push: true });
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
   const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
+  // Electrical: category -> service list -> cart -> checkout, like plumbing.
+  const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
+  const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
   const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
 
@@ -153,8 +165,10 @@ export default function ServiceBookingModal({ service, onClose }) {
        ${service.slug === 'interior-by-choice'
   ? 'max-w-[1000px]'
   : service.slug === 'interior-design'
-    ? 'max-w-[1000px]'
-    : 'max-w-[550px]'
+    ? 'max-w-[800px]'
+    : service.slug === 'electrical'
+      ? 'max-w-[640px]'
+      : 'max-w-[550px]'
 }
 
           flex
@@ -208,8 +222,11 @@ export default function ServiceBookingModal({ service, onClose }) {
           ✕
         </button>
 
-        {/* MODAL HEADER */}
+        {/* MODAL HEADER — hidden inside a POP flow, which shows its own
+            title and step count */}
 
+        {!(service.slug === 'pop-ceiling-design' && selectedPopFlow) && (
+        <>
         <div className="shrink-0 px-6 pt-6 pr-16">
           <p
             className="
@@ -231,7 +248,11 @@ export default function ServiceBookingModal({ service, onClose }) {
               text-gray-950
             "
           >
-            {service.name}
+            {/* The cart names itself below ("Your Cart (3 items)"), like
+                plumbing's, so only the service list swaps in its category */}
+            {service.slug === 'electrical' && electricalView === 'tab'
+              ? getElectricalGroup(electricalTab)?.name || service.name
+              : service.name}
           </h2>
 
           {/* <p
@@ -246,7 +267,9 @@ export default function ServiceBookingModal({ service, onClose }) {
           </p> */}
         </div>
 
-        <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
+        <div className="mt-1 mb-4 h-px shrink-0 bg-gray-200" />
+        </>
+        )}
 
         {/* MODAL SCROLL AREA */}
 
@@ -608,7 +631,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                   {/* ========================================= */}
 
                   <div className="pb-2 md:pb-8">
-                    <div
+                    {/* <div
                       className="
                         mb-5
                         rounded-xl
@@ -641,7 +664,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                         measurement and a custom
                         design as per your choice.
                       </p>
-                    </div>
+                    </div> */}
 
                     <h3
                       className="
@@ -735,58 +758,63 @@ export default function ServiceBookingModal({ service, onClose }) {
               )}
             </>
           ) : service.slug === 'interior-design' ? (
-
- showCustomInteriorDesign ? (
-  <InteriorDesignCustomFlow
-    modal={true}
-    onBack={() => {
-      formBack(() => setShowCustomInteriorDesign(false));
-      scrollModalToTop();
-    }}
-    onContinue={(requirements) => {
-      setCustomInteriorRequirements(requirements);
-      setShowCustomInteriorDesign(false);
-      setShowCustomInteriorDetails(true);
-      scrollModalToTop();
-    }}
-  />
-) : showCustomInteriorDetails ? (
-  <InteriorDesignFlow
-    modal={true}
-    startAtDetails={true}
-    categorySlug={selectedInteriorDesignCategory}
-    projectSlug={selectedInteriorDesignProject}
-    customRequirements={customInteriorRequirements}
-    onStepChange={scrollModalToTop}
-  />
-) : selectedInteriorDesignProject ? (
-  <InteriorDesignFlow
-    modal={true}
-    categorySlug={selectedInteriorDesignCategory}
-    projectSlug={selectedInteriorDesignProject}
-    onBackToCatalogue={() => {
-      formBack(() => setSelectedInteriorDesignProject(null));
-      scrollModalToTop();
-    }}
-    onStepChange={scrollModalToTop}
-  />
-) : selectedInteriorDesignCategory ? (
-  <InteriorDesignCatalogue
-    modal={true}
-    categorySlug={selectedInteriorDesignCategory}
-    onSelectProject={(projectSlug) => {
-      setSelectedInteriorDesignProject(projectSlug);
-      scrollModalToTop();
-    }}
-    onBack={() => {
-      formBack(() => {
-        setSelectedInteriorDesignCategory(null);
-        setSelectedInteriorDesignProject(null);
-      });
-      scrollModalToTop();
-    }}
-  />
-) : (
+            showCustomInteriorDesign ? (
+              <InteriorDesignCustomFlow
+                initialRequirements={customInteriorRequirements}
+                onDraftChange={setCustomInteriorRequirements}
+                onBack={() => {
+                  formBack(() => setShowCustomInteriorDesign(false));
+                  scrollModalToTop();
+                }}
+                onContinue={(requirements) => {
+                  setCustomInteriorRequirements(requirements);
+                  setShowCustomInteriorDesign(false);
+                  setShowCustomInteriorDetails(true);
+                  scrollModalToTop();
+                }}
+              />
+            ) : showCustomInteriorDetails ? (
+              <InteriorDesignFlow
+                modal={true}
+                startAtDetails={true}
+                customRequirements={customInteriorRequirements}
+                onBackToCatalogue={() => {
+                  formBack(() => {
+                    setShowCustomInteriorDetails(false);
+                    setShowCustomInteriorDesign(true);
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignProject ? (
+              <InteriorDesignFlow
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                projectSlug={selectedInteriorDesignProject}
+                onBackToCatalogue={() => {
+                  formBack(() => setSelectedInteriorDesignProject(null));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignCategory ? (
+              <InteriorDesignCatalogue
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                onSelectProject={(projectSlug) => {
+                  setSelectedInteriorDesignProject(projectSlug);
+                  scrollModalToTop();
+                }}
+                onBack={() => {
+                  formBack(() => {
+                    setSelectedInteriorDesignCategory(null);
+                    setSelectedInteriorDesignProject(null);
+                  });
+                  scrollModalToTop();
+                }}
+              />
+            ) : (
               <InteriorDesignCategory
                 modal={true}
                 onSelectCategory={(categorySlug) => {
@@ -794,9 +822,10 @@ export default function ServiceBookingModal({ service, onClose }) {
                   setSelectedInteriorDesignProject(null);
                   scrollModalToTop();
                 }}
-              onCustom={() => {
-  setShowCustomInteriorDesign(true);
-}}
+                onCustom={() => {
+                  setShowCustomInteriorDesign(true);
+                  scrollModalToTop();
+                }}
               />
             )
           ) : service.slug === 'painting' ? (
@@ -915,6 +944,83 @@ export default function ServiceBookingModal({ service, onClose }) {
                 onBackToServices={() => {
                   setSelectedPlumbingConsultation(null);
                   setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'pop-ceiling-design' ? (
+            <div className="painting-modal-scope">
+              {selectedPopFlow ? (
+                <PopCeilingFlow
+                  modal={true}
+                  flowSlug={selectedPopFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPopFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : (
+                <PopCeilingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPopFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              )}
+            </div>
+          ) : service.slug === 'electrical' ? (
+            <div className="electrical-modal-scope">
+            {electricalView === 'category' ? (
+              <ElectricalCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setElectricalTab(tabSlug);
+                  setElectricalView('tab');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'tab' ? (
+              <ElectricalTab
+                modal={true}
+                tabSlug={electricalTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setElectricalTab(null);
+                    setElectricalView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setElectricalView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'cart' ? (
+              <ElectricalCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setElectricalView(electricalTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setElectricalView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'checkout' ? (
+              <ElectricalCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setElectricalView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setElectricalTab(null);
+                  setElectricalView('category');
                   scrollModalToTop();
                 }}
               />

@@ -47,6 +47,8 @@ export default function InteriorDesignFlow({
   onStepChange,
   startAtDetails = false,
   customRequirements = '',
+  startAtDetails = false,
+  customRequirements = '',
 }) {
   const params = useParams();
 
@@ -61,9 +63,12 @@ export default function InteriorDesignFlow({
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
   const scope = `f:id:${categorySlug}:${projectSlug}`;
   const formBack = useFormBack();
+  // The "Custom" path (InteriorDesignCustomFlow) has no project or package:
+  // it starts at the customer's details and books their requirements.
+  const firstStage = startAtDetails ? CONSULT_DETAILS : PACKAGE;
   const [stage, setStage] = useHistoryState(
   `${scope}:stage`,
-  startAtDetails ? CONSULT_DETAILS : PACKAGE,
+  startAtDetails ? CONSULT_DETAILS : firstStage,
   { push: true }
 );
   const [tier, setTier] = useHistoryState(`${scope}:tier`, 'standard');
@@ -92,7 +97,7 @@ export default function InteriorDesignFlow({
     return ID_REFERENCE_PACKAGES[tier];
   }, [hasPricing, tier]);
 
-  if ((!category || !project) && !startAtDetails) {
+  if (((!category || !project) && !startAtDetails) && !startAtDetails) {
   if (modal) return null;
 
   return (
@@ -116,12 +121,12 @@ const jumpToStage = (s) => {
   const goBack = () => {
     setSubmitError('');
 
-    if (stage === PACKAGE && modal) {
+    if (stage === firstStage && modal) {
       onBackToCatalogue?.();
       return;
     }
 
-    formBack(() => setStage((s) => Math.max(s - 1, PACKAGE)));
+    formBack(() => setStage((s) => Math.max(s - 1, firstStage)));
 
     if (modal) {
       onStepChange?.();
@@ -275,17 +280,7 @@ const jumpToStage = (s) => {
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
                 <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
-                {customRequirements ? (
-  <div>
-    <dt>Requirements</dt>
-    <dd>{customRequirements}</dd>
-  </div>
-) : (
-  <div>
-    <dt>Project</dt>
-    <dd>{project?.name || 'Interior Design'} — {tier}</dd>
-  </div>
-)}
+                <div><dt>Project</dt><dd>{project.name} — {tier}</dd></div>
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
