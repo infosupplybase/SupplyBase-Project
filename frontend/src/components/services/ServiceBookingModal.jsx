@@ -17,6 +17,8 @@ import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
 import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
 import PaintingCategory from '../../pages/PaintingCategory';
 import PaintingFlow from '../../pages/PaintingFlow';
+import PopCeilingCategory from '../../pages/PopCeilingCategory';
+import PopCeilingFlow from '../../pages/PopCeilingFlow';
 import PlumbingCategory from '../../pages/PlumbingCategory';
 import PlumbingTab from '../../pages/PlumbingTab';
 import PlumbingCart from '../../pages/PlumbingCart';
@@ -106,6 +108,7 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [showCustomInteriorDetails, setShowCustomInteriorDetails] = useHistoryState('bm:idCustomDetails', false, { push: true });
   const [customInteriorRequirements, setCustomInteriorRequirements] = useHistoryState('bm:idCustomRequirements', '');
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
+  const [selectedPopFlow, setSelectedPopFlow] = useHistoryState('bm:popFlow', null, { push: true });
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
   const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
   // Electrical: category -> service list -> cart -> checkout, like plumbing.
@@ -217,8 +220,11 @@ export default function ServiceBookingModal({ service, onClose }) {
           ✕
         </button>
 
-        {/* MODAL HEADER */}
+        {/* MODAL HEADER — hidden inside a POP flow, which shows its own
+            title and step count */}
 
+        {!(service.slug === 'pop-ceiling-design' && selectedPopFlow) && (
+        <>
         <div className="shrink-0 px-6 pt-6 pr-16">
           <p
             className="
@@ -260,6 +266,8 @@ export default function ServiceBookingModal({ service, onClose }) {
         </div>
 
         <div className="mt-1 mb-4 h-px shrink-0 bg-gray-200" />
+        </>
+        )}
 
         {/* MODAL SCROLL AREA */}
 
@@ -937,6 +945,28 @@ export default function ServiceBookingModal({ service, onClose }) {
                 }}
               />
             ) : null}
+            </div>
+          ) : service.slug === 'pop-ceiling-design' ? (
+            <div className="painting-modal-scope">
+              {selectedPopFlow ? (
+                <PopCeilingFlow
+                  modal={true}
+                  flowSlug={selectedPopFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPopFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : (
+                <PopCeilingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPopFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              )}
             </div>
           ) : service.slug === 'electrical' ? (
             <div className="electrical-modal-scope">

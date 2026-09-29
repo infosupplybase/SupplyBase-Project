@@ -1,18 +1,277 @@
-/* =========================================================================
-   SUPPLYBASE — POP CEILING & DESIGN
-   Full Home POP and Room POP, built on the same shared markup and `pnt-`
-   classes as painting.css (hero, overview rows, flow shell, step card,
-   option list, addon list, summary) — POP's own visual design is the same
-   black/gold/white language already established there, so almost nothing
-   new is needed here beyond this one row-icon treatment: the reference's
-   category-page rows are icon-led, not photo-led, unlike Painting's.
-   ========================================================================= */
+/* POP Ceiling & Design */
 
 .pce-overview-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
   color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+}
+
+/* Compact POP booking steps */
+
+.pop-modal-scope .container-narrow {
+  padding-bottom: 0;
+}
+
+.pop-modal-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pop-modal-progress span {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-step-card {
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pop-modal-scope .pnt-step-title {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+/* Two aligned image cards per row */
+
+.pop-modal-scope .pnt-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pop-image-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.pop-image-option:hover,
+.pop-image-option:focus-within,
+.pop-image-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-a40);
+}
+
+.pop-image-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pop-image-option img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.pop-image-option-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 12px;
+}
+
+.pop-image-option-content strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.pop-image-option-content small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pop-image-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  opacity: 0;
+}
+
+.pop-image-option.selected .pop-image-option-check {
+  opacity: 1;
+  background: var(--gold-deep);
+}
+
+/* Back and Continue stay below the scrolling cards */
+
+.pop-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pop-modal-actions .btn-back {
+  flex: 0 0 auto;
+  min-width: 90px;
+}
+
+.pop-modal-actions .btn-primary {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Heading and help link */
+
+.pop-modal-scope .pnt-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 8px 52px 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pop-modal-scope .pnt-back {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+}
+
+.pop-modal-scope .pnt-top-title {
+  min-width: 0;
+  color: var(--ink) !important;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+}
+
+.pop-modal-scope .pnt-help {
+  padding: 7px 10px;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  color: var(--gold-deep) !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pop-modal-scope .pnt-help:hover {
+  background: var(--gold-a08);
+}
+
+/* Validation popup */
+
+.pop-choice-toast {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 13px 14px;
+  transform: translateX(-50%);
+  border: 1px solid #f0a5a5;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #982121;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.pop-choice-toast span {
+  flex: 1;
+}
+
+.pop-choice-toast button {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 23px;
+  line-height: 1;
+}
+
+@media (max-width: 420px) {
+  .pop-modal-scope .pnt-step-card {
+    padding: 12px;
+  }
+
+  .pop-modal-scope .pnt-option-list {
+    gap: 8px;
+  }
+
+  .pop-image-option img {
+    height: 82px;
+  }
+
+  .pop-image-option-content {
+    padding: 8px;
+  }
+
+  .pop-image-option-content strong {
+    font-size: 13px;
+  }
+
+  .pop-modal-progress span {
+    display: none;
+  }
+
+  .pop-modal-scope .pnt-top {
+    padding-right: 38px;
+  }
+
+  .pop-modal-scope .pnt-top-title {
+    font-size: 0.9rem;
+  }
+
+  .pop-modal-scope .pnt-help {
+    padding: 6px;
+    font-size: 11px;
+  }
 }
