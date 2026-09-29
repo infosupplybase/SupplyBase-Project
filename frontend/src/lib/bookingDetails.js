@@ -1,5 +1,4 @@
-import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
-
+const hasGoogleMaps = Boolean(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
 /** Shared customer-details shape + validation for every booking flow (they
     all render components/booking/CustomerDetailsFields) — kept in one place
     so the validation rules can't drift between them. */

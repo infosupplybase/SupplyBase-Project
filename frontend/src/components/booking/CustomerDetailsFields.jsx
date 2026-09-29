@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Icon from '../ui/Icon';
-import GoogleLocationPicker, { getCurrentLocation, hasGoogleMaps } from '../layout/GoogleLocationPicker';
-import { useLocationContext, usePickedLocation } from '../../context/LocationContext';
+import GoogleLocationPicker, {
+  getCurrentLocation,
+} from '../layout/GoogleLocationPicker';import { useLocationContext, usePickedLocation } from '../../context/LocationContext';
 
 export function Field({ id, label, required, hint, error, ...rest }) {
   return (

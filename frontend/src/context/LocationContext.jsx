@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { contact } from '../data/siteConfig';
-import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
-
+const hasGoogleMaps = Boolean(import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
 const STORAGE_KEY = 'sb.location';
 
 const LocationContext = createContext(null);

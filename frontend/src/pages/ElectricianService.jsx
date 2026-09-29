@@ -260,31 +260,7 @@ const [locationPickerOpen, setLocationPickerOpen] = useState(false);
 
   // The shared checks (lib/bookingDetails), which also know about a map pin.
   const validateDetails = () => {
-<<<<<<< ours
-    const next = {};
-    if (!details.name.trim()) next.name = 'Please enter your name';
-    if (!details.phone.trim()) next.phone = 'Please enter your mobile number';
-    else if (!isValidPhone(details.phone)) next.phone = 'Enter a 10-digit mobile number';
-    if (details.whatsapp.trim() && !isValidPhone(details.whatsapp)) {
-      next.whatsapp = 'Enter a 10-digit number, or leave it blank';
-    }
-    if (details.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())) {
-      next.email = 'That email address does not look right';
-    }
-if (!details.buildingName?.trim()) {
-  next.address = 'Please enter the building name';
-}
-
-if (!locationData?.address) {
-  next.address = 'Please select your project location';
-}
-    if (!details.city.trim()) next.city = 'Please enter your city';
-    if (details.pincode.trim() && !/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
-      next.pincode = 'Enter a 6-digit pincode';
-    }
-=======
     const next = checkDetails(details, pickedLocation);
->>>>>>> theirs
     setErrors(next);
     return Object.keys(next).length === 0;
   };
