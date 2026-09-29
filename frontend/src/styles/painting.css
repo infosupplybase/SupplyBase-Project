@@ -353,6 +353,10 @@
 
 /* ------------------------------------------------------------- step dots */
 
+.pnt-step-caption {
+  margin: 0 0 30px !important;
+}
+
 .pnt-steps {
   display: flex;
   align-items: center;

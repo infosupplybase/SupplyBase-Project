@@ -79,7 +79,7 @@ public class BookingController {
      * BookingService.checkAccess).
      */
     @GetMapping("/api/bookings/{id}")
-    public BookingResponse get(@PathVariable Long id) {
+    public BookingResponse get(@PathVariable("id") Long id) {
         return service.get(id, currentUser.require());
     }
 
@@ -89,13 +89,13 @@ public class BookingController {
      * owner-or-staff check as get() (see BookingService.checkAccess).
      */
     @PatchMapping("/api/bookings/{id}")
-    public BookingResponse updateMine(@PathVariable Long id,
+    public BookingResponse updateMine(@PathVariable("id") Long id,
             @Valid @RequestBody UpdateMyBookingRequest request) {
         return service.updateMine(id, request, currentUser.require());
     }
 
     @GetMapping("/api/bookings/{id}/files")
-    public List<BookingFileResponse> files(@PathVariable Long id) {
+    public List<BookingFileResponse> files(@PathVariable("id") Long id) {
         return service.listFiles(id, currentUser.require());
     }
 
@@ -115,7 +115,8 @@ public class BookingController {
     }
 
     @GetMapping("/api/bookings/{id}/files/{fileId}/download")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id, @PathVariable Long fileId) {
+    public ResponseEntity<byte[]> downloadFile(@PathVariable("id") Long id,
+                                               @PathVariable("fileId") Long fileId) {
         var file = service.downloadFile(id, fileId, currentUser.require());
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(
@@ -143,31 +144,31 @@ public class BookingController {
     }
 
     @PatchMapping("/api/admin/bookings/{id}")
-    public BookingResponse update(@PathVariable Long id,
+    public BookingResponse update(@PathVariable("id") Long id,
                                   @Valid @RequestBody UpdateBookingRequest request) {
         return service.update(id, request);
     }
 
     @PatchMapping("/api/admin/bookings/{id}/assign")
-    public BookingResponse assign(@PathVariable Long id,
+    public BookingResponse assign(@PathVariable("id") Long id,
                                   @Valid @RequestBody AssignProfessionalRequest request) {
         return service.assignProfessional(id, request.professionalId());
     }
 
     /** What the assigned partner earns for this job and whether it has been paid. Admin only. */
     @GetMapping("/api/admin/bookings/{id}/payout")
-    public PartnerPayoutResponse partnerPayout(@PathVariable Long id) {
+    public PartnerPayoutResponse partnerPayout(@PathVariable("id") Long id) {
         return service.partnerPayout(id);
     }
 
     @PatchMapping("/api/admin/bookings/{id}/payout")
-    public PartnerPayoutResponse setPartnerPayout(@PathVariable Long id,
+    public PartnerPayoutResponse setPartnerPayout(@PathVariable("id") Long id,
                                                   @Valid @RequestBody SetPartnerPayoutRequest request) {
         return service.setPartnerPayout(id, request.amountPaise(), request.paid());
     }
 
     @PostMapping(value = "/api/admin/bookings/{id}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BookingFileResponse> uploadFile(@PathVariable Long id,
+    public ResponseEntity<BookingFileResponse> uploadFile(@PathVariable("id") Long id,
             @RequestParam(defaultValue = "PHOTO") String kind,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -188,7 +189,7 @@ public class BookingController {
     }
 
     @PatchMapping("/api/professional/bookings/{id}/status")
-    public ProfessionalBookingResponse advanceStatus(@PathVariable Long id,
+    public ProfessionalBookingResponse advanceStatus(@PathVariable("id") Long id,
                                   @Valid @RequestBody AdvanceBookingStatusRequest request) {
         return service.advanceOwnBookingStatus(id, request.status(), currentUser.require().id());
     }

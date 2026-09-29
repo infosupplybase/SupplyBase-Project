@@ -14,6 +14,7 @@ import {
 import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
 import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
 import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
+import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
 import PaintingCategory from '../../pages/PaintingCategory';
 import PaintingFlow from '../../pages/PaintingFlow';
 import PlumbingCategory from '../../pages/PlumbingCategory';
@@ -95,6 +96,10 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
+  // Interior Design -> "Custom": the requirements box, then details + schedule.
+  const [showCustomInteriorDesign, setShowCustomInteriorDesign] = useHistoryState('bm:idCustom', false, { push: true });
+  const [showCustomInteriorDetails, setShowCustomInteriorDetails] = useHistoryState('bm:idCustomDetails', false, { push: true });
+  const [customInteriorRequirements, setCustomInteriorRequirements] = useHistoryState('bm:idCustomRequirements', '');
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
   const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
@@ -145,9 +150,9 @@ export default function ServiceBookingModal({ service, onClose }) {
           w-full
 
          ${service.slug === 'interior-by-choice'
-  ? 'max-w-[1000px]'
+  ? 'max-w-[800px]'
   : service.slug === 'interior-design'
-    ? 'max-w-[1000px]'
+    ? 'max-w-[800px]'
     : 'max-w-[550px]'
 }
 
@@ -240,7 +245,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           </p> */}
         </div>
 
-        <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
+        <div className="mt-1 mb-4 h-px shrink-0 bg-gray-200" />
 
         {/* MODAL SCROLL AREA */}
 
@@ -602,7 +607,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                   {/* ========================================= */}
 
                   <div className="pb-2 md:pb-8">
-                    <div
+                    {/* <div
                       className="
                         mb-5
                         rounded-xl
@@ -635,7 +640,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                         measurement and a custom
                         design as per your choice.
                       </p>
-                    </div>
+                    </div> */}
 
                     <h3
                       className="
@@ -729,7 +734,36 @@ export default function ServiceBookingModal({ service, onClose }) {
               )}
             </>
           ) : service.slug === 'interior-design' ? (
-            selectedInteriorDesignProject ? (
+            showCustomInteriorDesign ? (
+              <InteriorDesignCustomFlow
+                initialRequirements={customInteriorRequirements}
+                onDraftChange={setCustomInteriorRequirements}
+                onBack={() => {
+                  formBack(() => setShowCustomInteriorDesign(false));
+                  scrollModalToTop();
+                }}
+                onContinue={(requirements) => {
+                  setCustomInteriorRequirements(requirements);
+                  setShowCustomInteriorDesign(false);
+                  setShowCustomInteriorDetails(true);
+                  scrollModalToTop();
+                }}
+              />
+            ) : showCustomInteriorDetails ? (
+              <InteriorDesignFlow
+                modal={true}
+                startAtDetails={true}
+                customRequirements={customInteriorRequirements}
+                onBackToCatalogue={() => {
+                  formBack(() => {
+                    setShowCustomInteriorDetails(false);
+                    setShowCustomInteriorDesign(true);
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignProject ? (
               <InteriorDesignFlow
                 modal={true}
                 categorySlug={selectedInteriorDesignCategory}
@@ -765,7 +799,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                   scrollModalToTop();
                 }}
                 onCustom={() => {
-                  console.log('Custom interior design');
+                  setShowCustomInteriorDesign(true);
+                  scrollModalToTop();
                 }}
               />
             )
