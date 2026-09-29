@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
 import { activeServices } from '../../data/services';
@@ -12,7 +12,14 @@ import { useAuth } from '../../context/AuthContext';
  */
 export default function MobileMenu({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    onClose();
+    navigate('/');
+  };
 
   // Live catalogue, with the static list only as the "not loaded yet" fill-in.
   const { services } = useServiceCatalogue(activeServices);
@@ -75,9 +82,20 @@ export default function MobileMenu({ open, onClose }) {
               </NavLink>
             )
           )}
-          <NavLink to={user ? '/dashboard' : '/login'} className="mobile-link" onClick={onClose}>
-            {user ? 'MY ACCOUNT' : 'LOGIN'}
-          </NavLink>
+          {user ? (
+            <>
+              <NavLink to="/dashboard" className="mobile-link" onClick={onClose}>
+                MY ACCOUNT
+              </NavLink>
+              <button type="button" className="mobile-link text-left" onClick={handleLogout}>
+                LOG OUT
+              </button>
+            </>
+          ) : (
+            <NavLink to="/login" className="mobile-link" onClick={onClose}>
+              LOGIN
+            </NavLink>
+          )}
         </nav>
 
         <div className="mobile-foot">

@@ -42,6 +42,7 @@ import Profile from './pages/Profile';
 import PartnerRedirect from './pages/PartnerRedirect';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
+import RequireBookingAuth from './components/layout/RequireBookingAuth';
 
 /**
  * ROUTES
@@ -125,33 +126,33 @@ export default function App() {
         {/* services/electrician already redirects to services/electrical
             above, so only that exact path needs to render the category
             list here. */}
-        <Route path="services/electrical" element={<ElectricalCategory />} />
-        <Route path="services/electric" element={<ElectricalCategory />} />
-        <Route path="services/electrical/:subSlug" element={<ElectricianService />} />
+        <Route path="services/electrical" element={<RequireBookingAuth><ElectricalCategory /></RequireBookingAuth>} />
+        <Route path="services/electric" element={<RequireBookingAuth><ElectricalCategory /></RequireBookingAuth>} />
+        <Route path="services/electrical/:subSlug" element={<RequireBookingAuth><ElectricianService /></RequireBookingAuth>} />
 
         {/* Other Services: the catch-all eighth tile, reactivated on
             request. A category list in front of five existing generic
             wizard pages, same shape as the electrical category list. */}
-        <Route path="services/other-services" element={<OtherServicesCategory />} />
+        <Route path="services/other-services" element={<RequireBookingAuth><OtherServicesCategory /></RequireBookingAuth>} />
 
         {/* Plumbing Services: an itemised cart catalogue (V14 migration)
             replacing the old generic wizard for this one category. Exact
             child paths declared ahead of services/:slug so they win over
             that wildcard, same precedent as services/electrical above. */}
-        <Route path="services/plumbing" element={<PlumbingCategory />} />
-        <Route path="services/plumbing/cart" element={<PlumbingCart />} />
-        <Route path="services/plumbing/checkout" element={<PlumbingCheckout />} />
-        <Route path="services/plumbing/consultation" element={<PlumbingConsultationList />} />
-        <Route path="services/plumbing/consultation/:typeSlug" element={<PlumbingConsultationBook />} />
-        <Route path="services/plumbing/:tabSlug" element={<PlumbingTab />} />
+        <Route path="services/plumbing" element={<RequireBookingAuth><PlumbingCategory /></RequireBookingAuth>} />
+        <Route path="services/plumbing/cart" element={<RequireBookingAuth><PlumbingCart /></RequireBookingAuth>} />
+        <Route path="services/plumbing/checkout" element={<RequireBookingAuth><PlumbingCheckout /></RequireBookingAuth>} />
+        <Route path="services/plumbing/consultation" element={<RequireBookingAuth><PlumbingConsultationList /></RequireBookingAuth>} />
+        <Route path="services/plumbing/consultation/:typeSlug" element={<RequireBookingAuth><PlumbingConsultationBook /></RequireBookingAuth>} />
+        <Route path="services/plumbing/:tabSlug" element={<RequireBookingAuth><PlumbingTab /></RequireBookingAuth>} />
 
         {/* Painting Services: three itemised booking journeys (V15
             migration) replacing the old generic wizard for this one
             category — same precedent as plumbing above. One page component
             (PaintingFlow) driven by the :flowSlug param and paintingContent.js's
             flow config, rather than one file per journey. */}
-        <Route path="services/painting" element={<PaintingCategory />} />
-        <Route path="services/painting/:flowSlug" element={<PaintingFlow />} />
+        <Route path="services/painting" element={<RequireBookingAuth><PaintingCategory /></RequireBookingAuth>} />
+        <Route path="services/painting/:flowSlug" element={<RequireBookingAuth><PaintingFlow /></RequireBookingAuth>} />
 
         {/* POP Ceiling & Design: only two of its six subservices have a
             detailed reference journey (V16 migration) — Full Home POP and
@@ -160,8 +161,8 @@ export default function App() {
             Renovation) link to /booking/pop-ceiling-design?preselect=...,
             the existing generic wizard below, with their subservice
             preselected (see ServiceBooking.jsx). */}
-        <Route path="services/pop-ceiling-design" element={<PopCeilingCategory />} />
-        <Route path="services/pop-ceiling-design/:flowSlug" element={<PopCeilingFlow />} />
+        <Route path="services/pop-ceiling-design" element={<RequireBookingAuth><PopCeilingCategory /></RequireBookingAuth>} />
+        <Route path="services/pop-ceiling-design/:flowSlug" element={<RequireBookingAuth><PopCeilingFlow /></RequireBookingAuth>} />
 
         {/* Waterproofing: six subservices, in the reference's own order.
             Five open WaterproofingFlow directly; Bathroom opens its own
@@ -169,22 +170,22 @@ export default function App() {
             Floor Waterproofing has a detailed flow of its own — the other
             five link to /booking/waterproofing?preselect=..., same
             fallback pattern as POP Ceiling's non-detailed subservices. */}
-        <Route path="services/waterproofing" element={<WaterproofingCategory />} />
-        <Route path="services/waterproofing/bathroom" element={<WaterproofingBathroom />} />
-        <Route path="services/waterproofing/:flowSlug" element={<WaterproofingFlow />} />
+        <Route path="services/waterproofing" element={<RequireBookingAuth><WaterproofingCategory /></RequireBookingAuth>} />
+        <Route path="services/waterproofing/bathroom" element={<RequireBookingAuth><WaterproofingBathroom /></RequireBookingAuth>} />
+        <Route path="services/waterproofing/:flowSlug" element={<RequireBookingAuth><WaterproofingFlow /></RequireBookingAuth>} />
 
         {/* Interior Design: separate from Interior by Choice (its own
             routes below, untouched) — a category grid (1/2/3 BHK + Villa),
             each opening a project grid, each project opening one
             config-driven flow (package -> details -> customise ->
             consultation -> confirm). */}
-        <Route path="services/interior-design" element={<InteriorDesignCategory />} />
-        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignCatalogue />} />
-        <Route path="services/interior-design/:categorySlug/:projectSlug" element={<InteriorDesignFlow />} />
+        <Route path="services/interior-design" element={<RequireBookingAuth><InteriorDesignCategory /></RequireBookingAuth>} />
+        <Route path="services/interior-design/:categorySlug" element={<RequireBookingAuth><InteriorDesignCatalogue /></RequireBookingAuth>} />
+        <Route path="services/interior-design/:categorySlug/:projectSlug" element={<RequireBookingAuth><InteriorDesignFlow /></RequireBookingAuth>} />
 
-        <Route path="services/:slug" element={<ServiceBooking />} />
+        <Route path="services/:slug" element={<RequireBookingAuth><ServiceBooking /></RequireBookingAuth>} />
         {/* The hero banners link to /booking/<slug>; same page, second door. */}
-        <Route path="booking/:slug" element={<ServiceBooking />} />
+        <Route path="booking/:slug" element={<RequireBookingAuth><ServiceBooking /></RequireBookingAuth>} />
         {/* Projects and Materials sections — disabled sitewide on request.
             Routes commented out rather than removed so this is a quick
             revert; every Link that pointed here is also commented out
@@ -202,11 +203,11 @@ export default function App() {
             small route tree, separate from the generic /services/:slug
             wizard, since it's a browse-then-book flow rather than a
             question-at-a-time site visit request. */}
-        <Route path="interior-by-choice" element={<InteriorByChoice />} />
-        <Route path="interior-by-choice/book" element={<InteriorBooking />} />
-        <Route path="interior-by-choice/:spaceSlug" element={<InteriorSpaceGallery />} />
-        <Route path="interior-by-choice/:spaceSlug/:designSlug" element={<InteriorDesignDetail />} />
-        <Route path="interior-by-choice/:spaceSlug/:designSlug/book" element={<InteriorBooking />} />
+        <Route path="interior-by-choice" element={<RequireBookingAuth><InteriorByChoice /></RequireBookingAuth>} />
+        <Route path="interior-by-choice/book" element={<RequireBookingAuth><InteriorBooking /></RequireBookingAuth>} />
+        <Route path="interior-by-choice/:spaceSlug" element={<RequireBookingAuth><InteriorSpaceGallery /></RequireBookingAuth>} />
+        <Route path="interior-by-choice/:spaceSlug/:designSlug" element={<RequireBookingAuth><InteriorDesignDetail /></RequireBookingAuth>} />
+        <Route path="interior-by-choice/:spaceSlug/:designSlug/book" element={<RequireBookingAuth><InteriorBooking /></RequireBookingAuth>} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
         <Route path="quote" element={<Quote />} />

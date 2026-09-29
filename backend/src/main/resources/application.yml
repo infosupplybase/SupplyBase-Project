@@ -18,8 +18,11 @@ spring:
 
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:supplybase}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:Root@123}
+    # Match the repo's default local MySQL container credentials when no .env
+    # file is present. This avoids the common root@localhost access-denied boot
+    # failure seen in local development.
+    username: ${DB_USER:supplybase}
+    password: ${DB_PASSWORD:supplybase}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10

@@ -3,6 +3,7 @@ package in.supplybase.backend.booking;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,9 +52,6 @@ import in.supplybase.backend.config.AppProperties;
 public class BookingService {
 
     private static final Logger log = LoggerFactory.getLogger(BookingService.class);
-
-    /** A real person does not book six site visits in an hour; a bot does. */
-    private static final int MAX_PER_PHONE_PER_HOUR = 5;
 
     /**
      * The plumbing cart's pricing rule (from the approved rate card): actual
@@ -127,9 +125,12 @@ public class BookingService {
         ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
         String phone = PhoneNumbers.normalise(request.phone());
 
-        long recent = bookings.countByPhoneAndCreatedAtAfter(
-                phone, Instant.now().minus(Duration.ofHours(1)));
-        if (recent >= MAX_PER_PHONE_PER_HOUR) {
+        Instant cutoff = Instant.now().minus(Duration.ofHours(1));
+        List<Booking> recentBookings = bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(phone, cutoff);
+        boolean sameChosenSlotRecentlyBooked = recentBookings.stream()
+                .anyMatch(existing -> sameSlotBooked(existing, request.preferredDate(), request.preferredTime()));
+
+        if (sameChosenSlotRecentlyBooked) {
             throw ApiException.badRequest(
                     "We already have your booking. Please call us if it is urgent.");
         }
@@ -192,6 +193,45 @@ public class BookingService {
 
         notifyStaff(saved);
         return BookingReceipt.from(saved);
+    }
+
+    private boolean sameSlotBooked(Booking existing, LocalDate requestedDate, LocalTime requestedTime) {
+        if (existing == null || requestedDate == null || requestedTime == null) {
+            return false;
+        }
+
+        if (existing.getAppointmentSlot() != null) {
+            LocalDate slotDate = existing.getAppointmentSlot().getSlotDate();
+            LocalTime slotTime = existing.getAppointmentSlot().getSlotTime();
+            if (slotTime != null && slotTime.equals(requestedTime)
+                    && (slotDate == null || slotDate.equals(requestedDate))) {
+                return true;
+            }
+        }
+
+        if (existing.getPreferredDate() != null && !existing.getPreferredDate().equals(requestedDate)) {
+            return false;
+        }
+
+        if (existing.getPreferredSlot() == null) {
+            return false;
+        }
+
+        LocalTime existingTime = legacySlotTime(existing.getPreferredSlot());
+        return existingTime != null && existingTime.equals(requestedTime);
+    }
+
+    private LocalTime legacySlotTime(TimeSlot slot) {
+        if (slot == null) {
+            return null;
+        }
+        return switch (slot) {
+            case SLOT_10AM -> LocalTime.of(10, 0);
+            case SLOT_12PM -> LocalTime.of(12, 0);
+            case SLOT_2PM -> LocalTime.of(14, 0);
+            case SLOT_4PM -> LocalTime.of(16, 0);
+            case SLOT_6PM -> LocalTime.of(18, 0);
+        };
     }
 
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {

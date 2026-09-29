@@ -51,12 +51,34 @@ export default function Login() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const goTo = (location.state && location.state.from) || '/dashboard';
+  const fromParam = new URLSearchParams(location.search).get('from');
+  const rememberedReturn = (() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('sb.bookingReturn') || 'null');
+    } catch {
+      return null;
+    }
+  })();
+  const redirectedFrom = (location.state && location.state.from) || rememberedReturn?.path || fromParam || '/dashboard';
+  const redirectedState = (location.state && location.state.fromState) || rememberedReturn?.state || null;
+  const redirectedStage = (location.state && location.state.returnStage) ?? rememberedReturn?.stage ?? null;
+  const pathnameWithoutHash = redirectedFrom.split('#')[0];
+  const goTo = redirectedFrom;
 
   // already signed in? go straight through
   useEffect(() => {
-    if (user) navigate(goTo, { replace: true });
-  }, [user, goTo, navigate]);
+    if (user) {
+      sessionStorage.removeItem('sb.bookingReturn');
+      navigate(goTo, {
+        replace: true,
+        state: redirectedState
+          ? { ...redirectedState, returnStage: redirectedStage }
+          : redirectedStage !== null
+            ? { returnStage: redirectedStage }
+            : undefined,
+      });
+    }
+  }, [user, goTo, navigate, redirectedState, redirectedStage]);
 
   // messages from one tab must not linger on the other
   useEffect(() => {
@@ -114,7 +136,15 @@ export default function Login() {
     try {
       if (isRegister) await register(form.name, form.email, form.password, form.phone);
       else await login(form.identifier, form.password);
-      navigate(goTo, { replace: true });
+      sessionStorage.removeItem('sb.bookingReturn');
+      navigate(goTo, {
+        replace: true,
+        state: redirectedState
+          ? { ...redirectedState, returnStage: redirectedStage }
+          : redirectedStage !== null
+            ? { returnStage: redirectedStage }
+            : undefined,
+      });
     } catch (err) {
       // The API validates the same fields again and can reject things the
       // browser cannot know about — an email already taken, for one. Put those
@@ -133,7 +163,15 @@ export default function Login() {
     setBusy(true);
     try {
       await loginWithGoogle(credential);
-      navigate(goTo, { replace: true });
+      sessionStorage.removeItem('sb.bookingReturn');
+      navigate(goTo, {
+        replace: true,
+        state: redirectedState
+          ? { ...redirectedState, returnStage: redirectedStage }
+          : redirectedStage !== null
+            ? { returnStage: redirectedStage }
+            : undefined,
+      });
     } catch (err) {
       setError(friendlyError(err));
     } finally {

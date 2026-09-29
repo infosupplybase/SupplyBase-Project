@@ -54,6 +54,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     /** Backs BookingExpiryJob: unpaid or unconfirmed bookings nobody followed up on. */
     List<Booking> findByStatusInAndCreatedAtBefore(List<BookingStatus> statuses, Instant cutoff);
 
+    /** Fetch the phone's recent bookings so we can compare the chosen slot instead of blocking all new dates/times. */
+    List<Booking> findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(String phone, Instant since);
+
     /** Backs the flood check in BookingService. */
     long countByPhoneAndCreatedAtAfter(String phone, Instant since);
 }

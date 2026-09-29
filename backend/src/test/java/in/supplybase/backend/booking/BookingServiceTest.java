@@ -1,6 +1,7 @@
 package in.supplybase.backend.booking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -115,8 +116,8 @@ class BookingServiceTest {
             LocalTime time = LocalTime.of(10, 0);
 
             when(catalogue.requireCategory("plumbing")).thenReturn(category);
-            when(bookings.countByPhoneAndCreatedAtAfter(eq("9820011223"), any(Instant.class)))
-                    .thenReturn(0L);
+            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(eq("9820011223"), any(Instant.class)))
+                    .thenReturn(List.of());
 
             AppointmentSlot slot = AppointmentSlot.builder()
                     .id(9L).slotDate(date).slotTime(time).categoryId(1L)
@@ -174,7 +175,7 @@ class BookingServiceTest {
             LocalTime time = LocalTime.of(10, 0);
 
             when(catalogue.requireCategory("plumbing")).thenReturn(category);
-            when(bookings.countByPhoneAndCreatedAtAfter(any(), any())).thenReturn(0L);
+            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(any(), any())).thenReturn(List.of());
             when(appointments.reserve(anyLong(), any(), any()))
                     .thenReturn(AppointmentSlot.builder().id(1L).capacity(1).bookedCount(1).build());
             when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -190,14 +191,48 @@ class BookingServiceTest {
         }
 
         @Test
-        @DisplayName("refuses a sixth booking from the same phone within an hour")
-        void rejectsWhenRateLimited() {
-            when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
-            when(bookings.countByPhoneAndCreatedAtAfter(eq("9820011223"), any(Instant.class)))
-                    .thenReturn(5L);
+        @DisplayName("allows a different date or time for the same phone")
+        void allowsDifferentSlotForSamePhone() {
+            ServiceCategory category = plumbingCategory();
+            LocalDate date = LocalDate.now().plusDays(3);
+            LocalTime time = LocalTime.of(11, 0);
 
-            CreateBookingRequest request =
-                    requestFor(LocalDate.now().plusDays(1), LocalTime.of(10, 0), null);
+            when(catalogue.requireCategory("plumbing")).thenReturn(category);
+            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(eq("9820011223"), any(Instant.class)))
+                    .thenReturn(List.of(Booking.builder()
+                            .preferredDate(date.plusDays(1))
+                            .appointmentSlot(AppointmentSlot.builder().slotTime(LocalTime.of(10, 0)).build())
+                            .build()));
+            when(appointments.reserve(1L, date, time))
+                    .thenReturn(AppointmentSlot.builder().id(9L).slotDate(date).slotTime(time)
+                            .categoryId(1L).capacity(3).bookedCount(1).build());
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> {
+                Booking b = inv.getArgument(0);
+                b.setId(100L);
+                return b;
+            });
+            when(bookingNumbers.next()).thenReturn("SB-20260906-000001");
+
+            CreateBookingRequest request = requestFor(date, time, null);
+
+            assertThatCode(() -> service.create(request, null)).doesNotThrowAnyException();
+            verify(appointments).reserve(1L, date, time);
+        }
+
+        @Test
+        @DisplayName("refuses the same slot again for the same phone within an hour")
+        void rejectsWhenSameSlotIsAlreadyBooked() {
+            LocalDate date = LocalDate.now().plusDays(1);
+            LocalTime time = LocalTime.of(10, 0);
+
+            when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
+            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(eq("9820011223"), any(Instant.class)))
+                    .thenReturn(List.of(Booking.builder()
+                            .preferredDate(date)
+                            .appointmentSlot(AppointmentSlot.builder().slotTime(time).build())
+                            .build()));
+
+            CreateBookingRequest request = requestFor(date, time, null);
 
             assertThatThrownBy(() -> service.create(request, null))
                     .isInstanceOf(ApiException.class)
@@ -213,7 +248,7 @@ class BookingServiceTest {
         @DisplayName("propagates the conflict when the slot is no longer available")
         void propagatesSlotConflict() {
             when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
-            when(bookings.countByPhoneAndCreatedAtAfter(any(), any())).thenReturn(0L);
+            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(any(), any())).thenReturn(List.of());
             when(appointments.reserve(anyLong(), any(), any()))
                     .thenThrow(ApiException.conflict(
                             "This time slot is no longer available. Please select another time."));

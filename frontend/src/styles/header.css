@@ -146,7 +146,7 @@
 .login-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   height: 44px;
   padding: 0 20px;
   border: 1px solid var(--gold);
@@ -167,6 +167,42 @@
   background: var(--gold);
   color: var(--on-gold);
   box-shadow: var(--shadow-gold);
+}
+
+.icon-only-btn {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.user-logout-btn {
+  padding: 0 18px 0 12px;
+  min-width: 0;
+}
+
+.user-avatar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.logout-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 8px;
+  border-left: 1px solid rgba(186, 133, 35, 0.7);
 }
 
 /* ------------------------------------------------- location + notifications */

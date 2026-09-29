@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState, useRef } from 'react';
 
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/ui/Icon';
 
@@ -132,6 +132,7 @@ export default function ServiceBooking({
   const slug = serviceSlug || routeSlug;
 
   const { user } = useAuth();
+  const location = useLocation();
 
   // With a Google Maps key the customer can pin the visit location on a map
   // (or use their current location). Only a real pin counts — the header's

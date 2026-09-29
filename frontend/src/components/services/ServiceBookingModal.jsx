@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
 import Icon from '../ui/Icon';
 import { ModalFooterContext } from './ModalFoot';
@@ -46,6 +47,7 @@ import OtherServicesCategory from '../../pages/OtherServicesCategory';
 export function useServiceBookingModal() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const entry = (location.state && location.state.bookingModal) || null;
 
   return {
@@ -54,6 +56,16 @@ export function useServiceBookingModal() {
     // shares the entry it was opened from), new for the next one.
     openToken: entry ? entry.base : 0,
     open: (nextService) => {
+      if (!user) {
+        navigate('/login', {
+          replace: true,
+          state: {
+            from: `${location.pathname}${location.search}${location.hash}`,
+          },
+        });
+        return;
+      }
+
       const base = (window.history.state && window.history.state.idx) || 0;
       const usr = (window.history.state && window.history.state.usr) || {};
       const { pathname, search, hash } = window.location;
