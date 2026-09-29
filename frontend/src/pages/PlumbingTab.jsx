@@ -6,7 +6,7 @@ import PlumbingHero from '../components/plumbing/PlumbingHero';
 import CategoryTabs from '../components/plumbing/CategoryTabs';
 import ServiceRow from '../components/plumbing/ServiceRow';
 import usePlumbingCatalogue from '../hooks/usePlumbingCatalogue';
-import { useCart } from '../context/CartContext';
+import ViewCartBox from '../components/plumbing/ViewCartBox';
 
 /** A sub-filter label like "Taps" or "Mixers" matches an item whose name or
     description contains that word (singular or plural) — a reasonable
@@ -38,8 +38,6 @@ export default function PlumbingTab({
   const [query, setQuery] = useState('');
 
   const navigate = useNavigate();
-  const { items } = useCart();
-  const hasCartItems = items?.length > 0;
   // On the plumbing page itself (not the pop-up) the cart is its own page.
   const viewCart = onViewCart || (() => navigate('/services/plumbing/cart'));
 
@@ -172,48 +170,8 @@ export default function PlumbingTab({
             </div>
           )}
 
-          {/* SMALL CONSULTATION NOTE (side, low emphasis) */}
           {/* VIEW CART BOX (main attention, sits right under the list) */}
-{hasCartItems && (
-  <div className="plb-view-cart-box">
-    <div className="plb-view-cart-info">
-      <span className="plb-view-cart-icon">
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-          <path d="M3 6h18" />
-          <path d="M16 10a4 4 0 0 1-8 0" />
-        </svg>
-        <em className="plb-view-cart-badge">{items.length}</em>
-      </span>
-
-      <div>
-        <strong>
-          {items.length === 1 ? '1 item added' : `${items.length} items added`}
-        </strong>
-        <span>Tap to review & book</span>
-      </div>
-    </div>
-
-    <button
-      type="button"
-      className="plb-view-cart-btn"
-      onClick={viewCart}
-    >
-      View Cart
-      <Icon name="arrow-right" size={16} />
-    </button>
-  </div>
-)}
+          <ViewCartBox onViewCart={viewCart} />
 
 {/* HOME VISIT: small pill, far right, below the cart box */}
 {modal ? (

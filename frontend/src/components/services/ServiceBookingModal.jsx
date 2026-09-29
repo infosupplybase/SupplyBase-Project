@@ -246,11 +246,11 @@ export default function ServiceBookingModal({ service, onClose }) {
               text-gray-950
             "
           >
+            {/* The cart names itself below ("Your Cart (3 items)"), like
+                plumbing's, so only the service list swaps in its category */}
             {service.slug === 'electrical' && electricalView === 'tab'
               ? getElectricalGroup(electricalTab)?.name || service.name
-              : service.slug === 'electrical' && electricalView === 'cart'
-                ? 'Your Cart'
-                : service.name}
+              : service.name}
           </h2>
 
           {/* <p

@@ -92,7 +92,7 @@ export default function ElectricalCategory({
         className={
           modal
             ? 'plb-section !py-0 !pb-4 electrical-modal-section'
-            : 'plb-section'
+            : 'plb-section electrical-page-section'
         }
       >
         <div

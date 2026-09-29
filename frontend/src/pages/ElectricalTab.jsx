@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PageHero from '../components/ui/PageHero';
 import ServiceRow from '../components/plumbing/ServiceRow';
-import StickyCartBar from '../components/plumbing/StickyCartBar';
+import ViewCartBox from '../components/plumbing/ViewCartBox';
 import { getElectricalGroup } from '../data/electricalContent';
 
 /**
@@ -17,8 +17,10 @@ export default function ElectricalTab({
   onBackToCategories,
   onViewCart,
 }) {
+  const navigate = useNavigate();
   const group = useMemo(() => getElectricalGroup(tabSlug), [tabSlug]);
   const [query, setQuery] = useState('');
+  const viewCart = onViewCart || (() => navigate('/services/electrical/cart'));
 
   const items = useMemo(() => {
     if (!group) return [];
@@ -100,7 +102,8 @@ export default function ElectricalTab({
             </div>
           )}
 
-          <StickyCartBar modal={modal} cart="electrical" onViewCart={onViewCart} />
+          {/* The same box as plumbing's service list */}
+          <ViewCartBox cart="electrical" onViewCart={viewCart} />
         </div>
       </section>
     </>

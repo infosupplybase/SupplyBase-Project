@@ -380,7 +380,7 @@
   --elc-gap: 16px;
 }
 
-.electrical-modal-section .plb-overview-grid,
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-grid,
 .electrical-intro-grid {
   display: grid !important;
   grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -394,7 +394,7 @@
 }
 
 /* ---- card shell ---- */
-.electrical-modal-section .plb-overview-card {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-card {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -416,19 +416,19 @@
               transform var(--t-fast) var(--ease);
 }
 
-.electrical-modal-section .plb-overview-card:hover {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-card:hover {
   border-color: var(--gold);
   box-shadow: 0 2px 4px rgba(20, 16, 4, 0.05), 0 12px 26px rgba(20, 16, 4, 0.09);
   transform: translateY(-3px);
 }
 
-.electrical-modal-section .plb-overview-card:focus-visible {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-card:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
 }
 
 /* ---- icon panel: fixed height, centred, blends the icon's own backdrop ---- */
-.electrical-modal-section .plb-overview-photo {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-photo {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -445,7 +445,7 @@
   border-radius: 0;
 }
 
-.electrical-modal-section .plb-overview-photo img {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-photo img {
   display: block;
   width: 44px !important;
   height: 44px !important;
@@ -458,7 +458,7 @@
 }
 
 /* ---- name: fixed two-line slot so every price lines up ---- */
-.electrical-modal-section .plb-overview-name {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-name {
   position: relative;
   display: flex;
   align-items: center;
@@ -474,7 +474,7 @@
   text-wrap: balance;
 }
 
-.electrical-modal-section .plb-overview-name svg {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-name svg {
   position: absolute;
   top: 50%;
   right: 10px;
@@ -486,13 +486,13 @@
   transition: transform var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
-.electrical-modal-section .plb-overview-card:hover .plb-overview-name svg {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-card:hover .plb-overview-name svg {
   color: var(--gold-deep);
   transform: translate(2px, -50%);
 }
 
 /* ---- price + note pinned to the bottom, always aligned across cards ---- */
-.electrical-modal-section .plb-overview-price {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-price {
   margin-top: auto;
   padding: 6px 12px 0 !important;
   font-family: var(--font-display);
@@ -502,7 +502,7 @@
   text-align: center;
 }
 
-.electrical-modal-section .plb-overview-price-note {
+:is(.electrical-modal-section, .electrical-page-section) .plb-overview-price-note {
   padding: 2px 12px 16px !important;
   font-size: 0.72rem;
   color: var(--ink-muted);
@@ -538,17 +538,17 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .electrical-modal-section .plb-overview-card,
-  .electrical-modal-section .plb-overview-name svg {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-card,
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-name svg {
     transition: none;
   }
-  .electrical-modal-section .plb-overview-card:hover {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-card:hover {
     transform: none;
   }
 }
 
 @media (max-width: 1023px) {
-  .electrical-modal-section .plb-overview-grid,
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-grid,
   .electrical-intro-grid {
     gap: 12px !important;
   }
@@ -556,18 +556,18 @@
 
 @media (max-width: 767px) {
   /* 3-up grid, compact but still aligned */
-  .electrical-modal-section .plb-overview-grid,
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-grid,
   .electrical-modal-scope .plb-overview-grid,
   .electrical-intro-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 8px !important;
   }
 
-  .electrical-modal-section .plb-overview-card {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-card {
     border-radius: 12px;
   }
 
-  .electrical-modal-section .plb-overview-photo {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-photo {
     width: 44px !important;
     height: 44px !important;
     margin-top: 12px;
@@ -575,12 +575,12 @@
     border-radius: 0;
   }
 
-  .electrical-modal-section .plb-overview-photo img {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-photo img {
     width: 34px !important;
     height: 34px !important;
   }
 
-  .electrical-modal-section .plb-overview-name {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-name {
     min-height: 44px;
     padding: 8px 6px 0 !important;
     font-size: 0.72rem;
@@ -588,16 +588,16 @@
   }
 
   /* arrow is redundant at this size — frees room for the label */
-  .electrical-modal-section .plb-overview-name svg {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-name svg {
     display: none;
   }
 
-  .electrical-modal-section .plb-overview-price {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-price {
     padding: 4px 6px 0 !important;
     font-size: 0.78rem;
   }
 
-  .electrical-modal-section .plb-overview-price-note {
+  :is(.electrical-modal-section, .electrical-page-section) .plb-overview-price-note {
     padding: 1px 6px 10px !important;
     font-size: 0.58rem;
     line-height: 1.2;

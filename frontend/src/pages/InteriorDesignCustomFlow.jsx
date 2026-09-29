@@ -1,10 +1,17 @@
 import { useState } from 'react';
+import Icon from '../components/ui/Icon';
+import ModalFoot from '../components/services/ModalFoot';
 import '../styles/InteriorDesignCustomFlow.css';
+
+const MAX_LENGTH = 400;
+const MIN_LENGTH = 10;
 
 /**
  * Interior Design -> "Custom": the customer describes what they want in their
  * own words, then goes to the usual details and schedule steps
  * (InteriorDesignFlow with startAtDetails), which books those requirements.
+ * Drawn like every other booking step: the card heading, a normal form
+ * field, and Back / Continue in the pop-up's footer bar (ModalFoot).
  */
 export default function InteriorDesignCustomFlow({
   initialRequirements = '',
@@ -16,9 +23,6 @@ export default function InteriorDesignCustomFlow({
   // details step shows what was typed.
   const [requirements, setRequirements] = useState(initialRequirements);
   const [error, setError] = useState('');
-
-  const MAX_LENGTH = 400;
-  const MIN_LENGTH = 10;
 
   const handleContinue = () => {
     const value = requirements.trim();
@@ -39,76 +43,44 @@ export default function InteriorDesignCustomFlow({
 
   return (
     <div className="id-custom-flow">
-      <div className="id-custom-content">
-        <h2>Tell us about your requirements</h2>
+      <div className="wizard-card-head">
+        <h2>Tell Us About Your Requirements</h2>
+        <p>Rooms, style, budget, anything you have in mind — our designer will call you to discuss it.</p>
+      </div>
 
+      <div className={`field ${error ? 'error' : ''}`}>
+        <label htmlFor="id-custom-requirements">
+          Your requirements <span className="req">*</span>
+        </label>
         <textarea
-          rows={8}
-          placeholder="Tell us about your interior design requirements..."
-          className="id-custom-textarea"
+          id="id-custom-requirements"
+          rows={7}
+          placeholder="E.g. modular kitchen and wardrobes for a 2 BHK in Thane, modern style, warm lighting…"
           value={requirements}
           maxLength={MAX_LENGTH}
           onChange={(e) => {
             setRequirements(e.target.value);
             onDraftChange?.(e.target.value);
-
-            if (error) {
-              setError('');
-            }
+            if (error) setError('');
           }}
         />
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: '6px',
-          }}
-        >
-          {error ? (
-            <p
-              style={{
-                color: '#d32f2f',
-                fontSize: '13px',
-                margin: 0,
-              }}
-            >
-              {error}
-            </p>
-          ) : (
-            <span />
-          )}
-
-          <span
-            style={{
-              color: '#777',
-              fontSize: '12px',
-              marginLeft: 'auto',
-            }}
-          >
+        <div className="id-custom-meta">
+          {error ? <span className="field-error">{error}</span> : <span />}
+          <span className="id-custom-count">
             {requirements.length} / {MAX_LENGTH}
           </span>
         </div>
       </div>
 
-      <div className="id-custom-footer">
-        <button
-          type="button"
-          className="id-custom-back"
-          onClick={onBack}
-        >
+      <ModalFoot className="wizard-foot modal-sticky-foot !grid !w-full !grid-cols-2 !gap-3 !border-0">
+        <button type="button" className="btn btn-ghost btn-back !m-0 !w-full !justify-center" onClick={onBack}>
           BACK
         </button>
-
-        <button
-          type="button"
-          className="id-custom-continue"
-          onClick={handleContinue}
-        >
-          CONTINUE →
+        <button type="button" className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center" onClick={handleContinue}>
+          CONTINUE
+          <Icon name="arrow-right" size={17} />
         </button>
-      </div>
+      </ModalFoot>
     </div>
   );
 }

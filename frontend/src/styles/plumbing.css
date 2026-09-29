@@ -1148,6 +1148,45 @@
   }
 }
 
+/* Phones: one clear line ("3 items added") beside a compact button, instead
+   of the text squeezing into a column; the "Tap to review" hint is dropped
+   since the button says it. */
+@media (max-width: 480px) {
+  .plb-view-cart-box {
+    gap: 8px;
+    padding: 10px 10px 10px 12px;
+  }
+
+  .plb-view-cart-info {
+    gap: 8px;
+  }
+
+  .plb-view-cart-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .plb-view-cart-info strong {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .plb-view-cart-info span:not(.plb-view-cart-icon) {
+    display: none;
+  }
+
+  .plb-view-cart-btn {
+    padding: 10px 14px;
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .plb-view-cart-btn svg {
+    display: none;
+  }
+}
+
 .plb-back-arrow {
   display: flex;
   align-items: center;

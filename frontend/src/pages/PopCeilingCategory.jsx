@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
-import { popFlows } from '../data/popCeilingContent';
+import { popFlows, POP_HERO_IMAGE } from '../data/popCeilingContent';
 
 const choices = [
   {
@@ -25,6 +25,7 @@ export default function PopCeilingCategory({
           eyebrow="POP & GYPSUM"
           title="POP Ceiling & Design"
           text="Elegant ceilings. Beautiful spaces. Expert installation."
+          image={POP_HERO_IMAGE}
           breadcrumbs={[
             { label: 'Services', to: '/services' },
             { label: 'POP Ceiling & Design' },
@@ -42,13 +43,9 @@ export default function PopCeilingCategory({
               : 'container container-narrow'
           }
         >
-          <div
-            className={
-              modal
-                ? 'plb-overview-grid !grid-cols-2'
-                : 'plb-overview-grid'
-            }
-          >
+          {/* Two journeys: a pair of equal cards, not two cells of the
+              three-column grid plumbing uses */}
+          <div className="plb-overview-grid !grid-cols-2">
             {choices.map(({ slug, description }) => {
               const flow = popFlows[slug];
 
