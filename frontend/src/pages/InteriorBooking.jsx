@@ -4,7 +4,10 @@ import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import SlotPicker from '../components/booking/SlotPicker';
 import api, { friendlyError } from '../lib/api';
-import { useLocationContext } from '../context/LocationContext';
+import { usePickedLocation } from '../context/LocationContext';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+// The same form and checks as every other booking flow.
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
 import { formatVisitDate, formatVisitTime } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
@@ -12,10 +15,6 @@ import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 const STEPS = ['Details', 'Schedule', 'Confirm'];
 const CATEGORY_SLUG = 'interior-by-choice';
 
-/** Ten digits once the +91, spaces and brackets are stripped — same rule the
-    site-visit wizard uses, so a phone number valid there is valid here. */
-const isValidPhone = (value) =>
-  /^[6-9]\d{9}$/.test(String(value || '').replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
 
 /**
  * /interior-by-choice/book and /interior-by-choice/:spaceSlug/:designSlug/book
@@ -39,7 +38,7 @@ export default function InteriorBooking({
 
 const spaceSlug = propSpaceSlug || params.spaceSlug;
 const designSlug = propDesignSlug || params.designSlug;
-  const { city: location } = useLocationContext();
+  const pickedLocation = usePickedLocation();
   const space = spaceSlug ? getSpaceBySlug(spaceSlug) : null;
   const design = spaceSlug && designSlug ? getDesignBySlug(spaceSlug, designSlug) : null;
 
@@ -48,7 +47,7 @@ const designSlug = propDesignSlug || params.designSlug;
   const scope = `f:ibc:${spaceSlug}:${designSlug}`;
   const formBack = useFormBack();
   const [step, setStep] = useHistoryState(`${scope}:step`, 0, { push: true });
-  const [form, setForm] = useHistoryState(`${scope}:form`, { name: '', phone: '', address: '', notes: '' });
+  const [form, setForm] = useHistoryState(`${scope}:form`, { ...emptyDetails, notes: '' });
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
@@ -66,13 +65,13 @@ const designSlug = propDesignSlug || params.designSlug;
   }
 }, [step, receipt, modal]);
 
-  const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const setField = (key) => (e) => {
+    setForm((f) => ({ ...f, [key]: e.target.value }));
+    setErrors((err) => ({ ...err, [key]: undefined }));
+  };
 
   const validateDetails = () => {
-    const next = {};
-    if (!form.name.trim()) next.name = 'Enter your name';
-    if (!isValidPhone(form.phone)) next.phone = 'Enter a valid 10-digit mobile number';
-    if (!form.address.trim()) next.address = 'Enter your address';
+    const next = checkDetails(form, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -86,10 +85,15 @@ const designSlug = propDesignSlug || params.designSlug;
       setErrors((e) => ({ ...e, slot: 'Pick a date and a time' }));
       return;
     }
+    // A form restored from history may predate City / Pincode: ask for them.
+    if (!validateDetails()) {
+      setStep(0);
+      return;
+    }
 
     const selectedLabel = design ? `${space.name} – ${design.name}` : space ? space.name : 'Not selected from the catalogue';
     const notesParts = [`Selected design: ${selectedLabel}.`];
-    if (form.notes.trim()) notesParts.push(form.notes.trim());
+    if (String(form.notes || '').trim()) notesParts.push(form.notes.trim());
 
     setBusy(true);
     setError('');
@@ -101,8 +105,11 @@ const designSlug = propDesignSlug || params.designSlug;
         preferredTime: time,
         name: form.name.trim(),
         phone: form.phone,
-        address: form.address.trim(),
-        city: location,
+        whatsapp: form.whatsapp || null,
+        email: form.email || null,
+        address: composeAddress(form, pickedLocation),
+        city: String(form.city || '').trim(),
+        pincode: String(form.pincode || '').trim() || null,
       });
       setReceipt(result);
 setStep(2, { push: false });
@@ -182,27 +189,10 @@ if (modal) {
           {step === 0 && (
             <div className="ibc-form-panel">
               <h3>Your Details</h3>
-              <div className={`field ${errors.name ? 'error' : ''}`}>
-                <label>Full Name <span className="req">*</span></label>
-                <input type="text" placeholder="Your name" value={form.name} onChange={setField('name')} />
-                {errors.name && <span className="field-error">{errors.name}</span>}
-              </div>
-              <div className={`field ${errors.phone ? 'error' : ''}`}>
-                <label>Phone Number <span className="req">*</span></label>
-                <input type="tel" placeholder="+91" value={form.phone} onChange={setField('phone')} />
-                {errors.phone && <span className="field-error">{errors.phone}</span>}
-              </div>
-              <div className={`field ${errors.address ? 'error' : ''}`}>
-                <label>Full Address <span className="req">*</span></label>
-                <input type="text" placeholder="Enter your complete address" value={form.address} onChange={setField('address')} />
-                {errors.address && <span className="field-error">{errors.address}</span>}
-              </div>
-              <p className="field-hint" style={{ marginTop: -8, marginBottom: 16 }}>
-                Service area: <strong>{location}</strong>
-              </p>
-              <div className="field">
-                <label>Any specific requirements? (Optional)</label>
-                <textarea rows={3} value={form.notes} onChange={setField('notes')} />
+              <CustomerDetailsFields details={form} setDetail={setField} errors={errors} idPrefix="ib" />
+              <div className="field" style={{ marginTop: 16 }}>
+                <label htmlFor="ib-notes">Any specific requirements? (Optional)</label>
+                <textarea id="ib-notes" rows={3} value={form.notes || ''} onChange={setField('notes')} />
               </div>
               <button type="button" className="btn btn-primary ibc-form-submit" onClick={goToSchedule}>
                 Continue
@@ -264,7 +254,7 @@ if (modal) {
                 </div>
                 <div>
                   <span>Address</span>
-                  <strong>{form.address}</strong>
+                  <strong>{composeAddress(form, pickedLocation)}</strong>
                 </div>
                 <div>
                   <span>Visit Fee</span>

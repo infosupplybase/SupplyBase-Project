@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { contact } from '../data/siteConfig';
+import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
 
 const STORAGE_KEY = 'sb.location';
 
@@ -9,7 +10,27 @@ const DEFAULT_LOCATION = {
   address: contact.serviceAreas[0] || 'Mumbai',
   latitude: null,
   longitude: null,
+  // false until the customer picks a location themselves, so the header can
+  // invite them to set one instead of presenting the default as theirs.
+  chosen: false,
 };
+
+/** Locations saved before `chosen` existed: anything but the default counts. */
+function wasChosen(address, latitude) {
+  return latitude != null || Boolean(address && address !== DEFAULT_LOCATION.address);
+}
+
+/**
+ * A short label for the header: the first part of an address ("Lodha Palava
+ * City, Dombivli, ..." -> "Lodha Palava City"), with friendlier words for the
+ * picker's GPS / map-pin fallbacks, which read "Current location (19.2, 73.1)".
+ */
+function shortNameFor(address) {
+  const text = String(address || '').trim();
+  if (/^current location\b/i.test(text)) return 'Current location';
+  if (/^selected location\b/i.test(text)) return 'Pinned location';
+  return text.split(',')[0].trim() || DEFAULT_LOCATION.address;
+}
 
 function readStoredLocation() {
   try {
@@ -22,11 +43,14 @@ function readStoredLocation() {
     // New location format
     if (saved.startsWith('{')) {
       const parsed = JSON.parse(saved);
+      const address = parsed.address || DEFAULT_LOCATION.address;
+      const latitude = parsed.latitude ?? null;
 
       return {
-        address: parsed.address || DEFAULT_LOCATION.address,
-        latitude: parsed.latitude ?? null,
+        address,
+        latitude,
         longitude: parsed.longitude ?? null,
+        chosen: parsed.chosen ?? wasChosen(address, latitude),
       };
     }
 
@@ -35,6 +59,7 @@ function readStoredLocation() {
       address: saved,
       latitude: null,
       longitude: null,
+      chosen: wasChosen(saved, null),
     };
   } catch {
     return DEFAULT_LOCATION;
@@ -74,6 +99,7 @@ export function LocationProvider({ children }) {
         address: next.address || DEFAULT_LOCATION.address,
         latitude: next.latitude ?? null,
         longitude: next.longitude ?? null,
+        chosen: true,
       });
 
       return;
@@ -85,6 +111,7 @@ export function LocationProvider({ children }) {
         address: next,
         latitude: null,
         longitude: null,
+        chosen: true,
       });
     }
   };
@@ -96,6 +123,11 @@ export function LocationProvider({ children }) {
 
         // A short service-area name for forms that need a city.
         city: cityFor(locationData.address),
+
+        // For the header: a short place name, and whether the customer set
+        // it themselves (until then it is only the default service area).
+        shortLocation: shortNameFor(locationData.address),
+        locationChosen: Boolean(locationData.chosen),
 
         latitude: locationData.latitude,
         longitude: locationData.longitude,
@@ -122,4 +154,19 @@ export function useLocationContext() {
   }
 
   return ctx;
+}
+
+/**
+ * The visit location the customer pinned on the map, or null. Only a real
+ * pin counts (it has coordinates) — the header's plain city name is not an
+ * address — and only when this build has a Google Maps key.
+ */
+export function usePickedLocation() {
+  const { locationData } = useLocationContext();
+
+  return hasGoogleMaps &&
+    locationData?.latitude != null &&
+    locationData?.longitude != null
+    ? locationData
+    : null;
 }

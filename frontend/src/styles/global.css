@@ -355,51 +355,7 @@ button,
 label {
   overflow-wrap: anywhere;
 }
-/* =========================================
-   LOCATION SELECTOR
-========================================= */
-/* =========================================================
-   LOCATION SELECTOR - NAVBAR
-   ========================================================= */
-
-.location-select {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.location-btn {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-
-  height: 38px;
-
-  padding: 0 8px;
-
-  border: none;
-  background: transparent;
-
-  color: inherit;
-
-  cursor: pointer;
-}
-
-.location-btn:hover {
-  opacity: 0.85;
-}
-
-.location-btn-text {
-  max-width: 150px;
-
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-
-  font-size: 14px;
-  font-weight: 500;
-}
-
+/* The navbar location button itself is styled in header.css. */
 
 /* =========================================================
    GOOGLE LOCATION OVERLAY
@@ -1124,6 +1080,68 @@ gmp-place-autocomplete {
   color: #d88900;
 
   background: #fffaf0;
+}
+
+
+/* Use my current location — right under the map choice, one tap */
+
+.booking-current-location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 100%;
+  min-height: 44px;
+
+  margin-bottom: 12px;
+  padding: 10px 12px;
+
+  border: 1px solid var(--gold);
+  border-radius: 7px;
+
+  background: var(--gold-a08);
+  color: var(--gold-deep);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.booking-current-location:hover:not(:disabled) {
+  background: var(--gold-a24);
+  box-shadow: 0 0 0 3px var(--gold-a12);
+}
+
+.booking-current-location:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.booking-current-location svg {
+  flex-shrink: 0;
+}
+
+.booking-address-field .booking-current-location-error {
+  margin: -6px 0 12px;
+}
+
+.spin-slow {
+  animation: spin-slow 1.2s linear infinite;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow {
+    animation: none;
+  }
 }
 
 
