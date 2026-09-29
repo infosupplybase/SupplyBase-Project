@@ -24,6 +24,11 @@ import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
 import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import ElectricalCategory from '../../pages/ElectricalCategory';
+import ElectricalTab from '../../pages/ElectricalTab';
+import ElectricalCart from '../../pages/ElectricalCart';
+import ElectricalCheckout from '../../pages/ElectricalCheckout';
+import { getElectricalGroup } from '../../data/electricalContent';
 
 /**
  * Opens the "Book a service" modal, shared by every page that lets someone
@@ -103,6 +108,9 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
   const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
   const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
+  // Electrical: category -> service list -> cart -> checkout, like plumbing.
+  const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
+  const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
   const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
 
@@ -153,7 +161,9 @@ export default function ServiceBookingModal({ service, onClose }) {
   ? 'max-w-[800px]'
   : service.slug === 'interior-design'
     ? 'max-w-[800px]'
-    : 'max-w-[550px]'
+    : service.slug === 'electrical'
+      ? 'max-w-[640px]'
+      : 'max-w-[550px]'
 }
 
           flex
@@ -230,7 +240,11 @@ export default function ServiceBookingModal({ service, onClose }) {
               text-gray-950
             "
           >
-            {service.name}
+            {service.slug === 'electrical' && electricalView === 'tab'
+              ? getElectricalGroup(electricalTab)?.name || service.name
+              : service.slug === 'electrical' && electricalView === 'cart'
+                ? 'Your Cart'
+                : service.name}
           </h2>
 
           {/* <p
@@ -919,6 +933,61 @@ export default function ServiceBookingModal({ service, onClose }) {
                 onBackToServices={() => {
                   setSelectedPlumbingConsultation(null);
                   setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'electrical' ? (
+            <div className="electrical-modal-scope">
+            {electricalView === 'category' ? (
+              <ElectricalCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setElectricalTab(tabSlug);
+                  setElectricalView('tab');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'tab' ? (
+              <ElectricalTab
+                modal={true}
+                tabSlug={electricalTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setElectricalTab(null);
+                    setElectricalView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setElectricalView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'cart' ? (
+              <ElectricalCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setElectricalView(electricalTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setElectricalView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'checkout' ? (
+              <ElectricalCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setElectricalView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setElectricalTab(null);
+                  setElectricalView('category');
                   scrollModalToTop();
                 }}
               />

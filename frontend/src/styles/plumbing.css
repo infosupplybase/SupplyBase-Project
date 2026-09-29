@@ -32,6 +32,13 @@
   margin-top: 0 !important;
 }
 
+/* Inside the modal, the floating cart bar is not shown on the category
+   overview. The cart is reached from the "View Cart" box on the service
+   list screen instead (see .plb-view-cart-box below). */
+.plumbing-modal-scope .plb-cart-bar {
+  display: none !important;
+}
+
 /* ------------------------------------------------------------------ hero */
 
 .plb-hero {
@@ -919,4 +926,251 @@
   .plb-overview-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* =========================================================
+   ELECTRICAL FLOW INSIDE BOOK A SERVICE MODAL
+   Remove full-page section spacing so the cards sit
+   directly below the modal header.
+   ========================================================= */
+
+.electrical-modal-scope .plb-section,
+.electrical-modal-scope .electrical-modal-section {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.electrical-modal-scope .container {
+  padding-top: 0 !important;
+}
+
+.electrical-modal-scope .electrical-modal-intro {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+
+.electrical-modal-section {
+  padding: 24px 0 32px !important;
+}
+
+.electrical-modal-intro {
+  margin: 0 0 18px !important;
+}
+
+.electrical-modal-intro p {
+  margin: 0;
+}
+
+.electrical-modal-intro h2 {
+  margin: 4px 0 4px;
+}
+
+.electrical-overview-grid {
+  margin-top: 0 !important;
+}
+
+/* =========================================================
+   SMALL CONSULTATION NOTE — sits on the right, low emphasis
+   ========================================================= */
+/* =========================================================
+   VIEW CART BOX — black, glowing, in normal flow
+   ========================================================= */
+
+.plb-view-cart-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #1c1c1c 0%, #000 100%);
+  border: 1px solid var(--gold, #e8b923);
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  animation: plb-cart-pulse 2.2s ease-out infinite;
+}
+
+.plb-view-cart-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.plb-view-cart-icon {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(232, 185, 35, 0.18);
+  color: var(--gold-light, #f5d878);
+}
+
+.plb-view-cart-icon svg {
+  display: block;
+}
+
+.plb-view-cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--gold, #e8b923);
+  color: #000;
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.plb-view-cart-info > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plb-view-cart-info strong {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.plb-view-cart-info span:not(.plb-view-cart-icon) {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.plb-view-cart-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--gold-light, #f5d878) 0%, var(--gold, #e8b923) 100%);
+  color: #000;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(232, 185, 35, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plb-view-cart-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(232, 185, 35, 0.6);
+}
+
+.plb-view-cart-btn svg {
+  transition: transform 0.15s ease;
+}
+
+.plb-view-cart-btn:hover svg {
+  transform: translateX(3px);
+}
+
+@keyframes plb-cart-pulse {
+  0%   { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(232, 185, 35, 0.5); }
+  70%  { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), 0 0 0 12px rgba(232, 185, 35, 0); }
+  100% { box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(232, 185, 35, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plb-view-cart-box { animation: none; }
+}
+
+/* =========================================================
+   HOME VISIT PILL — small, far right, no paragraph
+   ========================================================= */
+
+.plb-visit-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 14px 0 6px auto;
+  padding: 8px 8px 8px 14px;
+  background: #fff;
+  border: 1px solid var(--gold, #e8b923);
+  border-radius: 999px;
+  color: var(--ink, #111);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.plb-visit-pill svg {
+  color: var(--gold-deep, #9a6b00);
+  flex-shrink: 0;
+}
+
+.plb-visit-pill em {
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--gold-a24, rgba(232, 185, 35, 0.24));
+  color: var(--gold-deep, #9a6b00);
+}
+
+.plb-visit-pill:hover {
+  background: #fffaf0;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 600px) {
+  .plb-view-cart-box {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .plb-view-cart-btn {
+    padding: 11px 16px;
+    font-size: 0.82rem;
+  }
+}
+
+.plb-back-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 40px;
+  height: 40px;
+
+  margin: 0 0 4px 0;
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: var(--ink, #111);
+  cursor: pointer;
+}
+
+.plb-back-arrow:hover {
+  color: var(--gold-deep, #9a6b00);
+}
+
+.plb-back-arrow svg {
+  width: 22px;
+  height: 22px;
 }
