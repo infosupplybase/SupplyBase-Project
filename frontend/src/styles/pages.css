@@ -1075,6 +1075,120 @@
   color: var(--auth-gold);
 }
 
+/* Email and phone share a row in compact mode; otherwise they stack with
+   the form's own spacing. */
+.auth-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* COMPACT: the whole sign-in / create-account form on one screen, no
+   scrolling — smaller heading, fields and gaps (AuthPanel `compact`). */
+.auth-compact.auth-card {
+  padding: 22px 26px 18px;
+}
+
+/* A little wider, so an email address fits its half of the row */
+.auth-card-wrap:has(> .auth-compact) {
+  max-width: 520px;
+}
+
+.auth-compact .auth-logo {
+  margin-bottom: 10px;
+}
+
+.auth-compact .auth-logo img {
+  height: 26px;
+}
+
+.auth-compact .auth-heading {
+  margin: 0 36px 14px 0;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.auth-compact .auth-kept-note {
+  margin: 0 36px 12px 0;
+  padding: 7px 10px;
+  font-size: 0.8rem;
+}
+
+.auth-compact .auth-form,
+.auth-compact .auth-row-2 {
+  gap: 11px;
+}
+
+.auth-compact .field {
+  gap: 5px;
+}
+
+.auth-compact .auth-field label {
+  font-size: 12px;
+}
+
+.auth-compact .auth-field input {
+  height: 42px;
+  padding: 0 12px 0 40px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* only the password boxes have the show / hide eye on the right */
+.auth-compact #auth-password,
+.auth-compact #auth-confirm {
+  padding-right: 40px;
+}
+
+.auth-compact .auth-input-icon {
+  left: 13px;
+}
+
+.auth-compact .auth-input-toggle {
+  right: 4px;
+}
+
+.auth-compact .login-meta {
+  font-size: 0.8rem;
+}
+
+.auth-compact .checkbox-row input {
+  width: 15px;
+  height: 15px;
+}
+
+.auth-compact .auth-submit {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.auth-compact .auth-switch {
+  margin-top: 12px;
+  font-size: 0.84rem;
+}
+
+/* Phones: one column for email / phone (email needs the width), but the
+   two short password boxes stay side by side to save a row. */
+@media (max-width: 720px) {
+  .auth-compact.auth-card {
+    padding: 20px 16px 16px;
+  }
+
+  .auth-compact .auth-heading {
+    font-size: 1.35rem;
+  }
+
+  .auth-compact .auth-row-2 {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .auth-compact .auth-row-2:has(#auth-confirm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* ---------------------------------------------------------- legal page */
 
 .legal-content h2 {

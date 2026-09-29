@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import Icon from '../ui/Icon';
 import AuthPanel from './AuthPanel';
-import { company } from '../../data/siteConfig';
 import { useAuth } from '../../context/AuthContext';
 
 /**
@@ -81,21 +80,19 @@ export function LoginGateProvider({ children }) {
           }}
         >
           <div className="auth-card-wrap">
-            <div className="auth-card">
+            {/* Compact, so the whole form fits on one screen without scrolling */}
+            <div className="auth-card auth-compact">
               <button type="button" className="auth-close" onClick={() => finish(false)} aria-label="Close">
                 <Icon name="close" size={18} />
               </button>
 
-              <span className="auth-logo">
-                <img src="/assets/brand/logo.webp" alt={`${company.name} logo`} />
-              </span>
-
               <p className="auth-kept-note">
-                <Icon name="check-circle" size={17} />
-                <span>Your booking details are saved. Sign in or create an account and we&rsquo;ll confirm it right away.</span>
+                <Icon name="check-circle" size={16} />
+                <span>Your booking details are saved — sign in to confirm.</span>
               </p>
 
               <AuthPanel
+                compact
                 mode={mode}
                 onModeChange={setMode}
                 prefill={request.prefill}
@@ -109,11 +106,6 @@ export function LoginGateProvider({ children }) {
                       Sign In to <span className="auth-accent">Book</span>
                     </>
                   )
-                }
-                intro={
-                  mode === 'register'
-                    ? 'One quick step — your bookings will show in your dashboard.'
-                    : 'Welcome back — sign in to confirm this booking.'
                 }
                 onDone={() => finish(true)}
               />

@@ -56,7 +56,8 @@ export default function Login() {
       <div className="auth-glow" aria-hidden="true" />
 
       <div className="auth-card-wrap">
-        <div className="auth-card">
+        {/* Compact, so the whole form fits on one screen without scrolling */}
+        <div className="auth-card auth-compact">
           <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
             <Icon name="close" size={18} />
           </button>
@@ -66,6 +67,7 @@ export default function Login() {
           </Link>
 
           <AuthPanel
+            compact
             mode={mode}
             onModeChange={(next) =>
               navigate(next === 'register' ? '/register' : '/login', { state: location.state })

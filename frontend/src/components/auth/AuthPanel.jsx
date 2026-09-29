@@ -24,8 +24,11 @@ import { isValidPhone } from '../../lib/bookingDetails';
  * Phone number stays in the create-account form: the API requires it
  * (register() takes phone as a positional arg and a person can sign in with
  * it later) so dropping the field would silently break account creation.
+ *
+ * `compact` fits the form on one screen without scrolling: no intro line,
+ * email and phone side by side, no phone hint (styles: .auth-compact).
  */
-export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading, intro }) {
+export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading, intro, compact = false }) {
   const { login, register, loginWithGoogle, googleEnabled } = useAuth();
   const isRegister = mode === 'register';
 
@@ -159,12 +162,14 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
             </>
           ))}
       </h1>
-      <p className="auth-intro">
-        {intro ||
-          (isRegister
-            ? 'Join us today to access your secure workspace.'
-            : 'Enter your credentials to access your secure account.')}
-      </p>
+      {!compact && (
+        <p className="auth-intro">
+          {intro ||
+            (isRegister
+              ? 'Join us today to access your secure workspace.'
+              : 'Enter your credentials to access your secure account.')}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} noValidate className="auth-form">
         {isRegister && (
@@ -188,7 +193,7 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
         )}
 
         {isRegister ? (
-          <>
+          <div className={compact ? 'auth-row-2' : 'auth-stack'}>
             <div className={`field auth-field ${errors.email ? 'error' : ''}`}>
               <label htmlFor="auth-email">
                 Email Address <span className="req">*</span>
@@ -226,10 +231,10 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
               {errors.phone ? (
                 <span className="field-error">{errors.phone}</span>
               ) : (
-                <span className="field-hint">You can sign in with this number too.</span>
+                !compact && <span className="field-hint">You can sign in with this number too.</span>
               )}
             </div>
-          </>
+          </div>
         ) : (
           /* One field for both. Which it is comes from what was typed, not
              from a toggle someone has to set correctly first. */
