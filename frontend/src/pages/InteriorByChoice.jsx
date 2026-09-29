@@ -41,7 +41,7 @@ export default function InteriorByChoice() {
             ))}
           </div>
 
-          <Reveal>
+          {/* <Reveal>
             <Link to="/interior-by-choice/book" className="ibc-visit-cta">
               <span>
                 <strong>Book a Home Visit at just ₹{HOME_VISIT_FEE}</strong>
@@ -51,7 +51,7 @@ export default function InteriorByChoice() {
                 <Icon name="arrow-right" size={20} />
               </span>
             </Link>
-          </Reveal>
+          </Reveal> */}
 
           <Reveal delay={80}>
             <h2 className="ibc-section-title">Choose Your Space</h2>

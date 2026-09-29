@@ -651,76 +651,72 @@ export default function ServiceBookingModal({ service, onClose }) {
                     <div
                       className="
                         grid
-                        grid-cols-1
+                        grid-cols-2
                         gap-4
-                        sm:grid-cols-2
+                        sm:grid-cols-3
                       "
                     >
                       {interiorSpaces.map(
                         (space) => (
                           <button
-                            key={space.slug}
-                            type="button"
-                            onClick={() => {
-                              setSelectedInteriorSpace(
-                                space.slug
-                              );
+  key={space.slug}
+  type="button"
+  onClick={() => {
+    setSelectedInteriorSpace(space.slug);
+    setSelectedInteriorDesign(null);
+    scrollModalToTop();
+  }}
+  className="
+    group
+    relative
+    aspect-square
+    w-full
+    overflow-hidden
+    rounded-xl
+    text-left
+  "
+>
+  <img
+    loading="lazy"
+    decoding="async"
+    src={space.image}
+    alt={space.name}
+    className="
+      absolute
+      inset-0
+      h-full
+      w-full
+      object-cover
+      transition
+      duration-300
+      group-hover:scale-105
+    "
+  />
 
-                              setSelectedInteriorDesign(
-                                null
-                              );
+  <div
+    className="
+      absolute
+      inset-0
+      bg-gradient-to-t
+      from-black/70
+      via-black/10
+      to-transparent
+    "
+  />
 
-                              scrollModalToTop();
-                            }}
-                            className="
-                              group
-                              relative
-                              overflow-hidden
-                              rounded-xl
-                              text-left
-                            "
-                          >
-                            <img loading="lazy" decoding="async"
-                              src={space.image}
-                              alt={space.name}
-                              className="
-                                h-36
-                                w-full
-                                object-cover
-
-                                transition
-                                duration-300
-
-                                group-hover:scale-105
-
-                                sm:h-44
-                              "
-                            />
-
-                            <div
-                              className="
-                                absolute
-                                inset-0
-                                bg-gradient-to-t
-                                from-black/70
-                                via-black/10
-                                to-transparent
-                              "
-                            />
-
-                            <span
-                              className="
-                                absolute
-                                bottom-3
-                                left-4
-                                text-base
-                                font-semibold
-                                text-white
-                              "
-                            >
-                              {space.name}
-                            </span>
-                          </button>
+  <span
+    className="
+      absolute
+      bottom-2
+      left-3
+      text-sm
+      font-semibold
+      text-white
+    "
+  >
+    {space.name}
+  </span>
+</button>
                         )
                       )}
                     </div>
