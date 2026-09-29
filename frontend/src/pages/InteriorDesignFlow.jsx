@@ -47,8 +47,6 @@ export default function InteriorDesignFlow({
   onStepChange,
   startAtDetails = false,
   customRequirements = '',
-  startAtDetails = false,
-  customRequirements = '',
 }) {
   const params = useParams();
 
@@ -280,7 +278,22 @@ const jumpToStage = (s) => {
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
                 <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
-                <div><dt>Project</dt><dd>{project.name} — {tier}</dd></div>
+               <div>
+  {customRequirements ? (
+    <>
+      <dt>Requirements</dt>
+      <dd>{customRequirements}</dd>
+    </>
+  ) : (
+    <>
+      <dt>Project</dt>
+      <dd>
+        {project?.name || 'Interior Design Custom'}
+        {tier ? ` — ${tier}` : ''}
+      </dd>
+    </>
+  )}
+</div>
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 

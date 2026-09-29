@@ -15,7 +15,7 @@ import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
 import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
 import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
 import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
-import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
+
 import PaintingCategory from '../../pages/PaintingCategory';
 import PaintingFlow from '../../pages/PaintingFlow';
 import PopCeilingCategory from '../../pages/PopCeilingCategory';

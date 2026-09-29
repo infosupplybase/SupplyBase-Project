@@ -19,8 +19,6 @@ export default function InteriorDesignCustomFlow({
   onBack,
   onContinue,
 }) {
-  // The parent keeps the draft (onDraftChange), so coming Back from the
-  // details step shows what was typed.
   const [requirements, setRequirements] = useState(initialRequirements);
   const [error, setError] = useState('');
 
@@ -45,13 +43,17 @@ export default function InteriorDesignCustomFlow({
     <div className="id-custom-flow">
       <div className="wizard-card-head">
         <h2>Tell Us About Your Requirements</h2>
-        <p>Rooms, style, budget, anything you have in mind — our designer will call you to discuss it.</p>
+        <p>
+          Rooms, style, budget, anything you have in mind — our designer will
+          call you to discuss it.
+        </p>
       </div>
 
       <div className={`field ${error ? 'error' : ''}`}>
         <label htmlFor="id-custom-requirements">
           Your requirements <span className="req">*</span>
         </label>
+
         <textarea
           id="id-custom-requirements"
           rows={7}
@@ -61,72 +63,6 @@ export default function InteriorDesignCustomFlow({
           onChange={(e) => {
             setRequirements(e.target.value);
             onDraftChange?.(e.target.value);
-            if (error) setError('');
-          }}
-        />
-        <div className="id-custom-meta">
-          {error ? <span className="field-error">{error}</span> : <span />}
-          <span className="id-custom-count">
-            {requirements.length} / {MAX_LENGTH}
-          </span>
-        </div>
-      </div>
-
-      <ModalFoot className="wizard-foot modal-sticky-foot !grid !w-full !grid-cols-2 !gap-3 !border-0">
-        <button type="button" className="btn btn-ghost btn-back !m-0 !w-full !justify-center" onClick={onBack}>
-          BACK
-        </button>
-        <button type="button" className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center" onClick={handleContinue}>
-          CONTINUE
-          <Icon name="arrow-right" size={17} />
-        </button>
-      </ModalFoot>
-    </div>
-  );
-}
-import { useState } from 'react';
-import '../styles/InteriorDesignCustomFlow.css';
-
-export default function InteriorDesignCustomFlow({
-  onBack,
-  onContinue,
-}) {
-  const [requirements, setRequirements] = useState('');
-  const [error, setError] = useState('');
-
-  const MAX_LENGTH = 400;
-  const MIN_LENGTH = 10;
-
-  const handleContinue = () => {
-    const value = requirements.trim();
-
-    if (!value) {
-      setError('Please tell us about your requirements.');
-      return;
-    }
-
-    if (value.length < MIN_LENGTH) {
-      setError(`Please enter at least ${MIN_LENGTH} characters.`);
-      return;
-    }
-
-    setError('');
-    onContinue(value);
-  };
-
-  return (
-    <div className="id-custom-flow">
-      <div className="id-custom-content">
-        <h2>Tell us about your requirements</h2>
-
-        <textarea
-          rows={8}
-          placeholder="Tell us about your interior design requirements..."
-          className="id-custom-textarea"
-          value={requirements}
-          maxLength={MAX_LENGTH}
-          onChange={(e) => {
-            setRequirements(e.target.value);
 
             if (error) {
               setError('');
@@ -134,44 +70,19 @@ export default function InteriorDesignCustomFlow({
           }}
         />
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: '6px',
-          }}
-        >
-          {error ? (
-            <p
-              style={{
-                color: '#d32f2f',
-                fontSize: '13px',
-                margin: 0,
-              }}
-            >
-              {error}
-            </p>
-          ) : (
-            <span />
-          )}
+        <div className="id-custom-meta">
+          {error ? <span className="field-error">{error}</span> : <span />}
 
-          <span
-            style={{
-              color: '#777',
-              fontSize: '12px',
-              marginLeft: 'auto',
-            }}
-          >
+          <span className="id-custom-count">
             {requirements.length} / {MAX_LENGTH}
           </span>
         </div>
       </div>
 
-      <div className="id-custom-footer">
+      <ModalFoot className="wizard-foot modal-sticky-foot !grid !w-full !grid-cols-2 !gap-3 !border-0">
         <button
           type="button"
-          className="id-custom-back"
+          className="btn btn-ghost btn-back !m-0 !w-full !justify-center"
           onClick={onBack}
         >
           BACK
@@ -179,12 +90,13 @@ export default function InteriorDesignCustomFlow({
 
         <button
           type="button"
-          className="id-custom-continue"
+          className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center"
           onClick={handleContinue}
         >
-          CONTINUE →
+          CONTINUE
+          <Icon name="arrow-right" size={17} />
         </button>
-      </div>
+      </ModalFoot>
     </div>
   );
 }
