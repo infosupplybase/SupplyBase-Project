@@ -1021,9 +1021,58 @@
   color: var(--auth-text-soft);
 }
 
-.auth-switch a {
+.auth-switch a,
+.auth-switch-link {
   color: var(--auth-gold);
   font-weight: 700;
+}
+
+.auth-switch-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* The same card over a booking (LoginGate): a dimmed backdrop in place of
+   the account page's full-screen photo, above the booking pop-up. */
+.auth-screen.auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  min-height: 0;
+  align-items: flex-start;
+  overflow-y: auto;
+  background-color: rgba(6, 7, 10, 0.72);
+  background-image: none;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.auth-overlay .auth-card-wrap {
+  margin: auto 0;
+}
+
+.auth-kept-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(245, 208, 51, 0.3);
+  border-radius: 10px;
+  background: rgba(245, 208, 51, 0.08);
+  color: var(--auth-text-soft);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.auth-kept-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--auth-gold);
 }
 
 /* ---------------------------------------------------------- legal page */

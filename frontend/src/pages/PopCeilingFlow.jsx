@@ -13,6 +13,7 @@ import usePopCeilingCatalogue from '../hooks/usePopCeilingCatalogue';
 import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -61,6 +62,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -178,6 +180,8 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');

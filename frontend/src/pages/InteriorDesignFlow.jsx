@@ -12,6 +12,7 @@ import {
 } from '../data/interiorDesignContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -75,6 +76,7 @@ export default function InteriorDesignFlow({
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -148,6 +150,8 @@ export default function InteriorDesignFlow({
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');

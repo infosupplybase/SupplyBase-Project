@@ -11,7 +11,6 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.CurrentUser;
 import in.supplybase.backend.booking.dto.AdvanceBookingStatusRequest;
 import in.supplybase.backend.booking.dto.AssignProfessionalRequest;
@@ -49,22 +47,16 @@ public class BookingController {
     }
 
     /**
-     * Public — the booking wizard posts here.
-     *
-     * Signing in is not required, but if a token happens to be present the
-     * booking is attached to that account so it can show on their dashboard.
-     * Read optimistically rather than via CurrentUser.require(), which would
-     * throw for the visitors who make up most of this traffic.
+     * The booking wizard posts here. Signing in is required (SecurityConfig):
+     * every booking belongs to an account, so it shows on that customer's
+     * dashboard and nobody can book anonymously. The website asks the
+     * customer to sign in at the last step, keeping what they typed.
      */
     @PostMapping("/api/bookings")
     public ResponseEntity<BookingReceipt> create(
             @Valid @RequestBody CreateBookingRequest request) {
-        Long userId = null;
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser user) {
-            userId = user.id();
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request, userId));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.create(request, currentUser.require().id()));
     }
 
     /** A signed-in client's own bookings, for the dashboard. */

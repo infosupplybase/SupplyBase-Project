@@ -19,6 +19,7 @@ import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHisto
 import ModalFoot from '../components/services/ModalFoot';
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 
 
@@ -111,6 +112,7 @@ export default function ServiceBooking({
 
   // The visit location pinned on the map (with a Google Maps key), or null.
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
 
   const [searchParams] = useSearchParams();
 
@@ -495,6 +497,11 @@ const stageQuestions = useMemo(() => {
     e.preventDefault();
 
     if (!validateDetails()) {
+      return;
+    }
+
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) {
       return;
     }
 
