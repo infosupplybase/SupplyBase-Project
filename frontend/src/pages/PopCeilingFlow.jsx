@@ -36,6 +36,17 @@ import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../d
  * always null, and EstimateSummary already renders "To be confirmed on
  * site visit" whenever that's the case.
  */
+
+// The Details / Schedule button bar in the booking pop-up — the same layout
+// as Painting's (a narrow BACK and a wide action on phones, right-aligned on
+// wider screens), drawn in the pop-up's footer by ModalFoot.
+const MODAL_FOOT =
+  'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3';
+const MODAL_BACK =
+  'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto';
+const MODAL_NEXT =
+  'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-auto md:!min-w-[170px] md:!flex-none md:!px-4';
+
 export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
   const params = useParams();
   const flowSlug = propFlowSlug || params.flowSlug;
@@ -383,10 +394,13 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary">CONTINUE <Icon name="arrow-right" size={17} /></button>
-              </div>
+              {/* In the booking pop-up this bar goes in the pop-up's footer
+                  (ModalFoot), under the form rather than over its fields —
+                  the same as Painting's steps. */}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'}>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -424,12 +438,12 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary" disabled={busy}>
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'} disabled={busy}>
                   {busy ? 'BOOKING…' : 'BOOK HOME VISIT'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
