@@ -6,6 +6,7 @@ import SlotPicker from '../components/booking/SlotPicker';
 import api, { friendlyError } from '../lib/api';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 // The same form and checks as every other booking flow.
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
@@ -116,6 +117,8 @@ const designSlug = propDesignSlug || params.designSlug;
         pincode: String(form.pincode || '').trim() || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('ib', result.bookingNumber, form.phone);
 setStep(2, { push: false });
 
 if (modal) {

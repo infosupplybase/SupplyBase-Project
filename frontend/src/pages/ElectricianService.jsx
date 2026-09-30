@@ -13,6 +13,7 @@ import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -291,6 +292,8 @@ export default function ElectricianService() {
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('ec', result.bookingNumber, details.phone);
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       const hasFiles = Object.values(pendingFiles).some((files) => files.length > 0);

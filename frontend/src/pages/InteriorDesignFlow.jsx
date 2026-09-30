@@ -13,6 +13,7 @@ import {
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -185,6 +186,8 @@ export default function InteriorDesignFlow({
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('id', result.bookingNumber, details.phone);
       setStage(CONFIRM);
 
       if (modal) {

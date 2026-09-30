@@ -20,6 +20,7 @@ import ModalFoot from '../components/services/ModalFoot';
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 
 
@@ -577,6 +578,8 @@ const stageQuestions = useMemo(() => {
       });
 
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('bk', result.bookingNumber, details.phone);
 
       if (!modal) {
         window.scrollTo({

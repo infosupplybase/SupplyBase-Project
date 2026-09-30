@@ -11,6 +11,7 @@ import { wpFlows } from '../data/waterproofingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -136,6 +137,8 @@ export default function WaterproofingFlow() {
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('wp', result.bookingNumber, details.phone);
       setStage(CONFIRM);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {

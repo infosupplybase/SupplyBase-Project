@@ -14,6 +14,7 @@ import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -223,6 +224,8 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pce', result.bookingNumber, details.phone);
       setStage(CONFIRM);
       if (modal) onStepChange?.();
       else window.scrollTo({ top: 0, behavior: 'smooth' });
