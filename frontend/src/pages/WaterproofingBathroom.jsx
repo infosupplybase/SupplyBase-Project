@@ -9,9 +9,16 @@ import { wpBathroomServices, WP_BATHROOM_IMAGE } from '../data/waterproofingCont
  * existing generic site-visit wizard with their subservice preselected
  * (see V17's migration note 3 and ServiceBooking.jsx's `preselect` param).
  */
-export default function WaterproofingBathroom() {
+export default function WaterproofingBathroom({ modal = false, onBackToCategories, onSelectService }) {
   return (
     <>
+      {modal && (
+        <div className="container container-narrow wp-modal-back-row">
+          <button type="button" className="btn btn-ghost btn-sm" onClick={onBackToCategories}>
+            <Icon name="arrow-left" size={16} /> WATERPROOFING SERVICES
+          </button>
+        </div>
+      )}
       <PaintingHero
         eyebrow="BATHROOM WATERPROOFING"
         title="Bathroom Waterproofing"
@@ -24,16 +31,25 @@ export default function WaterproofingBathroom() {
         <div className="container container-narrow">
           <div className="pnt-overview-list">
             {wpBathroomServices.map((svc) => (
-              <Link key={svc.slug} to={svc.route} className="pnt-overview-card">
-                <span className="pnt-overview-photo pce-overview-icon">
-                  <Icon name={svc.icon} size={30} />
-                </span>
-                <span className="pnt-overview-body">
-                  <span className="pnt-overview-name">{svc.name}</span>
-                  <span className="pnt-overview-tagline">{svc.tagline}</span>
-                </span>
-                <Icon name="chevron-right" size={18} className="pnt-overview-arrow" />
-              </Link>
+              modal ? (
+                <button key={svc.slug} type="button" className="pnt-overview-card" onClick={() => onSelectService(svc.route)}>
+                  <span className="pnt-overview-photo pce-overview-icon"><Icon name={svc.icon} size={30} /></span>
+                  <span className="pnt-overview-body">
+                    <span className="pnt-overview-name">{svc.name}</span>
+                    <span className="pnt-overview-tagline">{svc.tagline}</span>
+                  </span>
+                  <Icon name="chevron-right" size={18} className="pnt-overview-arrow" />
+                </button>
+              ) : (
+                <Link key={svc.slug} to={svc.route} className="pnt-overview-card">
+                  <span className="pnt-overview-photo pce-overview-icon"><Icon name={svc.icon} size={30} /></span>
+                  <span className="pnt-overview-body">
+                    <span className="pnt-overview-name">{svc.name}</span>
+                    <span className="pnt-overview-tagline">{svc.tagline}</span>
+                  </span>
+                  <Icon name="chevron-right" size={18} className="pnt-overview-arrow" />
+                </Link>
+              )
             ))}
           </div>
         </div>

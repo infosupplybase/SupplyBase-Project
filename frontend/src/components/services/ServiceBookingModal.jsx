@@ -24,6 +24,9 @@ import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
 import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import WaterproofingFlow from '../../pages/WaterproofingFlow';
+import WaterproofingBathroom from '../../pages/WaterproofingBathroom';
+import { wpFlows, wpCategories } from '../../data/waterproofingContent';
 
 /**
  * Opens the "Book a service" modal, shared by every page that lets someone
@@ -102,6 +105,7 @@ function stripBooking(usr) {
 }
 
 export default function ServiceBookingModal({ service, onClose }) {
+  const navigate = useNavigate();
   const [selectedInteriorSpace, setSelectedInteriorSpace] = useHistoryState('bm:interiorSpace', null, { push: true });
   const [selectedInteriorDesign, setSelectedInteriorDesign] = useHistoryState('bm:interiorDesign', null, { push: true });
   const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
@@ -112,6 +116,7 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
   const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
+  const [selectedWaterproofingPage, setSelectedWaterproofingPage] = useHistoryState('bm:waterproofingPage', null, { push: true });
 
   // Every in-app BACK goes back through history, exactly like the
   // browser's Back button, so the two always agree.
@@ -136,6 +141,27 @@ export default function ServiceBookingModal({ service, onClose }) {
     });
   }, []);
 
+  const openWaterproofingService = (route) => {
+    const target = new URL(route, window.location.origin);
+    const slug = target.pathname.split('/').filter(Boolean).pop();
+    setSelectedWaterproofingPage({ slug, preselect: target.searchParams.get('preselect') });
+    scrollModalToTop();
+  };
+
+  const backToWaterproofingCategories = () => {
+    formBack(() => setSelectedWaterproofingPage(null));
+    scrollModalToTop();
+  };
+
+  const waterproofingTitle = selectedWaterproofingPage
+    ? wpFlows[selectedWaterproofingPage.slug]?.title || wpCategories.find((category) => category.slug === selectedWaterproofingPage.slug)?.name || service.name
+    : service.name;
+  const modalMaxWidth = service.slug === 'waterproofing' && selectedWaterproofingPage
+    ? '900px'
+    : service.slug === 'interior-by-choice' || service.slug === 'interior-design'
+      ? '1000px'
+      : '550px';
+
   return (
     <div
       className="
@@ -155,14 +181,6 @@ export default function ServiceBookingModal({ service, onClose }) {
         className={`
           relative
           w-full
-
-         ${service.slug === 'interior-by-choice'
-  ? 'max-w-[1000px]'
-  : service.slug === 'interior-design'
-    ? 'max-w-[1000px]'
-    : 'max-w-[550px]'
-}
-
           flex
           flex-col
           max-h-[88vh]
@@ -176,6 +194,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           max-sm:max-h-[92vh]
           max-sm:rounded-xl
         `}
+        style={{ maxWidth: modalMaxWidth }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* CLOSE BUTTON */}
@@ -214,65 +233,36 @@ export default function ServiceBookingModal({ service, onClose }) {
           ✕
         </button>
 
-        {/* MODAL HEADER */}
-
-        <div className="shrink-0 px-6 pt-6 pr-16">
-          <p
-            className="
-              mb-1
-              text-sm
-              font-semibold
-              uppercase
-              tracking-[0.16em]
-              text-amber-500
-            "
-          >
-            Book a service
-          </p>
-
-          <h2
-            className="
-              text-2xl
-              font-bold
-              text-gray-950
-            "
-          >
-            {service.name}
-          </h2>
-
-          {/* <p
-            className="
-              mt-2
-              text-sm
-              leading-6
-              text-gray-500
-            "
-          >
-            {service.description}
-          </p> */}
-        </div>
-
-        <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
+        {!selectedWaterproofingPage && (
+          <>
+            <div className="shrink-0 px-6 pt-6 pr-16">
+              <p className="mb-1 text-sm font-semibold uppercase tracking-[0.16em] text-amber-500">
+                Book a service
+              </p>
+              <h2 className="text-2xl font-bold text-gray-950">{waterproofingTitle}</h2>
+            </div>
+            <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
+          </>
+        )}
 
         {/* MODAL SCROLL AREA */}
 
         <ModalFooterContext.Provider value={footerNode}>
         <div
           ref={modalScrollRef}
-          className="
+          className={`
             bm-scroll
             min-h-0
             flex-auto
             overflow-y-auto
 
-            px-6
-            pb-6
+            ${selectedWaterproofingPage ? '!px-0 !pb-0' : 'px-6 pb-6'}
 
             max-sm:flex-1
 
             [scrollbar-width:none]
             [&::-webkit-scrollbar]:hidden
-          "
+          `}
         >
           {service.slug === 'interior-by-choice' ? (
             <>
@@ -901,6 +891,31 @@ export default function ServiceBookingModal({ service, onClose }) {
               />
             ) : null}
             </div>
+          ) : service.slug === 'waterproofing' && selectedWaterproofingPage?.slug === 'bathroom' ? (
+            <div className="painting-modal-scope waterproofing-modal-scope">
+              <WaterproofingBathroom
+                modal={true}
+                onBackToCategories={backToWaterproofingCategories}
+                onSelectService={openWaterproofingService}
+              />
+            </div>
+          ) : service.slug === 'waterproofing' && selectedWaterproofingPage && selectedWaterproofingPage.slug !== 'waterproofing' ? (
+            <div className="painting-modal-scope waterproofing-modal-scope">
+              <WaterproofingFlow
+                modal={true}
+                flowSlug={selectedWaterproofingPage.slug}
+                onBackToCategories={backToWaterproofingCategories}
+                onStepChange={scrollModalToTop}
+              />
+            </div>
+          ) : service.slug === 'waterproofing' && selectedWaterproofingPage?.preselect ? (
+            <ServiceBooking
+              serviceSlug="waterproofing"
+              preselectOption={selectedWaterproofingPage.preselect}
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
           ) : service.slug === 'other-services' ? (
             selectedOtherService ? (
               <ServiceBooking
@@ -924,6 +939,7 @@ export default function ServiceBookingModal({ service, onClose }) {
               modal={true}
               onClose={onClose}
               onStepChange={scrollModalToTop}
+              onSelectWaterproofingService={service.slug === 'waterproofing' ? openWaterproofingService : undefined}
             />
           )}
         </div>

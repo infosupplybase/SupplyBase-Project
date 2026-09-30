@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
@@ -15,6 +15,7 @@ import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * One page, six journeys (Terrace / Exterior Wall / Bathroom-Floor /
@@ -28,8 +29,9 @@ import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
  * have one) -> Details/Schedule/Confirm. See V17's migration comment for
  * why every booking here shows the flat ₹99 fee regardless of brand.
  */
-export default function WaterproofingFlow() {
-  const { flowSlug } = useParams();
+export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = false, onBackToCategories, onStepChange }) {
+  const { flowSlug: routeFlowSlug } = useParams();
+  const flowSlug = flowSlugProp || routeFlowSlug;
   const flow = wpFlows[flowSlug];
   const { user } = useAuth();
   const { category, loading, error: loadError, optionsFor, ratesByGroup } = useWaterproofingCatalogue();
@@ -70,7 +72,12 @@ export default function WaterproofingFlow() {
 
   const jumpToStep = (i) => {
     setStage(i);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
+  };
+
+  const scrollToTop = () => {
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goNext = () => {
@@ -81,13 +88,13 @@ export default function WaterproofingFlow() {
     }
     setErrors({});
     setStage((s) => Math.min(s + 1, CONFIRM));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
   };
 
   const goBack = () => {
     setSubmitError('');
     formBack(() => setStage((s) => Math.max(s - 1, 0)));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollToTop();
   };
 
   const canLeaveDetails = () => {
@@ -133,7 +140,7 @@ export default function WaterproofingFlow() {
       });
       setReceipt(result);
       setStage(CONFIRM);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollToTop();
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
       setSubmitError(friendlyError(err));
@@ -169,6 +176,13 @@ export default function WaterproofingFlow() {
   if (stage === 0) {
     return (
       <>
+        {modal && (
+          <div className="container container-narrow wp-modal-back-row">
+            <button type="button" className="btn btn-ghost btn-sm" onClick={onBackToCategories}>
+              <Icon name="arrow-left" size={16} /> WATERPROOFING SERVICES
+            </button>
+          </div>
+        )}
         <PaintingHero eyebrow="PROFESSIONAL" title={flow.title} tagline={flow.heroTagline} image={flow.intro.image} trustPoints={[]} />
         <section className="pnt-section">
           <div className="container container-narrow">
@@ -197,7 +211,7 @@ export default function WaterproofingFlow() {
   if (stage === CONFIRM && receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
-      <div className="wizard-shell">
+      <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
         <div className="wizard-container">
           <div className="wizard-card">
             <div className="confirmed">
@@ -250,7 +264,7 @@ export default function WaterproofingFlow() {
   /* ------------------------------------------------------------ details */
   if (stage === DETAILS) {
     return (
-      <div className="wizard-shell">
+      <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
         <div className="wizard-container">
           <FlowTopBar flow={flow} onBack={goBack} />
           <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
@@ -265,10 +279,10 @@ export default function WaterproofingFlow() {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
+              <ModalFoot className={modal ? 'wizard-foot modal-sticky-foot' : 'wizard-foot'}>
                 <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
                 <button type="submit" className="btn btn-primary">CONTINUE <Icon name="arrow-right" size={17} /></button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -306,12 +320,12 @@ export default function WaterproofingFlow() {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
+              <ModalFoot className={modal ? 'wizard-foot modal-sticky-foot' : 'wizard-foot'}>
                 <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
                 <button type="submit" className="btn btn-primary" disabled={busy}>
                   {busy ? 'BOOKING…' : 'BOOK A SITE VISIT'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -321,7 +335,7 @@ export default function WaterproofingFlow() {
 
   /* -------------------------------------------------------- config step */
   return (
-    <div className="pnt-flow-shell">
+    <div className={modal ? 'pnt-flow-shell wp-modal-flow' : 'pnt-flow-shell'}>
       <div className="container container-narrow">
         <FlowTopBar flow={flow} onBack={goBack} plain />
         <ol className="pnt-steps" aria-label="Progress">
@@ -401,12 +415,12 @@ export default function WaterproofingFlow() {
             </>
           )}
 
-          <div className="pnt-step-actions">
+          <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot' : 'pnt-step-actions'}>
             <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
             <button type="button" className="btn btn-primary" onClick={goNext}>
               Continue <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
     </div>
