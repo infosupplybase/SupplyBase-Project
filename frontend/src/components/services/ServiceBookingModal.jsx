@@ -1,7 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
-import Icon from '../ui/Icon';
+import {
+  useFormBack,
+  useHistoryState,
+} from '../../hooks/useHistoryState';
 import { ModalFooterContext } from './ModalFoot';
 import ServiceBooking from '../../pages/ServiceBooking';
 import InteriorBooking from '../../pages/InteriorBooking';
@@ -26,55 +28,6 @@ import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
 import OtherServicesCategory from '../../pages/OtherServicesCategory';
 
-export function useServiceBookingModal() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const entry = (location.state && location.state.bookingModal) || null;
-
-  return {
-    service: entry ? entry.service : null,
-    openToken: entry ? entry.base : 0,
-
-    open: (nextService) => {
-      const base = (window.history.state && window.history.state.idx) || 0;
-      const usr = (window.history.state && window.history.state.usr) || {};
-      const { pathname, search, hash } = window.location;
-
-      navigate(
-        { pathname, search, hash },
-        {
-          state: {
-            ...stripBooking(usr),
-            bookingModal: { service: nextService, base },
-            __formPush: true,
-          },
-        }
-      );
-    },
-
-    close: () => {
-      const idx = window.history.state && window.history.state.idx;
-      const base = entry && entry.base;
-
-      if (
-        typeof idx === 'number' &&
-        typeof base === 'number' &&
-        idx > base
-      ) {
-        navigate(base - idx);
-      } else {
-        const usr = (window.history.state && window.history.state.usr) || {};
-        const { pathname, search, hash } = window.location;
-
-        navigate(
-          { pathname, search, hash },
-          { replace: true, state: stripBooking(usr) }
-        );
-      }
-    },
-  };
-}
-
 function stripBooking(usr) {
   const out = {};
 
@@ -92,27 +45,89 @@ function stripBooking(usr) {
   return out;
 }
 
+export function useServiceBookingModal() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const entry = location.state?.bookingModal || null;
+
+  return {
+    service: entry ? entry.service : null,
+    openToken: entry ? entry.base : 0,
+
+    open: (nextService) => {
+      const base = window.history.state?.idx || 0;
+      const usr = window.history.state?.usr || {};
+      const { pathname, search, hash } = window.location;
+
+      navigate(
+        { pathname, search, hash },
+        {
+          state: {
+            ...stripBooking(usr),
+            bookingModal: { service: nextService, base },
+            __formPush: true,
+          },
+        }
+      );
+    },
+
+    close: () => {
+      const idx = window.history.state?.idx;
+      const base = entry?.base;
+
+      if (
+        typeof idx === 'number' &&
+        typeof base === 'number' &&
+        idx > base
+      ) {
+        navigate(base - idx);
+      } else {
+        const usr = window.history.state?.usr || {};
+        const { pathname, search, hash } = window.location;
+
+        navigate(
+          { pathname, search, hash },
+          {
+            replace: true,
+            state: stripBooking(usr),
+          }
+        );
+      }
+    },
+  };
+}
+
 export default function ServiceBookingModal({ service, onClose }) {
   const [selectedInteriorSpace, setSelectedInteriorSpace] =
     useHistoryState('bm:interiorSpace', null, { push: true });
+
   const [selectedInteriorDesign, setSelectedInteriorDesign] =
     useHistoryState('bm:interiorDesign', null, { push: true });
+
   const [showInteriorBooking, setShowInteriorBooking] =
     useHistoryState('bm:interiorBooking', false, { push: true });
+
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] =
     useHistoryState('bm:idCategory', null, { push: true });
+
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] =
     useHistoryState('bm:idProject', null, { push: true });
+
   const [selectedPaintingFlow, setSelectedPaintingFlow] =
     useHistoryState('bm:paintingFlow', null, { push: true });
+
   const [selectedPopFlow, setSelectedPopFlow] =
     useHistoryState('bm:popFlow', null, { push: true });
+
   const [selectedPlumbingTab, setSelectedPlumbingTab] =
     useHistoryState('bm:plumbingTab', null, { push: true });
+
   const [plumbingView, setPlumbingView] =
     useHistoryState('bm:plumbingView', 'category', { push: true });
+
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] =
     useHistoryState('bm:plumbingConsultation', null, { push: true });
+
   const [selectedOtherService, setSelectedOtherService] =
     useHistoryState('bm:otherService', null, { push: true });
 
@@ -129,6 +144,16 @@ export default function ServiceBookingModal({ service, onClose }) {
     });
   }, []);
 
+  if (!service) return null;
+
+  const hideMainHeader =
+    (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
+    (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow));
+
+  const wideModal =
+    service.slug === 'interior-by-choice' ||
+    service.slug === 'interior-design';
+
   return (
     <div
       className="
@@ -140,33 +165,36 @@ export default function ServiceBookingModal({ service, onClose }) {
       <div
         className={`
           relative w-full
-          ${
-            service.slug === 'interior-by-choice' ||
-            service.slug === 'interior-design'
-              ? 'max-w-[1000px]'
-              : 'max-w-[550px]'
-          }
+          ${wideModal ? 'max-w-[1000px]' : 'max-w-[550px]'}
           flex flex-col max-h-[88vh] h-auto overflow-hidden
           rounded-2xl bg-white shadow-2xl
           max-sm:h-[92vh] max-sm:max-h-[92vh] max-sm:rounded-xl
         `}
+        style={
+          service.slug === 'painting'
+            ? { height: '88dvh', maxHeight: '88dvh' }
+            : undefined
+        }
         onClick={(event) => event.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
-          className="
-            !absolute !right-5 !top-5 !z-50 !flex !h-10 !w-10
+          className={`
+            !absolute !right-5 !z-50 !flex !h-10 !w-10
             !items-center !justify-center !rounded-full !border
             !border-gray-200 !bg-white !text-xl !text-gray-700
             !shadow-sm transition hover:!bg-gray-100
-          "
+            ${hideMainHeader ? '!top-3' : '!top-5'}
+          `}
           aria-label="Close booking modal"
         >
           ✕
         </button>
 
-        {!(service.slug === 'pop-ceiling-design' && selectedPopFlow) && (
+        {hideMainHeader ? (
+          <div className="h-14 shrink-0" aria-hidden="true" />
+        ) : (
           <>
             <div className="shrink-0 px-6 pt-6 pr-16">
               <p className="mb-1 text-sm font-semibold uppercase tracking-[0.16em] text-amber-500">
@@ -251,11 +279,11 @@ export default function ServiceBookingModal({ service, onClose }) {
                             </div>
 
                             <div>
-                              <p className="mb-2 text-sm font-semibold uppercase tracking-[0.14em] text-amber-500">
+                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-600">
                                 {space?.name}
                               </p>
 
-                              <h3 className="text-2xl font-bold text-gray-950">
+                              <h3 className="mt-2 text-2xl font-bold text-gray-950">
                                 {design.name}
                               </h3>
 
@@ -331,8 +359,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                     {getDesignsBySpace(selectedInteriorSpace).length === 0 ? (
                       <p className="ibc-empty">
                         More designs for this space are on the way.
-                        Book a home visit and our designer will
-                        bring options for you.
+                        Book a home visit and our designer will bring
+                        options for you.
                       </p>
                     ) : (
                       <div className="ibc-design-grid">
@@ -416,17 +444,17 @@ export default function ServiceBookingModal({ service, onClose }) {
                             setSelectedInteriorDesign(null);
                             scrollModalToTop();
                           }}
-                          className="group relative overflow-hidden rounded-xl text-left"
+                          className="
+                            group relative overflow-hidden rounded-xl
+                            border border-gray-200 bg-white text-left shadow-sm
+                            transition hover:-translate-y-1 hover:shadow-lg
+                          "
                         >
                           <img
-                            loading="lazy"
-                            decoding="async"
                             src={space.image}
                             alt={space.name}
-                            className="
-                              h-36 w-full object-cover transition duration-300
-                              group-hover:scale-105 sm:h-44
-                            "
+                            loading="lazy"
+                            className="h-[170px] w-full object-cover transition duration-300 group-hover:scale-105"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                           <span className="absolute bottom-3 left-4 text-base font-semibold text-white">
@@ -482,8 +510,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                 />
               )
             ) : service.slug === 'painting' ? (
-              selectedPaintingFlow ? (
-                <div className="painting-modal-scope">
+              <div className="painting-modal-scope">
+                {selectedPaintingFlow ? (
                   <PaintingFlow
                     modal={true}
                     flowSlug={selectedPaintingFlow}
@@ -493,9 +521,7 @@ export default function ServiceBookingModal({ service, onClose }) {
                     }}
                     onStepChange={scrollModalToTop}
                   />
-                </div>
-              ) : (
-                <div className="painting-modal-scope">
+                ) : (
                   <PaintingCategory
                     modal={true}
                     onSelectFlow={(flowSlug) => {
@@ -503,8 +529,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                       scrollModalToTop();
                     }}
                   />
-                </div>
-              )
+                )}
+              </div>
             ) : service.slug === 'pop-ceiling-design' ? (
               <div className="painting-modal-scope">
                 {selectedPopFlow ? (
@@ -598,10 +624,13 @@ export default function ServiceBookingModal({ service, onClose }) {
                   <PlumbingConsultationList
                     modal={true}
                     onBackToCategories={() => {
-                      formBack(() => setPlumbingView('category'));
+                      formBack(() => {
+                        setSelectedPlumbingConsultation(null);
+                        setPlumbingView('category');
+                      });
                       scrollModalToTop();
                     }}
-                    onSelectConsultationType={(typeSlug) => {
+                    onSelectType={(typeSlug) => {
                       setSelectedPlumbingConsultation(typeSlug);
                       setPlumbingView('consultation-book');
                       scrollModalToTop();
