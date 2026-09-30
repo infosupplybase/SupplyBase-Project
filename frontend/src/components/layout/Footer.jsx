@@ -291,21 +291,7 @@ export default function Footer() {
               </li>
 
 
-              {/* Working Hours */}
-              <li>
-
-                <Icon
-                  name="clock"
-                  size={19}
-                />
-
-                <span>
-                  {hoursDays}
-                  <br />
-                  {hoursTimes}
-                </span>
-
-              </li>
+             
 
             </ul>
 
