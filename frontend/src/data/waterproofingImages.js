@@ -24,8 +24,8 @@ export const waterproofingImages = {
   'Water Tank Waterproofing':
     '/assets/waterproofing/watertank.webp',
 
-  'Bathroom Wall Waterproofing':
-    '/assets/waterproofing/bathroom.webp',
+  'Interior Waterproofing':
+    '/assets/waterproofing/interior-waterproofing.png',
 
  
 
