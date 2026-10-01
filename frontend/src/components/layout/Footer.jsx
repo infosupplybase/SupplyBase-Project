@@ -126,12 +126,6 @@ export default function Footer() {
     (s) => s.url
   );
 
-  /*
-   * Existing working-hours content.
-   */
-  const [hoursDays, hoursTimes] =
-    contact.workingHours.split(/,\s*/);
-
   return (
     <footer className="ft">
 
@@ -291,21 +285,7 @@ export default function Footer() {
               </li>
 
 
-              {/* Working Hours */}
-              <li>
-
-                <Icon
-                  name="clock"
-                  size={19}
-                />
-
-                <span>
-                  {hoursDays}
-                  <br />
-                  {hoursTimes}
-                </span>
-
-              </li>
+             
 
             </ul>
 
