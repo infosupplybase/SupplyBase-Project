@@ -2,7 +2,7 @@ package in.supplybase.backend.booking;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -91,25 +91,22 @@ class BookingControllerTest {
     }
 
     @Nested
-    @DisplayName("POST /api/bookings — public")
+    @DisplayName("POST /api/bookings — signed-in customers only")
     class CreateBooking {
 
         @Test
-        @DisplayName("works without any authenticated principal")
-        void worksAnonymously() throws Exception {
-            when(service.create(any(), isNull())).thenReturn(sampleReceipt());
-
+        @DisplayName("is refused without a signed-in account")
+        void anonymousIsUnauthorized() throws Exception {
             mockMvc.perform(post("/api/bookings")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CREATE_BOOKING_JSON))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.bookingNumber").value("SB-20260906-000001"));
+                    .andExpect(status().isUnauthorized());
 
-            verify(service).create(any(), isNull());
+            verify(service, never()).create(any(), any());
         }
 
         @Test
-        @DisplayName("attaches the booking to a signed-in principal when one is present")
+        @DisplayName("books for the signed-in customer")
         void attachesSignedInUser() throws Exception {
             when(service.create(any(), eq(42L))).thenReturn(sampleReceipt());
 
@@ -117,7 +114,8 @@ class BookingControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CREATE_BOOKING_JSON)
                             .with(asUser(42L, Role.CUSTOMER)))
-                    .andExpect(status().isCreated());
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.bookingNumber").value("SB-20260906-000001"));
 
             verify(service).create(any(), eq(42L));
         }

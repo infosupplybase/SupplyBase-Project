@@ -71,9 +71,8 @@ public class SecurityConfig {
                 // PENDING application; the PROFESSIONAL role only comes from an
                 // admin approving it (PartnerService.review).
                 .requestMatchers(HttpMethod.POST, "/api/partners/apply").permitAll()
-                // Public, but the JWT filter still runs first — so a signed-in
-                // visitor's booking gets attached to their account.
-                .requestMatchers(HttpMethod.POST, "/api/bookings").permitAll()
+                // POST /api/bookings is NOT listed here: making a booking needs
+                // a signed-in account (anyRequest().authenticated() below).
                 // The booking wizard's own photo upload for a booking it just
                 // created — see BookingService.uploadOwnFile for the
                 // phone-number ownership check that stands in for a login here.

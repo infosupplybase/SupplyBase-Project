@@ -12,23 +12,11 @@ export const waterproofingImages = {
   'Bathroom Waterproofing':
     '/assets/waterproofing/bathroom.webp',
 
-  'Toilet Waterproofing':
-    '/assets/waterproofing/toilet.webp',
 
-  'Balcony Waterproofing':
-    '/assets/waterproofing/balcony.webp',
-
-  'Kitchen Waterproofing':
-    '/assets/waterproofing/kitchen.webp',
 
   'Basement Waterproofing':
     '/assets/waterproofing/basement.webp',
 
-  'Podium Waterproofing':
-    '/assets/waterproofing/podium.webp',
-
-  'Wall Waterproofing':
-    '/assets/waterproofing/wall.webp',
 
   'External Waterproofing':
     '/assets/waterproofing/external.webp',
@@ -36,20 +24,12 @@ export const waterproofingImages = {
   'Water Tank Waterproofing':
     '/assets/waterproofing/watertank.webp',
 
-  'Bathroom Wall Waterproofing':
-    '/assets/waterproofing/bathroom.webp',
+  'Interior Waterproofing':
+    '/assets/waterproofing/interior-waterproofing.webp',
 
-  'Bathroom Corner & Joint Sealing':
-    '/assets/waterproofing/bathroom joint.webp',
 
-  'Bathroom Shower Area Waterproofing':
-    '/assets/waterproofing/Shower.webp',
 
-  'Bathroom Pipeline & Fixture Sealing':
-    '/assets/waterproofing/Pipeline.webp',
 
-  'Bathroom Tile Re-sealing':
-    '/assets/waterproofing/Re-sealing.webp',
 };
 
 
@@ -75,19 +55,19 @@ export const propertyImages = {
   'Villa / Bungalow':
     '/assets/waterproofing/hero/Villa.webp',
 
-  Office:
+  'Office':
     '/assets/waterproofing/hero/office.webp',
 
-  Shop:
+  'Shop':
     '/assets/waterproofing/hero/shop.webp',
 
-  Commercial:
+  'Commercial':
     '/assets/waterproofing/hero/commercial.webp',
 
   'Building / Society':
     '/assets/waterproofing/hero/building.webp',
 
-  Other:
+  'Other':
     '/assets/waterproofing/hero/other.webp',
 };
 

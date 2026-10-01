@@ -162,12 +162,15 @@
 
 /* Heading and help link */
 
+/* The pop-up's own header is hidden inside a POP flow, so this bar sits at
+   the top — it stops short of the pop-up's close button (40px, 20px in from
+   the corner) instead of running underneath it. */
 .pop-modal-scope .pnt-top {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 12px 0;
-  padding: 8px 52px 8px 10px;
+  margin: 12px 44px 12px 0;
+  padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: #fff;
@@ -182,10 +185,14 @@
 }
 
 .pop-modal-scope .pnt-top-title {
+  flex: 1;
   min-width: 0;
+  overflow: hidden;
   color: var(--ink) !important;
   font-size: 1.05rem;
   letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .pop-modal-scope .pnt-help {
@@ -200,6 +207,38 @@
 
 .pop-modal-scope .pnt-help:hover {
   background: var(--gold-a08);
+}
+
+/* Phones (after the rules above, so it wins over them) */
+@media (max-width: 480px) {
+  .pop-modal-scope .pnt-top {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .pop-modal-scope .pnt-top-title {
+    font-size: 0.92rem;
+  }
+
+  /* A round "?" instead of the "Need help?" words, so the flow's title
+     keeps one line; the words are still its accessible name. */
+  .pop-modal-scope .pnt-help {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+  }
+
+  .pop-modal-scope .pnt-help::before {
+    content: '?';
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+  }
 }
 
 /* Validation popup */
@@ -262,16 +301,6 @@
     display: none;
   }
 
-  .pop-modal-scope .pnt-top {
-    padding-right: 38px;
-  }
-
-  .pop-modal-scope .pnt-top-title {
-    font-size: 0.9rem;
-  }
-
-  .pop-modal-scope .pnt-help {
-    padding: 6px;
-    font-size: 11px;
-  }
+  /* The top bar's phone sizes are set with its desktop rules above; it no
+     longer needs right padding for the close button (it stops short of it). */
 }

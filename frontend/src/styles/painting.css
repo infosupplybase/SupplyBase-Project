@@ -355,6 +355,10 @@
   font-size: 0.82rem;
 }
 
+.pnt-step-caption {
+  margin: 0 0 30px !important;
+}
+
 .pnt-steps {
   display: flex;
   align-items: center;

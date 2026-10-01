@@ -11,7 +11,10 @@ import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import usePopCeilingCatalogue from '../hooks/usePopCeilingCatalogue';
 import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -35,6 +38,17 @@ import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../d
  * always null, and EstimateSummary already renders "To be confirmed on
  * site visit" whenever that's the case.
  */
+
+// The Details / Schedule button bar in the booking pop-up — the same layout
+// as Painting's (a narrow BACK and a wide action on phones, right-aligned on
+// wider screens), drawn in the pop-up's footer by ModalFoot.
+const MODAL_FOOT =
+  'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3';
+const MODAL_BACK =
+  'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto';
+const MODAL_NEXT =
+  'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-auto md:!min-w-[170px] md:!flex-none md:!px-4';
+
 export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
   const params = useParams();
   const flowSlug = propFlowSlug || params.flowSlug;
@@ -48,6 +62,8 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const formBack = useFormBack();
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -153,7 +169,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   };
 
   const canLeaveDetails = () => {
-    const next = validateDetails(details);
+    const next = validateDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -165,6 +181,8 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');
@@ -201,11 +219,13 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pce', result.bookingNumber, details.phone);
       setStage(CONFIRM);
       if (modal) onStepChange?.();
       else window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -248,7 +268,8 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
           <img
             src={flow.intro.image}
             alt={`${flow.title} ceiling design`}
-            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 20 }}
+            // 64px down: below the pop-up's close button, the header being hidden here.
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 64 }}
           />
           <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
             {flow.intro.heading}
@@ -380,10 +401,13 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary">CONTINUE <Icon name="arrow-right" size={17} /></button>
-              </div>
+              {/* In the booking pop-up this bar goes in the pop-up's footer
+                  (ModalFoot), under the form rather than over its fields —
+                  the same as Painting's steps. */}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'}>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -421,12 +445,12 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div className="wizard-foot">
-                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary" disabled={busy}>
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'} disabled={busy}>
                   {busy ? 'BOOKING…' : 'BOOK HOME VISIT'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>

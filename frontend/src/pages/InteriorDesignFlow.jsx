@@ -10,7 +10,10 @@ import {
   ID_REFERENCE_PACKAGES, ID_REFERENCE_STATS, ID_REFERENCE_PROJECT_SLUG,
   idWhatsNext, idProcessSteps, idFaqs,
 } from '../data/interiorDesignContent';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -44,6 +47,8 @@ export default function InteriorDesignFlow({
   projectSlug: propProjectSlug,
   onBackToCatalogue,
   onStepChange,
+  startAtDetails = false,
+  customRequirements = '',
 }) {
   const params = useParams();
 
@@ -58,7 +63,10 @@ export default function InteriorDesignFlow({
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
   const scope = `f:id:${categorySlug}:${projectSlug}`;
   const formBack = useFormBack();
-  const [stage, setStage] = useHistoryState(`${scope}:stage`, PACKAGE, { push: true });
+  // The "Custom" path (InteriorDesignCustomFlow) has no project or package:
+  // it starts at the customer's details and books their requirements.
+  const firstStage = startAtDetails ? CONSULT_DETAILS : PACKAGE;
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, firstStage, { push: true });
   const [tier, setTier] = useHistoryState(`${scope}:tier`, 'standard');
   const [compareOpen, setCompareOpen] = useState(false);
   const [detailTab, setDetailTab] = useState('overview');
@@ -68,6 +76,8 @@ export default function InteriorDesignFlow({
   const [requirements, setRequirements] = useHistoryState(`${scope}:requirements`, '');
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -84,7 +94,7 @@ export default function InteriorDesignFlow({
     return ID_REFERENCE_PACKAGES[tier];
   }, [hasPricing, tier]);
 
-  if (!category || !project) {
+  if ((!category || !project) && !startAtDetails) {
     if (modal) return null;
 
     return (
@@ -108,12 +118,12 @@ export default function InteriorDesignFlow({
   const goBack = () => {
     setSubmitError('');
 
-    if (stage === PACKAGE && modal) {
+    if (stage === firstStage && modal) {
       onBackToCatalogue?.();
       return;
     }
 
-    formBack(() => setStage((s) => Math.max(s - 1, PACKAGE)));
+    formBack(() => setStage((s) => Math.max(s - 1, firstStage)));
 
     if (modal) {
       onStepChange?.();
@@ -123,7 +133,7 @@ export default function InteriorDesignFlow({
   };
 
   const canLeaveDetails = () => {
-    const next = validateDetails(details);
+    const next = validateDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -141,18 +151,26 @@ export default function InteriorDesignFlow({
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');
     try {
-      const tierMeta = idPackageTiers.find((t) => t.key === tier);
-      const parts = [
-        `Project: ${category.name} — ${project.name} (${project.location})`,
-        `Package: ${tierMeta?.name || tier}${packagePrice ? ` (${packagePrice.priceDisplay})` : ' (quotation after site visit)'}`,
-      ];
-      if (style) parts.push(`Style: ${idStyles.find((s) => s.key === style)?.name || style}`);
-      if (colour) parts.push(`Colour theme: ${idColourThemes.find((c) => c.key === colour)?.name || colour}`);
-      if (requirements.trim()) parts.push(requirements.trim());
+      const parts = [];
+      if (customRequirements.trim()) {
+        // The "Custom" path: the customer's own brief, no project or package.
+        parts.push(`Requirements: ${customRequirements.trim()}`);
+      } else {
+        const tierMeta = idPackageTiers.find((t) => t.key === tier);
+        if (category && project) {
+          parts.push(`Project: ${category.name} — ${project.name} (${project.location})`);
+        }
+        parts.push(`Package: ${tierMeta?.name || tier}${packagePrice ? ` (${packagePrice.priceDisplay})` : ' (quotation after site visit)'}`);
+        if (style) parts.push(`Style: ${idStyles.find((s) => s.key === style)?.name || style}`);
+        if (colour) parts.push(`Colour theme: ${idColourThemes.find((c) => c.key === colour)?.name || colour}`);
+        if (requirements.trim()) parts.push(requirements.trim());
+      }
 
       const result = await api.createBooking({
         serviceSlug: 'interior-design',
@@ -163,11 +181,13 @@ export default function InteriorDesignFlow({
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('id', result.bookingNumber, details.phone);
       setStage(CONFIRM);
 
       if (modal) {
@@ -219,7 +239,11 @@ export default function InteriorDesignFlow({
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
                 <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
-                <div><dt>Project</dt><dd>{project.name} — {tier}</dd></div>
+                {customRequirements ? (
+                  <div><dt>Requirements</dt><dd>{customRequirements}</dd></div>
+                ) : (
+                  <div><dt>Project</dt><dd>{project?.name || 'Interior Design'} — {tier}</dd></div>
+                )}
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
@@ -952,12 +976,23 @@ function FlowTopBar({ project, onBack, plain, modal }) {
 
   return (
     <div className={plain ? 'pnt-top' : 'wizard-top'}>
-      <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">
+      <button
+        type="button"
+        className={plain ? 'pnt-back' : 'wizard-back'}
+        onClick={onBack}
+        aria-label="Go back"
+      >
         <Icon name="arrow-left" size={20} />
       </button>
-      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{project.name}</h1>
+
+      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>
+        {project?.name || 'Custom Interior Design'}
+      </h1>
+
       <a
-        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help with ${project.name}.`)}`}
+        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+          `Hello Supplybase, I need help with ${project?.name || 'Custom Interior Design'}.`
+        )}`}
         target="_blank"
         rel="noopener noreferrer"
         className={plain ? 'pnt-help' : 'wizard-help'}
