@@ -220,7 +220,8 @@
   gap: 2px;
 }
 
-.sidebar-list a {
+.sidebar-list a,
+.sidebar-list .sidebar-list-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -232,9 +233,20 @@
   transition: all 0.2s var(--ease);
 }
 
-.sidebar-list a:hover {
+.sidebar-list a:hover,
+.sidebar-list .sidebar-list-button:hover {
   background: var(--bg-soft);
   color: var(--ink);
+}
+
+.sidebar-list .sidebar-list-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.91rem;
+  text-align: left;
+  cursor: pointer;
 }
 
 .sidebar-list a.active {
