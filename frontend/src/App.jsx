@@ -13,7 +13,8 @@ import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
 import InteriorDesignDetail from './pages/InteriorDesignDetail';
 import InteriorBooking from './pages/InteriorBooking';
 import ElectricalCategory from './pages/ElectricalCategory';
-import ElectricianService from './pages/ElectricianService';
+import ElectricalCart from './pages/ElectricalCart';
+import ElectricalCheckout, { ElectricalSubPage } from './pages/ElectricalCheckout';
 import OtherServicesCategory from './pages/OtherServicesCategory';
 import PlumbingCategory from './pages/PlumbingCategory';
 import PlumbingTab from './pages/PlumbingTab';
@@ -50,7 +51,9 @@ import RequireBookingAuth from './components/layout/RequireBookingAuth';
  * /services               All services
  * /services/:slug         Book a site visit for one service
  * /services/electrical    Electrical Services category list
- * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
+ * /services/electrical/:subSlug  A cart category's service list (fan-services…), or
+ *                                one of the seven detailed electrician booking journeys
+ * /services/electrical/cart, /checkout  The electrical cart and its checkout
  * /services/plumbing      Plumbing Services overview grid (8 categories + consultation)
  * /services/plumbing/cart, /checkout  The item cart and its checkout flow
  * /services/plumbing/consultation, /consultation/:typeSlug  Consultation list + booking
@@ -128,7 +131,9 @@ export default function App() {
             list here. */}
         <Route path="services/electrical" element={<RequireBookingAuth><ElectricalCategory /></RequireBookingAuth>} />
         <Route path="services/electric" element={<RequireBookingAuth><ElectricalCategory /></RequireBookingAuth>} />
-        <Route path="services/electrical/:subSlug" element={<RequireBookingAuth><ElectricianService /></RequireBookingAuth>} />
+  <Route path="services/electrical/cart" element={<RequireBookingAuth><ElectricalCart /></RequireBookingAuth>} />
+  <Route path="services/electrical/checkout" element={<RequireBookingAuth><ElectricalCheckout /></RequireBookingAuth>} />
+  <Route path="services/electrical/:subSlug" element={<RequireBookingAuth><ElectricalSubPage /></RequireBookingAuth>} />
 
         {/* Other Services: the catch-all eighth tile, reactivated on
             request. A category list in front of five existing generic

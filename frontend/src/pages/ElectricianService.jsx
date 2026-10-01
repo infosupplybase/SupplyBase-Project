@@ -12,6 +12,7 @@ import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -56,6 +57,7 @@ export default function ElectricianService() {
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const [pendingFiles, setPendingFiles] = useState({});
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
@@ -256,6 +258,8 @@ export default function ElectricianService() {
     if (!validateDetails()) return;
     // A slow tap-happy double submit must not create two bookings.
     if (submittedRef.current || busy) return;
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
     submittedRef.current = true;
 
     setBusy(true);

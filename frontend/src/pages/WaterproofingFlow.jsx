@@ -10,6 +10,7 @@ import useWaterproofingCatalogue from '../hooks/useWaterproofingCatalogue';
 import { wpFlows } from '../data/waterproofingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -43,6 +44,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
   const [brand, setBrand] = useHistoryState(`${scope}:brand`, '');
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -116,6 +118,8 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');

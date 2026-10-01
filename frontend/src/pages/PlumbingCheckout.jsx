@@ -9,6 +9,7 @@ import api, { friendlyError } from '../lib/api';
 import { formatRupees } from '../lib/money';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
@@ -19,27 +20,82 @@ const SCHEDULE = 0;
 const DETAILS = 1;
 const CONFIRM = 2;
 
-/** /services/plumbing/checkout — submits the real cart as one booking
-    (serviceSlug: 'plumbing', one `cart_item` answer per line with its
-    quantity). The server looks up the real price for each item and computes
-    the total; nothing the client sends here is trusted as a price. */
+/** The electrical service a cart books under: Appliance Installation when
+    every item is an appliance, otherwise Home Electrical Services. */
+const electricalServiceFor = (items) =>
+  items.length > 0 && items.every((i) => i.itemSlug.startsWith('elec-app-'))
+    ? 'appliance-installation-services'
+    : 'home-electrical-services';
+
+/**
+ * What differs between the two cart checkouts.
+ *
+ * Plumbing: one `cart_item` answer per line; the server looks up the real
+ * price of each item and computes the total, so nothing the client sends is
+ * trusted as a price.
+ *
+ * Electrical: its items are not in the server's catalogue, so each line goes
+ * as the service's free-text "requirements" answer ("Ceiling Fan
+ * Installation × 2 — ₹298") — the office sees exactly what was ordered — and
+ * the price is confirmed at the visit (electrician screens show no fee).
+ */
+const TRADES = {
+  plumbing: {
+    scope: 'f:plb-checkout',
+    cartPath: '/services/plumbing/cart',
+    serviceSlug: () => 'plumbing',
+    answers: (items) =>
+      items.map((item) => ({
+        key: 'cart_item',
+        value: item.itemSlug,
+        label: item.name,
+        quantity: item.quantity,
+      })),
+    arrival: 'Our plumber will arrive in this window.',
+    help: 'Hello Supplybase, I need help with my plumbing cart checkout.',
+    backLabel: 'BACK TO PLUMBING',
+    showsFees: true,
+  },
+  electrical: {
+    scope: 'f:elc-checkout',
+    cartPath: '/services/electrical/cart',
+    serviceSlug: electricalServiceFor,
+    answers: (items) =>
+      items.map((item) => ({
+        key: 'requirements',
+        value: `${item.name} × ${item.quantity} — ${formatRupees((item.unitPricePaise * item.quantity) / 100)}`.slice(0, 400),
+        label: item.name,
+      })),
+    arrival: 'Our electrician will arrive in this window.',
+    help: 'Hello Supplybase, I need help with my electrical cart checkout.',
+    backLabel: 'BACK TO ELECTRICAL',
+    showsFees: false,
+  },
+};
+
+/** /services/plumbing/checkout and /services/electrical/checkout — submits
+    that cart as one booking, with the same details form as every service. */
 export default function PlumbingCheckout({
+  trade = 'plumbing',
   modal = false,
   onBackToCart,
   onStepChange,
   onBackToServices,
 }) {
+  const config = TRADES[trade];
   const { user } = useAuth();
-  const { items, count, subtotalPaise, clear } = useCart();
+  const { items, count, subtotalPaise, clear } = useCart(trade);
+  const serviceSlug = config.serviceSlug(items);
 
   // This form's step and answers live in the browser's history (see
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
-  const scope = 'f:plb-checkout';
+  const scope = config.scope;
   const formBack = useFormBack();
   const [stage, setStage] = useHistoryState(`${scope}:stage`, SCHEDULE, { push: true });
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
@@ -66,7 +122,7 @@ export default function PlumbingCheckout({
   if (count === 0 && !receipt) {
     if (modal) return null;
 
-    return <Navigate to="/services/plumbing/cart" replace />;
+    return <Navigate to={config.cartPath} replace />;
   }
 
   const goNext = () => {
@@ -108,18 +164,15 @@ export default function PlumbingCheckout({
     const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setError('');
     try {
       const result = await api.createBooking({
-        serviceSlug: 'plumbing',
-        answers: items.map((item) => ({
-          key: 'cart_item',
-          value: item.itemSlug,
-          label: item.name,
-          quantity: item.quantity,
-        })),
+        serviceSlug,
+        answers: config.answers(items),
         preferredDate: date,
         preferredTime: time,
         name: details.name,
@@ -151,6 +204,7 @@ export default function PlumbingCheckout({
       <CheckoutConfirmation
         receipt={receipt}
         details={details}
+        config={config}
         modal={modal}
         onBackToServices={onBackToServices}
       />
@@ -184,7 +238,7 @@ export default function PlumbingCheckout({
             </button>
           ) : (
             <Link
-              to="/services/plumbing/cart"
+              to={config.cartPath}
               className="wizard-back"
               aria-label="Back to cart"
             >
@@ -193,7 +247,7 @@ export default function PlumbingCheckout({
           )}
           <h1 className="wizard-title">Checkout</h1>
           <a
-            href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent('Hello Supplybase, I need help with my plumbing cart checkout.')}`}
+            href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(config.help)}`}
             target="_blank" rel="noopener noreferrer" className="wizard-help"
           >
             Need help?
@@ -222,10 +276,10 @@ export default function PlumbingCheckout({
               <>
                 <div className="wizard-card-head">
                   <h2>Choose Date &amp; Time</h2>
-                  <p>Our plumber will arrive in this window.</p>
+                  <p>{config.arrival}</p>
                 </div>
                 <SlotPicker
-                  serviceSlug="plumbing"
+                  serviceSlug={serviceSlug}
                   date={date}
                   time={time}
                   onPick={(d, t) => {
@@ -244,12 +298,12 @@ export default function PlumbingCheckout({
                   <h2>Your Details</h2>
                   <p>We will contact you to confirm the appointment.</p>
                 </div>
-                <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pco" />
+                <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix={trade === 'plumbing' ? 'pco' : 'eco'} />
               </>
             )}
 
             {stage === CONFIRM && (
-              <CartSummary items={items} subtotalPaise={subtotalPaise} date={date} time={time} />
+              <CartSummary items={items} subtotalPaise={subtotalPaise} date={date} time={time} showsFees={config.showsFees} />
             )}
 
             {error && (
@@ -298,8 +352,39 @@ export default function PlumbingCheckout({
   );
 }
 
-function CartSummary({ items, subtotalPaise, date, time }) {
+function CartSummary({ items, subtotalPaise, date, time, showsFees }) {
   const overThreshold = subtotalPaise / 100 > 5000;
+  const feePanel = showsFees ? (
+    <div className="fee-panel">
+      <div className="fee-panel-top">
+        <strong>{overThreshold ? 'Home Visit Fee' : 'Services Total'}</strong>
+        <span className="fee-panel-amount">{overThreshold ? '₹99' : formatRupees(subtotalPaise / 100)}</span>
+      </div>
+      <p className="fee-small">
+        {overThreshold ? (
+          <>
+            Your selected services total <strong>{formatRupees(subtotalPaise / 100)}</strong>, which is above ₹5,000.
+            Pay the <strong>₹99 home visit fee</strong> now to confirm — it will be adjusted into your final bill of{' '}
+            {formatRupees(subtotalPaise / 100)} if you proceed with the work.
+          </>
+        ) : (
+          <>
+            This is actual, transparent pricing for your selected services — no hidden charges, no home visit fee for
+            this total.
+          </>
+        )}
+      </p>
+    </div>
+  ) : (
+    <div className="fee-panel">
+      <div className="fee-panel-top">
+        <strong>Estimated Total</strong>
+        <span className="fee-panel-amount">{formatRupees(subtotalPaise / 100)}</span>
+      </div>
+      <p className="fee-small">Listed prices for your selected services. Our electrician confirms the final amount at the visit.</p>
+    </div>
+  );
+
   return (
     <div style={{ marginTop: 0 }}>
       <div className="wizard-card-head">
@@ -320,26 +405,7 @@ function CartSummary({ items, subtotalPaise, date, time }) {
         ))}
       </dl>
 
-      <div className="fee-panel">
-        <div className="fee-panel-top">
-          <strong>{overThreshold ? 'Home Visit Fee' : 'Services Total'}</strong>
-          <span className="fee-panel-amount">{overThreshold ? '₹99' : formatRupees(subtotalPaise / 100)}</span>
-        </div>
-        <p className="fee-small">
-          {overThreshold ? (
-            <>
-              Your selected services total <strong>{formatRupees(subtotalPaise / 100)}</strong>, which is above ₹5,000.
-              Pay the <strong>₹99 home visit fee</strong> now to confirm — it will be adjusted into your final bill of{' '}
-              {formatRupees(subtotalPaise / 100)} if you proceed with the work.
-            </>
-          ) : (
-            <>
-              This is actual, transparent pricing for your selected services — no hidden charges, no home visit fee for
-              this total.
-            </>
-          )}
-        </p>
-      </div>
+      {feePanel}
     </div>
   );
 }
@@ -347,6 +413,7 @@ function CartSummary({ items, subtotalPaise, date, time }) {
 function CheckoutConfirmation({
   receipt,
   details,
+  config,
   modal = false,
   onBackToServices,
 }) {
@@ -371,8 +438,21 @@ function CheckoutConfirmation({
             <div className="confirmed-tick">
               <Icon name="check" size={38} strokeWidth={3} />
             </div>
-            <h2>Your Booking is Reserved!</h2>
-            <p>{receipt.message}</p>
+            {config.showsFees ? (
+              <>
+                <h2>Your Booking is Reserved!</h2>
+                <p>{receipt.message}</p>
+              </>
+            ) : (
+              // Like the electrician journeys: no fee amounts on this screen.
+              <>
+                <h2>Booking Confirmed!</h2>
+                <p>
+                  We have received your request. Our team will contact you on WhatsApp or phone to confirm the
+                  appointment.
+                </p>
+              </>
+            )}
 
             <dl className="confirmed-panel">
               <div>
@@ -383,16 +463,23 @@ function CheckoutConfirmation({
                 <dt>Date &amp; Time</dt>
                 <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
-              {receipt.itemsTotalDisplay && (
+              {config.showsFees && receipt.itemsTotalDisplay && (
                 <div>
                   <dt>Items Total</dt>
                   <dd>{receipt.itemsTotalDisplay}</dd>
                 </div>
               )}
-              <div>
-                <dt>{receipt.homeVisitFeeOnly ? 'Home Visit Fee' : 'Amount Due'}</dt>
-                <dd>{receipt.visitFeeDisplay}</dd>
-              </div>
+              {config.showsFees ? (
+                <div>
+                  <dt>{receipt.homeVisitFeeOnly ? 'Home Visit Fee' : 'Amount Due'}</dt>
+                  <dd>{receipt.visitFeeDisplay}</dd>
+                </div>
+              ) : (
+                <div>
+                  <dt>Service</dt>
+                  <dd>{receipt.serviceName}</dd>
+                </div>
+              )}
               <div>
                 <dt>Location</dt>
                 <dd>{details.city}</dd>
@@ -431,7 +518,7 @@ function CheckoutConfirmation({
                   className="btn btn-ghost btn-back !w-auto !min-w-[190px] !justify-center"
                   onClick={() => onBackToServices?.()}
                 >
-                  BACK TO PLUMBING
+                  {config.backLabel}
                 </button>
               ) : (
                 <Link to="/" className="btn btn-ghost btn-back">

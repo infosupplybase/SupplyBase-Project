@@ -14,6 +14,7 @@ import usePaintingCatalogue from '../hooks/usePaintingCatalogue';
 import { paintingFlows } from '../data/paintingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
 import { formatRupees } from '../lib/money';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
@@ -53,6 +54,7 @@ export default function PaintingFlow({
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -227,6 +229,8 @@ export default function PaintingFlow({
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');

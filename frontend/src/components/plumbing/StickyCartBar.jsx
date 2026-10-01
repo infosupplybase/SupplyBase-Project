@@ -10,10 +10,11 @@ import { formatRupees } from '../../lib/money';
  */
 export default function StickyCartBar({
   modal = false,
+  cart = 'plumbing',
   onViewCart,
 }) {
   const navigate = useNavigate();
-  const { items, count, subtotalPaise } = useCart();
+  const { items, count, subtotalPaise } = useCart(cart);
 
   if (count === 0) return null;
 
@@ -47,7 +48,7 @@ export default function StickyCartBar({
     if (modal) {
       onViewCart?.();
     } else {
-      navigate('/services/plumbing/cart');
+      navigate(`/services/${cart}/cart`);
     }
   }}
 >
