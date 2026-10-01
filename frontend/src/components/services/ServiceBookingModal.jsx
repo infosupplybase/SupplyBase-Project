@@ -140,6 +140,13 @@ export default function ServiceBookingModal({ service, onClose }) {
     });
   }, []);
 
+  // Inside a Painting or POP flow the flow shows its own title bar, so the
+  // pop-up's "Book a service" header gives way to a spacer under the close
+  // button (yash's layout).
+  const hideMainHeader =
+    (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
+    (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow));
+
   return (
     <div
       className="
@@ -182,6 +189,12 @@ export default function ServiceBookingModal({ service, onClose }) {
           max-sm:max-h-[92vh]
           max-sm:rounded-xl
         `}
+        // Painting keeps one steady height while its steps change size.
+        style={
+          service.slug === 'painting'
+            ? { height: '88dvh', maxHeight: '88dvh' }
+            : undefined
+        }
         onClick={(e) => e.stopPropagation()}
       >
         {/* CLOSE BUTTON */}
@@ -189,10 +202,10 @@ export default function ServiceBookingModal({ service, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className="
+          className={`
             !absolute
             !right-5
-            !top-5
+            ${hideMainHeader ? '!top-3' : '!top-5'}
             !z-50
 
             !flex
@@ -214,16 +227,19 @@ export default function ServiceBookingModal({ service, onClose }) {
             transition
 
             hover:!bg-gray-100
-          "
+          `}
           aria-label="Close booking modal"
         >
           ✕
         </button>
 
-        {/* MODAL HEADER — hidden inside a POP flow, which shows its own
-            title and step count */}
+        {/* MODAL HEADER — hidden inside a Painting or POP flow, which shows
+            its own title and step count; a spacer keeps the flow clear of
+            the close button */}
 
-        {!(service.slug === 'pop-ceiling-design' && selectedPopFlow) && (
+        {hideMainHeader ? (
+          <div className="h-14 shrink-0" aria-hidden="true" />
+        ) : (
         <>
         <div className="shrink-0 px-6 pt-6 pr-16">
           <p
@@ -704,14 +720,21 @@ export default function ServiceBookingModal({ service, onClose }) {
                               relative
                               overflow-hidden
                               rounded-xl
+                              border
+                              border-gray-200
+                              bg-white
                               text-left
+                              shadow-sm
+                              transition
+                              hover:-translate-y-1
+                              hover:shadow-lg
                             "
                           >
                             <img loading="lazy" decoding="async"
                               src={space.image}
                               alt={space.name}
                               className="
-                                h-36
+                                h-[170px]
                                 w-full
                                 object-cover
 
@@ -719,8 +742,6 @@ export default function ServiceBookingModal({ service, onClose }) {
                                 duration-300
 
                                 group-hover:scale-105
-
-                                sm:h-44
                               "
                             />
 

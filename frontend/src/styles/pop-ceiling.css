@@ -162,14 +162,13 @@
 
 /* Heading and help link */
 
-/* The pop-up's own header is hidden inside a POP flow, so this bar sits at
-   the top — it stops short of the pop-up's close button (40px, 20px in from
-   the corner) instead of running underneath it. */
+/* The pop-up's own header is hidden inside a POP flow; its spacer keeps
+   this bar below the close button (ServiceBookingModal, hideMainHeader). */
 .pop-modal-scope .pnt-top {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 12px 44px 12px 0;
+  margin: 0 0 12px;
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 12px;

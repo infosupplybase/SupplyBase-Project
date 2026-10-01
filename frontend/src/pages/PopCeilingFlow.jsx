@@ -268,8 +268,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
           <img
             src={flow.intro.image}
             alt={`${flow.title} ceiling design`}
-            // 64px down: below the pop-up's close button, the header being hidden here.
-            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 64 }}
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 8 }}
           />
           <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
             {flow.intro.heading}
