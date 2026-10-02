@@ -6,6 +6,7 @@ import { activeServices } from '../../data/services';
 import useServiceCatalogue, { serviceRoute } from '../../hooks/useServiceCatalogue';
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
+import { useLoginGate } from '../auth/LoginGate';
 
 /**
  * MobileMenu — slide-in navigation drawer for tablet and phone.
@@ -14,6 +15,7 @@ export default function MobileMenu({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { openLogin } = useLoginGate();
 
   const handleLogout = async () => {
     await logout();
@@ -28,17 +30,17 @@ export default function MobileMenu({ open, onClose }) {
     <div className={`mobile-menu ${open ? 'open' : ''}`}>
       <div className="mobile-backdrop" onClick={onClose} />
       <div
-  className="
+        className="
     mobile-panel
     !bg-black/35
     backdrop-blur-[10px]
     !border-l-white/15
     !shadow-[-12px_0_35px_rgba(0,0,0,0.25)]
   "
-  role="dialog"
-  aria-modal="true"
-  aria-label="Menu"
->
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+      >
         <div className="mobile-head">
           <Link to="/" onClick={onClose}>
             <img loading="lazy" decoding="async" src="/assets/brand/logo.webp" alt={company.name} />
@@ -92,9 +94,16 @@ export default function MobileMenu({ open, onClose }) {
               </button>
             </>
           ) : (
-            <NavLink to="/login" className="mobile-link" onClick={onClose}>
+            <button
+              type="button"
+              className="mobile-link"
+              onClick={() => {
+                onClose();
+                openLogin();
+              }}
+            >
               LOGIN
-            </NavLink>
+            </button>
           )}
         </nav>
 
