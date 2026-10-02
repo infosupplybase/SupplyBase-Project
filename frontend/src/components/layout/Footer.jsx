@@ -17,6 +17,7 @@ import {
   mailtoHref,
   whatsappHref,
 } from '../../lib/contact';
+import { useLoginGate } from '../auth/LoginGate';
 
 const WHATSAPP_MESSAGE =
   'Hello Supplybase, I would like to discuss my project.';
@@ -108,6 +109,7 @@ function FooterColumn({
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const { openLogin } = useLoginGate();
 
   /*
    * Services come from the live catalogue, the same source as the home
@@ -187,11 +189,19 @@ export default function Footer() {
 
                 {quickLinks.map((link) => (
                   <li key={link.path}>
-
-                    <Link to={link.path}>
-                      {link.label}
-                    </Link>
-
+                    {link.path === '/login' ? (
+                      <button
+                        type="button"
+                        onClick={openLogin}
+                        className="!p-0 !m-0 !border-0 !bg-transparent !font-inherit !text-[#5f6368] hover:!text-[#111] cursor-pointer transition-colors"
+                      >
+                        {link.label}
+                      </button>
+                    ) : (
+                      <Link to={link.path}>
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
 
@@ -285,7 +295,7 @@ export default function Footer() {
               </li>
 
 
-             
+
 
             </ul>
 
