@@ -5,6 +5,8 @@ import Icon from '../components/ui/Icon';
 import SlotPicker from '../components/booking/SlotPicker';
 import api, { friendlyError } from '../lib/api';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 // The same form and checks as every other booking flow.
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
@@ -39,6 +41,7 @@ export default function InteriorBooking({
 const spaceSlug = propSpaceSlug || params.spaceSlug;
 const designSlug = propDesignSlug || params.designSlug;
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const space = spaceSlug ? getSpaceBySlug(spaceSlug) : null;
   const design = spaceSlug && designSlug ? getDesignBySlug(spaceSlug, designSlug) : null;
 
@@ -90,6 +93,8 @@ const designSlug = propDesignSlug || params.designSlug;
       setStep(0);
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(form))) return;
 
     const selectedLabel = design ? `${space.name} – ${design.name}` : space ? space.name : 'Not selected from the catalogue';
     const notesParts = [`Selected design: ${selectedLabel}.`];
@@ -112,6 +117,8 @@ const designSlug = propDesignSlug || params.designSlug;
         pincode: String(form.pincode || '').trim() || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('ib', result.bookingNumber, form.phone);
 setStep(2, { push: false });
 
 if (modal) {

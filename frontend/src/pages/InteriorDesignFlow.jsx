@@ -12,6 +12,8 @@ import {
 } from '../data/interiorDesignContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -79,6 +81,7 @@ export default function InteriorDesignFlow({
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -204,6 +207,8 @@ const jumpToStage = (s) => {
         parts.push(finalRequirements);
       }
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     console.log('🔥 FINAL parts:', parts);
     console.log('🔥 Step 3 - about to call createBooking');
@@ -222,6 +227,8 @@ const jumpToStage = (s) => {
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('id', result.bookingNumber, details.phone);
       setStage(CONFIRM);
 
     if (modal) {

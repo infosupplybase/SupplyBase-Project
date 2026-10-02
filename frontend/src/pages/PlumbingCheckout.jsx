@@ -9,6 +9,8 @@ import api, { friendlyError } from '../lib/api';
 import { formatRupees } from '../lib/money';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
@@ -94,6 +96,7 @@ export default function PlumbingCheckout({
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
@@ -162,6 +165,8 @@ export default function PlumbingCheckout({
     const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setError('');
@@ -180,6 +185,8 @@ export default function PlumbingCheckout({
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos(trade === 'plumbing' ? 'pco' : 'eco', result.bookingNumber, details.phone);
       clear();
 
       if (modal) {

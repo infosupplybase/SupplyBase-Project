@@ -5,6 +5,7 @@ import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { LocationProvider } from './context/LocationContext';
 import { CartProvider } from './context/CartContext';
+import { LoginGateProvider } from './components/auth/LoginGate';
 import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -16,11 +17,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       }}
     >
       <AuthProvider>
-        <LocationProvider>
-          <CartProvider>
-            <App />
-          </CartProvider>
-        </LocationProvider>
+        <LoginGateProvider>
+          <LocationProvider>
+            <CartProvider>
+              <App />
+            </CartProvider>
+          </LocationProvider>
+        </LoginGateProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

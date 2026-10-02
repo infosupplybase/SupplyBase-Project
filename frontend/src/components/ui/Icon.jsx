@@ -254,6 +254,13 @@ const paths = {
 
   /* -------------------------------------------------------------- ui */
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  'log-out': (
+    <>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </>
+  ),
   close: <path d="m6 6 12 12M18 6 6 18" />,
   plus: <path d="M12 5v14M5 12h14" />,
   check: <path d="m5 12.5 5 5 9-11" />,
@@ -514,6 +521,34 @@ const paths = {
       <path d="M4 21V9l8-5 8 5v12" />
       <path d="M4 9h16" />
       <path d="M8 21v-5h8v5" />
+    </>
+  ),
+  'wp-shower': (
+    <>
+      <path d="M6 13V8a6 6 0 0 1 12 0v5" />
+      <path d="M4 13h16" />
+      <path d="M7 16v1M11 17v1M15 16v1M19 17v1" />
+    </>
+  ),
+  'wp-brick-wall': (
+    <>
+      <path d="M3 4h18v16H3z" />
+      <path d="M3 9h18M3 15h18M9 4v5M16 4v5M6 9v6M14 9v6M10 15v5M18 15v5" />
+    </>
+  ),
+  'wp-exterior-door': (
+    <>
+      <rect x="5" y="3" width="14" height="18" rx="1" />
+      <path d="M8 21V6l8-1.5V21M14 13h.01" />
+    </>
+  ),
+  'wp-basement': (
+    <path d="M4 20v-5h5v-5h5V5h6v15z" />
+  ),
+  'wp-water-tank': (
+    <>
+      <path d="M5 7c0-1.1 3.1-2 7-2s7 .9 7 2v11c0 1.2-3.1 2-7 2s-7-.8-7-2z" />
+      <path d="M5 8h14M6 12h12M6 16h12" />
     </>
   ),
   tank: (
