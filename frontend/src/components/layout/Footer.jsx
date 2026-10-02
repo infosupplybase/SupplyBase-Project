@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import PartnerAuthModal from '../auth/PartnerAuthModal';
 import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import {
@@ -110,6 +111,7 @@ function FooterColumn({
 export default function Footer() {
   const year = new Date().getFullYear();
   const { openLogin } = useLoginGate();
+  const [partnerAuthOpen, setPartnerAuthOpen] = useState(false);
 
   /*
    * Services come from the live catalogue, the same source as the home
@@ -430,16 +432,15 @@ export default function Footer() {
                 app's address is configured (VITE_PARTNERS_URL). */}
             {partnersUrl && (
               <>
-                <span aria-hidden="true">
-                  |
-                </span>
+                <span aria-hidden="true">|</span>
 
-                <a
-                  href={`${partnersUrl}/login`}
+                <button
+                  type="button"
                   className="ft-legal-btn"
+                  onClick={() => setPartnerAuthOpen(true)}
                 >
                   Partner Login
-                </a>
+                </button>
               </>
             )}
 
@@ -1006,7 +1007,11 @@ export default function Footer() {
         )}
 
       </div>
-
+      <PartnerAuthModal
+        open={partnerAuthOpen}
+        onClose={() => setPartnerAuthOpen(false)}
+      />
     </footer>
+
   );
 }

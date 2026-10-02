@@ -23,6 +23,8 @@ import api from '../lib/api';
 export default function Login() {
   const { user, login, notice: signedOutNotice, clearNotice } = useAuth();
   const navigate = useNavigate();
+  const isEmbedded =
+    new URLSearchParams(window.location.search).get('embed') === '1';
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -82,11 +84,27 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-screen">
-      <div className="auth-glow" aria-hidden="true" />
+    <div
+  className={isEmbedded ? 'auth-screen auth-screen-embedded' : 'auth-screen'}
+>
+      {!isEmbedded && (
+        <div className="auth-glow" aria-hidden="true" />
+      )}
 
-      <div className="auth-card-wrap">
-        <div className="auth-card">
+      <div
+        className={
+          isEmbedded
+            ? 'auth-card-wrap !bg-none !bg-transparent !shadow-none'
+            : 'auth-card-wrap'
+        }
+      >
+        <div
+          className={
+            isEmbedded
+              ? 'auth-card !bg-[#111113] !backdrop-blur-none'
+              : 'auth-card'
+          }
+        >
           <a href={SITE_URL} className="auth-logo">
             <img src="/assets/brand/logo.png" alt={`${COMPANY_NAME} logo`} />
           </a>
@@ -192,8 +210,11 @@ export default function Login() {
           </form>
 
           <p className="auth-switch">
-            New to Supplybase Partners? <Link to="/join">Apply to join</Link>
-          </p>
+  New to Supplybase Partners?{' '}
+  <Link to={isEmbedded ? '/join?embed=1' : '/join'}>
+    Apply to join
+  </Link>
+</p>
           <p className="auth-switch">
             Looking to book a service? <a href={`${SITE_URL}/login`}>Customer login</a>
           </p>

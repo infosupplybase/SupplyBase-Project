@@ -95,6 +95,8 @@ function Field({ id, label, icon, required, hint, error, children }) {
 export default function Join() {
   const { user, applyAsPartner } = useAuth();
   const navigate = useNavigate();
+    const isEmbedded =
+    new URLSearchParams(window.location.search).get('embed') === '1';
 
   const [form, setForm] = useState(emptyForm);
   const [trades, setTrades] = useState(null);
@@ -183,8 +185,12 @@ export default function Join() {
   };
 
   return (
-    <div className="auth-screen">
+  <div
+    className={isEmbedded ? 'auth-screen auth-screen-embedded' : 'auth-screen'}
+  >
+    {!isEmbedded && (
       <div className="auth-glow" aria-hidden="true" />
+    )}
 
       <div className="auth-card-wrap">
         <div className="auth-card auth-card-tall">
@@ -390,8 +396,11 @@ export default function Join() {
           </form>
 
           <p className="auth-switch">
-            Already applied? <Link to="/login">Partner Login</Link>
-          </p>
+  Already applied?{' '}
+  <Link to={isEmbedded ? '/login?embed=1' : '/login'}>
+    Partner Login
+  </Link>
+</p>
         </div>
       </div>
     </div>

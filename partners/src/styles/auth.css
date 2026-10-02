@@ -439,3 +439,42 @@
 .auth-card .login-meta .checkbox-row {
   min-height: 44px;
 }
+/* Partner login embedded inside main SupplyBase website */
+.auth-screen.auth-screen-embedded {
+  width: 460px;
+  max-width: 100%;
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+  overflow: visible;
+}
+html:has(.auth-screen-embedded),
+body:has(.auth-screen-embedded),
+#root:has(.auth-screen-embedded) {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+body:has(.auth-screen-embedded){
+  margin: 0;
+}
+.auth-screen-embedded .auth-card-wrap {
+  background: transparent;
+  box-shadow: none;
+}
+/* Hide scrollbar only when partner auth is inside main website modal */
+html:has(.auth-screen-embedded),
+body:has(.auth-screen-embedded),
+.auth-screen-embedded {
+  scrollbar-width: none;
+}
+
+html:has(.auth-screen-embedded)::-webkit-scrollbar,
+body:has(.auth-screen-embedded)::-webkit-scrollbar,
+.auth-screen-embedded::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar inside embedded Partner registration card */
+.auth-screen-embedded .auth-card-tall {
+  max-height: none;
+  overflow: visible;
+}
