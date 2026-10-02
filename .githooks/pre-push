@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Refuses a push while the code being pushed contains merge-conflict
+# markers — the second line of defence after pre-commit (a commit made with
+# --no-verify, or before the hooks were installed, is still caught here).
+
+markers='^(<<<<<<< |>>>>>>> |=======$)'
+zero=0000000000000000000000000000000000000000
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue   # deleting a branch
+
+  found=$(git grep -nE "$markers" "$local_sha" -- . ':(exclude)*.md' 2>/dev/null)
+
+  if [ -n "$found" ]; then
+    echo ""
+    echo "PUSH STOPPED: $local_ref still has merge-conflict markers:"
+    echo ""
+    echo "$found"
+    echo ""
+    echo "Fix those files (keep the right code, delete the <<<<<<< ======= >>>>>>>"
+    echo "lines), commit, and push again."
+    echo ""
+    exit 1
+  fi
+done
+
+exit 0

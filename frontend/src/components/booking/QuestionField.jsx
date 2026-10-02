@@ -8,6 +8,7 @@ import {
   problemImages,
   problemLocationImages,
 } from '../../data/waterproofingImages';
+import { wpCategories } from '../../data/waterproofingContent';
 
 import {
   popHomeTypeImages,
@@ -27,12 +28,42 @@ import {
   electricianRequirementImages,
 } from '../../data/electricianImages';
 
+import {
+  architecturalImages,
+  architecturalPropertyImages,
+  architecturalProjectStatusImages,
+} from '../../data/architecturalImages';
+
+import {
+  civilConstructionImages,
+  civilConstructionPropertyImages,
+  civilConstructionProjectStageImages,
+} from '../../data/civilConstructionImages';
+
+import {
+  furnitureImages,
+  furniturePropertyImages,
+  furnitureMaterialImages,
+} from '../../data/furnitureImages';
+
+import {
+  fabricationImages,
+  fabricationPropertyImages,
+  fabricationMaterialImages,
+} from '../../data/fabricationImages';
+
+import {
+  finishingImages,
+  finishingPropertyImages,
+} from '../../data/finishingImages';
+
 export default function QuestionField({
   question,
   value,
   onChange,
   error,
   serviceSlug,
+  onWaterproofingServiceSelect,
 }) {
   const {
     key,
@@ -87,6 +118,10 @@ export default function QuestionField({
     }
 
     onChange(optionValue);
+    if (key === 'wp_service_category') {
+      const option = options?.find((item) => item.value === optionValue);
+      if (option?.route) onWaterproofingServiceSelect?.(option.route);
+    }
   };
 
   /**
@@ -144,6 +179,88 @@ export default function QuestionField({
    */
 
   const getOptionImage = (option) => {
+    /**
+     * ========================================================
+     * OTHER SERVICES — architectural design, civil construction,
+     * furniture, fabrication, finishing. Each has a property-type
+     * set, then either a stage set (architectural / civil) or a
+     * material set (furniture / fabrication), then a service set.
+     * ========================================================
+     */
+
+    const isPropertyKey =
+      key === 'property_type' ||
+      key === 'home_type' ||
+      key === 'bhk';
+
+    const isStageKey =
+      key === 'project_stage' ||
+      key === 'construction_stage' ||
+      key === 'construction_status' ||
+      key === 'project_status';
+
+    const isMaterialKey =
+      key === 'material_preference' ||
+      key === 'material_type' ||
+      key === 'preferred_material' ||
+      key === 'material';
+
+    if (serviceSlug === 'architectural-design') {
+      if (isPropertyKey) {
+        return findImage(architecturalPropertyImages, option);
+      }
+
+      if (isStageKey) {
+        return findImage(architecturalProjectStatusImages, option);
+      }
+
+      return findImage(architecturalImages, option);
+    }
+
+    if (serviceSlug === 'civil-construction') {
+      if (isPropertyKey) {
+        return findImage(civilConstructionPropertyImages, option);
+      }
+
+      if (isStageKey) {
+        return findImage(civilConstructionProjectStageImages, option);
+      }
+
+      return findImage(civilConstructionImages, option);
+    }
+
+    if (serviceSlug === 'furniture') {
+      if (isPropertyKey) {
+        return findImage(furniturePropertyImages, option);
+      }
+
+      if (isMaterialKey) {
+        return findImage(furnitureMaterialImages, option);
+      }
+
+      return findImage(furnitureImages, option);
+    }
+
+    if (serviceSlug === 'fabrication') {
+      if (isPropertyKey) {
+        return findImage(fabricationPropertyImages, option);
+      }
+
+      if (isMaterialKey) {
+        return findImage(fabricationMaterialImages, option);
+      }
+
+      return findImage(fabricationImages, option);
+    }
+
+    if (serviceSlug === 'finishing') {
+      if (isPropertyKey) {
+        return findImage(finishingPropertyImages, option);
+      }
+
+      return findImage(finishingImages, option);
+    }
+
     /**
      * ========================================================
      * WATERPROOFING
@@ -324,6 +441,25 @@ export default function QuestionField({
     return undefined;
   };
 
+  const isWaterproofingServices =
+    (serviceSlug === 'waterproofing' || serviceSlug === 'water-proofing') &&
+    key === 'wp_service_category';
+
+  const getOptionIcon = (option) => {
+    const category = wpCategories.find((item) =>
+      item.name === option.label || item.name === option.value
+    );
+    const iconsByCategory = {
+      terrace: 'terrace',
+      bathroom: 'wp-shower',
+      'interior-wall': 'wp-brick-wall',
+      'exterior-wall': 'wp-exterior-door',
+      basement: 'wp-basement',
+      'water-tank': 'wp-water-tank',
+    };
+    return iconsByCategory[category?.slug] || option.icon || 'tools';
+  };
+
   /**
    * ==========================================================
    * SIMPLE RADIO QUESTIONS
@@ -477,18 +613,17 @@ export default function QuestionField({
                  TILE / CARD OPTIONS
               ================================================== */
 
-              <div className="tile-grid">
+              <div className={`tile-grid ${isWaterproofingServices ? 'waterproofing-service-grid' : ''}`}>
 
                 {group.items.map(
                   (option, optionIndex) => {
 
-                    const image =
-                      getOptionImage(option);
+                    const image = isWaterproofingServices ? undefined : getOptionImage(option);
 
                     return (
                       <label
                         key={`${option.value}-${optionIndex}`}
-                        className={`tile ${
+                        className={`tile ${isWaterproofingServices ? 'waterproofing-service-tile' : ''} ${
                           key === 'property_type'
                             ? 'property-tile'
                             : key === 'problem_type'
@@ -522,7 +657,7 @@ export default function QuestionField({
                         {/* IMAGE */}
 
                         <span
-                          className="tile-image"
+                          className={`tile-image ${isWaterproofingServices ? 'waterproofing-service-icon' : ''}`}
                           aria-hidden="true"
                         >
 
@@ -552,11 +687,8 @@ export default function QuestionField({
                             <span className="tile-icon-fallback">
 
                               <Icon
-                                name={
-                                  option.icon ||
-                                  'tools'
-                                }
-                                size={17}
+                                name={isWaterproofingServices ? getOptionIcon(option) : option.icon || 'tools'}
+                                size={isWaterproofingServices ? 42 : 17}
                                 strokeWidth={1.7}
                               />
 

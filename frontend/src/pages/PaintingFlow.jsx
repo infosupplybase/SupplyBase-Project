@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import StepIndicator from '../components/painting/StepIndicator';
@@ -12,11 +13,17 @@ import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import usePaintingCatalogue from '../hooks/usePaintingCatalogue';
 import { paintingFlows } from '../data/paintingContent';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { formatRupees } from '../lib/money';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -42,18 +49,35 @@ export default function PaintingFlow({
   const { category, loading, error: loadError, optionsFor, productsByTier, coloursByTab } =
     usePaintingCatalogue();
 
-  const [stage, setStage] = useState(1);
-  const [answers, setAnswers] = useState({});
-  const [details, setDetails] = useState(user
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:paint:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [choiceError, setChoiceError] = useState('');
+
+  useEffect(() => {
+    setChoiceError('');
+  }, [answers, stage]);
+
+  useEffect(() => {
+    if (!choiceError) return;
+    const timer = window.setTimeout(() => setChoiceError(''), 4000);
+    return () => window.clearTimeout(timer);
+  }, [choiceError]);
 
   const configSteps = useMemo(() => flow?.steps || [], [flow]);
   const DETAILS = 1 + configSteps.length;
@@ -146,25 +170,75 @@ export default function PaintingFlow({
 };
 
   const validateStep = (step) => {
-    if (step.type === 'option') {
-      const question = optionsFor(step.questionKey);
-      const required = question.length > 0; // catalogue-driven; area/home-type are required in V15
-      if (required && !answers[step.questionKey]) {
-        setErrors({ [step.questionKey]: 'Please choose an option' });
-        return false;
-      }
-    }
-    if (step.type === 'brand' && !answers.paint_brand) {
-      setErrors({ paint_brand: 'Please choose a brand' });
+    const reject = (key, message) => {
+      setErrors({ [key]: message });
+      if (modal) setChoiceError(message);
       return false;
-    }
-    if (step.type === 'addon' && step.required) {
-      const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
-      if (chosen.length === 0) {
-        setErrors({ [step.questionKey]: 'Please choose at least one' });
-        return false;
+    };
+
+    if (step.type === 'option') {
+      const options = optionsFor(step.questionKey);
+      const valid = options.some(
+        (option) => option.value === answers[step.questionKey]
+      );
+
+      if (options.length > 0 && !valid) {
+        return reject(
+          step.questionKey,
+          'Choose an option to continue.'
+        );
       }
     }
+
+    if (step.type === 'brand') {
+      const valid = optionsFor('paint_brand').some(
+        (option) => option.value === answers.paint_brand
+      );
+
+      if (!valid) {
+        return reject(
+          'paint_brand',
+          'Choose a paint brand to continue.'
+        );
+      }
+    }
+
+    if (step.type === 'product') {
+      const products = answers.paint_brand === 'asian-paints'
+        ? [...productsByTier(step.questionKey).values()].flat()
+        : [];
+
+      const valid = products.some(
+        (product) => product.value === answers[step.questionKey]
+      );
+
+      if (products.length > 0 && !valid) {
+        return reject(
+          step.questionKey,
+          'Choose a paint product to continue.'
+        );
+      }
+    }
+
+    if (step.type === 'addon' && step.required) {
+      const chosen = Array.isArray(answers[step.questionKey])
+        ? answers[step.questionKey]
+        : [];
+
+      const valid = optionsFor(step.questionKey).some(
+        (option) => chosen.includes(option.value)
+      );
+
+      if (!valid) {
+        return reject(
+          step.questionKey,
+          'Choose at least one service to continue.'
+        );
+      }
+    }
+
+    setErrors({});
+    setChoiceError('');
     return true;
   };
 
@@ -196,7 +270,7 @@ export default function PaintingFlow({
     return;
   }
 
-  setStage((s) => Math.max(s - 1, 1));
+  formBack(() => setStage((s) => Math.max(s - 1, 1)));
 
   if (modal) {
     onStepChange?.();
@@ -206,7 +280,7 @@ export default function PaintingFlow({
 };
 
   const canLeaveDetails = () => {
-    const next = validateDetails(details);
+    const next = validateDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -218,6 +292,8 @@ export default function PaintingFlow({
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');
@@ -258,11 +334,13 @@ export default function PaintingFlow({
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pnt', result.bookingNumber, details.phone);
 setStage(CONFIRM);
 
 if (modal) {
@@ -282,7 +360,7 @@ if (modal) {
     return (
       <div className="pnt-section">
         <div className="container container-narrow">
-          <p className="question-hint">Loading services…</p>
+          <p className="question-hint" role="status">Loading painting options...</p>
         </div>
       </div>
     );
@@ -329,7 +407,7 @@ if (modal) {
 
               <dl className="confirmed-panel">
                 <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
-                <div><dt>Date &amp; Time</dt><dd>{receipt.date}, {receipt.time}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
                 <div><dt>Service</dt><dd>{flow.name}</dd></div>
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
@@ -412,10 +490,10 @@ if (modal) {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -436,7 +514,7 @@ if (modal) {
   : 'btn btn-primary'
   }
 >CONTINUE <Icon name="arrow-right" size={17} /></button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -474,10 +552,10 @@ if (modal) {
                   <Icon name="info" size={18} /><span>{submitError}</span>
                 </div>
               )}
-              <div
+              <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 !bg-transparent !p-0 !pb-0 !shadow-none md:!flex md:!items-center md:!justify-end md:!gap-3'
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
       : 'wizard-foot'
   }
 >
@@ -501,7 +579,7 @@ if (modal) {
 >
                   {busy ? 'BOOKING…' : 'BOOK NOW'} <Icon name="arrow-right" size={17} />
                 </button>
-              </div>
+              </ModalFoot>
             </div>
           </form>
         </div>
@@ -538,12 +616,31 @@ if (modal) {
   }
 >
           {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
-          {step.notSureNote && (
-            <p className="question-hint" style={{ marginTop: -8, marginBottom: 16 }}>
-              Pick the one that matters most — not sure? Our expert will help you
-              identify the best walls during the home visit.
-            </p>
+
+          {(step.type === 'colour' ||
+            (step.type === 'addon' && !step.required)) && (
+            <div
+              className="painting-optional-note"
+              style={{
+                marginBottom: 18,
+                padding: '12px 14px',
+                border: '1px solid #eee3c4',
+                borderRadius: 10,
+                background: '#fffaf0',
+                color: '#5e543e',
+                fontSize: 13,
+                lineHeight: 1.6,
+              }}
+            >
+              <strong style={{ display: 'block', marginBottom: 4 }}>
+                Optional
+              </strong>
+              {step.type === 'colour'
+                ? 'Have a preferred colour? Select it here. You can also continue without choosing and discuss colours with our team during your home visit.'
+                : 'Add extra services if you need them. If you do not need any add-ons, simply click Continue.'}
+            </div>
           )}
+
 
           {step.type === 'option' && (
             <>
@@ -564,14 +661,14 @@ if (modal) {
                   <Icon name="layers" size={16} /> Compare Packages <Icon name="chevron-right" size={15} />
                 </button>
               )}
-              {errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
             </>
           )}
 
           {step.type === 'brand' && (
             <>
               <BrandPicker options={optionsFor('paint_brand')} value={answers.paint_brand} onSelect={setAnswer('paint_brand')} />
-              {errors.paint_brand && <span className="field-error">{errors.paint_brand}</span>}
+              {!modal && errors.paint_brand && <span className="field-error">{errors.paint_brand}</span>}
             </>
           )}
 
@@ -600,7 +697,7 @@ if (modal) {
                 selected={Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : []}
                 onToggle={toggleMulti(step.questionKey)}
               />
-              {errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
             </>
           )}
 
@@ -613,10 +710,10 @@ if (modal) {
             />
           )}
 
-          <div
+          <ModalFoot
   className={
     modal
-      ? 'pnt-step-actions !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
       : 'pnt-step-actions'
   }
 >
@@ -632,9 +729,49 @@ if (modal) {
 } onClick={goNext}>
               {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
             </button>
-          </div>
+          </ModalFoot>
         </div>
       </div>
+
+      {modal && choiceError && createPortal(
+        <div
+          className="pop-choice-toast painting-choice-toast"
+          role="alert"
+          style={{
+            position: 'fixed',
+            top: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 3000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            width: 'min(420px, calc(100vw - 32px))',
+            padding: '13px 16px',
+            border: '1px solid #e7ca7c',
+            borderRadius: 12,
+            background: '#fff9e9',
+            color: '#78580d',
+            boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
+          }}
+        >
+          <Icon name="info" size={20} />
+          <span style={{ flex: 1 }}>{choiceError}</span>
+          <button
+            type="button"
+            onClick={() => setChoiceError('')}
+            aria-label="Dismiss message"
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: 'inherit',
+              fontSize: 23,
+              cursor: 'pointer',
+            }}
+          >{'\u00D7'}</button>
+        </div>,
+        document.body
+      )}
 
       {compareOpen && (
         <div className="pnt-modal-overlay" onClick={() => setCompareOpen(false)}>

@@ -40,8 +40,8 @@
  *   the delivery report).
  */
 
-export const WP_HERO_IMAGE = '/assets/waterproofing/hero/modern-house.jpg';
-export const WP_BATHROOM_IMAGE = '/assets/waterproofing/bathroom/bathroom.jpg';
+export const WP_HERO_IMAGE = '/assets/waterproofing/hero/modern-house.webp';
+export const WP_BATHROOM_IMAGE = '/assets/waterproofing/bathroom/bathroom.webp';
 
 export const wpOverviewIntro = {
   eyebrow: 'WATERPROOFING',
@@ -57,9 +57,9 @@ export const wpTrustPoints = [
 ];
 
 export const BRAND_LOGO = {
-  'dr-fixit': '/assets/materials/dr-fixit.png',
-  'asian-paints': '/assets/materials/asian-paints.png',
-  berger: '/assets/materials/berger-paints.jpg',
+  'dr-fixit': '/assets/materials/dr-fixit.webp',
+  'asian-paints': '/assets/materials/asian-paints.webp',
+  berger: '/assets/materials/berger-paints.webp',
 };
 
 /** The six category-page rows, in the reference's own order. Terrace,
@@ -80,11 +80,12 @@ export const wpCategories = [
     their subservice preselected (see App.jsx / ServiceBooking.jsx). */
 export const wpBathroomServices = [
   { slug: 'bathroom-floor', name: 'Floor Waterproofing', tagline: 'Protects bathroom floors from seepage.', icon: 'droplet', route: '/services/waterproofing/bathroom-floor' },
-  { slug: 'wall', name: 'Wall Waterproofing', tagline: 'Prevents water from penetrating bathroom walls.', icon: 'wall-stain', route: '/booking/waterproofing?preselect=Bathroom%20Wall%20Waterproofing' },
-  { slug: 'corner-joint', name: 'Corner & Joint Sealing', tagline: 'Seals joints, cracks and pipe openings.', icon: 'grout', route: '/booking/waterproofing?preselect=Bathroom%20Corner%20%26%20Joint%20Sealing' },
-  { slug: 'shower-area', name: 'Shower Area Waterproofing', tagline: 'Extra protection for wet zones.', icon: 'droplet', route: '/booking/waterproofing?preselect=Bathroom%20Shower%20Area%20Waterproofing' },
-  { slug: 'pipeline-fixture', name: 'Pipeline & Fixture Sealing', tagline: 'Seals around pipes and fittings.', icon: 'wrench', route: '/booking/waterproofing?preselect=Bathroom%20Pipeline%20%26%20Fixture%20Sealing' },
-  { slug: 'tile-resealing', name: 'Tile Re-sealing', tagline: 'Protects existing tiles and grout lines.', icon: 'layers', route: '/booking/waterproofing?preselect=Bathroom%20Tile%20Re-sealing' },
+  { slug: 'wall', name: 'Wall Waterproofing', tagline: 'Prevents water from penetrating bathroom walls.', icon: 'wall-stain', route: '/booking/waterproofing?preselect=Interior%20Waterproofing' },
+  // Not offered for now — commented out, not deleted, so they can come back.
+  // { slug: 'corner-joint', name: 'Corner & Joint Sealing', tagline: 'Seals joints, cracks and pipe openings.', icon: 'grout', route: '/booking/waterproofing?preselect=Bathroom%20Corner%20%26%20Joint%20Sealing' },
+  // { slug: 'shower-area', name: 'Shower Area Waterproofing', tagline: 'Extra protection for wet zones.', icon: 'droplet', route: '/booking/waterproofing?preselect=Bathroom%20Shower%20Area%20Waterproofing' },
+  // { slug: 'pipeline-fixture', name: 'Pipeline & Fixture Sealing', tagline: 'Seals around pipes and fittings.', icon: 'wrench', route: '/booking/waterproofing?preselect=Bathroom%20Pipeline%20%26%20Fixture%20Sealing' },
+  // { slug: 'tile-resealing', name: 'Tile Re-sealing', tagline: 'Protects existing tiles and grout lines.', icon: 'layers', route: '/booking/waterproofing?preselect=Bathroom%20Tile%20Re-sealing' },
 ];
 
 const FEE_NOTE = 'Rates are indicative and may vary based on site condition, area and material selection. For projects above ₹5,000, a ₹99 home visit fee applies — adjusted in your final bill if you proceed.';
@@ -185,7 +186,7 @@ export const wpFlows = {
     title: 'Interior Wall Waterproofing',
     heroTagline: 'Stop dampness. Protect your walls. Enjoy a healthier home.',
     intro: {
-      image: '/assets/projects/modern-interior.jpeg',
+      image: '/assets/projects/modern-interior.webp',
       heading: 'Stop rising and lateral dampness before it damages your walls and paint.',
       text: 'Ideal for bedrooms, living rooms, kitchens — any interior wall prone to dampness.',
       points: [

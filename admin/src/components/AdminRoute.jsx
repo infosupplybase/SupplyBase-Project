@@ -22,8 +22,9 @@ export default function AdminRoute() {
 
   if (loading) {
     return (
-      <div className="admin-loading">
-        <p style={{ color: 'var(--grey-500)' }}>Checking your sign-in…</p>
+      <div className="admin-loading" role="status">
+        <span className="admin-spinner" aria-hidden="true" />
+        <p>Checking your sign-in…</p>
       </div>
     );
   }

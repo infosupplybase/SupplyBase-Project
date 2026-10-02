@@ -7,28 +7,19 @@ import api, { friendlyError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { contact } from '../data/siteConfig';
 import { electricianServiceIntros, ELECTRICIAN_STAGES } from '../data/electricianServices';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 
 const TYPE = 0;
 const DETAILS = 1;
 const ADDONS = 2;
 const SCHEDULE = 3;
 const CONFIRM = 4;
-
-const emptyDetails = { name: '', phone: '', whatsapp: '', email: '', address: '', city: '', pincode: '' };
-
-/**
- * Only strips a country-code prefix when the digit count actually implies
- * one is there (12 digits = 91 + a 10-digit number, 11 = a leading 0) — a
- * blind `.replace(/^91/, '')` on any input, which is what the original
- * booking wizard's version of this check does, incorrectly mangles a real
- * 10-digit number that happens to start with 91 (e.g. 9123456780).
- */
-const isValidPhone = (v) => {
-  let digits = String(v || '').replace(/\D/g, '');
-  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
-  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
-  return /^[6-9]\d{9}$/.test(digits);
-};
 
 /** ₹1,234.50 -> "1,234.50", dropping a trailing ".00" for a cleaner read. */
 function formatMoney(n) {
@@ -54,21 +45,27 @@ export default function ElectricianService() {
   const { user } = useAuth();
   const intro = electricianServiceIntros[subSlug];
 
-  const [started, setStarted] = useState(false);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:elec:${subSlug}`;
+  const formBack = useFormBack();
+  const [started, setStarted] = useHistoryState(`${scope}:started`, false, { push: true });
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [stage, setStage] = useState(TYPE);
-  const [answers, setAnswers] = useState({});
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, TYPE, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const [pendingFiles, setPendingFiles] = useState({});
-  const [details, setDetails] = useState(emptyDetails);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [uploadState, setUploadState] = useState({}); // key -> 'uploading' | 'done' | 'error'
   const submittedRef = useRef(false);
 
@@ -81,14 +78,11 @@ export default function ElectricianService() {
       .then((result) => {
         if (cancelled) return;
         setForm(result);
-        setStarted(false);
-        setStage(TYPE);
-        setAnswers({});
+        // Step and answers are kept per sub-service in the browser's
+        // history, so they are not reset here: a refresh restores them.
+        // Chosen photos are real files and cannot be kept across a reload.
         setPendingFiles({});
-        setDate('');
-        setTime('');
         setErrors({});
-        setReceipt(null);
         submittedRef.current = false;
       })
       .catch((err) => {
@@ -209,22 +203,9 @@ export default function ElectricianService() {
     return Object.keys(next).length === 0;
   };
 
+  // The shared checks (lib/bookingDetails), which also know about a map pin.
   const validateDetails = () => {
-    const next = {};
-    if (!details.name.trim()) next.name = 'Please enter your name';
-    if (!details.phone.trim()) next.phone = 'Please enter your mobile number';
-    else if (!isValidPhone(details.phone)) next.phone = 'Enter a 10-digit mobile number';
-    if (details.whatsapp.trim() && !isValidPhone(details.whatsapp)) {
-      next.whatsapp = 'Enter a 10-digit number, or leave it blank';
-    }
-    if (details.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())) {
-      next.email = 'That email address does not look right';
-    }
-    if (!details.address.trim()) next.address = 'Please enter your address';
-    if (!details.city.trim()) next.city = 'Please enter your city';
-    if (details.pincode.trim() && !/^[1-9][0-9]{5}$/.test(details.pincode.trim())) {
-      next.pincode = 'Enter a 6-digit pincode';
-    }
+    const next = checkDetails(details, pickedLocation);
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -252,7 +233,7 @@ export default function ElectricianService() {
 
   const goBack = () => {
     setError('');
-    setStage((s) => Math.max(s - 1, TYPE));
+    formBack(() => setStage((s) => Math.max(s - 1, TYPE)));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -278,6 +259,8 @@ export default function ElectricianService() {
     if (!validateDetails()) return;
     // A slow tap-happy double submit must not create two bookings.
     if (submittedRef.current || busy) return;
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
     submittedRef.current = true;
 
     setBusy(true);
@@ -304,11 +287,13 @@ export default function ElectricianService() {
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('ec', result.bookingNumber, details.phone);
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       const hasFiles = Object.values(pendingFiles).some((files) => files.length > 0);
@@ -389,13 +374,30 @@ export default function ElectricianService() {
     return <ElectricianConfirmation receipt={receipt} details={details} pendingFiles={pendingFiles} uploadState={uploadState} />;
   }
 
+  // Restored mid-way by a refresh: the step is known straight away, the
+  // questions arrive a moment later.
+  if (!form) {
+    return (
+      <div className="container container-narrow" style={{ padding: '120px 0 60px' }}>
+        {loadError ? (
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{loadError}</span>
+          </div>
+        ) : (
+          <p className="question-hint">Loading your booking…</p>
+        )}
+      </div>
+    );
+  }
+
   const { category } = form;
 
   return (
     <div className="wizard-shell">
       <div className="wizard-container">
         <div className="wizard-top">
-          <button type="button" className="wizard-back" onClick={stage === TYPE ? () => setStarted(false) : goBack} aria-label="Go back">
+          <button type="button" className="wizard-back" onClick={stage === TYPE ? () => formBack(() => setStarted(false)) : goBack} aria-label="Go back">
             <Icon name="arrow-left" size={20} />
           </button>
           <h1 className="wizard-title">{category.name}</h1>
@@ -479,29 +481,11 @@ export default function ElectricianService() {
             {stage === CONFIRM && (
               <>
                 <div className="wizard-card-head">
-                  <h2>Enter Your Details</h2>
+                  <h2>Your Details</h2>
                   <p>We will contact you to confirm the appointment.</p>
                 </div>
 
-                <div className="form-grid">
-                  <Field id="ec-name" label="Full Name" required value={details.name} onChange={setDetail('name')} error={errors.name} placeholder="Enter your name" />
-                  <Field id="ec-phone" label="Mobile Number" required type="tel" inputMode="numeric" value={details.phone} onChange={setDetail('phone')} error={errors.phone} placeholder="Enter mobile number" />
-                  <Field id="ec-whatsapp" label="WhatsApp Number (Optional)" type="tel" inputMode="numeric" value={details.whatsapp} onChange={setDetail('whatsapp')} error={errors.whatsapp} placeholder="Enter WhatsApp number" hint="Leave blank if it is the same as your mobile." />
-                  <Field id="ec-email" label="Email Address (Optional)" type="email" value={details.email} onChange={setDetail('email')} error={errors.email} placeholder="Enter email address" />
-                </div>
-
-                <div className="field" style={{ marginTop: 16 }}>
-                  <label htmlFor="ec-address">
-                    Full Address <span className="req">*</span>
-                  </label>
-                  <textarea id="ec-address" rows={3} value={details.address} onChange={setDetail('address')} placeholder="Enter complete address" />
-                  {errors.address && <span className="field-error">{errors.address}</span>}
-                </div>
-
-                <div className="form-grid" style={{ marginTop: 16 }}>
-                  <Field id="ec-city" label="City" required value={details.city} onChange={setDetail('city')} error={errors.city} placeholder="Mumbai" />
-                  <Field id="ec-pincode" label="Pincode" value={details.pincode} onChange={setDetail('pincode')} error={errors.pincode} placeholder="400001" />
-                </div>
+                <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="ec" />
 
                 <ElectricianSummary category={category} form={form} answers={answers} date={date} time={time} estimate={estimate} />
               </>
@@ -540,18 +524,6 @@ export default function ElectricianService() {
 }
 
 /* -------------------------------------------------------------- helpers */
-
-function Field({ id, label, required, hint, error, ...rest }) {
-  return (
-    <div className={`field ${error ? 'error' : ''}`}>
-      <label htmlFor={id}>
-        {label} {required && <span className="req">*</span>}
-      </label>
-      <input id={id} {...rest} />
-      {error ? <span className="field-error">{error}</span> : hint && <span className="field-hint">{hint}</span>}
-    </div>
-  );
-}
 
 function FileField({ question, files, onPick, onRemove, error }) {
   const inputId = `file-${question.key}`;
@@ -616,7 +588,7 @@ function ElectricianSummary({ category, form, answers, date, time, estimate }) {
         </div>
         <div>
           <dt>Site visit</dt>
-          <dd>{date} at {time}</dd>
+          <dd>{formatVisit(date, time)}</dd>
         </div>
         {rows.map((row) => (
           <div key={row.key}>
@@ -697,7 +669,7 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
               </div>
               <div>
                 <dt>Date &amp; Time</dt>
-                <dd>{receipt.date}, {receipt.time}</dd>
+                <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
               <div>
                 <dt>Service</dt>

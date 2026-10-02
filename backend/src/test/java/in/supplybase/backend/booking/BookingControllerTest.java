@@ -2,7 +2,7 @@ package in.supplybase.backend.booking;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -38,6 +39,8 @@ import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
+import in.supplybase.backend.booking.dto.PartnerPayoutResponse;
 import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
 import in.supplybase.backend.support.WebSecurityTestConfig;
 
@@ -88,25 +91,22 @@ class BookingControllerTest {
     }
 
     @Nested
-    @DisplayName("POST /api/bookings — public")
+    @DisplayName("POST /api/bookings — signed-in customers only")
     class CreateBooking {
 
         @Test
-        @DisplayName("works without any authenticated principal")
-        void worksAnonymously() throws Exception {
-            when(service.create(any(), isNull())).thenReturn(sampleReceipt());
-
+        @DisplayName("is refused without a signed-in account")
+        void anonymousIsUnauthorized() throws Exception {
             mockMvc.perform(post("/api/bookings")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CREATE_BOOKING_JSON))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.bookingNumber").value("SB-20260906-000001"));
+                    .andExpect(status().isUnauthorized());
 
-            verify(service).create(any(), isNull());
+            verify(service, never()).create(any(), any());
         }
 
         @Test
-        @DisplayName("attaches the booking to a signed-in principal when one is present")
+        @DisplayName("books for the signed-in customer")
         void attachesSignedInUser() throws Exception {
             when(service.create(any(), eq(42L))).thenReturn(sampleReceipt());
 
@@ -114,7 +114,8 @@ class BookingControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CREATE_BOOKING_JSON)
                             .with(asUser(42L, Role.CUSTOMER)))
-                    .andExpect(status().isCreated());
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.bookingNumber").value("SB-20260906-000001"));
 
             verify(service).create(any(), eq(42L));
         }
@@ -361,6 +362,23 @@ class BookingControllerTest {
         }
 
         @Test
+        void earningsAreForbiddenForACustomer() throws Exception {
+            mockMvc.perform(get("/api/professional/earnings").with(asUser(1L, Role.CUSTOMER)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        void earningsAreReadForTheSignedInProfessionalOnly() throws Exception {
+            when(service.myEarnings(5L)).thenReturn(PartnerEarningsResponse.from(List.of(), Instant.now()));
+
+            mockMvc.perform(get("/api/professional/earnings").with(asUser(5L, Role.PROFESSIONAL)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.earnedPaise").value(0))
+                    .andExpect(jsonPath("$.pendingPaise").value(0));
+            verify(service).myEarnings(5L);
+        }
+
+        @Test
         void mineSucceedsForAProfessional() throws Exception {
             when(service.myAssignedBookings(5L)).thenReturn(List.of());
 
@@ -387,7 +405,8 @@ class BookingControllerTest {
             when(service.advanceOwnBookingStatus(eq(9L), eq(BookingStatus.SITE_VISIT_COMPLETED), eq(5L)))
                     .thenReturn(new ProfessionalBookingResponse(9L, "BK-1", "SB-1", BookingType.SERVICE,
                             BookingStatus.SITE_VISIT_COMPLETED, "Plumbing", null, null, null, null, null,
-                            null, null, "Asha Rao", "9820011223", null, null, null, false, null));
+                            null, null, "Asha Rao", "9820011223", null, null, null, false, null,
+                            null, null, null, List.of()));
 
             mockMvc.perform(patch("/api/professional/bookings/9/status")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -407,6 +426,87 @@ class BookingControllerTest {
                                     """)
                             .with(asUser(1L, Role.CUSTOMER)))
                     .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("/api/admin/bookings/{id}/payout — admin only")
+    class PartnerPayouts {
+
+        private static final String PAYOUT_JSON = """
+                {"amountPaise": 150000, "paid": false}
+                """;
+
+        private PartnerPayoutResponse sample() {
+            return new PartnerPayoutResponse(9L, "SB-1", BookingStatus.WORK_COMPLETED,
+                    5L, "Ravi Kumar", 150000L, null, Instant.now());
+        }
+
+        @Test
+        void aPartnerCannotReadOrSetPayouts() throws Exception {
+            mockMvc.perform(get("/api/admin/bookings/9/payout").with(asUser(5L, Role.PROFESSIONAL)))
+                    .andExpect(status().isForbidden());
+            mockMvc.perform(patch("/api/admin/bookings/9/payout")
+                            .contentType(MediaType.APPLICATION_JSON).content(PAYOUT_JSON)
+                            .with(asUser(5L, Role.PROFESSIONAL)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        void aCustomerCannotSetPayouts() throws Exception {
+            mockMvc.perform(patch("/api/admin/bookings/9/payout")
+                            .contentType(MediaType.APPLICATION_JSON).content(PAYOUT_JSON)
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        void anAdminSetsThePayoutAmountAndPaidState() throws Exception {
+            when(service.setPartnerPayout(9L, 150000L, false)).thenReturn(sample());
+
+            mockMvc.perform(patch("/api/admin/bookings/9/payout")
+                            .contentType(MediaType.APPLICATION_JSON).content(PAYOUT_JSON)
+                            .with(asUser(1L, Role.ADMIN)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.amountPaise").value(150000))
+                    .andExpect(jsonPath("$.partnerName").value("Ravi Kumar"));
+        }
+
+        @Test
+        void aNegativeAmountIsRejectedBeforeItReachesTheService() throws Exception {
+            mockMvc.perform(patch("/api/admin/bookings/9/payout")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"amountPaise": -1, "paid": false}
+                                    """)
+                            .with(asUser(1L, Role.ADMIN)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void anAbsurdAmountIsRejected() throws Exception {
+            mockMvc.perform(patch("/api/admin/bookings/9/payout")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"amountPaise": 999999999999, "paid": false}
+                                    """)
+                            .with(asUser(1L, Role.ADMIN)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void theCustomersOwnBookingNeverCarriesPayoutFields() throws Exception {
+            when(service.get(eq(9L), any())).thenReturn(new BookingResponse(9L, "BK-1", "SB-1",
+                    BookingType.SERVICE, BookingStatus.WORK_COMPLETED, "plumbing", "Plumbing",
+                    null, null, null, null, null, null, null, LocalDate.now(), "10:00 AM",
+                    "Asha Rao", "9820011223", null, null, null, null, null,
+                    false, null, null, 5L, "Ravi Kumar", null, List.of()));
+
+            mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.partnerPayoutPaise").doesNotExist())
+                    .andExpect(jsonPath("$.partnerPaidAt").doesNotExist())
+                    .andExpect(jsonPath("$.amountPaise").doesNotExist());
         }
     }
 }

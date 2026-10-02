@@ -219,81 +219,331 @@
   z-index: 2;
 }
 
-/* ------------------------------------------------------------ process */
+/* ------------------------How it works------ProcessSection.jsx------------------------------ process */
+
+/* =========================================
+   HOW IT WORKS - PROCESS SECTION
+   ========================================= */
 
 .process {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0;
   position: relative;
+  margin-top: 55px;
 }
+
+
+/* =========================================
+   PROCESS STEP
+   ========================================= */
 
 .process-step {
   position: relative;
-  padding: 0 22px;
+  padding: 28px 28px 32px;
   text-align: center;
+
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-right: none;
+
+  transition:
+    transform 0.35s ease,
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
 }
+
+.process-step:last-child {
+  border-right: 1px solid #e8e8e8;
+}
+
+
+/* =========================================
+   HOVER EFFECT
+   ========================================= */
+
+.process-step:hover {
+  transform: translateY(-8px);
+  border-color: #d8d8d8;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.09);
+  z-index: 2;
+}
+
+
+/* =========================================
+   CONNECTING DASHED LINE
+   ========================================= */
 
 .process-step:not(:last-child)::after {
   content: '';
+
   position: absolute;
-  top: 34px;
+  top: 63px;
   right: -18px;
+
   width: 36px;
-  height: 1px;
-  border-top: 2px dashed var(--accent-line);
+  height: 2px;
+
+  border-top: 2px dashed #d2d2d2;
+
+  z-index: 5;
+
+  transition: border-color 0.3s ease;
 }
 
+.process-step:hover::after {
+  border-color: var(--accent);
+}
+
+
+/* =========================================
+   PROCESS ICON
+   ========================================= */
+
 .process-icon {
-  width: 70px;
-  height: 70px;
-  margin: 0 auto 18px;
+  width: 72px;
+  height: 72px;
+
+  margin: 0 auto 22px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   border-radius: 50%;
-  border: 1px solid var(--accent-line);
-  background: var(--accent-soft);
+
+  background: #f7f8f8;
   color: var(--accent);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+
+  border: 1px solid #dcdcdc;
+
   position: relative;
+
+  transition:
+    transform 0.35s ease,
+    background 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
 }
+
+
+/* Icon hover */
+
+.process-step:hover .process-icon {
+  transform: translateY(-3px) scale(1.06);
+
+  background: var(--accent);
+  color: #ffffff;
+
+  border-color: var(--accent);
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.13);
+}
+
+
+/* =========================================
+   STEP NUMBER
+   ========================================= */
 
 .process-num {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--white);
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 700;
+
+  top: -7px;
+  right: -7px;
+
+  width: 28px;
+  height: 28px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--accent);
+  color: #ffffff;
+
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+
+  border: 3px solid #ffffff;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
+
+
+/* Number hover */
+
+.process-step:hover .process-num {
+  transform: scale(1.12);
+
+  box-shadow:
+    0 5px 14px rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================
+   PROCESS TITLE
+   ========================================= */
 
 .process-step h3 {
+  margin: 0 0 10px;
+
   font-family: var(--font-display);
-  font-size: 1.13rem;
+  font-size: 1.12rem;
+  font-weight: 700;
+
   letter-spacing: 0.08em;
+
   text-transform: uppercase;
-  margin-bottom: 8px;
+
+  color: #111111;
+
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
+
+
+/* Title hover */
+
+.process-step:hover h3 {
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+
+/* =========================================
+   PROCESS DESCRIPTION
+   ========================================= */
 
 .process-step p {
-  font-size: 0.9rem;
-  color: var(--grey-600);
   margin: 0;
+
+  max-width: 270px;
+  margin-left: auto;
+  margin-right: auto;
+
+  font-size: 0.9rem;
+  line-height: 1.7;
+
+  color: #666666;
+
+  transition: color 0.3s ease;
 }
+
+
+/* IMPORTANT:
+   Override the old dark-section text
+*/
 
 .section-dark .process-step p {
-  color: var(--ink-soft);
+  color: #666666;
 }
 
+.section-dark .process-step h3 {
+  color: #111111;
+}
+
+
+/* =========================================
+   MAKE ONLY HOW-IT-WORKS SECTION WHITE
+   ========================================= */
+
+.section-dark:has(.process) {
+  background: #ffffff;
+  color: #111111;
+}
+
+
+/* Section heading */
+
+.section-dark:has(.process) h1,
+.section-dark:has(.process) h2,
+.section-dark:has(.process) h3 {
+  color: #111111;
+}
+
+
+/* Section heading paragraph */
+
+.section-dark:has(.process) p {
+  color: #666666;
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 1000px) {
+
+  .process {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+
+  .process-step {
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+  }
+
+  .process-step:last-child {
+    border-right: 1px solid #e8e8e8;
+  }
+
+  .process-step:not(:last-child)::after {
+    display: none;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+  .process {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 35px;
+  }
+
+  .process-step {
+    padding: 30px 22px;
+
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+  }
+
+  .process-step:last-child {
+    border-right: 1px solid #e8e8e8;
+  }
+
+  .process-icon {
+    width: 66px;
+    height: 66px;
+  }
+
+  .process-step h3 {
+    font-size: 1rem;
+  }
+
+  .process-step p {
+    font-size: 0.88rem;
+  }
+
+  .process-step:not(:last-child)::after {
+    display: none;
+  }
+}
 /* ------------------------------------------------------- project card */
 
 .project-grid {
@@ -1057,14 +1307,16 @@
     opacity: 0.60;
   }
 
-  /* Moves the "WHAT WE DO" box down and left-of-center over the photo */
+  /* Moves the "WHAT WE DO" box down and left-of-center over the photo.
+     The box is centred on the 33% line, but never allowed to start left of
+     the 20px page gutter: `left: 33%` + `translateX(-50%)` on its own pushed
+     the box (and its text) off the left edge on every screen between 721px
+     and about 1180px wide — tablets, small laptops, a resized window. */
   .page-hero-inner {
     position: absolute;
 
-    left: 33%;
+    left: max(20px, calc(33% - min(780px, 100% - 40px) / 2));
     bottom: 45px;
-
-    transform: translateX(-50%);
 
     z-index: 2;
 

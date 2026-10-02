@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Refuses a commit that still contains merge-conflict markers.
+#
+# When a pull or merge conflicts, git writes both versions into the file
+# between <<<<<<< / ======= / >>>>>>> lines. Committing that breaks the code
+# for everyone who pulls it. This stops the commit and lists the lines.
+#
+# Installed automatically by `npm install` in frontend/, admin/ or partners/
+# (their "prepare" script runs: git config core.hooksPath .githooks).
+
+markers='^(<<<<<<< |>>>>>>> |=======$)'
+
+# Markdown is skipped: a "=======" line there is a heading underline.
+found=$(git diff --cached --name-only --diff-filter=ACMR -z \
+  | grep -zv '\.md$' \
+  | xargs -0 -r git grep --cached -nE "$markers" -- 2>/dev/null)
+
+if [ -n "$found" ]; then
+  echo ""
+  echo "COMMIT STOPPED: these files still have merge-conflict markers:"
+  echo ""
+  echo "$found"
+  echo ""
+  echo "Open each file, keep the right code, delete the <<<<<<< ======= >>>>>>>"
+  echo "lines, then 'git add' the files and commit again."
+  echo ""
+  exit 1
+fi
+
+exit 0

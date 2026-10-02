@@ -8,13 +8,13 @@ import ServiceBooking from './pages/ServiceBooking';
 // routes below. Imports kept (not deleted) so re-enabling is a two-line diff.
 // import Projects from './pages/Projects';
 // import Materials from './pages/Materials';
-import Book from './pages/Book';
 import InteriorByChoice from './pages/InteriorByChoice';
 import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
 import InteriorDesignDetail from './pages/InteriorDesignDetail';
 import InteriorBooking from './pages/InteriorBooking';
 import ElectricalCategory from './pages/ElectricalCategory';
-import ElectricianService from './pages/ElectricianService';
+import ElectricalCart from './pages/ElectricalCart';
+import ElectricalCheckout, { ElectricalSubPage } from './pages/ElectricalCheckout';
 import OtherServicesCategory from './pages/OtherServicesCategory';
 import PlumbingCategory from './pages/PlumbingCategory';
 import PlumbingTab from './pages/PlumbingTab';
@@ -48,9 +48,11 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  * ROUTES
  * /                       Home
  * /services               All services
- * /services/:slug         Book a site visit for one of the four services
+ * /services/:slug         Book a site visit for one service
  * /services/electrical    Electrical Services category list
- * /services/electrical/:subSlug  One of the seven detailed electrician booking journeys
+ * /services/electrical/:subSlug  A cart category's service list (fan-services…), or
+ *                                one of the seven detailed electrician booking journeys
+ * /services/electrical/cart, /checkout  The electrical cart and its checkout
  * /services/plumbing      Plumbing Services overview grid (8 categories + consultation)
  * /services/plumbing/cart, /checkout  The item cart and its checkout flow
  * /services/plumbing/consultation, /consultation/:typeSlug  Consultation list + booking
@@ -71,7 +73,7 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  *                          POP's four non-detailed subservices land, via ?preselect=<value>
  *                          (see ServiceBooking.jsx)
  * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
- * /book                   Book a site visit (?type=service | ?type=project)
+ * /book                   Redirects to /services (old standalone booking page, removed)
  * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
  * /about                  About us
  * /contact                Contact
@@ -128,7 +130,9 @@ export default function App() {
             list here. */}
         <Route path="services/electrical" element={<ElectricalCategory />} />
         <Route path="services/electric" element={<ElectricalCategory />} />
-        <Route path="services/electrical/:subSlug" element={<ElectricianService />} />
+        <Route path="services/electrical/cart" element={<ElectricalCart />} />
+        <Route path="services/electrical/checkout" element={<ElectricalCheckout />} />
+        <Route path="services/electrical/:subSlug" element={<ElectricalSubPage />} />
 
         {/* Other Services: the catch-all eighth tile, reactivated on
             request. A category list in front of five existing generic
@@ -194,7 +198,10 @@ export default function App() {
         {/* <Route path="projects" element={<Projects />} /> */}
         {/* <Route path="projects/:slug" element={<ProjectDetail />} /> */}
         {/* <Route path="materials" element={<Materials />} /> */}
-        <Route path="book" element={<Book />} />
+        {/* The old standalone /book page had its own hard-coded list of
+            services that had drifted from the real ones. Every booking now
+            starts from a service, so old links go to the services page. */}
+        <Route path="book" element={<Navigate to="/services" replace />} />
 
         {/* Interior by Choice — the ready-made design catalogue. Its own
             small route tree, separate from the generic /services/:slug

@@ -422,6 +422,135 @@
   box-shadow: var(--depth-inset-top), var(--shadow-gold);
 }
 
+/* Working hours line under "Choose a date". */
+.slot-hours {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+}
+
+/* "None of these suit you? Choose your own date & time" */
+.slot-custom-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px dashed var(--gold);
+  border-radius: var(--radius-sm);
+  background: var(--gold-a08);
+  color: var(--ink);
+  font-size: 0.92rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
+}
+
+.slot-custom-link span {
+  flex: 1;
+  min-width: 0;
+}
+
+.slot-custom-link strong {
+  display: block;
+  font-weight: 600;
+}
+
+.slot-custom-link svg {
+  flex-shrink: 0;
+  color: var(--gold-deep);
+}
+
+.slot-custom-link:hover {
+  background: var(--gold-a12);
+  border-style: solid;
+}
+
+.slot-custom-link:focus-visible,
+.slot-mode-link:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.slot-custom-btn {
+  margin-top: 14px;
+}
+
+.slot-custom-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.slot-mode-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--gold-deep);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.slot-custom-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.slot-custom-fields .field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slot-custom-fields .input {
+  width: 100%;
+  min-height: 50px;
+  font-size: 16px; /* no zoom-on-focus on iOS */
+}
+
+.slot-custom-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.slot-custom-summary svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.slot-picker-custom .field-error {
+  display: block;
+  margin-top: 12px;
+}
+
+@media (max-width: 420px) {
+  .slot-custom-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ----------------------------------------------------------------- summary */
 
 .summary-list {
@@ -553,5 +682,205 @@
   /* the floating call / WhatsApp buttons must not sit under the bar */
   .floating-actions {
     bottom: 82px;
+  }
+}
+/* =========================================================
+   CUSTOMER DETAILS — IMAGE UPLOAD
+   ========================================================= */
+
+.booking-image-upload {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.booking-image-upload-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.booking-image-upload-optional {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ink-muted);
+  text-transform: none;
+}
+
+.booking-image-upload-hint {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.booking-image-upload-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+/* ---------------------------------------------------------
+   Upload button
+   --------------------------------------------------------- */
+
+.booking-image-add {
+  width: 120px;
+  height: 100px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px dashed var(--grey-300);
+  border-radius: var(--radius-sm);
+
+  background: var(--white);
+  color: var(--ink-soft);
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+
+.booking-image-add:hover {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+  transform: translateY(-2px);
+}
+
+.booking-image-add-icon {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 6px;
+
+  border: 1px solid var(--grey-300);
+  border-radius: 50%;
+
+  font-size: 22px;
+  line-height: 1;
+
+  color: var(--ink-soft);
+}
+
+.booking-image-add-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------
+   Image preview
+   --------------------------------------------------------- */
+
+.booking-image-preview {
+  position: relative;
+
+  width: 120px;
+  height: 100px;
+
+  overflow: hidden;
+
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+
+  background: var(--bg-soft);
+}
+
+.booking-image-preview img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+/* ---------------------------------------------------------
+   Remove image button
+   --------------------------------------------------------- */
+
+.booking-image-remove {
+  position: absolute;
+
+  top: 5px;
+  right: 5px;
+
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.7);
+
+  color: #fff;
+
+  font-size: 19px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.booking-image-remove:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* ---------------------------------------------------------
+   Upload information
+   --------------------------------------------------------- */
+
+.booking-image-upload-info {
+  display: block;
+
+  margin-top: 8px;
+
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.booking-image-count {
+  display: block;
+
+  margin-top: 4px;
+
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------
+   Mobile
+   --------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .booking-image-add,
+  .booking-image-preview {
+    width: 100px;
+    height: 90px;
+  }
+
+  .booking-image-upload-label {
+    font-size: 15px;
+  }
+
+  .booking-image-upload-hint {
+    font-size: 13px;
   }
 }

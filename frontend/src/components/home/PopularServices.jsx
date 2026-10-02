@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import Icon from '../ui/Icon';
-import api, { friendlyError } from '../../lib/api';
+import useServiceCatalogue from '../../hooks/useServiceCatalogue';
+import optimizedImage from '../../lib/optimizedImage';
 import ServiceBookingModal, { useServiceBookingModal } from '../services/ServiceBookingModal';
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
@@ -32,30 +32,17 @@ const LABEL_OVERRIDES = {
 const displayName = (category) => LABEL_OVERRIDES[category.slug] || category.name;
 
 export default function PopularServices() {
-  const [categories, setCategories] = useState(null);
-  const [error, setError] = useState('');
+  const { services: categories, error } = useServiceCatalogue();
 
   const booking = useServiceBookingModal();
-
-  useEffect(() => {
-    let cancelled = false;
-    api
-      .services()
-      .then((data) => {
-        if (!cancelled) setCategories(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(friendlyError(err));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <section className="popular-services">
       <div className="container">
-        <h2 className="popular-services-title">Popular Services</h2>
+        <div className="popular-services-head">
+          <h2 className="popular-services-title">Popular Services</h2>
+          <p className="popular-services-hint">Tap a service to see its options and book a visit.</p>
+        </div>
 
         {error && (
           <div role="alert" className="alert alert-error">
@@ -74,7 +61,7 @@ export default function PopularServices() {
 
         {!error && categories && (
           <div className="service-tile-grid">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <button
                 key={category.slug}
                 type="button"
@@ -83,7 +70,15 @@ export default function PopularServices() {
               >
                 <span className="service-tile-photo">
                   {category.heroImage ? (
-                    <img src={category.heroImage} alt="" width={200} height={200} loading="lazy" />
+                    <img
+                      src={optimizedImage(category.heroImage)}
+                      alt=""
+                      width={200}
+                      height={200}
+                      /* The first row is on screen straight away; the rest can wait. */
+                      loading={index < 4 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
                   ) : (
                     <span className="service-tile-placeholder">
                       <Icon name={ICON_BY_SLUG[category.slug] || category.icon} size={34} />

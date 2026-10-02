@@ -1,0 +1,652 @@
+/* =========================================================================
+   SUPPLYBASE PARTNERS — "JOIN US" HERO
+   The recruiting banner (components/dashboard/PartnerHero.jsx), shown to a
+   signed-in person who has not applied yet. Moved here unchanged from
+   partner.css so the dashboard styles can change without touching it.
+   ========================================================================= */
+
+:root {
+  --depth-inset-top: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* SupplyBase Gold */
+  --partner-gold: #c89b3c;
+  --partner-gold-dark: #a77b20;
+  --partner-gold-light: #f4e6bd;
+  --partner-gold-soft: #fbf5e6;
+
+  --partner-text: #111827;
+  --partner-text-soft: #455468;
+}
+
+/* ============================================================
+   SUPPLYBASE PARTNER HERO
+   NEW HERO DESIGN
+   ============================================================ */
+
+.partner-hero-section {
+  position: relative;
+  background: #f5faff;
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   MAIN HERO
+   ============================================================ */
+
+.partner-hero-main {
+  position: relative;
+
+  /* REDUCED HEIGHT */
+  min-height: 390px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eef7ff 0%,
+      #f7fbff 55%,
+      #ffffff 100%
+    );
+
+  overflow: hidden;
+}
+
+
+/* ============================================================
+   HERO CONTAINER
+   ============================================================ */
+
+.partner-hero-container {
+  min-height: 390px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  position: relative;
+}
+
+
+/* ============================================================
+   HERO LEFT CONTENT
+   ============================================================ */
+
+.partner-hero-content {
+  width: 52%;
+
+  position: relative;
+  z-index: 3;
+
+  /* REDUCED PADDING */
+  padding: 38px 0;
+}
+
+
+/* Small heading */
+
+.partner-hero-small {
+  display: inline-block;
+
+  margin-bottom: 12px;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+
+  /* GOLD */
+  color: var(--partner-gold-dark);
+}
+
+
+/* ============================================================
+   HERO MAIN HEADING
+   ============================================================ */
+
+.partner-hero-content h1 {
+  margin: 0;
+
+  /* SMALLER THAN BEFORE */
+  font-size: clamp(36px, 4.2vw, 54px);
+
+  line-height: 1.02;
+
+  font-weight: 800;
+
+  color: var(--partner-text);
+}
+
+
+/* GOLD TEXT */
+
+.partner-hero-content h1 span {
+  color: var(--partner-gold-dark);
+}
+
+
+/* ============================================================
+   HERO DESCRIPTION
+   ============================================================ */
+
+.partner-hero-content p {
+  max-width: 580px;
+
+  margin: 18px 0 18px;
+
+  font-size: 16px;
+
+  line-height: 1.6;
+
+  color: var(--partner-text-soft);
+}
+
+
+/* ============================================================
+   HERO POINTS
+   ============================================================ */
+
+.partner-hero-points {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.partner-hero-points div {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #27364b;
+}
+
+
+/* GOLD CHECK CIRCLE */
+
+.partner-hero-points span {
+  width: 20px;
+  height: 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--partner-gold);
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+/* ============================================================
+   HERO RIGHT IMAGE
+   ============================================================ */
+
+.partner-hero-image-wrap {
+  position: absolute;
+
+  right: 0;
+  bottom: 0;
+
+  width: 52%;
+  height: 100%;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+
+/* ============================================================
+   IMPORTANT:
+   REMOVE THE OLD CIRCLE
+   ============================================================ */
+
+.partner-hero-image-bg {
+  display: none !important;
+}
+
+
+/* ============================================================
+   TRANSPARENT PARTNER HERO IMAGE
+   ============================================================ */
+
+.partner-hero-image {
+  position: relative;
+  z-index: 2;
+  width: min(560px, 100%);
+  max-height: 420px;
+  object-fit: contain;
+  object-position: bottom center;
+  transform: translateY(-30px);
+}
+
+/* ============================================================
+   WHATSAPP / JOIN BOX
+   ============================================================ */
+
+.partner-whatsapp-container {
+  position: relative;
+
+  z-index: 10;
+
+  margin-top: -28px;
+
+  padding-bottom: 38px;
+}
+
+
+/* ============================================================
+   GOLD WHATSAPP BOX
+   ============================================================ */
+
+.partner-whatsapp-box {
+  min-height: 130px;
+
+  padding: 24px 30px;
+
+  border-radius: 14px;
+
+  /* GOLD GRADIENT */
+  background:
+    linear-gradient(
+      135deg,
+      #b88a2d,
+      #d2a94c
+    );
+
+  box-shadow:
+    0 15px 35px rgba(120, 88, 28, 0.25);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 26px;
+}
+
+
+/* ============================================================
+   WHATSAPP CONTENT
+   ============================================================ */
+
+.partner-whatsapp-content {
+  color: #ffffff;
+}
+
+.partner-whatsapp-content h2 {
+  margin: 0 0 6px;
+
+  font-size: 20px;
+
+  font-weight: 700;
+}
+
+.partner-whatsapp-content p {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.92);
+
+  font-size: 14px;
+}
+
+
+/* ============================================================
+   WHATSAPP FORM
+   ============================================================ */
+
+.partner-whatsapp-form {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   PHONE INPUT
+   ============================================================ */
+
+.partner-phone-input {
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+
+  background: rgba(255, 255, 255, 0.14);
+
+  border: 1px solid rgba(255, 255, 255, 0.75);
+
+  border-radius: 7px;
+
+  overflow: hidden;
+}
+
+
+/* Country code */
+
+.partner-country-code {
+  height: 100%;
+
+  padding: 0 12px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #ffffff;
+
+  border-right: 1px solid rgba(255, 255, 255, 0.55);
+
+  font-size: 13px;
+
+  white-space: nowrap;
+}
+
+.partner-arrow {
+  margin-left: 2px;
+  font-size: 16px;
+}
+
+
+/* Phone input field */
+
+.partner-phone-input input {
+  width: 190px;
+
+  height: 100%;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+
+  color: #ffffff;
+
+  padding: 0 13px;
+
+  font-size: 14px;
+}
+
+.partner-phone-input input::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+
+/* ============================================================
+   JOIN BUTTON
+   ============================================================ */
+
+.partner-join-button {
+  height: 48px;
+
+  padding: 0 27px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  /* GOLD TEXT */
+  color: var(--partner-gold-dark);
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.partner-join-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.16);
+}
+
+.partner-join-button:focus-visible,
+.partner-phone-input:focus-within {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.partner-phone-error {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.partner-whatsapp-form {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+
+
+
+  /* Hero */
+
+  .partner-hero-main {
+    min-height: auto;
+  }
+
+  .partner-hero-container {
+    min-height: auto;
+
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .partner-hero-content {
+    width: 100%;
+
+    padding: 42px 0 18px;
+  }
+
+  .partner-hero-content h1 {
+    font-size: 42px;
+  }
+
+  .partner-hero-content p {
+    font-size: 16px;
+  }
+
+
+  /* Image */
+
+  .partner-hero-image-wrap {
+    position: relative;
+
+    width: 100%;
+
+    height: 300px;
+
+    right: auto;
+  }
+
+  .partner-hero-image {
+    width: 88%;
+
+    max-height: 300px;
+  }
+
+
+  /* WhatsApp */
+
+  .partner-whatsapp-container {
+    margin-top: 0;
+  }
+
+  .partner-whatsapp-box {
+    flex-direction: column;
+
+    align-items: stretch;
+
+    padding: 24px;
+  }
+
+  .partner-whatsapp-form {
+    width: 100%;
+  }
+
+  .partner-phone-input {
+    flex: 1;
+  }
+
+  .partner-phone-input input {
+    width: 100%;
+
+    min-width: 0;
+  }
+
+  .partner-join-button {
+    padding: 0 24px;
+  }
+}
+
+@media (max-width: 600px) {
+
+
+
+  /* Hero */
+
+  .partner-hero-content {
+    padding: 24px 20px 6px;
+  }
+
+  .partner-hero-small {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+
+  .partner-hero-content h1 {
+    font-size: 25px;
+    line-height: 1.05;
+  }
+
+  .partner-hero-content p {
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 12px 0 14px;
+  }
+
+
+  /* Points */
+
+  .partner-hero-points {
+    gap: 6px;
+  }
+
+  .partner-hero-points div {
+    font-size: 13px;
+  }
+
+  .partner-hero-points span {
+    width: 19px;
+    height: 19px;
+    font-size: 10px;
+  }
+
+
+  /* Image */
+
+  .partner-hero-image-wrap {
+    height: 220px;
+  }
+
+  .partner-hero-image {
+    width: 88%;
+    max-height: 220px;
+    transform: translateY(-5px);
+  }
+
+
+  /* WhatsApp */
+
+  .partner-whatsapp-container {
+    padding: 0 12px 24px;
+  }
+
+  .partner-whatsapp-box {
+    padding: 18px 16px;
+    border-radius: 12px;
+    gap: 18px;
+  }
+
+  .partner-whatsapp-content h2 {
+    font-size: 18px;
+  }
+
+  .partner-whatsapp-content p {
+    font-size: 13px;
+  }
+
+  .partner-whatsapp-form {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+  }
+
+  .partner-phone-input {
+    width: 100%;
+  }
+
+  .partner-phone-input input {
+    width: 100%;
+  }
+
+  .partner-join-button {
+    width: 100%;
+  }
+
+  .partner-phone-input input {
+    font-size: 16px; /* 16px keeps iOS from zooming the page on focus */
+  }
+}
+
+@media (max-width: 400px) {
+
+  .partner-hero-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .partner-hero-content h1 {
+    font-size: 30px;
+  }
+
+  .partner-hero-image-wrap {
+    height: 235px;
+  }
+
+  .partner-hero-image {
+    max-height: 235px;
+  }
+
+  .partner-whatsapp-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

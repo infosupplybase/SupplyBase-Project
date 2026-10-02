@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
@@ -16,7 +16,23 @@ export default function Navbar() {
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const initials = user?.fullName
+    ? (() => {
+        const parts = user.fullName.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return 'U';
+        const first = parts[0][0]?.toUpperCase() || '';
+        const last = parts[parts.length - 1][0]?.toUpperCase() || '';
+        return `${first}${last}` || 'U';
+      })()
+    : 'U';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -58,7 +74,7 @@ export default function Navbar() {
         <div className="container">
           <div className="header-inner">
             <Link to="/" className="brand" aria-label={`${company.name} — home`}>
-              <img src="/assets/brand/logo.png" alt={`${company.name} logo`} />
+              <img src="/assets/brand/logo.webp" alt={`${company.name} logo`} />
             </Link>
 
             <nav className="nav" aria-label="Main">
@@ -99,10 +115,28 @@ export default function Navbar() {
             <div className="header-actions">
               <LocationSelector />
               <NotificationBell />
-              <Link to={user ? '/dashboard' : '/login'} className="login-btn">
-                <Icon name="user" size={17} />
-                {user ? 'MY ACCOUNT' : 'LOGIN'}
-              </Link>
+              {user ? (
+                <>
+                  <Link to="/dashboard" className="login-btn user-logout-btn">
+                    <span className="user-avatar-badge" aria-hidden="true">{initials}</span>
+                    <span className="logout-label">MY ACCOUNT</span>
+                  </Link>
+                  <button
+                    type="button"
+                    className="login-btn icon-only-btn"
+                    onClick={handleLogout}
+                    aria-label="Log out"
+                    title="Log out"
+                  >
+                    <Icon name="log-out" size={17} />
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="login-btn">
+                  <Icon name="user" size={17} />
+                  LOGIN
+                </Link>
+              )}
               <button
                 type="button"
                 className="burger"

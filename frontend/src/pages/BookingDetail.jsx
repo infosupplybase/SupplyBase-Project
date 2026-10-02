@@ -128,7 +128,8 @@ export default function BookingDetail() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    const nextErrors = validateDetails(form);
+    // This edit form has only the typed address, no map.
+    const nextErrors = validateDetails(form, null, { typedAddressOnly: true });
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
@@ -151,7 +152,7 @@ export default function BookingDetail() {
         eyebrow="YOUR ACCOUNT"
         title="BOOKING DETAILS"
         text="Everything Supplybase has on file for this service request."
-        image="/assets/services/service-hero.jpg"
+        image="/assets/services/service-hero.webp"
         breadcrumbs={[
           { label: 'My Account', to: '/dashboard' },
           { label: 'Bookings', to: '/dashboard/bookings' },

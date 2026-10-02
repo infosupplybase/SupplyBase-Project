@@ -36,6 +36,7 @@ import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.auth.dto.AuthResponse;
 import in.supplybase.backend.auth.dto.UserResponse;
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.partner.dto.PartnerProfileResponse;
 import in.supplybase.backend.partner.dto.PartnerSummaryResponse;
@@ -77,7 +78,8 @@ class PartnerControllerTest {
     private static PartnerDetailResponse sampleDetail(PartnerStatus status) {
         return new PartnerDetailResponse(5L, "Ravi Kumar", "ravi@example.com", "9820011223", true, false,
                 Role.PROFESSIONAL, status, "electrical", "Electrical", 6, "Thane", null, null,
-                null, null, Instant.now(), 0, 0, List.of());
+                null, null, Instant.now(), 0, 0,
+                PartnerEarningsResponse.from(List.of(), Instant.now()), List.of());
     }
 
     @Nested

@@ -146,7 +146,7 @@
 .login-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   height: 44px;
   padding: 0 20px;
   border: 1px solid var(--gold);
@@ -169,6 +169,42 @@
   box-shadow: var(--shadow-gold);
 }
 
+.icon-only-btn {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.user-logout-btn {
+  padding: 0 18px 0 12px;
+  min-width: 0;
+}
+
+.user-avatar-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.logout-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 8px;
+  border-left: 1px solid rgba(186, 133, 35, 0.7);
+}
+
 /* ------------------------------------------------- location + notifications */
 
 .location-select,
@@ -177,34 +213,114 @@
   flex-shrink: 0;
 }
 
+.location-select {
+  display: flex;
+  align-items: center;
+}
+
+/* A pill: pin, then "Your location" over the place name. The caption says
+   what the control is before anyone has to guess from a bare city name. */
 .location-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   height: var(--tap-min);
-  padding: 0 10px;
-  border-radius: var(--radius-sm);
+  padding: 0 16px 0 5px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--white);
   color: var(--ink);
-  font-size: 13.5px;
-  font-weight: 500;
-  max-width: 150px;
-  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
 }
 
-.location-btn:hover {
-  color: var(--gold-deep);
-  background: var(--light-bg);
+.location-btn:hover,
+.location-btn.open {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-a12);
 }
 
-.location-btn svg:first-child {
+.location-btn:focus-visible {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 2px;
+}
+
+.location-btn-pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gold-a12);
   color: var(--gold-deep);
   flex-shrink: 0;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
-.location-btn span {
+.location-btn:hover .location-btn-pin,
+.location-btn.open .location-btn-pin {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.location-btn-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.location-btn-caption {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.location-btn-text {
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Not chosen yet: the caption asks, in gold, and a soft ring pulses out of
+   the pin a few times so the control gets noticed without nagging. */
+.location-btn.unset .location-btn-caption {
+  color: var(--gold-deep);
+}
+
+.location-btn.unset .location-btn-pin::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 var(--gold-a40);
+  animation: location-pin-pulse 2s var(--ease) 1s 3;
+}
+
+@keyframes location-pin-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--gold-a40);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 10px rgba(223, 175, 53, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .location-btn.unset .location-btn-pin::after {
+    animation: none;
+  }
 }
 
 .location-menu,
@@ -220,11 +336,21 @@
 }
 
 .location-menu {
-  min-width: 200px;
-  max-height: 280px;
+  min-width: 250px;
+  max-height: 340px;
   overflow-y: auto;
   padding: 6px;
   list-style: none;
+}
+
+.location-menu-title {
+  padding: 8px 10px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--gold);
 }
 
 .location-menu button {
@@ -287,22 +413,43 @@
   margin: 0;
 }
 
+/* Phones: one line — pin and the place name, no caption. The name alone
+   next to a pin still reads as "location", and the header has no room for
+   two lines beside the logo, bell and burger. */
 @media (max-width: 480px) {
-  .location-btn span {
-    max-width: 74px;
+  .location-btn {
+    gap: 6px;
+    height: 40px;
+    padding: 0 12px 0 4px;
+  }
+  .location-btn-pin {
+    width: 30px;
+    height: 30px;
+  }
+  .location-btn-caption {
+    display: none;
+  }
+  .location-btn-text {
+    max-width: 112px;
+    font-size: 13px;
+  }
+  /* Anchored to the screen, not the pill, so it never runs off the left
+     edge when the pill sits near the middle of a narrow header. */
+  .location-menu {
+    position: fixed;
+    top: calc(var(--header-h) + 6px);
+    left: 16px;
+    right: 16px;
+    min-width: 0;
   }
 }
 
-/* Below 400px the logo (a wide wordmark) and the location/bell/burger
-   cluster cannot both fit with a text label — the pin stays tappable
-   (it opens the same dropdown, which still names every city), the label
-   drops. */
+/* Narrow phones: a shorter name. Only below 340px does the name drop and
+   the pin stand alone — it opens the same picker, which names the location
+   in full. */
 @media (max-width: 400px) {
-  .location-btn {
-    padding: 0 6px;
-  }
-  .location-btn span {
-    display: none;
+  .location-btn-text {
+    max-width: 96px;
   }
   .brand img {
     height: clamp(32px, 9vw, 40px);
@@ -310,6 +457,21 @@
   }
   .header-actions {
     gap: 2px;
+  }
+}
+
+@media (max-width: 360px) {
+  .location-btn-text {
+    max-width: 80px;
+  }
+}
+
+@media (max-width: 340px) {
+  .location-btn {
+    padding: 0 4px;
+  }
+  .location-btn-body {
+    display: none;
   }
 }
 

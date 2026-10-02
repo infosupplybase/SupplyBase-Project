@@ -1,7 +1,7 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/ui/Icon';
 
@@ -14,6 +14,15 @@ import api, { friendlyError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import { wpCategories } from '../data/waterproofingContent';
 
 
 
@@ -31,74 +40,124 @@ import { contact } from '../data/siteConfig';
 
 const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
 
-const SCHEDULE = 3;
-const CONFIRM = 4;
-
 // const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
 
-const emptyDetails = {
-  name: '',
-  phone: '',
-  whatsapp: '',
-  email: '',
-  address: '',
-  city: '',
-  pincode: '',
+// POP's catalogue also holds the questions of its two detailed journeys
+// (Full Home POP, Room POP). Its design style question is kept here for its
+// pictures; these are left out — they repeat what this form already asks
+// (home type, room type, a second design style, two more notes boxes), and
+// the additional options are not offered when booking.
+const REPEATED_QUESTIONS = {
+  'pop-ceiling-design': [
+    'pop_home_type',
+    'pop_room_type',
+    'pop_room_design_style',
+    'pop_room_notes',
+    'pop_design_notes',
+    'pop_addon',
+  ],
 };
 
-const isValidPhone = (v) =>
-  /^[6-9]\d{9}$/.test(
-    String(v || '')
-      .replace(/\D/g, '')
-      .replace(/^91/, '')
-      .replace(/^0/, '')
-  );
+// Services not offered for now. They stay in the catalogue and are only
+// hidden from the "What service do you need?" choices — delete a line here
+// to offer that service again.
+const HIDDEN_SERVICES = {
+  waterproofing: [
+    'Balcony Waterproofing',
+    'Toilet Waterproofing',
+    'Kitchen Waterproofing',
+    'Podium Waterproofing',
+    'Wall Waterproofing',
+    'Bathroom Corner & Joint Sealing',
+    'Bathroom Pipeline & Fixture Sealing',
+    'Bathroom Shower Area Waterproofing',
+    'Bathroom Tile Re-sealing',
+  ],
+};
+
+/** The question without any service that is not offered for now. */
+const withoutHiddenServices = (q, slug) => {
+  const hidden = HIDDEN_SERVICES[slug];
+  if (q.key !== 'service_needed' || !Array.isArray(q.options)) {
+    return q;
+  }
+  if (!hidden) return q;
+  return {
+    ...q,
+    options: q.options.filter((option) => !hidden.includes(option.value)),
+  };
+};
+
+/** Whether this general form asks a catalogue question. */
+const isAskedHere = (q, slug) =>
+  Boolean(q) &&
+  q.inputType !== 'FILE' &&
+  !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+    String(q.key || '').startsWith(prefix)
+  ) &&
+  !(REPEATED_QUESTIONS[slug] || []).includes(q.key);
 
 export default function ServiceBooking({
   serviceSlug,
   modal = false,
   onStepChange,
   onClose,
+  onSelectWaterproofingService,
+  preselectOption,
 }) {
   const { slug: routeSlug } = useParams();
 
   const slug = serviceSlug || routeSlug;
 
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // The visit location pinned on the map (with a Google Maps key), or null.
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
 
   const [searchParams] = useSearchParams();
 
-  const preselect = searchParams.get('preselect');
+  const preselect = preselectOption || searchParams.get('preselect');
 
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [stage, setStage] = useState(0);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = preselect ? `f:svc:${slug}:preselect:${preselect}` : `f:svc:${slug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, preselect ? 1 : 0, { push: true });
 
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
 
-  const [details, setDetails] = useState(emptyDetails);
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
 
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
 
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
 
   const [busy, setBusy] = useState(false);
 
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   /**
    * Notify parent modal about current step.
    */
+  // Kept in a ref: a new callback from the parent is not a step change.
+  const onStepChangeRef = useRef(onStepChange);
+  onStepChangeRef.current = onStepChange;
+
   useEffect(() => {
-    if (modal && onStepChange) {
-      onStepChange(stage, receipt);
+    if (modal && onStepChangeRef.current) {
+      onStepChangeRef.current(stage, receipt);
     }
-  }, [stage, receipt, modal, onStepChange]);
+  }, [stage, receipt, modal]);
 
   /**
    * Load service form.
@@ -136,11 +195,11 @@ export default function ServiceBooking({
         setForm(result);
 
         /*
-         * Switching service mid-flow must not carry answers to questions
-         * that the new service never asked.
+         * Each service keeps its own saved answers (the history-state keys
+         * include the slug), so switching service never carries answers
+         * over, and a refresh must not wipe what was restored. Only a fresh
+         * visit with ?preselect= starts with that option ticked.
          */
-        setStage(0);
-
         const validPreselect =
           preselect &&
           result.questions.some(
@@ -149,19 +208,14 @@ export default function ServiceBooking({
               q.options?.some((o) => o.value === preselect)
           );
 
-        setAnswers(
-          validPreselect
-            ? {
-                service_needed: [preselect],
-              }
-            : {}
-        );
+        if (validPreselect && !hasHistoryState(`${scope}:answers`)) {
+          setAnswers({
+            service_needed: [preselect],
+          });
+        }
 
-        setDate('');
-        setTime('');
         setErrors({});
         setError('');
-        setReceipt(null);
       })
       .catch((err) => {
         console.error('SERVICE FORM ERROR:', err);
@@ -179,7 +233,7 @@ export default function ServiceBooking({
     return () => {
       cancelled = true;
     };
-  }, [slug, preselect]);
+  }, [slug, preselect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Prefill details from signed-in account.
@@ -248,16 +302,18 @@ const stageQuestions = useMemo(() => {
   }
 
   const usable = form.questions
+    .filter((q) => isAskedHere(q, slug))
+    // The catalogue can hold the same question twice (Waterproofing asks
+    // "Tell us anything else about your work." at step 3 and again at step 6,
+    // both answering the one `notes` key). Two questions with the same key
+    // fill the same answer, whatever their wording, so each key is asked
+    // once — the first one is kept.
     .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some((prefix) =>
-          String(q.key || '').startsWith(prefix)
-        )
+      (question, index, questions) =>
+        index === questions.findIndex((q) => q.key === question.key)
     )
     .map((q, index) => ({
-      ...q,
+      ...withoutHiddenServices(q, slug),
       _questionId: `${q.key}-${index}`,
     }));
 
@@ -275,12 +331,46 @@ const stageQuestions = useMemo(() => {
       q.key !== 'property_type'
   );
 
-  return [
-    service,
-    property,
-    detailsQuestions,
+  // "Tell us anything else" reads best as the last question of the step.
+  const notesLast = [
+    ...detailsQuestions.filter((q) => q.key !== 'notes'),
+    ...detailsQuestions.filter((q) => q.key === 'notes'),
   ];
-}, [form]);
+
+  if (slug === 'waterproofing') {
+    const serviceQuestion = service[0];
+    const catalogueServiceQuestion = form.questions.find((question) => question.key === 'service_needed');
+    const waterproofingServiceQuestion = serviceQuestion
+      ? [{
+          ...serviceQuestion,
+          key: 'wp_service_category',
+          text: 'Which waterproofing service do you need?',
+          inputType: 'SINGLE',
+          options: wpCategories.map((category) => {
+            const catalogueName = category.slug === 'interior-wall'
+              ? 'Wall Waterproofing'
+              : category.slug === 'exterior-wall'
+                ? 'External Waterproofing'
+                : category.name;
+            const option = catalogueServiceQuestion?.options?.find((item) =>
+              item.value === catalogueName || item.label === catalogueName
+            );
+            return option ? { ...option, label: category.name, icon: category.icon, route: category.route } : null;
+          }).filter(Boolean),
+          _questionId: 'wp_service_category',
+        }]
+      : [];
+    return [waterproofingServiceQuestion, notesLast];
+  }
+
+  return [service, property, notesLast];
+}, [form, slug]);
+
+  const scheduleStage = stageQuestions.length;
+  const confirmStage = scheduleStage + 1;
+  const stageLabels = slug === 'waterproofing'
+    ? ['Waterproofing', 'Details', 'Schedule', 'Confirm']
+    : STAGES;
   /**
    * Set answer.
    *
@@ -356,53 +446,11 @@ const stageQuestions = useMemo(() => {
   };
 
   /**
-   * Validate customer details.
+   * Validate customer details — the same checks as every booking flow
+   * (lib/bookingDetails), which also know about a map pin.
    */
   const validateDetails = () => {
-    const nextErrors = {};
-
-    if (!details.name.trim()) {
-      nextErrors.name = 'Please enter your name';
-    }
-
-    if (!details.phone.trim()) {
-      nextErrors.phone = 'Please enter your mobile number';
-    } else if (!isValidPhone(details.phone)) {
-      nextErrors.phone = 'Enter a 10-digit mobile number';
-    }
-
-    if (
-      details.whatsapp.trim() &&
-      !isValidPhone(details.whatsapp)
-    ) {
-      nextErrors.whatsapp =
-        'Enter a 10-digit number, or leave it blank';
-    }
-
-    if (
-      details.email.trim() &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        details.email.trim()
-      )
-    ) {
-      nextErrors.email =
-        'That email address does not look right';
-    }
-
-    if (!details.address.trim()) {
-      nextErrors.address = 'Please enter your address';
-    }
-
-    if (!details.city.trim()) {
-      nextErrors.city = 'Please enter your city';
-    }
-
-    if (
-      details.pincode.trim() &&
-      !/^[1-9][0-9]{5}$/.test(details.pincode.trim())
-    ) {
-      nextErrors.pincode = 'Enter a 6-digit pincode';
-    }
+    const nextErrors = checkDetails(details, pickedLocation);
 
     setErrors(nextErrors);
 
@@ -413,11 +461,11 @@ const stageQuestions = useMemo(() => {
    * Check whether current stage can be left.
    */
   const canLeaveStage = () => {
-    if (stage < SCHEDULE) {
+    if (stage < scheduleStage) {
       return validateQuestions(stageQuestions[stage]);
     }
 
-    if (stage === SCHEDULE) {
+    if (stage === scheduleStage) {
       if (!date || !time) {
         setErrors({
           slot: 'Please choose a date and a time',
@@ -443,7 +491,7 @@ const stageQuestions = useMemo(() => {
     }
 
     setStage((currentStage) =>
-      Math.min(currentStage + 1, CONFIRM)
+      Math.min(currentStage + 1, confirmStage)
     );
 
     if (!modal) {
@@ -460,8 +508,10 @@ const stageQuestions = useMemo(() => {
   const goBack = () => {
     setError('');
 
-    setStage((currentStage) =>
-      Math.max(currentStage - 1, 0)
+    formBack(() =>
+      setStage((currentStage) =>
+        Math.max(currentStage - 1, 0)
+      )
     );
 
     if (!modal) {
@@ -482,6 +532,11 @@ const stageQuestions = useMemo(() => {
       return;
     }
 
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) {
+      return;
+    }
+
     setBusy(true);
     setError('');
 
@@ -492,10 +547,12 @@ const stageQuestions = useMemo(() => {
        * MULTI questions become one row per selected option.
        */
       const flat = [];
+      const seenAnswers = new Set();
 
       Object.entries(answers).forEach(([key, value]) => {
+        const submittedKey = key === 'wp_service_category' ? 'service_needed' : key;
         const question = form.questions.find(
-          (q) => q.key === key
+          (q) => q.key === submittedKey
         );
 
         const values = Array.isArray(value)
@@ -510,12 +567,16 @@ const stageQuestions = useMemo(() => {
               v !== undefined
           )
           .forEach((v) => {
+            const answerId = `${submittedKey}:${v}`;
+            if (seenAnswers.has(answerId)) return;
+            seenAnswers.add(answerId);
+
             const option = (
               question?.options || []
             ).find((o) => o.value === v);
 
             flat.push({
-              key,
+              key: submittedKey,
               value: String(v),
               label: option
                 ? option.label
@@ -541,7 +602,8 @@ const stageQuestions = useMemo(() => {
 
         email: details.email || null,
 
-        address: details.address,
+        // Building / room / floor, the pinned location, then anything typed.
+        address: composeAddress(details, pickedLocation),
 
         city: details.city,
 
@@ -553,6 +615,8 @@ const stageQuestions = useMemo(() => {
       });
 
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('bk', result.bookingNumber, details.phone);
 
       if (!modal) {
         window.scrollTo({
@@ -743,11 +807,11 @@ const stageQuestions = useMemo(() => {
         <ol
           className={
             modal
-              ? 'wizard-steps !mb-5'
+              ? 'wizard-steps !mb-3'
               : 'wizard-steps'
           }
         >
-          {STAGES.map((label, index) => (
+          {stageLabels.map((label, index) => (
             <li
               key={label}
               className={`wstep ${
@@ -795,7 +859,7 @@ const stageQuestions = useMemo(() => {
           <div
             className={
               modal
-                ? 'wizard-card !rounded-xl !shadow-none !p-5'
+                ? 'wizard-card !rounded-none !shadow-none !px-0 !pt-1 !pb-0'
                 : 'wizard-card'
             }
           >
@@ -803,7 +867,7 @@ const stageQuestions = useMemo(() => {
                 Stages 1-3: Questions
             -------------------------------------------- */}
 
-            {stage < SCHEDULE &&
+            {stage < scheduleStage &&
               stageQuestions[stage].map(
                 (question, index) => (
               <QuestionField
@@ -813,6 +877,9 @@ const stageQuestions = useMemo(() => {
                 onChange={setAnswer(question.key)}
                 error={errors[question.key]}
                 serviceSlug={slug}
+                onWaterproofingServiceSelect={slug === 'waterproofing'
+                  ? (route) => onSelectWaterproofingService ? onSelectWaterproofingService(route) : navigate(route)
+                  : undefined}
               />
                 )
               )}
@@ -821,7 +888,7 @@ const stageQuestions = useMemo(() => {
                 Stage 4: Schedule
             -------------------------------------------- */}
 
-            {stage === SCHEDULE && (
+            {stage === scheduleStage && (
               <>
                 <div className="wizard-card-head">
                   <h2>
@@ -856,11 +923,11 @@ const stageQuestions = useMemo(() => {
                 Stage 5: Customer details + Summary
             -------------------------------------------- */}
 
-            {stage === CONFIRM && (
+            {stage === confirmStage && (
               <>
                 <div className="wizard-card-head">
                   <h2>
-                    Enter Your Details
+                    Your Details
                   </h2>
 
                   <p>
@@ -869,105 +936,12 @@ const stageQuestions = useMemo(() => {
                   </p>
                 </div>
 
-                <div className="form-grid">
-                  <Field
-                    id="bk-name"
-                    label="Full Name"
-                    required
-                    value={details.name}
-                    onChange={setDetail('name')}
-                    error={errors.name}
-                    placeholder="Enter your name"
-                  />
-
-                  <Field
-                    id="bk-phone"
-                    label="Mobile Number"
-                    required
-                    type="tel"
-                    inputMode="numeric"
-                    value={details.phone}
-                    onChange={setDetail('phone')}
-                    error={errors.phone}
-                    placeholder="Enter mobile number"
-                  />
-
-                  <Field
-                    id="bk-whatsapp"
-                    label="WhatsApp Number (Optional)"
-                    type="tel"
-                    inputMode="numeric"
-                    value={details.whatsapp}
-                    onChange={setDetail('whatsapp')}
-                    error={errors.whatsapp}
-                    placeholder="Enter WhatsApp number"
-                    hint="Leave blank if it is the same as your mobile."
-                  />
-
-                  <Field
-                    id="bk-email"
-                    label="Email Address (Optional)"
-                    type="email"
-                    value={details.email}
-                    onChange={setDetail('email')}
-                    error={errors.email}
-                    placeholder="Enter email address"
-                  />
-                </div>
-
-                <div
-                  className="field"
-                  style={{
-                    marginTop: 16,
-                  }}
-                >
-                  <label htmlFor="bk-address">
-                    Project Address{' '}
-                    <span className="req">
-                      *
-                    </span>
-                  </label>
-
-                  <textarea
-                    id="bk-address"
-                    rows={3}
-                    value={details.address}
-                    onChange={setDetail('address')}
-                    placeholder="Enter complete address"
-                  />
-
-                  {errors.address && (
-                    <span className="field-error">
-                      {errors.address}
-                    </span>
-                  )}
-                </div>
-
-                <div
-                  className="form-grid"
-                  style={{
-                    marginTop: 16,
-                  }}
-                >
-                  <Field
-                    id="bk-city"
-                    label="City"
-                    required
-                    value={details.city}
-                    onChange={setDetail('city')}
-                    error={errors.city}
-                    placeholder="Mumbai"
-                  />
-
-                  <Field
-                    id="bk-pincode"
-                    label="Pincode"
-                    value={details.pincode}
-                    onChange={setDetail('pincode')}
-                    error={errors.pincode}
-                    placeholder="400001"
-                  />
-                </div>
+                <CustomerDetailsFields
+                  details={details}
+                  setDetail={setDetail}
+                  errors={errors}
+                  idPrefix="bk"
+                />
 
                 <Summary
                   category={category}
@@ -1004,10 +978,10 @@ const stageQuestions = useMemo(() => {
                 Footer
             -------------------------------------------- */}
 
-            <div
+            <ModalFoot
               className={
                 modal
-                  ? 'wizard-foot !static !inset-auto !z-auto !mt-5 !mb-0 !flex !w-full !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+                  ? 'wizard-foot modal-sticky-foot !flex !w-full !gap-3 !border-0'
                   : 'wizard-foot'
               }
             >
@@ -1025,7 +999,7 @@ const stageQuestions = useMemo(() => {
                 </button>
               )}
 
-                            {stage === CONFIRM ? (
+{!(slug === 'waterproofing' && stage === 0) && (stage === confirmStage ? (
                 <button
                   type="submit"
                   className="
@@ -1047,7 +1021,7 @@ const stageQuestions = useMemo(() => {
                 </button>
               ) : (
                 (
-                  stage >= SCHEDULE ||
+                  stage >= scheduleStage ||
                   (
                     stageQuestions[stage].length > 0 &&
                     stageQuestions[stage].every((question) => {
@@ -1074,58 +1048,12 @@ const stageQuestions = useMemo(() => {
                     />
                   </button>
                 )
-              )}
-            </div>
+              ))}
+            </ModalFoot>
           </div>
         </form>
+
       </div>
-    </div>
-  );
-}
-
-/* ==========================================================
-   Field
-========================================================== */
-
-function Field({
-  id,
-  label,
-  required,
-  hint,
-  error,
-  ...rest
-}) {
-  return (
-    <div
-      className={`field ${
-        error ? 'error' : ''
-      }`}
-    >
-      <label htmlFor={id}>
-        {label}{' '}
-        {required && (
-          <span className="req">
-            *
-          </span>
-        )}
-      </label>
-
-      <input
-        id={id}
-        {...rest}
-      />
-
-      {error ? (
-        <span className="field-error">
-          {error}
-        </span>
-      ) : (
-        hint && (
-          <span className="field-hint">
-            {hint}
-          </span>
-        )
-      )}
     </div>
   );
 }
@@ -1145,17 +1073,7 @@ function Summary({
    * Filter out FILE questions and dedicated-flow questions.
    */
   const rows = form.questions
-    .filter(
-      (q) =>
-        q &&
-        q.inputType !== 'FILE' &&
-        !DEDICATED_FLOW_PREFIXES.some(
-          (prefix) =>
-            String(q.key || '').startsWith(
-              prefix
-            )
-        )
-    )
+    .filter((q) => isAskedHere(q, category.slug))
     .map((q, questionIndex) => {
       const value = answers[q.key];
 
@@ -1218,7 +1136,7 @@ function Summary({
           <dt>Site visit</dt>
 
           <dd>
-            {date} at {time}
+            {formatVisit(date, time)}
           </dd>
         </div>
 
@@ -1352,8 +1270,7 @@ function Confirmation({
                 <dt>Date &amp; Time</dt>
 
                 <dd>
-                  {receipt.date},{' '}
-                  {receipt.time}
+                  {formatVisit(receipt.date, receipt.time)}
                 </dd>
               </div>
 

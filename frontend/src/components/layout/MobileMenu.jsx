@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
-import { activeServices as services } from '../../data/services';
+import { activeServices } from '../../data/services';
+import useServiceCatalogue, { serviceRoute } from '../../hooks/useServiceCatalogue';
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
 
@@ -11,7 +12,17 @@ import { useAuth } from '../../context/AuthContext';
  */
 export default function MobileMenu({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    onClose();
+    navigate('/');
+  };
+
+  // Live catalogue, with the static list only as the "not loaded yet" fill-in.
+  const { services } = useServiceCatalogue(activeServices);
 
   return (
     <div className={`mobile-menu ${open ? 'open' : ''}`}>
@@ -30,7 +41,7 @@ export default function MobileMenu({ open, onClose }) {
 >
         <div className="mobile-head">
           <Link to="/" onClick={onClose}>
-            <img src="/assets/brand/logo.png" alt={company.name} />
+            <img loading="lazy" decoding="async" src="/assets/brand/logo.webp" alt={company.name} />
           </Link>
           <button type="button" className="mobile-close" onClick={onClose} aria-label="Close menu">
             <Icon name="close" size={20} />
@@ -59,7 +70,7 @@ export default function MobileMenu({ open, onClose }) {
                     All Services
                   </NavLink>
                   {services.map((service) => (
-                    <NavLink key={service.slug} to={`/services/${service.slug}`} onClick={onClose}>
+                    <NavLink key={service.slug} to={serviceRoute(service.slug)} onClick={onClose}>
                       {service.name}
                     </NavLink>
                   ))}
@@ -71,9 +82,20 @@ export default function MobileMenu({ open, onClose }) {
               </NavLink>
             )
           )}
-          <NavLink to={user ? '/dashboard' : '/login'} className="mobile-link" onClick={onClose}>
-            {user ? 'MY ACCOUNT' : 'LOGIN'}
-          </NavLink>
+          {user ? (
+            <>
+              <NavLink to="/dashboard" className="mobile-link" onClick={onClose}>
+                MY ACCOUNT
+              </NavLink>
+              <button type="button" className="mobile-link text-left" onClick={handleLogout}>
+                LOG OUT
+              </button>
+            </>
+          ) : (
+            <NavLink to="/login" className="mobile-link" onClick={onClose}>
+              LOGIN
+            </NavLink>
+          )}
         </nav>
 
         <div className="mobile-foot">

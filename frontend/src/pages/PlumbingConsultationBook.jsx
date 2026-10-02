@@ -7,8 +7,14 @@ import usePlumbingCatalogue from '../hooks/usePlumbingCatalogue';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { formatRupees } from '../lib/money';
-import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -32,14 +38,20 @@ export default function PlumbingConsultationBook({
   const { user } = useAuth();
   const { consultationTypes, loading, error: loadError } = usePlumbingCatalogue();
 
-  const [stage, setStage] = useState(SCHEDULE);
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [details, setDetails] = useState(emptyDetails);
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:plb-consult:${typeSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, SCHEDULE, { push: true });
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   const type = consultationTypes.find((t) => t.value === typeSlug);
 
@@ -115,7 +127,7 @@ if (modal) {
     return;
   }
 
-  setStage((s) => Math.max(s - 1, SCHEDULE));
+  formBack(() => setStage((s) => Math.max(s - 1, SCHEDULE)));
 
   if (modal) {
     onStepChange?.();
@@ -126,9 +138,11 @@ if (modal) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const nextErrors = validateDetails(details);
+    const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setError('');
@@ -142,11 +156,13 @@ if (modal) {
         phone: details.phone,
         whatsapp: details.whatsapp || null,
         email: details.email || null,
-        address: details.address,
+        address: composeAddress(details, pickedLocation),
         city: details.city,
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pcb', result.bookingNumber, details.phone);
 
 if (modal) {
   onStepChange?.();
@@ -256,7 +272,7 @@ if (receipt) {
             {stage === DETAILS && (
               <>
                 <div className="wizard-card-head">
-                  <h2>Enter Your Details</h2>
+                  <h2>Your Details</h2>
                   <p>We will contact you to confirm the appointment.</p>
                 </div>
                 <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pcb" />
@@ -276,7 +292,7 @@ if (receipt) {
                   </div>
                   <div>
                     <dt>Visit</dt>
-                    <dd>{date} at {time}</dd>
+                    <dd>{formatVisit(date, time)}</dd>
                   </div>
                 </dl>
                 <div className="fee-panel">
@@ -298,10 +314,10 @@ if (receipt) {
               </div>
             )}
 
-            <div
+            <ModalFoot
   className={
     modal
-      ? 'wizard-foot !static !inset-auto !z-auto !mt-4 !mb-0 !flex !w-full !items-center !justify-end !gap-3 !border-0 !bg-transparent !p-0 !shadow-none'
+      ? 'wizard-foot modal-sticky-foot !flex !w-full !items-center !justify-end !gap-3 !border-0'
       : `wizard-foot ${stage === 0 ? 'single' : ''}`
   }
 >
@@ -329,7 +345,7 @@ if (receipt) {
   <Icon name="arrow-right" size={17} />
 </button>
               )}
-            </div>
+            </ModalFoot>
           </div>
         </form>
       </div>
@@ -374,7 +390,7 @@ function ConsultationConfirmation({
               </div>
               <div>
                 <dt>Date &amp; Time</dt>
-                <dd>{receipt.date}, {receipt.time}</dd>
+                <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
               <div>
                 <dt>Home Visit Fee</dt>

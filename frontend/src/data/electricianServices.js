@@ -19,7 +19,7 @@ export const electricalCategoryIntro = {
   eyebrow: 'ELECTRICIAN SERVICES',
   title: 'Home Electrical Services',
   text: 'Certified electricians for every job — installation, repair and replacement, done safely and on time.',
-  image:  '/assets/services/electrician/home-electrical-services.jpeg',
+  image:  '/assets/services/electrician/home-electrical-services.webp',
 };
 
 /** The category list shown at /services/electrical (PDF step 2). */
@@ -92,7 +92,7 @@ export const electricianCategoryTiles = [
     name: 'Home Electrical Services',
     blurb: 'Complete electrical solutions for your home',
     // icon: 'bolt',
-    image: '/assets/services/electrician/home-electrical-services.jpeg',
+    image: '/assets/services/electrician/home-electrical-services.webp',
     detailed: true,
   },
 
@@ -101,7 +101,7 @@ export const electricianCategoryTiles = [
     name: 'Fan Installation',
     blurb: 'Ceiling & exhaust fans',
     // icon: 'fan',
-    image: '/assets/services/electrician/fan-installation.jpeg',
+    image: '/assets/services/electrician/fan-installation.webp',
     detailed: true,
   },
 
@@ -110,7 +110,7 @@ export const electricianCategoryTiles = [
     name: 'Light Installation',
     blurb: 'LED, panel, chandelier, etc.',
     // icon: 'plus',
-    image: '/assets/services/electrician/light-installation.jpeg',
+    image: '/assets/services/electrician/light-installation.webp',
     detailed: false,
     route: '/booking/electrical',
   },
@@ -120,7 +120,7 @@ export const electricianCategoryTiles = [
     name: 'Switch & Socket Installation',
     blurb: 'Modular switches & sockets',
     // icon: 'plug',
-    image: '/assets/services/electrician/switch-socket-installation.jpeg',
+    image: '/assets/services/electrician/switch-socket-installation.webp',
     detailed: true,
   },
 
@@ -129,7 +129,7 @@ export const electricianCategoryTiles = [
     name: 'Wiring & Rewiring',
     blurb: 'New wiring or old wiring replacement',
     // icon: 'bolt',
-    image: '/assets/services/electrician/wiring-rewiring-services.jpeg',
+    image: '/assets/services/electrician/wiring-rewiring-services.webp',
     detailed: true,
   },
 
@@ -138,7 +138,7 @@ export const electricianCategoryTiles = [
     name: 'Electrical Repair',
     blurb: 'Fix faults, short circuit, tripping, etc.',
     // icon: 'wrench',
-    image: '/assets/services/electrician/electrical-repair-services.jpeg',
+    image: '/assets/services/electrician/electrical-repair-services.webp',
     detailed: true,
   },
 
@@ -147,7 +147,7 @@ export const electricianCategoryTiles = [
     name: 'MCB & DB Installation',
     blurb: 'Distribution board, MCB, RCCB',
     // icon: 'shield',
-    image: '/assets/services/electrician/mcb-db-installation.jpeg',
+    image: '/assets/services/electrician/mcb-db-installation.webp',
     detailed: true,
   },
 
@@ -156,7 +156,7 @@ export const electricianCategoryTiles = [
     name: 'Appliance Installation',
     blurb: 'Geyser, chimney, AC point, etc.',
     // icon: 'package',
-    image: '/assets/services/electrician/appliance-installation-services.jpeg',
+    image: '/assets/services/electrician/appliance-installation-services.webp',
     detailed: true,
   },
 ];
@@ -169,7 +169,7 @@ export const electricianCategoryTiles = [
 export const electricianServiceIntros = {
   'home-electrical-services': {
     tagline: 'Complete electrical solutions for a safe and modern home.',
-    image: '/assets/services/electrician/home-electrical-services.jpeg',
+    image: '/assets/services/electrician/home-electrical-services.webp',
     badges: [
       { icon: 'user', label: 'Verified Electricians' },
       { icon: 'package', label: 'Quality Materials' },
@@ -186,7 +186,7 @@ export const electricianServiceIntros = {
   },
   'fan-installation': {
     tagline: 'Expert installation of ceiling fans, exhaust fans and designer fans.',
-    image: '/assets/services/electrician/fan-installation.jpeg',
+    image: '/assets/services/electrician/fan-installation.webp',
     badges: [
       { icon: 'user', label: 'Verified Professionals' },
       { icon: 'package', label: 'Quality Installation' },
@@ -204,7 +204,7 @@ export const electricianServiceIntros = {
 
   'light-installation': {
   tagline: 'Professional installation of LED lights, panel lights, chandeliers and decorative lighting.',
-  image: '/assets/services/electrician/light-installation.jpeg',
+  image: '/assets/services/electrician/light-installation.webp',
   badges: [
     { icon: 'user', label: 'Verified Electricians' },
     { icon: 'package', label: 'Quality Materials' },
@@ -226,7 +226,7 @@ export const electricianServiceIntros = {
 
   'switch-socket-installation': {
     tagline: 'Modern, safe and professional installation for all types of switches & sockets.',
-    image: '/assets/services/electrician/switch-socket-installation.jpeg',
+    image: '/assets/services/electrician/switch-socket-installation.webp',
     badges: [
       { icon: 'package', label: 'Branded Products' },
       { icon: 'user', label: 'Certified Electricians' },
@@ -244,7 +244,7 @@ export const electricianServiceIntros = {
   },
   'wiring-rewiring-services': {
     tagline: 'Safe, reliable and standard wiring for a secure home.',
-    image: '/assets/services/electrician/wiring-rewiring-services.jpeg',
+    image: '/assets/services/electrician/wiring-rewiring-services.webp',
     badges: [
       { icon: 'user', label: 'Certified Electricians' },
       { icon: 'package', label: 'Quality Materials' },
@@ -263,7 +263,7 @@ export const electricianServiceIntros = {
   },
   'electrical-repair-services': {
     tagline: 'Quick, safe and reliable repair for all electrical issues in your home.',
-    image: '/assets/services/electrician/electrical-repair-services.jpeg',
+    image: '/assets/services/electrician/electrical-repair-services.webp',
     badges: [
       { icon: 'user', label: 'Verified Electricians' },
       { icon: 'package', label: 'Genuine Spare Parts' },
@@ -281,7 +281,7 @@ export const electricianServiceIntros = {
   },
   'mcb-db-installation': {
     tagline: 'Professional installation of MCBs, Distribution Boards & electrical protection for a safer home.',
-    image: '/assets/services/electrician/mcb-db-installation.jpeg',
+    image: '/assets/services/electrician/mcb-db-installation.webp',
     badges: [
       { icon: 'user', label: 'Certified Electricians' },
       { icon: 'package', label: 'Branded Materials' },
@@ -300,7 +300,7 @@ export const electricianServiceIntros = {
   },
   'appliance-installation-services': {
     tagline: 'Professional installation for all home appliances. Safe. Secure. Hassle-Free.',
-    image: '/assets/services/electrician/appliance-installation-services.jpeg',
+    image: '/assets/services/electrician/appliance-installation-services.webp',
     badges: [
       { icon: 'user', label: 'Trained Technicians' },
       { icon: 'package', label: 'All Major Brands' },

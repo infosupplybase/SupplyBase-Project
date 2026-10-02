@@ -7,49 +7,29 @@
 
 export const waterproofingImages = {
   'Terrace Waterproofing':
-    '/assets/waterproofing/Terrace.png',
+    '/assets/waterproofing/Terrace.webp',
 
   'Bathroom Waterproofing':
-    '/assets/waterproofing/bathroom.png',
+    '/assets/waterproofing/bathroom.webp',
 
-  'Toilet Waterproofing':
-    '/assets/waterproofing/toilet.png',
-
-  'Balcony Waterproofing':
-    '/assets/waterproofing/balcony.png',
-
-  'Kitchen Waterproofing':
-    '/assets/waterproofing/kitchen.png',
-
+  
+  
   'Basement Waterproofing':
-    '/assets/waterproofing/basement.png',
+    '/assets/waterproofing/basement.webp',
 
-  'Podium Waterproofing':
-    '/assets/waterproofing/podium.png',
-
-  'Wall Waterproofing':
-    '/assets/waterproofing/wall.png',
 
   'External Waterproofing':
-    '/assets/waterproofing/external.png',
+    '/assets/waterproofing/external.webp',
 
   'Water Tank Waterproofing':
-    '/assets/waterproofing/watertank.png',
+    '/assets/waterproofing/watertank.webp',
 
-  'Bathroom Wall Waterproofing':
-    '/assets/waterproofing/bathroom.png',
+  'Interior Waterproofing':
+    '/assets/waterproofing/interior-waterproofing.webp',
 
-  'Bathroom Corner & Joint Sealing':
-    '/assets/waterproofing/bathroom joint.png',
+ 
 
-  'Bathroom Shower Area Waterproofing':
-    '/assets/waterproofing/Shower.png',
-
-  'Bathroom Pipeline & Fixture Sealing':
-    '/assets/waterproofing/Pipeline.png',
-
-  'Bathroom Tile Re-sealing':
-    '/assets/waterproofing/Re-sealing.png',
+  
 };
 
 
@@ -61,34 +41,34 @@ export const waterproofingImages = {
 
 export const propertyImages = {
   '1 BHK':
-    '/assets/pop-ceiling/hero/1bhk.png',
+    '/assets/pop-ceiling/hero/1bhk.webp',
 
   '2 BHK':
-    '/assets/waterproofing/hero/two.png',
+    '/assets/waterproofing/hero/two.webp',
 
   '3 BHK':
-    '/assets/waterproofing/hero/three.png',
+    '/assets/waterproofing/hero/three.webp',
 
   '4 BHK+':
-    '/assets/waterproofing/hero/modern-house.jpg',
+    '/assets/waterproofing/hero/modern-house.webp',
 
   'Villa / Bungalow':
-    '/assets/waterproofing/hero/Villa.png',
+    '/assets/waterproofing/hero/Villa.webp',
 
-  Office:
-    '/assets/waterproofing/hero/office.png',
+  'Office':
+    '/assets/waterproofing/hero/office.webp',
 
-  Shop:
-    '/assets/waterproofing/hero/shop.png',
+  'Shop':
+    '/assets/waterproofing/hero/shop.webp',
 
-  Commercial:
-    '/assets/waterproofing/hero/commercial.png',
+  'Commercial':
+    '/assets/waterproofing/hero/commercial.webp',
 
   'Building / Society':
-    '/assets/waterproofing/hero/building.png',
+    '/assets/waterproofing/hero/building.webp',
 
-  Other:
-    '/assets/waterproofing/hero/other.png',
+  'Other':
+    '/assets/waterproofing/hero/other.webp',
 };
 
 
@@ -100,34 +80,34 @@ export const propertyImages = {
 
 export const problemImages = {
   'Water leakage':
-    '/assets/waterproofing/hero/water-leakage.png',
+    '/assets/waterproofing/hero/water-leakage.webp',
 
   Dampness:
-    '/assets/waterproofing/hero/Dampness.png',
+    '/assets/waterproofing/hero/Dampness.webp',
 
   Seepage:
-    '/assets/waterproofing/hero/Seepage.png',
+    '/assets/waterproofing/hero/Seepage.webp',
 
   Cracks:
-    '/assets/waterproofing/hero/Cracks.png',
+    '/assets/waterproofing/hero/Cracks.webp',
 
   'Water coming through ceiling':
-    '/assets/waterproofing/hero/WaterLeakage.png',
+    '/assets/waterproofing/hero/WaterLeakage.webp',
 
   'Water coming through wall':
-    '/assets/waterproofing/hero/wall-Leakage.png',
+    '/assets/waterproofing/hero/wall-Leakage.webp',
 
   'Bathroom leakage':
-    '/assets/waterproofing/hero/Bathroom.png',
+    '/assets/waterproofing/hero/Bathroom.webp',
 
   'Terrace leakage':
-    '/assets/waterproofing/hero/Terrace-leakage.png',
+    '/assets/waterproofing/hero/Terrace-leakage.webp',
 
   'Preventive waterproofing':
-    '/assets/waterproofing/hero/Preventive-waterproofing.png',
+    '/assets/waterproofing/hero/Preventive-waterproofing.webp',
 
   'Not sure':
-    '/assets/waterproofing/hero/notsure.png',
+    '/assets/waterproofing/hero/notsure.webp',
 };
 
 
@@ -139,34 +119,34 @@ export const problemImages = {
 
 export const problemLocationImages = {
   Terrace:
-    '/assets/waterproofing/hero/terrace.png',
+    '/assets/waterproofing/hero/terrace.webp',
 
   Bathroom:
-    '/assets/waterproofing/hero/bath.png',
+    '/assets/waterproofing/hero/bath.webp',
 
   Toilet:
-    '/assets/waterproofing/hero/toilet.png',
+    '/assets/waterproofing/hero/toilet.webp',
 
   Balcony:
-    '/assets/waterproofing/hero/balcony.png',
+    '/assets/waterproofing/hero/balcony.webp',
 
   Kitchen:
-    '/assets/waterproofing/hero/kitchen.png',
+    '/assets/waterproofing/hero/kitchen.webp',
 
   Basement:
-    '/assets/waterproofing/hero/basement.png',
+    '/assets/waterproofing/hero/basement.webp',
 
   Wall:
-    '/assets/waterproofing/hero/wall.png',
+    '/assets/waterproofing/hero/wall.webp',
 
   Podium:
-    '/assets/waterproofing/podium.png',
+    '/assets/waterproofing/podium.webp',
 
   'External area':
-    '/assets/waterproofing/hero/area.png',
+    '/assets/waterproofing/hero/area.webp',
 
   Other:
-    '/assets/waterproofing/hero/other1.png',
+    '/assets/waterproofing/hero/other1.webp',
 };
 
 
