@@ -61,10 +61,13 @@ Set production CORS to the exact origins **of every frontend app** (website,
 admin and partners), for example:
 
 ```text
-CORS_ORIGINS=https://supplybase-projects.vercel.app,https://admin.supplybase.co.in,https://partners.supplybase.co.in,https://www.supplybase.co.in,https://supplybase.co.in
+CORS_ORIGINS=https://www.supplybase.co.in,https://supplybase.co.in,https://admin.supplybase.co.in,https://partners.supplybase.co.in
 ```
 
-Do not include `localhost` or wildcard origins in production.
+Do not include `localhost` or wildcard origins in production: they let a
+program running on a visitor's own computer call the API with that visitor's
+sign-in. The API logs a warning at startup if it finds them next to a public
+`https` `FRONTEND_URL`.
 
 ## 3. Deploy the website (`frontend/`) to Vercel
 
