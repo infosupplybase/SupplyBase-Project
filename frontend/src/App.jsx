@@ -1,49 +1,57 @@
+import { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import lazyPage from './lib/lazyPage';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Home from './pages/Home';
-import Services from './pages/Services';
-import ServiceBooking from './pages/ServiceBooking';
 // Projects and Materials sections are disabled sitewide — see the commented
 // routes below. Imports kept (not deleted) so re-enabling is a two-line diff.
 // import Projects from './pages/Projects';
 // import Materials from './pages/Materials';
-import InteriorByChoice from './pages/InteriorByChoice';
-import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
-import InteriorDesignDetail from './pages/InteriorDesignDetail';
-import InteriorBooking from './pages/InteriorBooking';
-import ElectricalCategory from './pages/ElectricalCategory';
-import ElectricalCart from './pages/ElectricalCart';
-import ElectricalCheckout, { ElectricalSubPage } from './pages/ElectricalCheckout';
-import OtherServicesCategory from './pages/OtherServicesCategory';
-import PlumbingCategory from './pages/PlumbingCategory';
-import PlumbingTab from './pages/PlumbingTab';
-import PlumbingConsultationList from './pages/PlumbingConsultationList';
-import PlumbingConsultationBook from './pages/PlumbingConsultationBook';
-import PlumbingCart from './pages/PlumbingCart';
-import PlumbingCheckout from './pages/PlumbingCheckout';
-import PaintingCategory from './pages/PaintingCategory';
-import PaintingFlow from './pages/PaintingFlow';
-import PopCeilingCategory from './pages/PopCeilingCategory';
-import PopCeilingFlow from './pages/PopCeilingFlow';
-import WaterproofingCategory from './pages/WaterproofingCategory';
-import WaterproofingBathroom from './pages/WaterproofingBathroom';
-import WaterproofingFlow from './pages/WaterproofingFlow';
-import InteriorDesignCategory from './pages/InteriorDesignCategory';
-import InteriorDesignCatalogue from './pages/InteriorDesignCatalogue';
-import InteriorDesignFlow from './pages/InteriorDesignFlow';
 // import ProjectDetail from './pages/ProjectDetail';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Quote from './pages/Quote';
-import Login from './pages/Login';
-import MyBookings from './pages/MyBookings';
-import BookingDetail from './pages/BookingDetail';
-import Profile from './pages/Profile';
-import PartnerRedirect from './pages/PartnerRedirect';
 import NotFound from './pages/NotFound';
-import { PrivacyPolicy, Terms } from './pages/Legal';
 import PageMeta from './components/layout/PageMeta';
+
+/* Pages load when first visited (a visitor to the home page does not need
+   the booking flows' code up front). Home and the not-found page stay in the
+   main file. */
+const Services = lazyPage(() => import('./pages/Services'));
+const ServiceBooking = lazyPage(() => import('./pages/ServiceBooking'));
+const InteriorByChoice = lazyPage(() => import('./pages/InteriorByChoice'));
+const InteriorSpaceGallery = lazyPage(() => import('./pages/InteriorSpaceGallery'));
+const InteriorDesignDetail = lazyPage(() => import('./pages/InteriorDesignDetail'));
+const InteriorBooking = lazyPage(() => import('./pages/InteriorBooking'));
+const ElectricalCategory = lazyPage(() => import('./pages/ElectricalCategory'));
+const ElectricalCart = lazyPage(() => import('./pages/ElectricalCart'));
+const ElectricalCheckout = lazyPage(() => import('./pages/ElectricalCheckout'));
+const ElectricalSubPage = lazyPage(() => import('./pages/ElectricalCheckout').then((m) => ({ default: m.ElectricalSubPage })));
+const OtherServicesCategory = lazyPage(() => import('./pages/OtherServicesCategory'));
+const PlumbingCategory = lazyPage(() => import('./pages/PlumbingCategory'));
+const PlumbingTab = lazyPage(() => import('./pages/PlumbingTab'));
+const PlumbingConsultationList = lazyPage(() => import('./pages/PlumbingConsultationList'));
+const PlumbingConsultationBook = lazyPage(() => import('./pages/PlumbingConsultationBook'));
+const PlumbingCart = lazyPage(() => import('./pages/PlumbingCart'));
+const PlumbingCheckout = lazyPage(() => import('./pages/PlumbingCheckout'));
+const PaintingCategory = lazyPage(() => import('./pages/PaintingCategory'));
+const PaintingFlow = lazyPage(() => import('./pages/PaintingFlow'));
+const PopCeilingCategory = lazyPage(() => import('./pages/PopCeilingCategory'));
+const PopCeilingFlow = lazyPage(() => import('./pages/PopCeilingFlow'));
+const WaterproofingCategory = lazyPage(() => import('./pages/WaterproofingCategory'));
+const WaterproofingBathroom = lazyPage(() => import('./pages/WaterproofingBathroom'));
+const WaterproofingFlow = lazyPage(() => import('./pages/WaterproofingFlow'));
+const InteriorDesignCategory = lazyPage(() => import('./pages/InteriorDesignCategory'));
+const InteriorDesignCatalogue = lazyPage(() => import('./pages/InteriorDesignCatalogue'));
+const InteriorDesignFlow = lazyPage(() => import('./pages/InteriorDesignFlow'));
+const About = lazyPage(() => import('./pages/About'));
+const Contact = lazyPage(() => import('./pages/Contact'));
+const Quote = lazyPage(() => import('./pages/Quote'));
+const Login = lazyPage(() => import('./pages/Login'));
+const MyBookings = lazyPage(() => import('./pages/MyBookings'));
+const BookingDetail = lazyPage(() => import('./pages/BookingDetail'));
+const Profile = lazyPage(() => import('./pages/Profile'));
+const PartnerRedirect = lazyPage(() => import('./pages/PartnerRedirect'));
+const PrivacyPolicy = lazyPage(() => import('./pages/Legal').then((m) => ({ default: m.PrivacyPolicy })));
+const Terms = lazyPage(() => import('./pages/Legal').then((m) => ({ default: m.Terms })));
 
 /**
  * ROUTES
@@ -91,6 +99,7 @@ export default function App() {
   return (
     <>
     <PageMeta />
+    <Suspense fallback={null}>
     <Routes>
       {/* the account page sits outside the main layout — full-screen split page.
           both paths render it; the tab that opens is taken from the URL. */}
@@ -253,6 +262,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </Suspense>
     </>
   );
 }
