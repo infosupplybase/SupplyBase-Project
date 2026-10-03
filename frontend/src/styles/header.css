@@ -761,3 +761,112 @@
     flex-shrink: 0;
   }
 }
+/* ----------------------------------------------------- logout confirmation */
+
+.logout-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(12, 11, 9, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.logout-modal {
+  width: min(420px, 100%);
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f0 100%);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: logout-modal-rise 0.2s var(--ease);
+}
+
+.logout-modal-icon {
+  width: 54px;
+  height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.logout-modal h2 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+
+.logout-modal p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.logout-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.logout-modal-actions button {
+  height: 44px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+
+.logout-cancel-btn {
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold-deep);
+}
+
+.logout-cancel-btn:hover {
+  background: var(--gold);
+  color: var(--on-gold);
+  box-shadow: var(--shadow-gold);
+}
+
+.logout-confirm-btn {
+  border: 1px solid red;
+  background: var(--white);
+  color: red;
+}
+
+.logout-confirm-btn:hover {
+  background: hsl(0, 97%, 65%);
+  box-shadow: var(--shadow);
+  color: black;
+}
+
+@keyframes logout-modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
