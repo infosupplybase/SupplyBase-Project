@@ -13,20 +13,28 @@ export default function SupportCard({ firstName }) {
       <h3>
         <Icon name="chat" size={18} /> Partner support
       </h3>
-      <p>Questions about a job, a payout or your account? Talk to the partner desk.</p>
 
-      <a
-        className="btn btn-whatsapp btn-block"
-        href={`https://wa.me/${PARTNER_PHONE_RAW}?text=${encodeURIComponent(text)}`}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <Icon name="whatsapp" size={18} /> WhatsApp us
-      </a>
+      <p>
+        Questions about a job, a payout or your account? Talk to the partner desk.
+      </p>
 
-      <a className="btn btn-outline btn-block" href={`tel:+${PARTNER_PHONE_RAW}`}>
-        <Icon name="phone" size={17} /> {PARTNER_PHONE}
-      </a>
+      <div className="pp-support-actions">
+        <a
+          className="btn btn-whatsapp"
+          href={`https://wa.me/${PARTNER_PHONE_RAW}?text=${encodeURIComponent(text)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Icon name="whatsapp" size={18} /> WhatsApp us
+        </a>
+
+        <a
+          className="btn btn-outline"
+          href={`tel:+${PARTNER_PHONE_RAW}`}
+        >
+          <Icon name="phone" size={17} /> {PARTNER_PHONE}
+        </a>
+      </div>
     </div>
   );
 }
