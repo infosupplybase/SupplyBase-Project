@@ -43,6 +43,7 @@ import in.supplybase.backend.catalogue.ServiceOption;
 import in.supplybase.backend.catalogue.ServiceOptionRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
+import in.supplybase.backend.common.PhotoUploads;
 import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
 import in.supplybase.backend.config.AppProperties;
@@ -565,24 +566,27 @@ public class BookingService {
     }
 
     /**
-     * The booking wizard's own upload call, for the two services that collect
-     * photos of the problem or the appliance. Booking creation is public and
-     * usually anonymous, so this cannot require a signed-in owner the way
-     * {@link #listFiles} does — instead it trusts whoever holds both the
-     * booking number (BookingReceipt deliberately withholds the numeric id —
-     * see its own javadoc — so this takes the human-readable number instead)
-     * and the phone number on the booking, the same proof-of-ownership shape
-     * the create endpoint's own rate limit already relies on.
+     * The booking wizard's own photo upload, keyed by the booking NUMBER (what
+     * BookingReceipt hands back; it withholds the numeric id).
+     *
+     * A booking is always made by a signed-in customer now, so the upload
+     * needs that same customer (or staff) - it used to be open to anyone
+     * who held the booking number plus its phone number. Only JPEG, PNG and
+     * WebP photos are taken ({@link PhotoUploads}), at most
+     * {@link PhotoUploads#MAX_PHOTOS_PER_BOOKING} per booking, and they are
+     * always stored as PHOTO whatever the caller says.
      */
     @Transactional
-    public BookingFileResponse uploadOwnFile(String bookingNumber, String phone, String kind, MultipartFile file) {
+    public BookingFileResponse uploadOwnFile(String bookingNumber, AuthenticatedUser viewer, MultipartFile file) {
         Booking booking = bookings.findByBookingNumber(bookingNumber)
                 .orElseThrow(() -> ApiException.notFound("That booking"));
-        if (!booking.getPhone().equals(PhoneNumbers.normalise(phone))) {
-            throw ApiException.notFound("That booking");
+        checkAccess(booking, viewer);
+        PhotoUploads.require(file);
+        if (files.countByBookingIdAndKind(booking.getId(), "PHOTO") >= PhotoUploads.MAX_PHOTOS_PER_BOOKING) {
+            throw ApiException.badRequest("This booking already has the most photos it can hold ("
+                    + PhotoUploads.MAX_PHOTOS_PER_BOOKING + ").");
         }
-        Long uploaderId = booking.getUser() != null ? booking.getUser().getId() : null;
-        return uploadFile(booking.getId(), kind, file, uploaderId);
+        return uploadFile(booking.getId(), "PHOTO", file, viewer.id());
     }
 
     @Transactional(readOnly = true)

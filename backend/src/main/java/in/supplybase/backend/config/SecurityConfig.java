@@ -81,12 +81,10 @@ public class SecurityConfig {
                 // PENDING application; the PROFESSIONAL role only comes from an
                 // admin approving it (PartnerService.review).
                 .requestMatchers(HttpMethod.POST, "/api/partners/apply").permitAll()
-                // POST /api/bookings is NOT listed here: making a booking needs
-                // a signed-in account (anyRequest().authenticated() below).
-                // The booking wizard's own photo upload for a booking it just
-                // created — see BookingService.uploadOwnFile for the
-                // phone-number ownership check that stands in for a login here.
-                .requestMatchers(HttpMethod.POST, "/api/bookings/by-number/*/files").permitAll()
+                // POST /api/bookings and the booking wizard's photo upload
+                // (/api/bookings/by-number/*/files) are NOT listed here: both
+                // need a signed-in account (anyRequest().authenticated()
+                // below), and the upload must belong to that customer.
                 // Razorpay authenticates itself with an HMAC signature in the
                 // request body, not with our JWT, so this must stay open.
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()

@@ -92,18 +92,19 @@ public class BookingController {
     }
 
     /**
-     * Public, like booking creation itself — keyed by the booking NUMBER
-     * (what BookingReceipt actually hands back), not the numeric id, and see
-     * {@link BookingService#uploadOwnFile} for why {@code phone} stands in
-     * for a signed-in owner check here.
+     * The booking wizard's photo upload, as the signed-in customer who made the
+     * booking - keyed by the booking NUMBER (what BookingReceipt actually
+     * hands back), see {@link BookingService#uploadOwnFile}. {@code phone} and
+     * {@code kind} are still accepted because earlier website builds send
+     * them, but are no longer used.
      */
     @PostMapping(value = "/api/bookings/by-number/{bookingNumber}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BookingFileResponse> uploadOwnFile(@PathVariable String bookingNumber,
-            @RequestParam String phone,
-            @RequestParam(defaultValue = "PHOTO") String kind,
+    public ResponseEntity<BookingFileResponse> uploadOwnFile(@PathVariable("bookingNumber") String bookingNumber,
+            @RequestParam(name = "phone", required = false) String phone,
+            @RequestParam(name = "kind", required = false) String kind,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.uploadOwnFile(bookingNumber, phone, kind, file));
+                .body(service.uploadOwnFile(bookingNumber, currentUser.require(), file));
     }
 
     @GetMapping("/api/bookings/{id}/files/{fileId}/download")
