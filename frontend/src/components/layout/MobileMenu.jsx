@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
 import { activeServices } from '../../data/services';
@@ -11,17 +11,10 @@ import { useLoginGate } from '../auth/LoginGate';
 /**
  * MobileMenu — slide-in navigation drawer for tablet and phone.
  */
-export default function MobileMenu({ open, onClose }) {
+export default function MobileMenu({ open, onClose, onRequestLogout }) {
   const [servicesOpen, setServicesOpen] = useState(false);
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { openLogin } = useLoginGate();
-
-  const handleLogout = async () => {
-    await logout();
-    onClose();
-    navigate('/');
-  };
 
   // Live catalogue, with the static list only as the "not loaded yet" fill-in.
   const { services } = useServiceCatalogue(activeServices);
@@ -89,7 +82,8 @@ export default function MobileMenu({ open, onClose }) {
               <NavLink to="/dashboard" className="mobile-link" onClick={onClose}>
                 MY ACCOUNT
               </NavLink>
-              <button type="button" className="mobile-link text-left" onClick={handleLogout}>
+              {/* Opens the same "Are you sure?" card as the header's log-out button */}
+              <button type="button" className="mobile-link text-left" onClick={onRequestLogout}>
                 LOG OUT
               </button>
             </>

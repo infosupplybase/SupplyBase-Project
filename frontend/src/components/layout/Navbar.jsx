@@ -176,7 +176,14 @@ export default function Navbar() {
         onCancel={() => setConfirmLogout(false)}
       />
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <MobileMenu
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        onRequestLogout={() => {
+          setMobileOpen(false);
+          setConfirmLogout(true);
+        }}
+      />
     </>
   );
 }
