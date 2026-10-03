@@ -716,9 +716,21 @@ export default function InteriorDesignFlow({
                 </p>
                 {hasPricing && (
                   <div className="id-stats-row">
-                    <div><Icon name="ruler" size={18} /><span>{ID_REFERENCE_STATS.areaSqft}</span></div>
-                    <div><Icon name="clock" size={18} /><span>{ID_REFERENCE_STATS.timeline}</span></div>
-                    <div><Icon name="shield" size={18} /><span>{ID_REFERENCE_STATS.warranty} warranty</span></div>
+                    <div>
+                      <Icon name="ruler" size={20} />
+                      <span className="id-stat-value">{ID_REFERENCE_STATS.areaSqft}</span>
+                      <span className="id-stat-label">Area</span>
+                    </div>
+                    <div>
+                      <Icon name="clock" size={20} />
+                      <span className="id-stat-value">{ID_REFERENCE_STATS.timeline}</span>
+                      <span className="id-stat-label">Timeline</span>
+                    </div>
+                    <div>
+                      <Icon name="shield" size={20} />
+                      <span className="id-stat-value">{ID_REFERENCE_STATS.warranty}</span>
+                      <span className="id-stat-label">Warranty</span>
+                    </div>
                   </div>
                 )}
               </div>

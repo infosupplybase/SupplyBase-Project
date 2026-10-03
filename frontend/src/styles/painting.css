@@ -398,8 +398,13 @@
 }
 
 .pnt-step.done .pnt-step-num {
-  background: var(--gold-a40);
-  color: var(--white);
+  background: #111111;
+  color: var(--gold);
+}
+
+.pnt-step.done .pnt-step-num svg {
+  color: var(--gold);
+  stroke: var(--gold);
 }
 
 .pnt-step-line {
