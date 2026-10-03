@@ -102,6 +102,11 @@ public class SecurityConfig {
                 // so it has to be readable before anyone signs in.
                 .requestMatchers(HttpMethod.GET, "/api/catalogue/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/appointments/available-slots").permitAll()
+                // HEAD is what uptime monitors and link checkers send; without
+                // these two lines it was answered 401 while GET answered 200,
+                // so a monitor on a public URL reported the site as down.
+                .requestMatchers(HttpMethod.HEAD, "/api/catalogue/**").permitAll()
+                .requestMatchers(HttpMethod.HEAD, "/api/appointments/available-slots").permitAll()
 
                 // --- everything else needs a token
                 .anyRequest().authenticated();
