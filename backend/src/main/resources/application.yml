@@ -62,6 +62,13 @@ spring:
 server:
   # Render and Railway provide PORT. SERVER_PORT remains useful locally.
   port: ${PORT:${SERVER_PORT:8080}}
+  # nginx sits in front and sends X-Forwarded-For / X-Forwarded-Proto
+  # (nginx/supplybase-api.conf). "native" lets Tomcat read them, but only from
+  # a proxy on a private address (nginx / Docker's bridge), so a visitor cannot
+  # forge their own address. Without this every request looks like it comes
+  # from nginx, and the per-address sign-up limit would be one shared bucket
+  # for the whole site. With no such header (local runs) nothing changes.
+  forward-headers-strategy: native
   error:
     include-message: always
     include-stacktrace: never
