@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
+import ConfirmLogoutDialog from '../ui/ConfirmLogoutDialog';
 import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
 import LocationSelector from './LocationSelector';
@@ -16,12 +17,14 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { openLogin } = useLoginGate();
 
   const handleLogout = async () => {
+    setConfirmLogout(false);
     await logout();
     navigate('/');
   };
@@ -126,7 +129,7 @@ export default function Navbar() {
                   <button
                     type="button"
                     className="login-btn icon-only-btn"
-                    onClick={handleLogout}
+                    onClick={() => setConfirmLogout(true)}
                     aria-label="Log out"
                     title="Log out"
                   >
@@ -158,6 +161,12 @@ export default function Navbar() {
   onNavigate={() => setMegaOpen(false)}
 /> */}
 </div>
+
+      <ConfirmLogoutDialog
+        open={confirmLogout}
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmLogout(false)}
+      />
 
       <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>
