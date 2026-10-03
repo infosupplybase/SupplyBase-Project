@@ -43,6 +43,7 @@ import Profile from './pages/Profile';
 import PartnerRedirect from './pages/PartnerRedirect';
 import NotFound from './pages/NotFound';
 import { PrivacyPolicy, Terms } from './pages/Legal';
+import PageMeta from './components/layout/PageMeta';
 
 /**
  * ROUTES
@@ -88,6 +89,8 @@ import { PrivacyPolicy, Terms } from './pages/Legal';
  */
 export default function App() {
   return (
+    <>
+    <PageMeta />
     <Routes>
       {/* the account page sits outside the main layout — full-screen split page.
           both paths render it; the tab that opens is taken from the URL. */}
@@ -250,5 +253,6 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </>
   );
 }
