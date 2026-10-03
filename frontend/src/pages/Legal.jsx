@@ -48,7 +48,12 @@ export function PrivacyPolicy() {
           <p>
             Bookings, enquiries and account details are sent over an encrypted connection to our server and stored
             there. Our team is notified so we can contact you. To keep you signed in, your browser stores a sign-in
-            token on your device until you sign out. This website does not use advertising or analytics trackers.
+            token on your device until you sign out. This website does not use advertising trackers.
+          </p>
+          <p>
+            To understand how the website is used, we count page visits with Vercel Web Analytics. It sets no cookies
+            and does not identify you: it records the page, the website you came from, your country, and your device
+            and browser type, and visits cannot be linked across days or other websites.
           </p>
 
           <h2>Your location</h2>
