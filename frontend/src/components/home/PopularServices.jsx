@@ -15,7 +15,6 @@ const ICON_BY_SLUG = {
   'pop-ceiling-design': 'ceiling',
   plumbing: 'tap',
   electrical: 'bolt',
-  'other-services': 'settings',
   'ac-services': 'fan',
 };
 

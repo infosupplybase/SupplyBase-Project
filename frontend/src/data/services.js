@@ -9,18 +9,14 @@
  *
  * megaMenuGroup: DESIGN | CONSTRUCTION | FINISHING | MEP | SPECIALIZED
  *
- * Scoped to the seven main services plus one catch-all: Interior Design,
- * Interior by Choice, Painting, Waterproofing, POP Ceiling & Design,
- * Plumber, Electrician, and Other Services — the same eight the backend's
- * service_categories table now serves at GET /api/catalogue/services (see
- * backend/.../V13__seven_main_service_categories.sql). "Other Services" is
- * a single tile, same as Electrician; it opens a category list of the five
- * services that don't fit the main seven (architectural-design,
- * civil-construction, furniture, fabrication, finishing) rather than
- * showing five more top-level tiles.
- * The five services that live under Other Services stay `active: false`
- * here rather than deleted — they are not top-level services, so they must
- * not appear in any list built from this file.
+ * The services offered: Interior Design, Interior by Choice, Painting,
+ * Waterproofing, POP Ceiling & Design, Plumber, Electrician and AC Services —
+ * the same eight the backend's service_categories table serves at
+ * GET /api/catalogue/services. "Other Services" and the five services it
+ * listed (architectural-design, civil-construction, furniture, fabrication,
+ * finishing) were withdrawn (V31 migration). Those five stay here as
+ * `active: false` so a past job that names one can still show its name;
+ * they must not appear in any list built from this file.
  * Every helper below (and every component that lists services) filters on
  * that flag; a service object with no `active` field is active by default.
  */
@@ -39,7 +35,6 @@ export const featuredServiceSlugs = [
   'pop-ceiling-design',
   'plumbing',
   'electrical',
-  'other-services',
   'ac-services',
 ];
 
@@ -403,26 +398,6 @@ export const services = [
       { q: 'Do you supply the sanitary ware?', a: 'We can supply it as part of the package or install fittings that you have purchased yourself.' },
       { q: 'Do you give any assurance on concealed work?', a: 'Concealed lines are pressure-tested in front of you before covering, and workmanship terms are written into the quotation.' },
     ],
-  },
-
-  /* ------------------------------------------------------------------ 07b */
-  {
-    slug: 'other-services',
-    number: '07b',
-    name: 'Other Services',
-    shortName: 'Other Services',
-    icon: 'settings',
-    megaMenuGroup: 'SPECIALIZED',
-    tagline: 'Everything else we do.',
-    cardText: 'Architectural design, civil construction, furniture, fabrication and finishing work.',
-    summary:
-      'Beyond the seven main services, we also handle architectural design, civil construction, custom furniture, MS/SS fabrication and finishing work — the same accountable team, the same one-partner model.',
-    heroImage: '/assets/hero-house.svg',
-    gallery: [],
-    subServices: [],
-    highlights: [],
-    process: [],
-    faqs: [],
   },
 
   /* ------------------------------------------------------------------ 07c */

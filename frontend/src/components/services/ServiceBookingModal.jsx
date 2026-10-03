@@ -24,7 +24,6 @@ import PlumbingCart from '../../pages/PlumbingCart';
 import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
-import OtherServicesCategory from '../../pages/OtherServicesCategory';
 import AcServices from '../../pages/AcServices';
 
 import WaterproofingFlow from '../../pages/WaterproofingFlow';
@@ -62,7 +61,6 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
   const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
-  const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
   const [selectedWaterproofingPage, setSelectedWaterproofingPage] = useHistoryState('bm:waterproofingPage', null, { push: true });
 
   // Every in-app BACK goes back through history, exactly like the
@@ -1036,23 +1034,6 @@ export default function ServiceBookingModal({ service, onClose }) {
               onClose={onClose}
               onStepChange={scrollModalToTop}
             />
-          ) : service.slug === 'other-services' ? (
-            selectedOtherService ? (
-              <ServiceBooking
-                serviceSlug={selectedOtherService}
-                modal={true}
-                onClose={onClose}
-                onStepChange={scrollModalToTop}
-              />
-            ) : (
-              <OtherServicesCategory
-                modal={true}
-                onSelectService={(serviceSlug) => {
-                  setSelectedOtherService(serviceSlug);
-                  scrollModalToTop();
-                }}
-              />
-            )
           ) : (
             <ServiceBooking
               serviceSlug={service.slug}

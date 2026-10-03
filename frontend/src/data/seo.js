@@ -62,10 +62,6 @@ export const indexable = {
     description:
       'AC servicing, repair, installation, uninstallation, gas charging and annual maintenance for split, window, inverter and other AC types.',
   },
-  '/services/other-services': {
-    title: 'Other Home Services | Supplybase',
-    description: 'Other repair and finishing jobs at your home - tell us what you need and book a visit.',
-  },
   '/interior-by-choice': {
     title: 'Interior by Choice | Supplybase',
     description:
