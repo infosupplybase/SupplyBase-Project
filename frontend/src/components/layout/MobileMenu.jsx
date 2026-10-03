@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
 import { activeServices } from '../../data/services';
@@ -11,17 +11,10 @@ import { useLoginGate } from '../auth/LoginGate';
 /**
  * MobileMenu — slide-in navigation drawer for tablet and phone.
  */
-export default function MobileMenu({ open, onClose }) {
+export default function MobileMenu({ open, onClose, onRequestLogout }) {
   const [servicesOpen, setServicesOpen] = useState(false);
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { openLogin } = useLoginGate();
-
-  const handleLogout = async () => {
-    await logout();
-    onClose();
-    navigate('/');
-  };
 
   // Live catalogue, with the static list only as the "not loaded yet" fill-in.
   const { services } = useServiceCatalogue(activeServices);
@@ -29,23 +22,35 @@ export default function MobileMenu({ open, onClose }) {
   return (
     <div className={`mobile-menu ${open ? 'open' : ''}`}>
       <div className="mobile-backdrop" onClick={onClose} />
+
       <div
-  className="
-    mobile-panel
-    !bg-black/35
-    backdrop-blur-[10px]
-    !border-l-white/15
-    !shadow-[-12px_0_35px_rgba(0,0,0,0.25)]
-  "
-  role="dialog"
-  aria-modal="true"
-  aria-label="Menu"
->
+        className="
+          mobile-panel
+          !bg-black/35
+          backdrop-blur-[10px]
+          !border-l-white/15
+          !shadow-[-12px_0_35px_rgba(0,0,0,0.25)]
+        "
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+      >
         <div className="mobile-head">
           <Link to="/" onClick={onClose}>
-            <img loading="lazy" decoding="async" src="/assets/brand/logo.webp" alt={company.name} />
+            <img
+              loading="lazy"
+              decoding="async"
+              src="/assets/brand/logo.webp"
+              alt={company.name}
+            />
           </Link>
-          <button type="button" className="mobile-close" onClick={onClose} aria-label="Close menu">
+
+          <button
+            type="button"
+            className="mobile-close"
+            onClick={onClose}
+            aria-label="Close menu"
+          >
             <Icon name="close" size={20} />
           </button>
         </div>
@@ -61,35 +66,69 @@ export default function MobileMenu({ open, onClose }) {
                   aria-expanded={servicesOpen}
                 >
                   {item.label}
+
                   <Icon
                     name="chevron-down"
                     size={18}
-                    style={{ transform: servicesOpen ? 'rotate(180deg)' : 'none', transition: 'transform .25s' }}
+                    style={{
+                      transform: servicesOpen
+                        ? 'rotate(180deg)'
+                        : 'none',
+                      transition: 'transform .25s',
+                    }}
                   />
                 </button>
-                <div className={`mobile-sub ${servicesOpen ? 'open' : ''}`}>
+
+                <div
+                  className={`mobile-sub ${
+                    servicesOpen ? 'open' : ''
+                  }`}
+                >
                   <NavLink to="/services" onClick={onClose}>
                     All Services
                   </NavLink>
+
                   {services.map((service) => (
-                    <NavLink key={service.slug} to={serviceRoute(service.slug)} onClick={onClose}>
+                    <NavLink
+                      key={service.slug}
+                      to={serviceRoute(service.slug)}
+                      onClick={onClose}
+                    >
                       {service.name}
                     </NavLink>
                   ))}
                 </div>
               </div>
             ) : (
-              <NavLink key={item.path} to={item.path} end={item.path === '/'} className="mobile-link" onClick={onClose}>
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/'}
+                className="mobile-link"
+                onClick={onClose}
+              >
                 {item.label}
               </NavLink>
             )
           )}
+
           {user ? (
             <>
-              <NavLink to="/dashboard" className="mobile-link" onClick={onClose}>
+              <NavLink
+                to="/dashboard"
+                className="mobile-link"
+                onClick={onClose}
+              >
                 MY ACCOUNT
               </NavLink>
-              <button type="button" className="mobile-link text-left" onClick={handleLogout}>
+
+              {/* Mobile logout opens the same confirmation modal
+                  that is used by the desktop navbar */}
+              <button
+                type="button"
+                className="mobile-link text-left"
+                onClick={onRequestLogout}
+              >
                 LOG OUT
               </button>
             </>
@@ -112,11 +151,17 @@ export default function MobileMenu({ open, onClose }) {
             <Icon name="phone" size={17} />
             {contact.phoneDisplay}
           </a>
+
           <a href={mailtoHref} className="contact-line">
             <Icon name="mail" size={17} />
             {contact.email}
           </a>
-          <Link to="/quote" className="btn btn-primary btn-block" onClick={onClose}>
+
+          <Link
+            to="/quote"
+            className="btn btn-primary btn-block"
+            onClick={onClose}
+          >
             GET A QUOTE
             <Icon name="arrow-right" size={17} />
           </Link>
