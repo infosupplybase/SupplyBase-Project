@@ -184,7 +184,9 @@ async function refreshTokens() {
 
 async function send(path, { method = 'GET', body, auth = true } = {}) {
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  // A FormData body (files) sets its own multipart Content-Type and boundary.
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
 
   const token = getAccessToken();
   if (auth && token) headers.Authorization = `Bearer ${token}`;
@@ -192,7 +194,7 @@ async function send(path, { method = 'GET', body, auth = true } = {}) {
   return fetch(`${BASE_URL}${path}`, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     // Jobs carry customers' phone numbers and addresses: never keep a copy
     // of an API answer in the browser's HTTP cache.
     cache: 'no-store',
@@ -251,23 +253,29 @@ export const api = {
    * A professional applying to join. Creates the login and a PENDING
    * application, and returns tokens. Nobody can ask for a role here — an admin
    * approving the application is what grants it.
+   *
+   * Sent as a multipart form: the application as a JSON part, plus photos of
+   * the Aadhaar card (front and back) and the PAN card (front).
    */
-  apply: (form) =>
-    request('/api/partners/apply', {
-      method: 'POST',
-      auth: false,
-      body: {
-        fullName: form.fullName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        password: form.password,
-        primaryTrade: form.primaryTrade,
-        experienceYears: Number(form.experienceYears),
-        city: form.city.trim(),
-        serviceAreas: form.serviceAreas.trim(),
-        languages: form.languages.trim(),
-      },
-    }),
+  apply: (form, documents) => {
+    const body = new FormData();
+    const application = {
+      fullName: form.fullName.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      password: form.password,
+      primaryTrade: form.primaryTrade,
+      experienceYears: Number(form.experienceYears),
+      city: form.city.trim(),
+      serviceAreas: form.serviceAreas.trim(),
+      languages: form.languages.trim(),
+    };
+    body.append('request', new Blob([JSON.stringify(application)], { type: 'application/json' }));
+    body.append('aadhaarFront', documents.aadhaarFront);
+    body.append('aadhaarBack', documents.aadhaarBack);
+    body.append('panFront', documents.panFront);
+    return request('/api/partners/apply', { method: 'POST', auth: false, body });
+  },
 
   /** The signed-in user's own application. 404 (ApiError.status) if they never applied. */
   application: () => request('/api/partners/me'),

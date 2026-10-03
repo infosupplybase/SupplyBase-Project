@@ -439,3 +439,87 @@
 .auth-card .login-meta .checkbox-row {
   min-height: 44px;
 }
+
+/* ------------------------------------------------- identity documents
+   Aadhaar (front and back) and PAN photos on the application (Mandar).
+   The real file input stays in the page (visually hidden) so it can be
+   reached with the keyboard; the label next to it is what people see. */
+
+.partner-documents {
+  display: grid;
+  gap: 12px;
+}
+
+.partner-documents-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--auth-text-mute);
+}
+
+.partner-documents-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--auth-gold);
+}
+
+.partner-document-upload {
+  width: 100%;
+  min-height: var(--control-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 44px;
+  border: 1px solid var(--auth-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.auth-field input.partner-document-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.partner-document-upload:focus-within {
+  border-color: var(--auth-gold);
+  box-shadow: 0 0 0 3px rgba(245, 208, 51, 0.16);
+}
+
+.auth-field.error .partner-document-upload {
+  border-color: #c24545;
+}
+
+.partner-document-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid rgba(245, 208, 51, 0.3);
+  border-radius: 8px;
+  background: rgba(245, 208, 51, 0.12);
+  color: var(--auth-gold);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.partner-document-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--auth-text-mute);
+}
