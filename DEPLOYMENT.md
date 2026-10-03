@@ -83,6 +83,16 @@ Do not include `localhost` or wildcard origins in production.
    as `/services/plumbing` working on a direct visit or refresh — Vite builds
    a static site, so without that rewrite rule Vercel would 404 anything that
    isn't `/`.
+
+   The same file sends the website's security headers (a Content-Security-
+   Policy, `X-Frame-Options: DENY`, `nosniff`, a referrer policy and a
+   permissions policy). The policy only lets the page load files from the
+   site itself, Google Fonts, Google Maps / Google sign-in and the API. **If
+   you add another outside service** (analytics, a chat widget, a payment
+   script, images hosted elsewhere) its address must be added to the matching
+   directive in `frontend/vercel.json`, or the browser will block it. Open the
+   browser console after a deploy: a blocked file shows up as "violates the
+   following Content Security Policy directive".
 5. Add the final Vercel URL to the API's `CORS_ORIGINS` value and redeploy the
    API once.
 
@@ -101,7 +111,9 @@ as the website; they're different apps with different builds.
 | `VITE_API_URL` | `https://YOUR-API-HOST` — same value as the website's |
 
 4. Deploy — it needs its own `vercel.json` rewrite rule too, same reason as
-   the website's (a static build, client-side routes need the fallback).
+   the website's (a static build, client-side routes need the fallback). That
+   file also carries the admin panel's security headers (it loads nothing
+   except its own files, the fonts and the API; it cannot be put in a frame).
 5. Add this app's final Vercel URL to the API's `CORS_ORIGINS` value
    (alongside the website's) and redeploy the API once.
 6. Consider restricting who can even load this URL — a custom subdomain like
