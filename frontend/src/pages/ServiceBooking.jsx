@@ -177,21 +177,6 @@ export default function ServiceBooking({
           throw new Error('Invalid service form received from server.');
         }
 
-        /*
-         * Debug information.
-         *
-         * This also helps identify duplicate question keys such as "notes".
-         */
-        console.log(
-          'SERVICE FORM QUESTIONS:',
-          result.questions.map((q, index) => ({
-            index,
-            key: q.key,
-            text: q.text,
-            inputType: q.inputType,
-          }))
-        );
-
         setForm(result);
 
         /*

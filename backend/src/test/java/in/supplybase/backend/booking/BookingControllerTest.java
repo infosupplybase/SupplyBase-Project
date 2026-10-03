@@ -241,6 +241,61 @@ class BookingControllerTest {
     }
 
     @Nested
+    @DisplayName("POST /api/bookings/by-number/{n}/files — the booking's own customer only")
+    class OwnPhotoUpload {
+
+        private final MockMultipartFile photo =
+                new MockMultipartFile("file", "wall.jpg", "image/jpeg", new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF });
+
+        @Test
+        @DisplayName("an anonymous caller is refused (it used to be open to anyone with the booking number and phone)")
+        void anonymousIsUnauthorized() throws Exception {
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo).param("phone", "9820011223"))
+                    .andExpect(status().isUnauthorized());
+
+            verify(service, never()).uploadOwnFile(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("a signed-in customer's upload goes to the service as that customer")
+        void signedInCustomerUploads() throws Exception {
+            when(service.uploadOwnFile(eq("SB-20261003-000001"), any(), any()))
+                    .thenReturn(new BookingFileResponse(1L, "wall.jpg", "image/jpeg", 3L, "PHOTO", null));
+
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo)
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.kind").value("PHOTO"));
+        }
+
+        @Test
+        @DisplayName("older website builds still send phone and kind; they are accepted and ignored")
+        void oldClientParamsAreTolerated() throws Exception {
+            when(service.uploadOwnFile(eq("SB-20261003-000001"), any(), any()))
+                    .thenReturn(new BookingFileResponse(1L, "wall.jpg", "image/jpeg", 3L, "PHOTO", null));
+
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo).param("phone", "9820011223").param("kind", "PHOTO")
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isCreated());
+        }
+
+        @Test
+        @DisplayName("someone else's booking comes back 404")
+        void notTheOwner() throws Exception {
+            when(service.uploadOwnFile(eq("SB-20261003-000001"), any(), any()))
+                    .thenThrow(in.supplybase.backend.common.ApiException.notFound("That booking"));
+
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo)
+                            .with(asUser(43L, Role.CUSTOMER)))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
     @DisplayName("/api/admin/bookings/** — staff only")
     class AdminBookings {
 

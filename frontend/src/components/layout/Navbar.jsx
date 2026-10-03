@@ -7,6 +7,7 @@ import LocationSelector from './LocationSelector';
 import NotificationBell from './NotificationBell';
 import { mainNav, company } from '../../data/siteConfig';
 import { useAuth } from '../../context/AuthContext';
+import { useLoginGate } from '../auth/LoginGate';
 
 /**
  * Navbar — sticky header with the services mega menu and mobile drawer.
@@ -18,6 +19,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { openLogin } = useLoginGate();
 
   const handleLogout = async () => {
     await logout();
@@ -132,10 +134,10 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <Link to="/login" className="login-btn">
+                <button type="button" className="login-btn" onClick={openLogin}>
                   <Icon name="user" size={17} />
                   LOGIN
-                </Link>
+                </button>
               )}
               <button
                 type="button"

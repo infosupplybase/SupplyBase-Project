@@ -196,6 +196,27 @@
   color: #111111;
 }
 
+/* "Login" opens the sign-in card, so it is a button that looks like its
+   neighbouring links. */
+.ft-list .ft-link-btn {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #666666;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ft-list .ft-link-btn:hover {
+  color: #111111;
+}
+
 
 /* =========================================================================
    REMOVE OLD SERVICE ICONS
@@ -465,7 +486,49 @@
 .ft-legal a:hover {
   color: #111111;
 }
+/* =========================================================================
+   PARTNER LOGIN BUTTON
+   Same style as the main Login button
+   ========================================================================= */
 
+.ft-legal .ft-partner-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 44px;
+  padding: 0 20px;
+
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+  color: var(--gold-deep);
+
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  text-decoration: none;
+  white-space: nowrap;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    background var(--t) var(--ease),
+    color var(--t) var(--ease),
+    box-shadow var(--t) var(--ease);
+}
+
+.ft-legal .ft-partner-login:hover {
+  background: var(--gold);
+  color: var(--on-gold);
+
+  box-shadow: var(--shadow-gold);
+}
 
 /* =========================================================================
    TABLET

@@ -385,9 +385,56 @@
 }
 
 .pp-card .btn + .btn {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
+/* Partner support buttons */
+.pp-support {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0;
+}
+
+.pp-support h3,
+.pp-support > p {
+  width: 100%;
+}
+
+.pp-support > a {
+  width: 233px;
+  margin-top: 18px;
+
+}
+
+.pp-support > a + a {
+  margin-top: 18px;
+  
+}
+.pp-support-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 18px;
+}
+
+.pp-support-actions .btn {
+  width: 100%;
+}
+
+/* In the narrow side column, and on phones, the two buttons stack instead of
+   sharing a row (side by side they ran off the left edge of a 375px screen). */
+.pp-side .pp-support-actions {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .pp-support-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
 /* Account card */
 
 .pp-account-head {
@@ -501,6 +548,8 @@
 }
 
 .pp-security-actions .btn {
+  width: 100%;
+  box-sizing: border-box;
   height: 46px;
   font-size: 13px;
 }

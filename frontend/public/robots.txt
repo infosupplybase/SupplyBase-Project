@@ -1,0 +1,10 @@
+# Supplybase website. Public pages may be crawled; account and sign-in
+# pages are private and not useful in search results.
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /partner
+
+Sitemap: https://www.supplybase.co.in/sitemap.xml

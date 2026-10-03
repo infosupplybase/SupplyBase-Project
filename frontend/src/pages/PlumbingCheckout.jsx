@@ -367,8 +367,8 @@ function CartSummary({ items, subtotalPaise, date, time, showsFees }) {
         {overThreshold ? (
           <>
             Your selected services total <strong>{formatRupees(subtotalPaise / 100)}</strong>, which is above ₹5,000.
-            Pay the <strong>₹99 home visit fee</strong> now to confirm — it will be adjusted into your final bill of{' '}
-            {formatRupees(subtotalPaise / 100)} if you proceed with the work.
+            The <strong>₹99 home visit fee</strong> is paid to our team on the day of the visit — it will be adjusted
+            into your final bill of {formatRupees(subtotalPaise / 100)} if you proceed with the work.
           </>
         ) : (
           <>
