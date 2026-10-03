@@ -137,6 +137,16 @@ app:
   # before relying on uploads persisting across deploys.
   storage-root-dir: ${STORAGE_ROOT_DIR:./uploads}
 
+# Interactive API docs (/swagger-ui.html) and the machine-readable spec
+# (/v3/api-docs) list every endpoint, including the admin ones, so they are OFF
+# unless API_DOCS_ENABLED=true (set it in backend/.env for local development;
+# never on the production server).
+springdoc:
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${API_DOCS_ENABLED:false}
+
 logging:
   level:
     in.supplybase.backend: ${LOG_LEVEL:INFO}

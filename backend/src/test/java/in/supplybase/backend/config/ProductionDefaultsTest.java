@@ -33,4 +33,11 @@ class ProductionDefaultsTest {
     void forwardedHeaders() {
         assertThat(yml.getProperty("server.forward-headers-strategy")).isEqualTo("native");
     }
+
+    @Test
+    @DisplayName("the API docs are off unless API_DOCS_ENABLED=true")
+    void apiDocsOffByDefault() {
+        assertThat(yml.getProperty("springdoc.api-docs.enabled")).isEqualTo("${API_DOCS_ENABLED:false}");
+        assertThat(yml.getProperty("springdoc.swagger-ui.enabled")).isEqualTo("${API_DOCS_ENABLED:false}");
+    }
 }
