@@ -14,6 +14,7 @@ import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { contact } from '../data/siteConfig';
@@ -223,6 +224,8 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pce', result.bookingNumber, details.phone);
       setStage(CONFIRM);
       if (modal) onStepChange?.();
       else window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -265,8 +268,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
           <img
             src={flow.intro.image}
             alt={`${flow.title} ceiling design`}
-            // 64px down: below the pop-up's close button, the header being hidden here.
-            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 64 }}
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 8 }}
           />
           <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
             {flow.intro.heading}

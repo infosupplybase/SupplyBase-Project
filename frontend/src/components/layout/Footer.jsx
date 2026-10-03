@@ -17,6 +17,7 @@ import {
   mailtoHref,
   whatsappHref,
 } from '../../lib/contact';
+import { useLoginGate } from '../auth/LoginGate';
 
 const WHATSAPP_MESSAGE =
   'Hello Supplybase, I would like to discuss my project.';
@@ -108,6 +109,7 @@ function FooterColumn({
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const { openLogin } = useLoginGate();
 
   /*
    * Services come from the live catalogue, the same source as the home
@@ -125,12 +127,6 @@ export default function Footer() {
   const activeSocial = social.filter(
     (s) => s.url
   );
-
-  /*
-   * Existing working-hours content.
-   */
-  const [hoursDays, hoursTimes] =
-    contact.workingHours.split(/,\s*/);
 
   return (
     <footer className="ft">
@@ -194,9 +190,15 @@ export default function Footer() {
                 {quickLinks.map((link) => (
                   <li key={link.path}>
 
-                    <Link to={link.path}>
-                      {link.label}
-                    </Link>
+                    {link.path === '/login' ? (
+                      <button type="button" className="ft-link-btn" onClick={openLogin}>
+                        {link.label}
+                      </button>
+                    ) : (
+                      <Link to={link.path}>
+                        {link.label}
+                      </Link>
+                    )}
 
                   </li>
                 ))}
@@ -291,21 +293,7 @@ export default function Footer() {
               </li>
 
 
-              {/* Working Hours */}
-              <li>
-
-                <Icon
-                  name="clock"
-                  size={19}
-                />
-
-                <span>
-                  {hoursDays}
-                  <br />
-                  {hoursTimes}
-                </span>
-
-              </li>
+             
 
             </ul>
 

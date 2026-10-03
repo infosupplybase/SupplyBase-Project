@@ -1,20 +1,18 @@
-/**
- * Image mappings for POP Ceiling & Design.
- * Keys may match either an option's value or its label.
- */
-
 export const popHomeTypeImages = {
-  '1bhk': '/assets/pop-ceiling/hero/1bhk.webp',
-  '1 BHK': '/assets/pop-ceiling/hero/1bhk.webp',
-  '2bhk': '/assets/waterproofing/hero/two.webp',
-  '2 BHK': '/assets/waterproofing/hero/two.webp',
-  '3bhk': '/assets/waterproofing/hero/three.webp',
-  '3 BHK': '/assets/waterproofing/hero/three.webp',
-  '4bhk': '/assets/waterproofing/hero/modern-house.webp',
-  '4 BHK+': '/assets/waterproofing/hero/modern-house.webp',
-  'villa-independent-house': '/assets/waterproofing/hero/Villa.webp',
-  'Villa / Bungalow': '/assets/waterproofing/hero/Villa.webp',
-  duplex: '/assets/waterproofing/hero/modern-house.webp',
+  '1bhk': '/assets/services/architectural-design/1bhk.webp',
+  '1 BHK': '/assets/services/architectural-design/1bhk.webp',
+  '2bhk': '/assets/services/architectural-design/2bhk.webp',
+  '2 BHK': '/assets/services/architectural-design/2bhk.webp',
+  '3bhk': '/assets/services/architectural-design/3bhk.webp',
+  '3 BHK': '/assets/services/architectural-design/3bhk.webp',
+  '4bhk': '/assets/services/architectural-design/4bhk.webp',
+  '4 BHK+': '/assets/services/architectural-design/4bhk.webp',
+  'villa-independent-house':
+    '/assets/services/architectural-design/villa-bungalow.webp',
+  'Villa / Bungalow':
+    '/assets/services/architectural-design/villa-bungalow.webp',
+  duplex:
+    'https://images.squarespace-cdn.com/content/v1/5db15c735ac5482d25b56a59/1717586845197-BL4PI97N191MRAB1SFCQ/IMG_1283.jpg',
   Office: '/assets/waterproofing/hero/office.webp',
   Shop: '/assets/waterproofing/hero/shop.webp',
   'Shop / Commercial': '/assets/waterproofing/hero/shop.webp',
@@ -49,35 +47,27 @@ export const popRoomTypeImages = {
   Other: '/assets/pop-ceiling/hero/other.webp',
 };
 
-const flatCeilingImage =
-  'https://images.pexels.com/photos/7752771/pexels-photo-7752771.jpeg?auto=compress&cs=tinysrgb&w=800';
-
-const borderCeilingImage =
-  'https://images.pexels.com/photos/12269245/pexels-photo-12269245.jpeg?auto=compress&cs=tinysrgb&w=800';
-
-const nonDropCeilingImage =
-  'https://images.pexels.com/photos/6316055/pexels-photo-6316055.jpeg?auto=compress&cs=tinysrgb&w=800';
-
 export const popDesignStyleImages = {
-  'flat-ceiling': flatCeilingImage,
-  'Flat Ceiling': flatCeilingImage,
+  'flat-ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
+  'Flat Ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
 
-  'double-layer-ceiling': '/assets/pop-ceiling/hero/designer-ceiling.webp',
-  'Double Layer Ceiling': '/assets/pop-ceiling/hero/designer-ceiling.webp',
+  'double-layer-ceiling':
+    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+  'Double Layer Ceiling':
+    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
 
-  'floating-ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
-  'Floating Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
+  'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
 
-  'border-ceiling': borderCeilingImage,
-  'Border Ceiling': borderCeilingImage,
+  'border-ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
+  'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
 
-  'non-drop-ceiling': nonDropCeilingImage,
-  'Non Drop Ceiling': nonDropCeilingImage,
+  'non-drop-ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
+  'Non Drop Ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
 
-  'recessed-ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
-  'Recessed Ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
+  'recessed-ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
+  'Recessed Ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
 
-  // Existing values retained for other catalogue views.
   simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
   Simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
   'simple-elegant': '/assets/pop-ceiling/hero/false-ceiling.webp',
@@ -110,7 +100,8 @@ export const popAddonImages = {
   'tv-wall-pop': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
   'TV Wall (POP)': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
   'ceiling-repair': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
-  'Ceiling Repair (if required)': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  'Ceiling Repair (if required)':
+    '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
 };
 
 export const popCeilingImages = {
@@ -123,7 +114,8 @@ export const popCeilingImages = {
   'LED Cove & Lighting': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
   Other: '/assets/pop-ceiling/hero/false-ceiling.webp',
   'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
-  'POP Repair & Renovation': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  'POP Repair & Renovation':
+    '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
   'POP Design': '/assets/services/pop-ceiling-design.webp',
   'False Ceiling': '/assets/pop-ceiling/hero/false-ceiling.webp',
 };

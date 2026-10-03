@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { contact } from '../../data/siteConfig';
 import { telHref, mailtoHref, whatsappHref } from '../../lib/contact';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * The "need something?" contact card + quick links shared by every account
@@ -9,6 +10,14 @@ import { telHref, mailtoHref, whatsappHref } from '../../lib/contact';
  * on its own, now reused instead of duplicated.
  */
 export default function AccountSidebar() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-card sidebar-cta">
@@ -56,6 +65,10 @@ export default function AccountSidebar() {
             Contact Us
             <Icon name="chevron-right" size={15} />
           </Link>
+          <button type="button" className="sidebar-list-button" onClick={handleLogout}>
+            Log out
+            <Icon name="log-out" size={15} />
+          </button>
         </div>
       </div>
     </aside>

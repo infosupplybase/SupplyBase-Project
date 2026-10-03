@@ -1,25 +1,19 @@
-/* =========================================================================
-   SUPPLYBASE — PAINTING SERVICES
-   Three itemised booking journeys (Full Home / Few Walls / Renovation),
-   matching the approved reference. Prefixed `pnt-` so nothing collides with
-   the rest of the site. Booking-flow screens (Details/Schedule/Confirm)
-   reuse wizard.css directly, same precedent as plumbing.css.
-   ========================================================================= */
+/* SUPPLYBASE — shared painting styles and Painting modal UI */
+
+/* Page and hero */
 
 .pnt-section {
   padding: var(--section-y) 0 calc(var(--section-y) + 40px);
 }
 
-/* ------------------------------------------------------------------ hero */
-
 .pnt-hero {
   position: relative;
-  width: 100%;
-  min-height: 420px;
   display: flex;
   align-items: flex-end;
-  background: var(--black);
+  width: 100%;
+  min-height: 420px;
   overflow: hidden;
+  background: var(--black);
 }
 
 .pnt-hero > img:first-child {
@@ -34,60 +28,65 @@
 .pnt-hero-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(5, 5, 5, 0.5) 0%, rgba(5, 5, 5, 0.7) 55%, rgba(5, 5, 5, 0.92) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 5, 0.1),
+    rgba(5, 5, 5, 0.72) 70%,
+    rgba(5, 5, 5, 0.95)
+  );
 }
 
 .pnt-hero-inner {
   position: relative;
   z-index: 1;
-  padding: 96px 0 var(--space-7);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  padding-top: calc(var(--header-h) + var(--space-5));
+  padding-bottom: var(--space-6);
 }
 
 .pnt-hero-eyebrow {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--gold-light);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--gold-light);
   text-transform: uppercase;
 }
 
 .pnt-hero-inner h1 {
+  max-width: 700px;
+  color: var(--white);
   font-family: var(--font-display);
   font-size: clamp(1.9rem, 4vw, 3rem);
-  color: var(--white);
-  max-width: 700px;
 }
 
 .pnt-hero-inner > p {
+  max-width: 560px;
   color: var(--on-dark-muted);
   font-size: 1rem;
-  max-width: 560px;
 }
 
 .pnt-hero-trust {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-5);
-  list-style: none;
   margin: var(--space-4) 0 0;
   padding: 0;
+  list-style: none;
 }
 
 .pnt-hero-trust li {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--on-dark);
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--on-dark);
 }
 
 .pnt-hero-trust svg {
-  color: var(--gold-light);
   flex-shrink: 0;
+  color: var(--gold-light);
 }
 
 .pnt-hero-logo {
@@ -99,37 +98,37 @@
   height: auto;
 }
 
-/* ------------------------------------------------------------- trust row */
+/* Trust points */
 
 .pnt-trust-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-3);
-  list-style: none;
   margin: var(--space-6) 0 0;
   padding: 0;
+  list-style: none;
 }
 
 .pnt-trust-row li {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: 8px;
   padding: var(--space-3);
-  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, #fff, var(--light-bg));
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  color: var(--ink-soft);
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--ink-soft);
+  text-align: center;
 }
 
 .pnt-trust-row svg {
   color: var(--gold-deep);
 }
 
-/* -------------------------------------------------------- overview cards */
+/* Shared category cards */
 
 .pnt-overview-list {
   display: flex;
@@ -143,26 +142,26 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3);
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #fff, #faf9f6);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
 .pnt-overview-card:hover,
 .pnt-overview-card:focus-visible {
   border-color: var(--gold-a40);
   box-shadow: var(--depth-inset-top), var(--shadow);
-  transform: translateY(-6px);
+  transform: translateY(-4px);
 }
 
 .pnt-overview-photo {
-  flex-shrink: 0;
   width: 72px;
   height: 72px;
-  border-radius: var(--radius);
+  flex-shrink: 0;
   overflow: hidden;
+  border-radius: var(--radius);
   background: var(--light-bg);
 }
 
@@ -173,22 +172,22 @@
 }
 
 .pnt-overview-body {
-  flex: 1;
-  min-width: 0;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .pnt-overview-name {
+  color: var(--ink);
   font-size: 1rem;
   font-weight: 700;
-  color: var(--ink);
 }
 
 .pnt-overview-tagline {
-  font-size: 0.85rem;
   color: var(--ink-muted);
+  font-size: 0.85rem;
 }
 
 .pnt-overview-arrow {
@@ -196,40 +195,41 @@
   color: var(--ink-muted);
 }
 
-/* ------------------------------------------------------------- flow intro */
+/* Intro and included services */
 
 .pnt-intro-heading {
-  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
   margin-top: var(--space-2);
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
 }
 
 .pnt-intro-text {
+  margin-bottom: var(--space-5);
   color: var(--ink-soft);
   font-size: 0.98rem;
-  margin-bottom: var(--space-5);
 }
 
 .pnt-intro-trust {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-3);
-  list-style: none;
   margin: 0 0 var(--space-6);
   padding: 0;
+  list-style: none;
 }
 
 .pnt-intro-trust li {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: 8px;
+  color: var(--ink-soft);
   font-size: 0.76rem;
   font-weight: 600;
-  color: var(--ink-soft);
+  text-align: center;
 }
 
-.pnt-intro-trust svg {
+.pnt-intro-trust svg,
+.pnt-problem-card svg {
   color: var(--gold-deep);
 }
 
@@ -238,8 +238,8 @@
 }
 
 .pnt-problems h3 {
-  font-size: 1rem;
   margin-bottom: var(--space-3);
+  font-size: 1rem;
 }
 
 .pnt-problems-grid {
@@ -252,50 +252,45 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: 8px;
   padding: var(--space-3);
-  background: linear-gradient(180deg, #ffffff 0%, var(--light-bg) 100%);
   border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, #fff, var(--light-bg));
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  color: var(--ink-soft);
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--ink-soft);
-}
-
-.pnt-problem-card svg {
-  color: var(--gold-deep);
+  text-align: center;
 }
 
 .pnt-included {
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  padding: var(--space-5);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: linear-gradient(180deg, #fff, #faf9f6);
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  padding: var(--space-5);
-  margin-bottom: var(--space-6);
 }
 
 .pnt-included h3 {
-  font-size: 1rem;
   margin-bottom: var(--space-3);
+  font-size: 1rem;
 }
 
 .pnt-included ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .pnt-included li {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  font-size: 0.9rem;
   color: var(--ink-soft);
+  font-size: 0.9rem;
 }
 
 .pnt-included li svg {
@@ -304,12 +299,12 @@
   color: var(--success);
 }
 
-/* ---------------------------------------------------------- flow shell */
+/* Shared flow shell */
 
 .pnt-flow-shell {
   min-height: 100vh;
-  background: var(--dark);
   padding: var(--space-6) 0 calc(var(--space-9) + 40px);
+  background: var(--dark);
 }
 
 .pnt-flow-shell .container-narrow {
@@ -330,28 +325,35 @@
   width: var(--tap-min);
   height: var(--tap-min);
   flex-shrink: 0;
-  color: var(--white);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--radius-sm);
+  color: var(--white);
 }
 
 .pnt-top-title {
   flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--white);
   font-family: var(--font-display);
   font-size: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--white);
-  margin: 0;
 }
 
 .pnt-help {
-  font-size: 0.85rem;
   color: var(--on-dark-muted);
+  font-size: 0.85rem;
   white-space: nowrap;
 }
 
-/* ------------------------------------------------------------- step dots */
+/* Shared progress */
+
+.pnt-step-caption {
+  margin: 0 0 12px;
+  color: var(--on-dark-muted);
+  font-size: 0.82rem;
+}
 
 .pnt-step-caption {
   margin: 0 0 30px !important;
@@ -360,15 +362,15 @@
 .pnt-steps {
   display: flex;
   align-items: center;
-  list-style: none;
   margin: 0 0 var(--space-6);
   padding: 0;
+  list-style: none;
 }
 
 .pnt-step {
   display: flex;
-  align-items: center;
   flex: 1 1 auto;
+  align-items: center;
 }
 
 .pnt-step:last-child {
@@ -379,21 +381,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   width: 26px;
   height: 26px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
   color: var(--on-dark-muted);
   font-size: 0.72rem;
   font-weight: 700;
-  transition: background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
 }
 
 .pnt-step.current .pnt-step-num {
-  background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold) 100%);
-  color: var(--on-gold);
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  color: var(--on-gold);
 }
 
 .pnt-step.done .pnt-step-num {
@@ -402,7 +403,7 @@
 }
 
 .pnt-step-line {
-  flex: 1 1 auto;
+  flex: 1;
   height: 2px;
   margin: 0 4px;
   background: rgba(255, 255, 255, 0.14);
@@ -412,18 +413,18 @@
   background: var(--gold-a40);
 }
 
-/* --------------------------------------------------------------- card */
+/* Shared step panel */
 
 .pnt-step-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
-  border-radius: var(--radius-lg);
   padding: clamp(20px, 3vw, 28px);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #fff, #fbfaf8);
   box-shadow: var(--depth-inset-top), 0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
 .pnt-step-title {
-  font-size: 1.15rem;
   margin-bottom: var(--space-4);
+  font-size: 1.15rem;
 }
 
 .pnt-step-actions {
@@ -436,112 +437,152 @@
   flex: 1;
 }
 
-/* ----------------------------------------------------- single-choice list */
+/* Shared option, product, and add-on rows */
 
-.pnt-option-list {
+.pnt-option-list,
+.pnt-list,
+.pnt-addon-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.pnt-option {
+.pnt-option,
+.pnt-product,
+.pnt-addon {
   position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  background: var(--white);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
-.pnt-option:hover {
+.pnt-option:hover,
+.pnt-product:hover,
+.pnt-addon:hover {
   box-shadow: var(--shadow);
 }
 
-.pnt-option input {
+.pnt-option input,
+.pnt-product input,
+.pnt-addon input,
+.pnt-brand-card input,
+.pnt-swatch input {
   position: absolute;
-  opacity: 0;
   width: 1px;
   height: 1px;
+  opacity: 0;
 }
 
-.pnt-option.selected {
+.pnt-option.selected,
+.pnt-product.selected {
   border-color: var(--gold);
   background: var(--gold-a08);
   box-shadow: inset 0 0 0 1px var(--gold);
 }
 
-.pnt-option-icon {
-  flex-shrink: 0;
+.pnt-addon.selected {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+}
+
+.pnt-option-icon,
+.pnt-product-swatch,
+.pnt-addon-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 44px;
   height: 44px;
+  flex-shrink: 0;
   border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
-  color: var(--gold-deep);
+  background: linear-gradient(160deg, #fffdf6, #fbeecb 60%, #f2dda3);
   box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  color: var(--gold-deep);
 }
 
-.pnt-option-body {
-  flex: 1;
-  min-width: 0;
+.pnt-addon-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.pnt-option-body,
+.pnt-product-body,
+.pnt-addon-body {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
-.pnt-option-label {
+.pnt-option-label,
+.pnt-product-label,
+.pnt-addon-label {
+  color: var(--ink);
   font-size: 0.94rem;
   font-weight: 600;
-  color: var(--ink);
 }
 
-.pnt-option-hint {
-  font-size: 0.8rem;
+.pnt-option-hint,
+.pnt-product-hint,
+.pnt-addon-hint {
   color: var(--ink-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
 }
 
-.pnt-option-price {
+.pnt-option-price,
+.pnt-product-price,
+.pnt-addon-price {
+  color: var(--gold-deep);
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--gold-deep);
+}
+
+.pnt-product-price {
+  margin-right: 22px;
 }
 
 .pnt-option-radio {
-  flex-shrink: 0;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  flex-shrink: 0;
   border: 2px solid var(--border);
+  border-radius: 50%;
 }
 
-.pnt-option.selected .pnt-option-radio {
+.pnt-option.selected .pnt-option-radio,
+.pnt-product.selected .pnt-option-radio {
   border-color: var(--gold);
   background: radial-gradient(circle, var(--gold) 0 40%, transparent 42%);
 }
 
-.pnt-compare-link {
+.pnt-addon-check {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: var(--space-3);
-  padding: 10px 0;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: var(--ink-soft);
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: transparent;
 }
 
-.pnt-compare-link svg:last-child {
-  margin-left: auto;
+.pnt-addon.selected .pnt-addon-check {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--on-gold);
 }
 
-/* -------------------------------------------------------------- brands */
+/* Brands */
 
 .pnt-brand-grid {
   display: grid;
@@ -555,26 +596,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 88px;
+  min-height: 88px;
   padding: var(--space-3);
-  background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  background: var(--white);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .pnt-brand-card:hover {
   box-shadow: var(--shadow);
-  transform: translateY(-4px);
-}
-
-.pnt-brand-card input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
 }
 
 .pnt-brand-card.selected {
@@ -603,34 +636,34 @@
 }
 
 .pnt-brand-why {
-  background: var(--light-bg);
-  border-radius: var(--radius);
   padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--light-bg);
 }
 
 .pnt-brand-why h3 {
-  font-size: 0.95rem;
   margin-bottom: var(--space-2);
+  font-size: 0.95rem;
 }
 
 .pnt-brand-why ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
-  font-size: 0.82rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   color: var(--ink-soft);
+  font-size: 0.82rem;
 }
 
 .pnt-brand-why li::before {
-  content: '✓ ';
+  content: "✓ ";
   color: var(--success);
   font-weight: 700;
 }
 
-/* ------------------------------------------------------------- tabs */
+/* Tabs and product empty state */
 
 .pnt-tabs {
   display: flex;
@@ -654,7 +687,6 @@
   font-size: 0.84rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
 .pnt-tab.active {
@@ -662,16 +694,14 @@
   color: var(--on-gold);
 }
 
-/* ----------------------------------------------------------- products */
-
 .pnt-product-gap {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: var(--space-4);
-  background: var(--accent-soft);
   border: 1px solid var(--accent-line);
   border-radius: var(--radius);
+  background: var(--accent-soft);
   color: var(--accent);
   font-size: 0.88rem;
 }
@@ -681,84 +711,7 @@
   margin-top: 1px;
 }
 
-.pnt-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pnt-product {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
-}
-
-.pnt-product:hover {
-  box-shadow: var(--shadow);
-}
-
-.pnt-product input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-
-.pnt-product.selected {
-  border-color: var(--gold);
-  background: var(--gold-a08);
-  box-shadow: inset 0 0 0 1px var(--gold);
-}
-
-.pnt-product-swatch {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
-  color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
-}
-
-.pnt-product-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pnt-product-label {
-  font-size: 0.94rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.pnt-product-hint {
-  font-size: 0.8rem;
-  color: var(--ink-muted);
-}
-
-.pnt-product-price {
-  flex-shrink: 0;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: var(--gold-deep);
-  margin-right: 22px;
-}
-
-/* -------------------------------------------------------------- colours */
+/* Colours */
 
 .pnt-swatch-grid {
   display: grid;
@@ -776,23 +729,16 @@
   cursor: pointer;
 }
 
-.pnt-swatch input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-
 .pnt-swatch-chip {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(0, 0, 0, 0.55);
-  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease);
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
 .pnt-swatch.selected .pnt-swatch-chip {
@@ -801,9 +747,9 @@
 }
 
 .pnt-swatch-name {
+  color: var(--ink-soft);
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--ink-soft);
   text-align: center;
 }
 
@@ -812,13 +758,13 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  margin-bottom: var(--space-3);
   padding: 12px 14px;
-  background: var(--light-bg);
   border-radius: var(--radius-sm);
+  background: var(--light-bg);
+  color: var(--ink-soft);
   font-size: 0.86rem;
   font-weight: 600;
-  color: var(--ink-soft);
-  margin-bottom: var(--space-3);
 }
 
 .pnt-gallery-link svg:last-child {
@@ -826,9 +772,9 @@
 }
 
 .pnt-colour-disclaimer {
-  font-size: 0.76rem;
-  color: var(--ink-muted);
   margin-bottom: var(--space-3);
+  color: var(--ink-muted);
+  font-size: 0.76rem;
 }
 
 .pnt-colour-selected {
@@ -836,31 +782,31 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: var(--gold-a08);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius-sm);
-  font-size: 0.88rem;
+  background: var(--gold-a08);
   color: var(--ink);
+  font-size: 0.88rem;
 }
 
 .pnt-colour-selected .pnt-swatch-chip {
   width: 28px;
   height: 28px;
-  aspect-ratio: unset;
   flex-shrink: 0;
+  aspect-ratio: unset;
 }
 
-/* ---------------------------------------------------------------- modal */
+/* Gallery and package comparison dialog */
 
 .pnt-modal-overlay {
   position: fixed;
   inset: 0;
   z-index: var(--z-drawer);
-  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   padding: 0;
+  background: rgba(0, 0, 0, 0.55);
 }
 
 .pnt-modal {
@@ -868,9 +814,9 @@
   max-width: 560px;
   max-height: 85vh;
   overflow-y: auto;
-  background: var(--white);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: var(--space-5);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--white);
 }
 
 .pnt-modal-head {
@@ -901,9 +847,9 @@
 }
 
 .pnt-gallery-group h4 {
-  font-size: 0.86rem;
-  color: var(--ink-muted);
   margin-bottom: var(--space-3);
+  color: var(--ink-muted);
+  font-size: 0.86rem;
 }
 
 .pnt-compare-table {
@@ -913,141 +859,47 @@
 }
 
 .pnt-compare-col {
-  padding: var(--space-3);
-  background: var(--light-bg);
-  border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--light-bg);
 }
 
 .pnt-compare-col p {
-  font-size: 0.84rem;
-  color: var(--ink-muted);
   margin: 0;
-}
-
-@media (min-width: 640px) {
-  .pnt-modal-overlay {
-    align-items: center;
-  }
-  .pnt-modal {
-    border-radius: var(--radius-lg);
-  }
-  .pnt-compare-table {
-    flex-direction: row;
-  }
-  .pnt-compare-col {
-    flex: 1;
-  }
-}
-
-/* ---------------------------------------------------------------- addons */
-
-.pnt-addon-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.pnt-addon {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
-}
-
-.pnt-addon:hover {
-  box-shadow: var(--shadow);
-}
-
-.pnt-addon input {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-}
-
-.pnt-addon.selected {
-  border-color: var(--gold);
-  background: var(--gold-a08);
-}
-
-.pnt-addon-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(160deg, #fffdf6 0%, #fbeecb 60%, #f2dda3 100%);
-  color: var(--gold-deep);
-  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
-}
-
-.pnt-addon-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.pnt-addon-label {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.pnt-addon-hint {
-  font-size: 0.78rem;
   color: var(--ink-muted);
+  font-size: 0.84rem;
 }
 
-.pnt-addon-price {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--gold-deep);
-}
-
-.pnt-addon-check {
-  flex-shrink: 0;
+.pnt-compare-link {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 2px solid var(--border);
-  color: transparent;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--gold-deep);
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
-.pnt-addon.selected .pnt-addon-check {
-  border-color: var(--gold);
-  background: var(--gold);
-  color: var(--on-gold);
-}
+/* Summary */
 
-/* -------------------------------------------------------------- summary */
+.pnt-summary h2 {
+  margin-bottom: var(--space-4);
+  font-size: 1.25rem;
+}
 
 .pnt-summary-rows {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   margin: 0 0 var(--space-5);
 }
 
 .pnt-summary-row {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
   padding-bottom: 10px;
@@ -1055,26 +907,28 @@
 }
 
 .pnt-summary-row dt {
-  font-size: 0.82rem;
-  color: var(--ink-muted);
   flex-shrink: 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
 }
 
 .pnt-summary-row dd {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
   margin: 0;
+  color: var(--ink);
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--ink);
   text-align: right;
 }
 
 .pnt-summary-edit {
+  flex-shrink: 0;
+  color: var(--gold-deep);
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--gold-deep);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -1083,23 +937,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+  margin-bottom: var(--space-5);
   padding: var(--space-4);
-  background: linear-gradient(180deg, #fffdf5 0%, var(--gold-a08) 100%);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius);
+  background: linear-gradient(180deg, #fffdf5, var(--gold-a08));
   box-shadow: var(--depth-inset-top), var(--shadow-sm);
-  margin-bottom: var(--space-5);
 }
 
 .pnt-summary-total span {
-  font-size: 0.86rem;
+  flex-shrink: 0;
   color: var(--ink-soft);
+  font-size: 0.86rem;
+  white-space: nowrap;
 }
 
 .pnt-summary-total strong {
+  min-width: 0;
+  color: var(--gold-deep);
   font-family: var(--font-display);
   font-size: 1.3rem;
-  color: var(--gold-deep);
+  line-height: 1.25;
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .pnt-summary-total strong {
+    font-size: 1.05rem;
+  }
 }
 
 .pnt-summary-includes {
@@ -1107,25 +973,25 @@
 }
 
 .pnt-summary-includes h3 {
-  font-size: 0.92rem;
   margin-bottom: var(--space-2);
+  font-size: 0.92rem;
 }
 
 .pnt-summary-includes ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .pnt-summary-includes li {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 0.86rem;
   color: var(--ink-soft);
+  font-size: 0.86rem;
 }
 
 .pnt-summary-includes li svg {
@@ -1135,33 +1001,34 @@
 }
 
 .pnt-summary-note {
-  font-size: 0.78rem;
   color: var(--ink-muted);
+  font-size: 0.78rem;
 }
 
-/* ----------------------------------------------------------------- fee */
+/* Visit fee and confirmation */
 
 .pnt-fee-strip {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-top: var(--space-5);
   padding: 14px 18px;
-  background: linear-gradient(180deg, #262626 0%, var(--black) 100%);
   border-radius: var(--radius);
+  background: linear-gradient(180deg, #262626, var(--black));
   box-shadow: var(--shadow-sm);
   color: var(--white);
 }
 
 .pnt-fee-strip span:first-child {
+  color: var(--gold-light);
   font-family: var(--font-display);
   font-size: 1.1rem;
-  color: var(--gold-light);
 }
 
 .pnt-fee-strip span:last-child {
-  font-size: 0.76rem;
   color: var(--on-dark-muted);
+  font-size: 0.76rem;
 }
 
 .pnt-fee-note {
@@ -1170,38 +1037,40 @@
   gap: 8px;
   margin: var(--space-4) 0;
   padding: var(--space-3) var(--space-4);
-  background: var(--gold-a08);
   border: 1px solid var(--gold-a40);
   border-radius: var(--radius-sm);
-  font-size: 0.84rem;
+  background: var(--gold-a08);
   color: var(--ink-soft);
+  font-size: 0.84rem;
   text-align: left;
 }
 
 .pnt-fee-note svg {
   flex-shrink: 0;
-  color: var(--gold-deep);
   margin-top: 1px;
+  color: var(--gold-deep);
 }
-
-/* -------------------------------------------------------- renovation closing */
 
 .pnt-closing {
   position: relative;
+  overflow: hidden;
   margin-top: var(--space-6);
   padding: var(--space-7) var(--space-5);
-  background: var(--black) url('/assets/projects/modern-interior.webp') center/cover;
   border-radius: var(--radius-lg);
+  background: var(--black) url("/assets/projects/modern-interior.webp") center/cover;
   box-shadow: var(--shadow-lg);
   text-align: center;
-  overflow: hidden;
 }
 
 .pnt-closing::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(5, 5, 5, 0.75), rgba(5, 5, 5, 0.9));
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 5, 0.75),
+    rgba(5, 5, 5, 0.9)
+  );
 }
 
 .pnt-closing-eyebrow,
@@ -1213,87 +1082,77 @@
 
 .pnt-closing-eyebrow {
   display: block;
+  margin-bottom: var(--space-3);
+  color: var(--gold-light);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.12em;
-  color: var(--gold-light);
-  margin-bottom: var(--space-3);
 }
 
 .pnt-closing h2 {
+  margin-bottom: var(--space-5);
   color: var(--white);
   font-size: clamp(1.3rem, 3vw, 1.8rem);
-  margin-bottom: var(--space-5);
 }
 
-/* --------------------------------------------------------------- mobile */
+/* Shared responsive layout */
+
+@media (min-width: 640px) {
+  .pnt-modal-overlay {
+    align-items: center;
+  }
+
+  .pnt-modal {
+    border-radius: var(--radius-lg);
+  }
+
+  .pnt-compare-table {
+    flex-direction: row;
+  }
+
+  .pnt-compare-col {
+    flex: 1;
+  }
+}
 
 @media (max-width: 767px) {
   .pnt-hero {
     min-height: 340px;
   }
+
   .pnt-hero-logo {
-    width: 64px;
     top: calc(var(--header-h-mobile) + var(--space-3));
+    width: 64px;
   }
-  /* Reserves room for the logo (64px + its right gutter) so a longer
-     heading, like POP Ceiling & Design's, wraps before reaching it
-     instead of running underneath — Painting's own shorter title never
-     surfaced this since it never got that close on its own.
 
-     Doubled-up selector (not just .pnt-hero-inner) so this reliably
-     beats components.css's own `.container { padding: 0 18px }` reset
-     at ≤420px — same specificity, but components.css loads later, so
-     the single-class version silently lost that fight.
+  .pnt-hero-inner.container {
+    padding-top: calc(var(--header-h-mobile) + var(--space-5));
+    padding-right: calc(var(--gutter) + 84px);
+  }
 
-     padding-top is restated for the same reason: that .container reset
-     was already silently zeroing it (a pre-existing, previously-dormant
-     bug), which never showed up while every heading here fit on one
-     line inside the flex-end-aligned, min-height-floored .pnt-hero — but
-     the extra wrap this padding-right forces on longer titles grows the
-     content past that floor, and with no top clearance restated, the
-     grown box has nothing pushing it below the fixed header, so its
-     first line renders hidden behind it. Same clearance formula already
-     used for .pnt-hero-logo's own top offset, just above. */
-  .pnt-hero .pnt-hero-inner {
-    padding-top: calc(var(--header-h-mobile) + var(--space-3));
-    padding-right: 90px;
-  }
-  .pnt-trust-row,
-  .pnt-intro-trust {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .pnt-problems-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .pnt-brand-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .pnt-swatch-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-/* =========================================================
-   Painting flow inside Services modal
-   ========================================================= */
+
+/* Painting popup shell */
 
 .painting-modal-scope .pnt-section {
-  /* .pnt-section's own top/bottom padding (clamp 56-104px each) is meant to
-     clear a full-page hero banner above and give breathing room below —
-     the modal has no hero, just its own compact header and scroll area, so
-     that padding was showing as large blank gaps above and below the
-     category list. */
+  margin-top: 0 !important;
   padding-top: 0 !important;
   padding-bottom: 12px !important;
-  margin-top: 0 !important;
 }
 
 .painting-modal-scope .pnt-flow-shell,
 .painting-modal-scope .wizard-shell {
   min-height: 0 !important;
-  background: transparent !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+  background: transparent !important;
 }
 
 .painting-modal-scope .pnt-flow-shell .container,
@@ -1302,119 +1161,418 @@
   width: 100% !important;
   max-width: none !important;
   min-height: 0 !important;
+  padding-top: 0 !important;
   background: transparent !important;
+}
+
+/* POP-style heading and progress strip */
+
+.painting-modal-scope .pnt-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.painting-modal-scope .pnt-back {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  color: #202020;
+}
+
+.waterproofing-modal-scope .pnt-hero {
+  min-height: clamp(220px, 34vh, 300px);
+}
+
+.waterproofing-modal-scope .pnt-hero-inner {
+  padding-top: 76px;
+  padding-bottom: 28px;
+  padding-inline: clamp(20px, 4vw, 36px);
+}
+
+.waterproofing-modal-scope .pnt-hero-logo {
+  top: 14px;
+  right: 20px;
+  width: 58px;
+}
+
+.waterproofing-modal-scope .pnt-section {
+  padding-top: 12px !important;
+  padding-bottom: 16px !important;
+}
+
+.waterproofing-modal-scope .pnt-overview-list {
+  margin-top: 0;
+}
+
+.waterproofing-modal-scope button.pnt-overview-card {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wp-modal-back-row {
+  max-width: none !important;
+  /* right padding keeps the button clear of the pop-up's close button */
+  padding: 10px 72px 6px 20px !important;
+}
+
+.wp-modal-wizard,
+.wp-modal-flow {
+  min-height: 0 !important;
+  padding-top: 12px !important;
+  padding-bottom: 16px !important;
+  background: transparent !important;
+}
+
+/* The flow's title bar starts below the pop-up's close button (the pop-up
+   header is hidden inside a waterproofing flow). */
+.waterproofing-modal-scope .wp-modal-wizard,
+.waterproofing-modal-scope .wp-modal-flow {
+  padding-top: 60px !important;
+}
+
+.wp-modal-wizard .wizard-container,
+.wp-modal-flow .container-narrow {
+  width: 100% !important;
+  max-width: none !important;
   padding-top: 0 !important;
 }
 
-.painting-modal-scope .pnt-section {
-  padding-top: 0 !important;
-  padding-bottom: 12px !important;
-  margin-top: 0 !important;
-}
-
-/* =========================================================
-   Painting modal — mobile product card layout
-   ========================================================= */
-
-@media (max-width: 767px) {
-  .painting-modal-scope .pnt-product {
-    display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) 20px;
-    grid-template-rows: auto auto;
-    column-gap: 10px;
-    row-gap: 4px;
-    align-items: start;
-    padding: 12px;
+@media (max-width: 640px) {
+  .waterproofing-modal-scope .pnt-hero {
+    min-height: clamp(210px, 34vh, 250px);
   }
 
-  .painting-modal-scope .pnt-product-swatch {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-
-    width: 40px;
-    height: 40px;
+  .waterproofing-modal-scope .pnt-hero-inner {
+    padding: 64px clamp(20px, 5vw, 28px) 22px;
   }
 
-  .painting-modal-scope .pnt-product-body {
-    grid-column: 2;
-    grid-row: 1;
-
-    width: 100%;
-    min-width: 0;
+  .waterproofing-modal-scope .pnt-hero-inner h1 {
+    font-size: 1.65rem;
   }
 
-  .painting-modal-scope .pnt-product-label {
-    display: block;
-    width: 100%;
-    white-space: normal;
-    word-break: normal;
-    overflow-wrap: normal;
+  .waterproofing-modal-scope .pnt-hero-logo {
+    width: 44px;
   }
 
-  .painting-modal-scope .pnt-product-hint {
-    display: block;
-    width: 100%;
-    line-height: 1.4;
-  }
-
-  .painting-modal-scope .pnt-product-price {
-    grid-column: 2;
-    grid-row: 2;
-
-    margin-right: 0;
-    white-space: nowrap;
-  }
-
-  .painting-modal-scope .pnt-option-radio {
-    grid-column: 3;
-    grid-row: 1 / span 2;
-
-    align-self: center;
+  .waterproofing-modal-scope .pnt-overview-photo {
+    width: 56px;
+    height: 56px;
   }
 }
-
-/* =========================================================
-   Painting modal — progress indicator colours
-   ========================================================= */
-
-.painting-modal-scope .pnt-step-num {
-  background: #000000;
-  color: #f1f1f3;
-  border: 1px solid #d1d5db;
-}
-
-.painting-modal-scope .pnt-step-line {
-  background: #000000;
-}
-
-.painting-modal-scope .pnt-step.current .pnt-step-num {
-  background: var(--gold);
-  color: var(--on-gold);
-  border-color: var(--gold);
-}
-
-.painting-modal-scope .pnt-step.done .pnt-step-num {
-  background: var(--gold);
-  color: var(--on-gold);
-  border-color: var(--gold);
-}
-
-.painting-modal-scope .pnt-step.done .pnt-step-line {
-  background: var(--gold);
-}
-
-/* =========================================================
-   Painting modal — top heading and help link colours
-   ========================================================= */
 
 .painting-modal-scope .pnt-top-title {
-  color: var(--ink) !important;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: #202020 !important;
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: 0;
 }
 
 .painting-modal-scope .pnt-help {
-  color: var(--ink-muted) !important;
+  flex-shrink: 0;
+  padding: 7px 9px;
+  border: 1px solid #ead7a1;
+  border-radius: 8px;
+  color: #8a650b !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .painting-modal-scope .pnt-help:hover {
-  color: var(--gold-deep) !important;
+  background: #fff9e9;
+}
+
+.painting-modal-scope .pnt-step-caption {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: #8a650b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.painting-modal-scope .pnt-steps {
+  display: none;
+}
+
+.painting-modal-scope .pnt-step-card {
+  padding: 16px !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.painting-modal-scope .pnt-step-title {
+  margin: 0 0 16px;
+  color: #202020;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+/* Two image options per row */
+
+.painting-modal-scope .pnt-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.painting-modal-scope .pnt-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid #e7e7e7;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+}
+
+.painting-modal-scope .pnt-option:hover,
+.painting-modal-scope .pnt-option:focus-within {
+  border-color: #d9a624;
+  box-shadow: 0 0 0 3px rgba(217, 166, 36, 0.12);
+}
+
+.painting-modal-scope .pnt-option.selected {
+  border-color: #d9a624;
+  background: #fff9e9;
+  box-shadow: none;
+}
+
+/* OptionCard currently sets thumbnail dimensions inline */
+
+.painting-modal-scope .pnt-option > span:first-of-type {
+  width: 100% !important;
+  height: 115px !important;
+  padding: 0;
+  border-radius: 0 !important;
+}
+
+.painting-modal-scope .pnt-option > span:first-of-type img {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.painting-modal-scope .pnt-option > .pnt-option-icon {
+  display: grid;
+  place-items: center;
+  background: #fbf5e7;
+  color: #8a650b;
+}
+
+.painting-modal-scope .pnt-option-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.painting-modal-scope .pnt-option-label {
+  color: #202020;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.painting-modal-scope .pnt-option-hint {
+  color: #737373;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.painting-modal-scope .pnt-option-price {
+  margin-top: auto;
+  padding-top: 5px;
+  color: #8a650b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Selection check over the option image */
+
+.painting-modal-scope .pnt-option > .pnt-option-radio {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+}
+
+.painting-modal-scope .pnt-option.selected > .pnt-option-radio {
+  background: #a77a12;
+}
+
+.painting-modal-scope .pnt-option.selected > .pnt-option-radio::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  border-radius: 0;
+  background: transparent;
+  transform: rotate(45deg);
+}
+
+/* Updated brand, product, and colour components */
+
+.painting-modal-scope .pnt-brand-why ul {
+  grid-template-columns: 1fr;
+}
+
+.painting-modal-scope .pnt-brand-why li::before {
+  content: none;
+}
+
+.painting-modal-scope .pnt-product-gap {
+  display: block;
+}
+
+.painting-modal-scope .pnt-product {
+  min-width: 0;
+}
+
+.painting-modal-scope .pnt-product-body {
+  min-width: 0;
+}
+
+.painting-modal-scope .pnt-product-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.painting-modal-scope .pnt-product-price {
+  margin-right: 0;
+}
+
+.painting-modal-scope .pnt-swatch.selected .pnt-swatch-chip {
+  transform: none;
+  box-shadow: none;
+}
+
+.painting-modal-scope .pnt-brand-card:focus-within,
+.painting-modal-scope .pnt-product:focus-within,
+.painting-modal-scope .pnt-addon:focus-within,
+.painting-modal-scope .pnt-swatch:focus-within {
+  outline: 2px solid #a77a12;
+  outline-offset: 3px;
+}
+
+/* Compact phone layout */
+
+@media (max-width: 420px) {
+  .painting-modal-scope .pnt-step-card {
+    padding: 12px !important;
+  }
+
+  .painting-modal-scope .pnt-option-list {
+    gap: 8px;
+  }
+
+  .painting-modal-scope .pnt-option > span:first-of-type {
+    height: 90px !important;
+  }
+
+  .painting-modal-scope .pnt-option-body {
+    padding: 9px;
+  }
+
+  .painting-modal-scope .pnt-option-label {
+    font-size: 13px;
+  }
+
+  .painting-modal-scope .pnt-top-title {
+    font-size: 14px;
+  }
+
+  .painting-modal-scope .pnt-help {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .painting-modal-scope .pnt-summary-row {
+    gap: 10px;
+  }
+
+  .painting-modal-scope .pnt-summary-row dt {
+    flex-shrink: 1;
+  }
+
+  .painting-modal-scope .pnt-summary-row dd {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    overflow-wrap: anywhere;
+  }
+}
+/* Stable booking card selection */
+.painting-modal-scope .pnt-option input,
+.painting-modal-scope .pnt-product input,
+.painting-modal-scope .pnt-addon input,
+.painting-modal-scope .pnt-brand-card input,
+.painting-modal-scope .pnt-swatch input {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%);
+}
+
+.painting-modal-scope .pnt-option,
+.painting-modal-scope .pnt-product,
+.painting-modal-scope .pnt-addon,
+.painting-modal-scope .pnt-brand-card,
+.painting-modal-scope .pnt-swatch {
+  position: relative;
+  transform: none !important;
+  transition-property: border-color, background-color, box-shadow !important;
+  transition-duration: 120ms !important;
+}
+
+.painting-modal-scope .pnt-option:hover,
+.painting-modal-scope .pnt-product:hover,
+.painting-modal-scope .pnt-addon:hover,
+.painting-modal-scope .pnt-brand-card:hover,
+.painting-modal-scope .pnt-swatch:hover {
+  transform: none !important;
 }

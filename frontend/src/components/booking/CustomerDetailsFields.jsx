@@ -8,6 +8,11 @@ import {
   useLocationContext,
   usePickedLocation,
 } from '../../context/LocationContext';
+import {
+  getBookingPhotos,
+  setBookingPhotos,
+  MAX_BOOKING_PHOTOS,
+} from '../../lib/bookingPhotos';
 
 export function Field({ id, label, required, hint, error, ...rest }) {
   return (
@@ -312,8 +317,10 @@ export function AddressFields({
  * - Image previews
  * - Remove individual images
  *
- * The selected File[] is passed to the parent through
- * the optional onImagesChange callback.
+ * The selected files are kept in lib/bookingPhotos (per idPrefix), so they
+ * survive the customer moving on to the next step and back; the booking
+ * flow uploads them with uploadBookingPhotos() once the booking exists.
+ * The optional onImagesChange callback also receives them.
  */
 export default function CustomerDetailsFields({
   details,
@@ -328,7 +335,11 @@ export default function CustomerDetailsFields({
      IMAGE STATE
      ========================================================= */
 
-  const [images, setImages] = useState([]);
+  // Starts with any photos already picked in this form (coming Back to it).
+  const [images, setImages] = useState(() =>
+    getBookingPhotos(idPrefix)
+  );
+
   const [imagePreviews, setImagePreviews] = useState([]);
 
   /* =========================================================
@@ -354,10 +365,13 @@ export default function CustomerDetailsFields({
      ========================================================= */
 
   useEffect(() => {
+    // Kept for the booking flow to upload once the booking is made.
+    setBookingPhotos(idPrefix, images);
+
     if (typeof onImagesChange === 'function') {
       onImagesChange(images);
     }
-  }, [images, onImagesChange]);
+  }, [images, idPrefix, onImagesChange]);
 
   /* =========================================================
      IMAGE SELECT
@@ -378,7 +392,8 @@ export default function CustomerDetailsFields({
     );
 
     // Maximum 5 images.
-    const availableSlots = 5 - images.length;
+    const availableSlots =
+      MAX_BOOKING_PHOTOS - images.length;
 
     const filesToAdd = validImages.slice(
       0,
@@ -530,7 +545,7 @@ export default function CustomerDetailsFields({
               UPLOAD BUTTON
               ------------------------------------------------- */}
 
-          {images.length < 5 && (
+          {images.length < MAX_BOOKING_PHOTOS && (
             <label
               htmlFor={`${idPrefix}-project-images`}
               className="booking-image-add"

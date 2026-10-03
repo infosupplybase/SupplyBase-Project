@@ -1,18 +1,27 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
 import { activeServices } from '../../data/services';
 import useServiceCatalogue, { serviceRoute } from '../../hooks/useServiceCatalogue';
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
+import { useLoginGate } from '../auth/LoginGate';
 
 /**
  * MobileMenu — slide-in navigation drawer for tablet and phone.
  */
 export default function MobileMenu({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { openLogin } = useLoginGate();
+
+  const handleLogout = async () => {
+    await logout();
+    onClose();
+    navigate('/');
+  };
 
   // Live catalogue, with the static list only as the "not loaded yet" fill-in.
   const { services } = useServiceCatalogue(activeServices);
@@ -75,9 +84,27 @@ export default function MobileMenu({ open, onClose }) {
               </NavLink>
             )
           )}
-          <NavLink to={user ? '/dashboard' : '/login'} className="mobile-link" onClick={onClose}>
-            {user ? 'MY ACCOUNT' : 'LOGIN'}
-          </NavLink>
+          {user ? (
+            <>
+              <NavLink to="/dashboard" className="mobile-link" onClick={onClose}>
+                MY ACCOUNT
+              </NavLink>
+              <button type="button" className="mobile-link text-left" onClick={handleLogout}>
+                LOG OUT
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="mobile-link text-left"
+              onClick={() => {
+                onClose();
+                openLogin();
+              }}
+            >
+              LOGIN
+            </button>
+          )}
         </nav>
 
         <div className="mobile-foot">

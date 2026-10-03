@@ -26,11 +26,7 @@ export const waterproofingImages = {
 
   'Interior Waterproofing':
     '/assets/waterproofing/interior-waterproofing.png',
-
- 
-
-  
-};
+   };
 
 
 /**

@@ -19,7 +19,10 @@ import { useAuth } from '../../context/AuthContext';
  * true once they are signed in (the booking then goes through), or false if
  * they close it (nothing is booked; they can press Confirm again).
  */
-const LoginGateContext = createContext(async () => true);
+const LoginGateContext = createContext({
+  ensureLogin: async () => true,
+  openLogin: () => { },
+});
 
 export function LoginGateProvider({ children }) {
   const { user } = useAuth();
@@ -53,6 +56,18 @@ export function LoginGateProvider({ children }) {
     });
   }, []);
 
+  const openLogin = useCallback(() => {
+    setMode('login');
+    setRequest({
+      prefill: {
+        name: '',
+        email: '',
+        phone: '',
+      },
+      source: 'navbar',
+    });
+  }, []);
+
   // Escape closes the card (the booking stays as it was).
   useEffect(() => {
     if (!request) return undefined;
@@ -67,14 +82,18 @@ export function LoginGateProvider({ children }) {
   }, [request, finish]);
 
   return (
-    <LoginGateContext.Provider value={ensureLogin}>
+    <LoginGateContext.Provider value={{ ensureLogin, openLogin }}>
       {children}
       {request && (
         <div
           className="auth-screen auth-overlay"
           role="dialog"
           aria-modal="true"
-          aria-label="Sign in to confirm your booking"
+          aria-label={
+            request.source === 'navbar'
+              ? 'Login or create an account'
+              : 'Sign in to confirm your booking'
+          }
           onClick={(e) => {
             if (e.target === e.currentTarget) finish(false);
           }}
@@ -86,10 +105,12 @@ export function LoginGateProvider({ children }) {
                 <Icon name="close" size={18} />
               </button>
 
-              <p className="auth-kept-note">
-                <Icon name="check-circle" size={16} />
-                <span>Your booking details are saved — sign in to confirm.</span>
-              </p>
+              {request.source !== 'navbar' && (
+                <p className="auth-kept-note">
+                  <Icon name="check-circle" size={16} />
+                  <span>Your booking details are saved — sign in to confirm.</span>
+                </p>
+              )}
 
               <AuthPanel
                 compact
@@ -97,7 +118,17 @@ export function LoginGateProvider({ children }) {
                 onModeChange={setMode}
                 prefill={request.prefill}
                 heading={
-                  mode === 'register' ? (
+                  request.source === 'navbar' ? (
+                    mode === 'register' ? (
+                      <>
+                        Create an <span className="auth-accent">Account</span>
+                      </>
+                    ) : (
+                      <>
+                        Welcome <span className="auth-accent">Back</span>
+                      </>
+                    )
+                  ) : mode === 'register' ? (
                     <>
                       Create an <span className="auth-accent">Account</span> to Book
                     </>
@@ -119,5 +150,9 @@ export function LoginGateProvider({ children }) {
 
 /** `await ensureLogin(details)` → true once signed in, false if closed. */
 export function useEnsureLogin() {
+  return useContext(LoginGateContext).ensureLogin;
+}
+
+export function useLoginGate() {
   return useContext(LoginGateContext);
 }
