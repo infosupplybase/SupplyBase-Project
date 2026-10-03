@@ -38,8 +38,7 @@ const renovationImages = {
 };
 
 const STANDARD_IMAGE = '/assets/painting/hero/painter-roller.webp';
-const RENOVATION_IMAGE =
-  'https://www.avenir-renovations.fr/uploads/service/peinture-a-meaux-rZY1B.jpg';
+const RENOVATION_IMAGE = '/assets/projects/villa-renovation.webp';
 const COMPLETE_IMAGE = '/assets/projects/painting-finishing.webp';
 
 const packageImages = {

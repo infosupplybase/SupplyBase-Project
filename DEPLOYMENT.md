@@ -61,10 +61,13 @@ Set production CORS to the exact origins **of every frontend app** (website,
 admin and partners), for example:
 
 ```text
-CORS_ORIGINS=https://supplybase-projects.vercel.app,https://admin.supplybase.co.in,https://partners.supplybase.co.in,https://www.supplybase.co.in,https://supplybase.co.in
+CORS_ORIGINS=https://www.supplybase.co.in,https://supplybase.co.in,https://admin.supplybase.co.in,https://partners.supplybase.co.in
 ```
 
-Do not include `localhost` or wildcard origins in production.
+Do not include `localhost` or wildcard origins in production: they let a
+program running on a visitor's own computer call the API with that visitor's
+sign-in. The API logs a warning at startup if it finds them next to a public
+`https` `FRONTEND_URL`.
 
 ## 3. Deploy the website (`frontend/`) to Vercel
 
@@ -83,6 +86,16 @@ Do not include `localhost` or wildcard origins in production.
    as `/services/plumbing` working on a direct visit or refresh — Vite builds
    a static site, so without that rewrite rule Vercel would 404 anything that
    isn't `/`.
+
+   The same file sends the website's security headers (a Content-Security-
+   Policy, `X-Frame-Options: DENY`, `nosniff`, a referrer policy and a
+   permissions policy). The policy only lets the page load files from the
+   site itself, Google Fonts, Google Maps / Google sign-in and the API. **If
+   you add another outside service** (analytics, a chat widget, a payment
+   script, images hosted elsewhere) its address must be added to the matching
+   directive in `frontend/vercel.json`, or the browser will block it. Open the
+   browser console after a deploy: a blocked file shows up as "violates the
+   following Content Security Policy directive".
 5. Add the final Vercel URL to the API's `CORS_ORIGINS` value and redeploy the
    API once.
 
@@ -101,7 +114,9 @@ as the website; they're different apps with different builds.
 | `VITE_API_URL` | `https://YOUR-API-HOST` — same value as the website's |
 
 4. Deploy — it needs its own `vercel.json` rewrite rule too, same reason as
-   the website's (a static build, client-side routes need the fallback).
+   the website's (a static build, client-side routes need the fallback). That
+   file also carries the admin panel's security headers (it loads nothing
+   except its own files, the fonts and the API; it cannot be put in a frame).
 5. Add this app's final Vercel URL to the API's `CORS_ORIGINS` value
    (alongside the website's) and redeploy the API once.
 6. Consider restricting who can even load this URL — a custom subdomain like
@@ -262,14 +277,57 @@ Data survives — it's in named Docker volumes (`supplybase-mysql-data`,
 
 ### g) Backups
 
-Nothing here does this for you yet. At minimum, a daily cron job dumping the
-database is worth setting up before real customer data lives on it:
+`backend/scripts/backup.sh` backs up the two things that cannot be rebuilt:
+the database (one compressed SQL file) and the uploaded photos and documents
+(one compressed archive). It keeps 14 days of both and never leaves a
+half-written file that looks complete.
 
 ```bash
-# /etc/cron.d/supplybase-backup, or crontab -e as root
-0 3 * * * docker exec supplybase-mysql sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" supplybase' > /root/backups/supplybase-$(date +\%F).sql
+# once, on the server
+chmod +x /opt/SupplyBase-Project/backend/scripts/backup.sh
+mkdir -p /var/backups/supplybase
+
+# every night at 03:00 - crontab -e as root
+0 3 * * * /opt/SupplyBase-Project/backend/scripts/backup.sh >> /var/log/supplybase-backup.log 2>&1
 ```
 
-Adjust the path, and consider copying those dump files off the server
-periodically (e.g. to S3 or another machine) — a backup that lives on the
-same disk as the database doesn't protect against the server itself failing.
+Run it once by hand first and look at `/var/backups/supplybase`. Then **copy
+that folder off the server** now and then (another machine, or S3 / Google
+Drive with `rclone`): a backup on the same disk does not survive that disk,
+or the server, being lost.
+
+**Restoring** (the database; do this on a spare machine first to prove the
+backup works):
+
+```bash
+gunzip -c /var/backups/supplybase/db-YYYYMMDD-HHMMSS.sql.gz \
+  | docker exec -i supplybase-mysql sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'
+```
+
+The uploaded files go back into the uploads volume the same way they came out
+(the volume's name is shown by `docker inspect supplybase-api`):
+
+```bash
+docker run --rm -v VOLUME_NAME:/data -v /var/backups/supplybase:/backup alpine \
+  tar xzf /backup/uploads-YYYYMMDD-HHMMSS.tar.gz -C /data
+```
+
+### h) Keeping the server tidy and safe
+
+- **Logs.** `docker-compose.prod.yml` keeps the last 5 x 10 MB of each
+  container's output; before this, Docker kept all of it until the disk filled.
+  (Applying it recreates both containers once, with the data intact.)
+- **nginx.** `nginx/supplybase-api.conf` sends the visitor's address
+  (`X-Forwarded-For`) to the API, which the sign-up limit relies on, and hides
+  the nginx version (`server_tokens off`). After pulling, copy these two
+  lines into `/etc/nginx/sites-available/supplybase-api` if they are missing,
+  then `nginx -t && systemctl reload nginx`.
+- **.env on the server.** `CORS_ORIGINS` must list only the public addresses
+  (section 2); leave `API_DOCS_ENABLED` unset; and once your admin account
+  exists, delete `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` from
+  `backend/.env` and recreate the API container.
+- **HTTPS certificate.** certbot renews it by itself; check that with
+  `certbot renew --dry-run` and `systemctl list-timers | grep certbot` now and
+  then (the current certificate expires every 90 days).
+- **Uptime.** Point a monitor at `https://api.yourdomain.com/actuator/health`
+  (a normal request or HEAD both answer 200 when the API is up).

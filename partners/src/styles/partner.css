@@ -421,6 +421,20 @@
 .pp-support-actions .btn {
   width: 100%;
 }
+
+/* In the narrow side column, and on phones, the two buttons stack instead of
+   sharing a row (side by side they ran off the left edge of a 375px screen). */
+.pp-side .pp-support-actions {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .pp-support-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
 /* Account card */
 
 .pp-account-head {

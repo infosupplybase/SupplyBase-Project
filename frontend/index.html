@@ -47,6 +47,40 @@
     />
     <meta name="twitter:image" content="https://www.supplybase.co.in/assets/brand/logo-full.jpg" />
 
+    <!--
+      Business details for search engines (schema.org). Only facts already on
+      the site: name, phone, email, region, areas served and opening hours.
+      A street address is left out because the site does not publish one;
+      add "streetAddress" and "postalCode" under "address" once it does.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HomeAndConstructionBusiness",
+        "name": "Supplybase",
+        "url": "https://www.supplybase.co.in/",
+        "logo": "https://www.supplybase.co.in/assets/brand/logo-full.jpg",
+        "image": "https://www.supplybase.co.in/assets/brand/logo-full.jpg",
+        "description": "Painting, waterproofing, plumbing, electrical, POP ceiling and interior design - site visits and complete project execution under one roof.",
+        "telephone": "+917709588422",
+        "email": "info.supplybase@gmail.com",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Mumbai",
+          "addressRegion": "Maharashtra",
+          "addressCountry": "IN"
+        },
+        "areaServed": ["Mumbai", "Navi Mumbai", "Thane", "Kalyan", "Panvel", "Pune"],
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "opens": "09:00",
+          "closes": "21:00"
+        },
+        "sameAs": ["https://www.instagram.com/supplybase_official/"]
+      }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -55,6 +89,28 @@
     />
   </head>
   <body>
+    <!-- Shown only when JavaScript is off or has not loaded: the site itself
+         is a JavaScript app, so crawlers and visitors without it still get
+         the essentials and a way to reach us. -->
+    <noscript>
+      <div style="max-width: 640px; margin: 48px auto; padding: 0 20px; font-family: Arial, sans-serif; line-height: 1.6; color: #1a1a1a">
+        <h1 style="font-size: 24px">Supplybase - one partner, complete project</h1>
+        <p>
+          Painting, waterproofing, plumbing, electrical work, POP ceilings and interior design,
+          across Mumbai, Navi Mumbai, Thane, Kalyan, Panvel and Pune. We visit every day,
+          9:00 AM to 9:00 PM.
+        </p>
+        <p>
+          This website needs JavaScript to book a visit. Please turn it on, or reach us directly:
+          call or WhatsApp <a href="tel:+917709588422">+91 77095 88422</a> or write to
+          <a href="mailto:info.supplybase@gmail.com">info.supplybase@gmail.com</a>.
+        </p>
+        <p>
+          <a href="/services">Services</a> - <a href="/about">About us</a> -
+          <a href="/contact">Contact us</a>
+        </p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

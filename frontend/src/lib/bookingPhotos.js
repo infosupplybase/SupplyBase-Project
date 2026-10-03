@@ -16,6 +16,9 @@ const pending = new Map(); // idPrefix -> File[]
 
 export const MAX_BOOKING_PHOTOS = 5;
 
+/** The photo types the API accepts for a booking (it checks the file's contents, not just its name). */
+export const BOOKING_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 export function getBookingPhotos(idPrefix) {
   return pending.get(idPrefix) || [];
 }

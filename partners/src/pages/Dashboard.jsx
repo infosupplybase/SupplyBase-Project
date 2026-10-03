@@ -312,6 +312,8 @@ export default function Dashboard() {
 
   /* ---------------------------------------------------------------- page */
 
+  const isPending = Boolean(profile && profile.status === 'PENDING');
+
   const side = (
     <>
       <div className="pp-card pp-account">
@@ -346,7 +348,10 @@ export default function Dashboard() {
       </div>
 
       <SecurityCard user={user} remembered={remembered} onSignOut={handleSignOut} />
-     
+      {/* A pending applicant sees the support card in the main column (below);
+          everyone else keeps it here, so approved partners can still reach the
+          partner desk about a job or a payout. */}
+      {!isPending && <SupportCard firstName={firstName} />}
     </>
   );
 
@@ -380,10 +385,7 @@ export default function Dashboard() {
             )}
 
             {body}
-             {profile && profile.status === 'PENDING' && (
-    <SupportCard firstName={firstName} />
-  )}
-
+            {isPending && <SupportCard firstName={firstName} />}
           </div>
 
           <aside className="pp-side" aria-label="Your account">

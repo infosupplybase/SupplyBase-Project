@@ -101,7 +101,7 @@ export const services = [
     summary:
       'The structure is the part of a building nobody sees and everybody depends on. We take on new construction from foundation to finished shell — RCC framing, blockwork, plastering, flooring, tiling and waterproofing — with supervised workmanship and standard-grade materials at every stage.',
     heroImage: '/assets/services/civil-construction.svg',
-    gallery: ['/assets/services/civil-construction.svg', '/assets/projects/ongoing-construction.svg'],
+    gallery: ['/assets/services/civil-construction.svg', '/assets/projects/ongoing-construction.webp'],
     subServices: [
       { name: 'New Construction', text: 'Complete construction from foundation to structure for homes and commercial buildings.' },
       { name: 'RCC Work', text: 'Footings, columns, beams and slabs executed to structural drawings.' },
@@ -144,7 +144,7 @@ export const services = [
     summary:
       'We design interiors and then actually build them — the same team draws the 3D view, makes the furniture, does the ceiling, the electrical and the painting. Residential homes, offices, showrooms and complete turnkey interior fit-outs delivered ready to move into.',
     heroImage: '/assets/services/interior-design.svg',
-    gallery: ['/assets/projects/modern-interior.svg', '/assets/services/interior-design.svg'],
+    gallery: ['/assets/projects/modern-interior.webp', '/assets/services/interior-design.svg'],
     subServices: [
       { name: 'Residential Interior', text: 'Full home interiors — living, dining, bedrooms, kitchen and balconies.' },
       { name: 'Commercial Interior', text: 'Showrooms, retail spaces, clinics and hospitality interiors.' },
@@ -438,7 +438,7 @@ export const services = [
     summary:
       'Ready-made furniture rarely fits an Indian floor plan. We make furniture to your exact dimensions — modular kitchens, wardrobes, TV units, beds, storage and office furniture — in plywood or MDF with branded hardware and the finish written into the quotation.',
     heroImage: '/assets/services/furniture.svg',
-    gallery: ['/assets/services/furniture.svg', '/assets/projects/modern-interior.svg'],
+    gallery: ['/assets/services/furniture.svg', '/assets/projects/modern-interior.webp'],
     subServices: [
       { name: 'Modular Furniture', text: 'Factory-finished modular units assembled on site.' },
       { name: 'Modular Kitchen', text: 'Base and wall units, tall units, accessories and counters.' },

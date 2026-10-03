@@ -3,7 +3,8 @@ import Icon from '../components/ui/Icon';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import useServiceCatalogue from '../hooks/useServiceCatalogue';
-import ServiceBookingModal, { useServiceBookingModal } from '../components/services/ServiceBookingModal';
+import { useServiceBookingModal } from '../components/services/useServiceBookingModal';
+import LazyServiceBookingModal, { useWarmBookingModal } from '../components/services/LazyServiceBookingModal';
 import optimizedImage from '../lib/optimizedImage';
 
 /**
@@ -28,6 +29,7 @@ export default function Services() {
   const { services, loading, error } = useServiceCatalogue([]);
 
   const booking = useServiceBookingModal();
+  useWarmBookingModal();
 
   return (
     <>
@@ -122,7 +124,7 @@ export default function Services() {
       <CtaBand />
 
       {booking.service && (
-        <ServiceBookingModal
+        <LazyServiceBookingModal
           key={booking.openToken}
           service={booking.service}
           onClose={booking.close}

@@ -1,7 +1,8 @@
 import Icon from '../ui/Icon';
 import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import optimizedImage from '../../lib/optimizedImage';
-import ServiceBookingModal, { useServiceBookingModal } from '../services/ServiceBookingModal';
+import { useServiceBookingModal } from '../services/useServiceBookingModal';
+import LazyServiceBookingModal, { useWarmBookingModal } from '../services/LazyServiceBookingModal';
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
     key in components/ui/Icon.jsx — used only as a placeholder if a category
@@ -35,6 +36,7 @@ export default function PopularServices() {
   const { services: categories, error } = useServiceCatalogue();
 
   const booking = useServiceBookingModal();
+  useWarmBookingModal();
 
   return (
     <section className="popular-services">
@@ -93,7 +95,7 @@ export default function PopularServices() {
       </div>
 
       {booking.service && (
-        <ServiceBookingModal
+        <LazyServiceBookingModal
           key={booking.openToken}
           service={booking.service}
           onClose={booking.close}
