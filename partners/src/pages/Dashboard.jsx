@@ -346,7 +346,7 @@ export default function Dashboard() {
       </div>
 
       <SecurityCard user={user} remembered={remembered} onSignOut={handleSignOut} />
-      <SupportCard firstName={firstName} />
+     
     </>
   );
 
@@ -380,6 +380,10 @@ export default function Dashboard() {
             )}
 
             {body}
+             {profile && profile.status === 'PENDING' && (
+    <SupportCard firstName={firstName} />
+  )}
+
           </div>
 
           <aside className="pp-side" aria-label="Your account">
