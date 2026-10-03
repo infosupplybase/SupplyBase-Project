@@ -26,6 +26,7 @@ const ElectricalCart = lazyPage(() => import('./pages/ElectricalCart'));
 const ElectricalCheckout = lazyPage(() => import('./pages/ElectricalCheckout'));
 const ElectricalSubPage = lazyPage(() => import('./pages/ElectricalCheckout').then((m) => ({ default: m.ElectricalSubPage })));
 const OtherServicesCategory = lazyPage(() => import('./pages/OtherServicesCategory'));
+const AcServices = lazyPage(() => import('./pages/AcServices'));
 const PlumbingCategory = lazyPage(() => import('./pages/PlumbingCategory'));
 const PlumbingTab = lazyPage(() => import('./pages/PlumbingTab'));
 const PlumbingConsultationList = lazyPage(() => import('./pages/PlumbingConsultationList'));
@@ -150,6 +151,11 @@ export default function App() {
             request. A category list in front of five existing generic
             wizard pages, same shape as the electrical category list. */}
         <Route path="services/other-services" element={<OtherServicesCategory />} />
+
+        {/* AC Services: its own booking flow (category -> options -> estimate ->
+            time -> details), V30 migration. */}
+        <Route path="services/ac-services" element={<AcServices />} />
+        <Route path="services/ac-services/:acCategory" element={<AcServices />} />
 
         {/* Plumbing Services: an itemised cart catalogue (V14 migration)
             replacing the old generic wizard for this one category. Exact

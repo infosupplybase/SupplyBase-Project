@@ -57,6 +57,11 @@ export const indexable = {
     description:
       'Interiors designed, built and installed - pick a package for your 1, 2, 3 BHK or villa, or describe what you want.',
   },
+  '/services/ac-services': {
+    title: 'AC Services | Supplybase',
+    description:
+      'AC servicing, repair, installation, uninstallation, gas charging and annual maintenance for split, window, inverter and other AC types.',
+  },
   '/services/other-services': {
     title: 'Other Home Services | Supplybase',
     description: 'Other repair and finishing jobs at your home - tell us what you need and book a visit.',

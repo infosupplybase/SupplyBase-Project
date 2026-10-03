@@ -25,6 +25,7 @@ import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
 import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import AcServices from '../../pages/AcServices';
 
 import WaterproofingFlow from '../../pages/WaterproofingFlow';
 import WaterproofingBathroom from '../../pages/WaterproofingBathroom';
@@ -89,10 +90,11 @@ export default function ServiceBookingModal({ service, onClose }) {
 
   // Inside a Painting or POP flow the flow shows its own title bar, so the
   // pop-up's "Book a service" header gives way to a spacer under the close
-  // button (yash's layout).
+  // button (yash's layout). AC Services always draws its own bar.
   const hideMainHeader =
     (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
-    (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow));
+    (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow)) ||
+    service.slug === 'ac-services';
 
   const openWaterproofingService = (route) => {
     const target = new URL(route, window.location.origin);
@@ -143,6 +145,7 @@ export default function ServiceBookingModal({ service, onClose }) {
     >
       <div
         className={`
+          ${service.slug === 'ac-services' ? 'booking-pop-ac-layout' : ''}
           relative
           w-full
           flex
@@ -158,10 +161,11 @@ export default function ServiceBookingModal({ service, onClose }) {
           max-sm:max-h-[92vh]
           max-sm:rounded-xl
         `}
-        // Painting keeps one steady height while its steps change size.
+        // Painting and AC Services keep one steady height while their steps
+        // change size.
         style={{
           maxWidth: modalMaxWidth,
-          ...(service.slug === 'painting'
+          ...(service.slug === 'painting' || service.slug === 'ac-services'
             ? { height: '88dvh', maxHeight: '88dvh' }
             : null),
         }}
@@ -1026,6 +1030,12 @@ export default function ServiceBookingModal({ service, onClose }) {
               />
             ) : null}
             </div>
+          ) : service.slug === 'ac-services' ? (
+            <AcServices
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
           ) : service.slug === 'other-services' ? (
             selectedOtherService ? (
               <ServiceBooking

@@ -1,0 +1,299 @@
+import { contact } from '../data/siteConfig';
+import { useEffect, useRef, useState } from 'react';
+import Icon from '../components/ui/Icon';
+import AcServiceOptions from '../components/ac/AcServiceOptions';
+import ModalFoot from '../components/services/ModalFoot';
+import {
+  acCategories,
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../data/acContent';
+import {
+  useFormBack,
+  useHistoryState,
+} from '../hooks/useHistoryState';
+
+function contains(options, value) {
+  return options.some((option) => option.value === value);
+}
+
+function positiveInteger(value) {
+  return value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1;
+}
+
+export default function AcServiceFlow({
+  categorySlug,
+  onBackToCatalogue,
+  onContinue,
+  onStepChange,
+}) {
+  const category = acCategories.find(
+    (item) => item.slug === categorySlug
+  );
+
+  const services = acServicesByCategory[categorySlug] || [];
+  const addons = acAddonsByCategory[categorySlug] || [];
+
+  const steps = [
+    { key: 'service', title: 'Choose your service' },
+    { key: 'ac-details', title: 'Choose AC type' },
+    ...(addons.length
+      ? [{ key: 'addons', title: 'Additional services' }]
+      : []),
+  ];
+
+  const prefix = `f:ac:${categorySlug}`;
+
+  const [stepIndex, setStepIndex] = useHistoryState(
+    `${prefix}:step`,
+    0,
+    { push: true }
+  );
+
+  const [answers, setAnswers] = useHistoryState(
+    `${prefix}:answers`,
+    {
+      service: '',
+      acType: '',
+      capacity: '',
+      refrigerant: '',
+      units: 1,
+      addons: [],
+      addonQuantities: {},
+    }
+  );
+
+  const [error, setError] = useState('');
+  const errorRef = useRef(null);
+  const formBack = useFormBack();
+
+  const index = Math.min(
+    Math.max(Number(stepIndex) || 0, 0),
+    steps.length - 1
+  );
+
+  const step = steps[index];
+  const isLastStep = index === steps.length - 1;
+
+  useEffect(() => {
+    setError('');
+  }, [index]);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus({ preventScroll: true });
+    }
+  }, [error]);
+
+  function updateAnswer(key, value) {
+    setError('');
+    setAnswers((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  }
+
+  function validate(key) {
+    if (key === 'service') {
+      if (!contains(services, answers.service)) {
+        return 'Please select a service to continue.';
+      }
+    }
+
+    if (key === 'ac-details') {
+      if (!contains(acTypes, answers.acType)) {
+        return 'Please select your AC type.';
+      }
+
+      if (
+        categorySlug === 'installation' &&
+        !contains(acCapacities, answers.capacity)
+      ) {
+        return 'Please select your AC capacity.';
+      }
+
+      if (
+        categorySlug === 'gas-charging' &&
+        !contains(acRefrigerants, answers.refrigerant)
+      ) {
+        return 'Please select the refrigerant.';
+      }
+
+      if (!positiveInteger(answers.units)) {
+        return 'Please enter a whole number of AC units, starting from 1.';
+      }
+    }
+
+    if (key === 'addons') {
+      for (const value of answers.addons || []) {
+        const addon = addons.find((item) => item.value === value);
+
+        if (!addon) {
+          return 'Please review your additional service selections.';
+        }
+
+        if (
+          addon.unit &&
+          !positiveInteger(answers.addonQuantities?.[value] ?? 1)
+        ) {
+          return `Please enter a valid quantity for ${addon.label}.`;
+        }
+      }
+    }
+
+    return '';
+  }
+
+  function continueFlow() {
+    const message = validate(step.key);
+
+    if (message) {
+      setError(message);
+      return;
+    }
+
+    if (!isLastStep) {
+      setStepIndex(index + 1);
+      onStepChange?.();
+      return;
+    }
+
+    // Validate all selections before handing them to customer details.
+    for (let i = 0; i < steps.length; i += 1) {
+      const issue = validate(steps[i].key);
+
+      if (issue) {
+        setStepIndex(i, { push: false });
+        setError(issue);
+        onStepChange?.();
+        return;
+      }
+    }
+
+    const quantities = {};
+
+    for (const value of answers.addons || []) {
+      const addon = addons.find((item) => item.value === value);
+
+      if (addon?.unit) {
+        quantities[value] = Number(
+          answers.addonQuantities?.[value] ?? 1
+        );
+      }
+    }
+
+    onContinue({
+      category: categorySlug,
+      ...answers,
+      units: Number(answers.units),
+      addonQuantities: quantities,
+    });
+  }
+
+  function back() {
+    setError('');
+
+    if (index === 0) {
+      onBackToCatalogue?.();
+      return;
+    }
+
+    formBack(() => {
+      setStepIndex(index - 1, { push: false });
+    });
+
+    onStepChange?.();
+  }
+
+  if (!category) {
+    return (
+      <div className="pnt-step-card">
+        <p>This AC service is unavailable.</p>
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={onBackToCatalogue}
+        >
+          Back to AC Services
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pnt-flow-shell ac-pop-flow">
+      <div className="ac-pop-top">
+        <button
+          type="button"
+          className="ac-pop-back"
+          onClick={back}
+          aria-label="Go back"
+        >
+          <Icon name="arrow-left" size={20} />
+        </button>
+
+        <h2 className="ac-pop-title">{category.label}</h2>
+
+        <a
+          className="ac-pop-help"
+          href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+            `Hello Supplybase, I need help booking ${category.label}.`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Need help?
+        </a>
+      </div>
+
+      <p className="ac-pop-progress" aria-live="polite">
+        STEP {index + 1} OF {steps.length}
+        <span>{step.title}</span>
+      </p>
+
+      <div className="pnt-step-card ac-pop-step">
+        <h3 className="ac-pop-step-title">{step.title}</h3>
+
+        <AcServiceOptions
+          category={categorySlug}
+          step={step.key}
+          answers={answers}
+          onChange={updateAnswer}
+        />
+      </div>
+
+      {error && (
+        <div
+          className="ac-pop-alert"
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+        >
+          <Icon name="info" size={20} />
+          <span>{error}</span>
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => setError('')}
+          >
+            <Icon name="close" size={18} />
+          </button>
+        </div>
+      )}
+
+      <ModalFoot className="ac-pop-actions">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={continueFlow}
+        >
+          Continue
+          <Icon name="arrow-right" size={17} />
+        </button>
+      </ModalFoot>
+    </div>
+  );
+}

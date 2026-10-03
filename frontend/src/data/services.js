@@ -40,6 +40,7 @@ export const featuredServiceSlugs = [
   'plumbing',
   'electrical',
   'other-services',
+  'ac-services',
 ];
 
 export const services = [
@@ -419,6 +420,33 @@ export const services = [
     heroImage: '/assets/hero-house.svg',
     gallery: [],
     subServices: [],
+    highlights: [],
+    process: [],
+    faqs: [],
+  },
+
+  /* ------------------------------------------------------------------ 07c */
+  {
+    slug: 'ac-services',
+    number: '07c',
+    name: 'AC Services',
+    shortName: 'AC Services',
+    icon: 'fan',
+    megaMenuGroup: 'MEP',
+    tagline: 'AC servicing, repair and installation.',
+    cardText: 'AC service, repairs, installation, gas charging and annual maintenance.',
+    summary:
+      'Choose regular servicing, repair, installation, uninstallation, gas charging or an annual maintenance plan.',
+    heroImage: '/assets/ac-services/ac-unit.webp',
+    gallery: [],
+    subServices: [
+      { name: 'Regular AC Services', text: 'Cleaning and maintenance.' },
+      { name: 'AC Repair', text: 'Inspection and repair for AC problems.' },
+      { name: 'AC Installation', text: 'Installation and testing.' },
+      { name: 'AC Uninstallation', text: 'Safe dismantling and handling.' },
+      { name: 'Gas Charging', text: 'Gas checking and refilling.' },
+      { name: 'Annual Maintenance (AMC)', text: 'Scheduled AC maintenance.' },
+    ],
     highlights: [],
     process: [],
     faqs: [],
