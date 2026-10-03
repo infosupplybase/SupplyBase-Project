@@ -397,6 +397,20 @@
   overflow-y: auto;
 }
 
+/* Hide Partner registration card scrollbar but keep scrolling */
+.auth-card-tall {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.auth-card-tall::-webkit-scrollbar {
+  display: none;
+}
+
+.partner-document-button-wide {
+  min-width: 300px;
+}
+
 .partner-auth-note {
   margin: 0;
   font-size: 0.82rem;
@@ -477,4 +491,82 @@ body:has(.auth-screen-embedded)::-webkit-scrollbar,
 .auth-screen-embedded .auth-card-tall {
   max-height: none;
   overflow: visible;
+}
+
+/* Partner document upload */
+.partner-document-upload {
+  width: 100%;
+  min-height: var(--control-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 44px;
+  border: 1px solid var(--auth-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+/* Hide native browser file input */
+.auth-field .partner-document-input {
+  display: none;
+}
+
+.partner-document-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(245, 208, 51, 0.12);
+  border: 1px solid rgba(245, 208, 51, 0.3);
+  color: var(--auth-gold) !important;
+  font-size: 12px !important;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.partner-document-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--auth-text-mute);
+  font-size: 12px;
+}
+
+/* Keep Aadhaar document uploads side-by-side on mobile */
+@media (max-width: 720px) {
+  .auth-row-2.partner-document-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .partner-document-row .partner-document-upload {
+    padding: 6px;
+    justify-content: center;
+  }
+
+  .partner-document-row .partner-document-button {
+    width: 100%;
+    padding: 7px 5px;
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+
+  .partner-document-row .partner-document-name {
+    display: none;
+  }
+
+  .partner-document-button-wide {
+    min-width: 0;
+    width: 230px;
+    max-width: 100%;
+  }
+
+  .partner-document-upload {
+    min-width: 0;
+  }
 }

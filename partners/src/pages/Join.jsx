@@ -95,7 +95,7 @@ function Field({ id, label, icon, required, hint, error, children }) {
 export default function Join() {
   const { user, applyAsPartner } = useAuth();
   const navigate = useNavigate();
-    const isEmbedded =
+  const isEmbedded =
     new URLSearchParams(window.location.search).get('embed') === '1';
 
   const [form, setForm] = useState(emptyForm);
@@ -106,6 +106,28 @@ export default function Join() {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const [documents, setDocuments] = useState({
+    aadhaarFront: null,
+    aadhaarBack: null,
+    panFront: null,
+  });
+
+  const updateDocument = (field) => (e) => {
+    const file = e.target.files?.[0] || null;
+
+    setDocuments((current) => ({
+      ...current,
+      [field]: file,
+    }));
+
+    setErrors((current) => ({
+      ...current,
+      [field]: undefined,
+    }));
+
+    setError('');
+  };
 
   // already signed in? the dashboard explains what that means for them
   useEffect(() => {
@@ -147,6 +169,17 @@ export default function Join() {
     if (weak) next.password = weak;
     if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
     if (!form.primaryTrade) next.primaryTrade = 'Please choose the work you do';
+    if (!documents.aadhaarFront) {
+      next.aadhaarFront = 'Please upload the front of your Aadhaar card';
+    }
+
+    if (!documents.aadhaarBack) {
+      next.aadhaarBack = 'Please upload the back of your Aadhaar card';
+    }
+
+    if (!documents.panFront) {
+      next.panFront = 'Please upload the front of your PAN card';
+    }
     const years = Number(form.experienceYears);
     if (form.experienceYears === '') next.experienceYears = 'Please enter your years of experience';
     else if (!Number.isInteger(years) || years < 0 || years > 60)
@@ -185,12 +218,12 @@ export default function Join() {
   };
 
   return (
-  <div
-    className={isEmbedded ? 'auth-screen auth-screen-embedded' : 'auth-screen'}
-  >
-    {!isEmbedded && (
-      <div className="auth-glow" aria-hidden="true" />
-    )}
+    <div
+      className={isEmbedded ? 'auth-screen auth-screen-embedded' : 'auth-screen'}
+    >
+      {!isEmbedded && (
+        <div className="auth-glow" aria-hidden="true" />
+      )}
 
       <div className="auth-card-wrap">
         <div className="auth-card auth-card-tall">
@@ -265,6 +298,97 @@ export default function Join() {
                 <span>{tradesError}</span>
               </div>
             )}
+
+            <div className="auth-row-2 partner-document-row">
+              <Field
+                id="aadhaarFront"
+                label="Aadhaar Card - Front"
+                icon={null}
+                required
+                error={errors.aadhaarFront}
+              >
+                <div className="partner-document-upload">
+                  <input
+                    id="pj-aadhaarFront"
+                    type="file"
+                    accept="image/*"
+                    onChange={updateDocument('aadhaarFront')}
+                    className="partner-document-input"
+                  />
+
+                  <label htmlFor="pj-aadhaarFront" className="partner-document-button">
+                    <Icon name="upload" size={16} />
+                    <span>Choose Photo</span>
+                  </label>
+
+                  <span className="partner-document-name">
+                    {documents.aadhaarFront
+                      ? documents.aadhaarFront.name
+                      : 'No file selected'}
+                  </span>
+                </div>
+              </Field>
+
+              <Field
+                id="aadhaarBack"
+                label="Aadhaar Card - Back"
+                icon={null}
+                required
+                error={errors.aadhaarBack}
+              >
+                <div className="partner-document-upload">
+                  <input
+                    id="pj-aadhaarBack"
+                    type="file"
+                    accept="image/*"
+                    onChange={updateDocument('aadhaarBack')}
+                    className="partner-document-input"
+                  />
+
+                  <label
+                    htmlFor="pj-aadhaarBack"
+                    className="partner-document-button"
+                  >
+                    <Icon name="upload" size={16} />
+                    <span>Choose Photo</span>
+                  </label>
+
+                  <span className="partner-document-name">
+                    {documents.aadhaarBack
+                      ? documents.aadhaarBack.name
+                      : 'No file selected'}
+                  </span>
+                </div>
+              </Field>
+            </div>
+
+            <div>
+              <Field
+                id="panFront"
+                label="PAN Card - Front"
+                icon={null}
+                required
+                error={errors.panFront}
+              >
+                <div className="partner-document-upload">
+                  <input
+                    id="pj-panFront"
+                    type="file"
+                    accept="image/*"
+                    onChange={updateDocument('panFront')}
+                    className="partner-document-input"
+                  />
+
+                  <label
+  htmlFor="pj-panFront"
+  className="partner-document-button partner-document-button-wide"
+>
+                    <Icon name="upload" size={16} />
+                    <span>Choose Photo</span>
+                  </label>
+                </div>
+              </Field>
+            </div>
 
             <div className="auth-row-2">
               <Field id="experienceYears" error={errors.experienceYears} label="Years of Experience" icon="award" required>
@@ -396,11 +520,11 @@ export default function Join() {
           </form>
 
           <p className="auth-switch">
-  Already applied?{' '}
-  <Link to={isEmbedded ? '/login?embed=1' : '/login'}>
-    Partner Login
-  </Link>
-</p>
+            Already applied?{' '}
+            <Link to={isEmbedded ? '/login?embed=1' : '/login'}>
+              Partner Login
+            </Link>
+          </p>
         </div>
       </div>
     </div>
