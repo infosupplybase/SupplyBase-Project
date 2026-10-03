@@ -138,6 +138,7 @@ export default function ServiceBookingModal({ service, onClose }) {
         bg-black/65
         backdrop-blur-[3px]
         p-4
+        max-sm:p-2.5
       "
       onClick={onClose}
     >
@@ -214,7 +215,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           <div className="h-14 shrink-0" aria-hidden="true" />
         ) : waterproofingFlowOpen ? null : (
         <>
-        <div className="shrink-0 px-6 pt-6 pr-16">
+        <div className="shrink-0 px-6 pt-6 pr-16 max-sm:px-4 max-sm:pr-16">
           <p
             className="
               mb-1
@@ -256,7 +257,7 @@ export default function ServiceBookingModal({ service, onClose }) {
             flex-auto
             overflow-y-auto
 
-            ${waterproofingFlowOpen ? '!px-0 !pb-0' : 'px-6 pb-6'}
+            ${waterproofingFlowOpen ? '!px-0 !pb-0' : 'px-6 pb-6 max-sm:px-4'}
 
             max-sm:flex-1
 

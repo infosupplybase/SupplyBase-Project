@@ -1,0 +1,26 @@
+/* =========================================================================
+   PHONE FIXES
+   Small corrections found by checking every partner screen on a 360px-wide
+   phone. Loaded last; every rule is scoped to a phone breakpoint, so
+   tablets and desktops are unchanged.
+   ========================================================================= */
+
+@media (max-width: 767px) {
+  /* iPhone Safari zooms the whole page in when you tap a field whose text is
+     smaller than 16px, and does not zoom back out. Our fields were 15px. */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 600px) {
+  /* The application form scrolled inside its own card (a box capped at the
+     screen height), so on a phone there were two scroll areas, one inside
+     the other. Let the card grow and the page scroll instead. */
+  .auth-card-tall {
+    max-height: none;
+    overflow: visible;
+  }
+}

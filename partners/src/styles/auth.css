@@ -523,3 +523,24 @@
   font-size: 12px;
   color: var(--auth-text-mute);
 }
+
+/* "New to Supplybase Partners? Apply to join" and "Customer login" under the
+   sign-in button — copied from the customer site's account page, where the
+   same class is styled; here it had no styles, so the lines sat flush
+   against the button as plain white text with no visible links. */
+.auth-switch {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--auth-text-soft);
+}
+
+.auth-switch + .auth-switch {
+  margin-top: 8px;
+}
+
+.auth-switch a {
+  color: var(--auth-gold);
+  font-weight: 700;
+}

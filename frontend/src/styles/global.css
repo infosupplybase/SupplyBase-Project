@@ -343,17 +343,30 @@ header,
 footer {
   min-width: 0;
 }
+p,
+a,
+span,
+label {
+  overflow-wrap: anywhere;
+}
+/* Headings and buttons only break a word that cannot fit on a line of its
+   own, and then with a hyphen ("WATERPROOF-ING"), never mid-word without
+   one. "anywhere" also let a flex row squeeze a short button label down to
+   one letter per line ("Edi / t") on a phone. */
 h1,
 h2,
 h3,
 h4,
 h5,
-p,
-a,
-span,
-button,
-label {
-  overflow-wrap: anywhere;
+button {
+  overflow-wrap: break-word;
+}
+h1,
+h2,
+h3,
+h4,
+h5 {
+  hyphens: auto;
 }
 /* The navbar location button itself is styled in header.css. */
 

@@ -726,8 +726,10 @@
 
 .admin-panel-head a {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 6px;
+  white-space: nowrap; /* "All enquiries" stays on one line on a phone */
   font-size: 13px;
   font-weight: 700;
   color: var(--gold-deep);
@@ -1146,6 +1148,13 @@ input.admin-filter {
 .admin-field .admin-search-input,
 .admin-picker .admin-search-input {
   max-width: none;
+}
+
+/* Inside a form field (a flex column) the search box's flex-basis of 260px
+   became its height, leaving a tall blank band around the client search in
+   "New project" and "Raise a payment". */
+.admin-picker .admin-search-input {
+  flex: none;
 }
 
 /* Quick filters: raised pills. */
