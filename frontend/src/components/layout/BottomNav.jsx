@@ -14,8 +14,8 @@ export default function BottomNav() {
   const items = [
     { to: '/', label: 'Home', icon: 'home-check', end: true },
     { to: '/services', label: 'Services', icon: 'building', end: false },
+    { to: '/cart', label: 'Cart', icon: 'shopping-bag', end: false },
     { to: user ? '/dashboard/bookings' : '/login', label: 'Bookings', icon: 'calendar', end: false },
-    { to: '/contact', label: 'Help', icon: 'chat', end: false },
     { to: user ? '/dashboard/profile' : '/login', label: 'Profile', icon: 'user', end: false },
   ];
 

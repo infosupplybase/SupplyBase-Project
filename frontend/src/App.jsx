@@ -32,6 +32,7 @@ const PlumbingConsultationList = lazyPage(() => import('./pages/PlumbingConsulta
 const PlumbingConsultationBook = lazyPage(() => import('./pages/PlumbingConsultationBook'));
 const PlumbingCart = lazyPage(() => import('./pages/PlumbingCart'));
 const PlumbingCheckout = lazyPage(() => import('./pages/PlumbingCheckout'));
+const Cart = lazyPage(() => import('./pages/Cart'));
 const PaintingCategory = lazyPage(() => import('./pages/PaintingCategory'));
 const PaintingFlow = lazyPage(() => import('./pages/PaintingFlow'));
 const PopCeilingCategory = lazyPage(() => import('./pages/PopCeilingCategory'));
@@ -121,6 +122,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
+        <Route path="cart" element={<Cart />} />
 
         {/* Old catalogue slugs, renamed when the backend categories were
             aligned with the marketing site (see V9 migration). Kept as

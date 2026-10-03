@@ -119,6 +119,14 @@ export default function Navbar() {
 
             <div className="header-actions">
               <LocationSelector />
+              <Link
+                to="/cart"
+                className="notif-bell-btn desktop-cart-btn"
+                aria-label="Cart"
+                title="Cart"
+              >
+                <Icon name="shopping-bag" size={18} />
+              </Link>
               <NotificationBell />
               {user ? (
                 <>

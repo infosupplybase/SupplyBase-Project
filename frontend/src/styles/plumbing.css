@@ -11,6 +11,16 @@
   padding: var(--section-y) 0 calc(var(--section-y) + 70px);
 }
 
+.global-cart-page {
+  padding-top: calc(var(--header-h) + var(--space-6));
+}
+
+@media (max-width: 767px) {
+  .global-cart-page {
+    padding-top: calc(var(--header-h-mobile) + var(--space-5));
+  }
+}
+
 /* =========================================================
    Plumbing flow inside Services modal — same fix as
    .painting-modal-scope: the page's own top padding (meant to
