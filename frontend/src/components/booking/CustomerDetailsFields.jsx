@@ -12,6 +12,7 @@ import {
   getBookingPhotos,
   setBookingPhotos,
   MAX_BOOKING_PHOTOS,
+  BOOKING_PHOTO_TYPES,
 } from '../../lib/bookingPhotos';
 
 export function Field({ id, label, required, hint, error, ...rest }) {
@@ -382,9 +383,9 @@ export default function CustomerDetailsFields({
       return;
     }
 
-    // Only allow image files.
+    // Only the photo types the server accepts (JPG, PNG, WebP).
     const validImages = selectedFiles.filter((file) =>
-      file.type.startsWith('image/')
+      BOOKING_PHOTO_TYPES.includes(file.type)
     );
 
     // Maximum 5 images.
@@ -559,7 +560,7 @@ export default function CustomerDetailsFields({
           <input
             id={`${idPrefix}-project-images`}
             type="file"
-            accept="image/*"
+            accept={BOOKING_PHOTO_TYPES.join(',')}
             multiple
             onChange={handleImageChange}
             style={{ display: 'none' }}
@@ -568,7 +569,7 @@ export default function CustomerDetailsFields({
 
         {/* File information */}
         <span className="booking-image-upload-info">
-          JPG, JPEG, PNG • Maximum 5 images
+          JPG, PNG or WebP • Maximum 5 images
         </span>
 
         {/* Selected count */}
