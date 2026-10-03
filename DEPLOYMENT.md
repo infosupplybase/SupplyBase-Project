@@ -277,14 +277,57 @@ Data survives — it's in named Docker volumes (`supplybase-mysql-data`,
 
 ### g) Backups
 
-Nothing here does this for you yet. At minimum, a daily cron job dumping the
-database is worth setting up before real customer data lives on it:
+`backend/scripts/backup.sh` backs up the two things that cannot be rebuilt:
+the database (one compressed SQL file) and the uploaded photos and documents
+(one compressed archive). It keeps 14 days of both and never leaves a
+half-written file that looks complete.
 
 ```bash
-# /etc/cron.d/supplybase-backup, or crontab -e as root
-0 3 * * * docker exec supplybase-mysql sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" supplybase' > /root/backups/supplybase-$(date +\%F).sql
+# once, on the server
+chmod +x /opt/SupplyBase-Project/backend/scripts/backup.sh
+mkdir -p /var/backups/supplybase
+
+# every night at 03:00 - crontab -e as root
+0 3 * * * /opt/SupplyBase-Project/backend/scripts/backup.sh >> /var/log/supplybase-backup.log 2>&1
 ```
 
-Adjust the path, and consider copying those dump files off the server
-periodically (e.g. to S3 or another machine) — a backup that lives on the
-same disk as the database doesn't protect against the server itself failing.
+Run it once by hand first and look at `/var/backups/supplybase`. Then **copy
+that folder off the server** now and then (another machine, or S3 / Google
+Drive with `rclone`): a backup on the same disk does not survive that disk,
+or the server, being lost.
+
+**Restoring** (the database; do this on a spare machine first to prove the
+backup works):
+
+```bash
+gunzip -c /var/backups/supplybase/db-YYYYMMDD-HHMMSS.sql.gz \
+  | docker exec -i supplybase-mysql sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'
+```
+
+The uploaded files go back into the uploads volume the same way they came out
+(the volume's name is shown by `docker inspect supplybase-api`):
+
+```bash
+docker run --rm -v VOLUME_NAME:/data -v /var/backups/supplybase:/backup alpine \
+  tar xzf /backup/uploads-YYYYMMDD-HHMMSS.tar.gz -C /data
+```
+
+### h) Keeping the server tidy and safe
+
+- **Logs.** `docker-compose.prod.yml` keeps the last 5 x 10 MB of each
+  container's output; before this, Docker kept all of it until the disk filled.
+  (Applying it recreates both containers once, with the data intact.)
+- **nginx.** `nginx/supplybase-api.conf` sends the visitor's address
+  (`X-Forwarded-For`) to the API, which the sign-up limit relies on, and hides
+  the nginx version (`server_tokens off`). After pulling, copy these two
+  lines into `/etc/nginx/sites-available/supplybase-api` if they are missing,
+  then `nginx -t && systemctl reload nginx`.
+- **.env on the server.** `CORS_ORIGINS` must list only the public addresses
+  (section 2); leave `API_DOCS_ENABLED` unset; and once your admin account
+  exists, delete `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` from
+  `backend/.env` and recreate the API container.
+- **HTTPS certificate.** certbot renews it by itself; check that with
+  `certbot renew --dry-run` and `systemctl list-timers | grep certbot` now and
+  then (the current certificate expires every 90 days).
+- **Uptime.** Point a monitor at `https://api.yourdomain.com/actuator/health`
+  (a normal request or HEAD both answer 200 when the API is up).
