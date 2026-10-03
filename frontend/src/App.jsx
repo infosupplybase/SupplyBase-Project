@@ -15,7 +15,7 @@ import InteriorBooking from './pages/InteriorBooking';
 import ElectricalCategory from './pages/ElectricalCategory';
 import ElectricalCart from './pages/ElectricalCart';
 import ElectricalCheckout, { ElectricalSubPage } from './pages/ElectricalCheckout';
-import OtherServicesCategory from './pages/OtherServicesCategory';
+import AcServices from './pages/AcServices';
 import PlumbingCategory from './pages/PlumbingCategory';
 import PlumbingTab from './pages/PlumbingTab';
 import PlumbingConsultationList from './pages/PlumbingConsultationList';
@@ -137,7 +137,9 @@ export default function App() {
         {/* Other Services: the catch-all eighth tile, reactivated on
             request. A category list in front of five existing generic
             wizard pages, same shape as the electrical category list. */}
-        <Route path="services/other-services" element={<OtherServicesCategory />} />
+        <Route path="services/ac-services" element={<AcServices />} />
+        <Route path="services/ac-services/:acCategory" element={<AcServices />} />
+        <Route path="services/other-services" element={<Navigate to="/services/ac-services" replace />} />
 
         {/* Plumbing Services: an itemised cart catalogue (V14 migration)
             replacing the old generic wizard for this one category. Exact

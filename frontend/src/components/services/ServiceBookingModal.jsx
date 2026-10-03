@@ -25,7 +25,7 @@ import PlumbingCart from '../../pages/PlumbingCart';
 import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
-import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import AcServices from '../../pages/AcServices';
 import ElectricalCategory from '../../pages/ElectricalCategory';
 import ElectricalTab from '../../pages/ElectricalTab';
 import ElectricalCart from '../../pages/ElectricalCart';
@@ -115,7 +115,6 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
   const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
-  const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
 
   // Every in-app BACK goes back through history, exactly like the
   // browser's Back button, so the two always agree.
@@ -157,6 +156,12 @@ export default function ServiceBookingModal({ service, onClose }) {
     >
       <div
         className={`
+          ${
+            (
+              (service.slug === 'pop-ceiling-design' && selectedPopFlow) ||
+              service.slug === 'ac-services'
+            ) ? 'booking-pop-ac-layout' : ''
+          }
           relative
           w-full
 
@@ -183,7 +188,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           max-sm:rounded-xl
         `}
         style={
-          service.slug === 'painting'
+          (service.slug === 'painting' || service.slug === 'ac-services')
             ? { height: '88dvh', maxHeight: '88dvh' }
             : undefined
         }
@@ -232,7 +237,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           <div className="h-14 shrink-0" aria-hidden="true" />
         )}
 
-        {!(
+        {service.slug !== 'ac-services' && !(
           (service.slug === 'pop-ceiling-design' && selectedPopFlow) ||
           (service.slug === 'painting' && selectedPaintingFlow)
         ) && (
@@ -1035,23 +1040,12 @@ export default function ServiceBookingModal({ service, onClose }) {
               />
             ) : null}
             </div>
-          ) : service.slug === 'other-services' ? (
-            selectedOtherService ? (
-              <ServiceBooking
-                serviceSlug={selectedOtherService}
-                modal={true}
-                onClose={onClose}
-                onStepChange={scrollModalToTop}
-              />
-            ) : (
-              <OtherServicesCategory
-                modal={true}
-                onSelectService={(serviceSlug) => {
-                  setSelectedOtherService(serviceSlug);
-                  scrollModalToTop();
-                }}
-              />
-            )
+          ) : service.slug === 'ac-services' ? (
+            <AcServices
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
           ) : (
             <ServiceBooking
               serviceSlug={service.slug}

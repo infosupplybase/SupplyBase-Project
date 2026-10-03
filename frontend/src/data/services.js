@@ -39,7 +39,7 @@ export const featuredServiceSlugs = [
   'pop-ceiling-design',
   'plumbing',
   'electrical',
-  'other-services',
+  'ac-services',
 ];
 
 export const services = [
@@ -406,19 +406,26 @@ export const services = [
 
   /* ------------------------------------------------------------------ 07b */
   {
-    slug: 'other-services',
-    number: '07b',
-    name: 'Other Services',
-    shortName: 'Other Services',
-    icon: 'settings',
-    megaMenuGroup: 'SPECIALIZED',
-    tagline: 'Everything else we do.',
-    cardText: 'Architectural design, civil construction, furniture, fabrication and finishing work.',
+    slug: 'ac-services',
+    number: '08',
+    name: 'AC Services',
+    shortName: 'AC Services',
+    icon: 'fan',
+    megaMenuGroup: 'MEP',
+    tagline: 'AC servicing, repair and installation.',
+    cardText: 'AC service, repairs, installation, gas charging and annual maintenance.',
     summary:
-      'Beyond the seven main services, we also handle architectural design, civil construction, custom furniture, MS/SS fabrication and finishing work — the same accountable team, the same one-partner model.',
-    heroImage: '/assets/hero-house.svg',
+      'Choose regular servicing, repair, installation, uninstallation, gas charging or an annual maintenance plan.',
+    heroImage: '/assets/ac-services/ac-unit.jpg',
     gallery: [],
-    subServices: [],
+    subServices: [
+      { name: 'Regular AC Services', text: 'Cleaning and maintenance.' },
+      { name: 'AC Repair', text: 'Inspection and repair for AC problems.' },
+      { name: 'AC Installation', text: 'Installation and testing.' },
+      { name: 'AC Uninstallation', text: 'Safe dismantling and handling.' },
+      { name: 'Gas Charging', text: 'Gas checking and refilling.' },
+      { name: 'Annual Maintenance (AMC)', text: 'Scheduled AC maintenance.' },
+    ],
     highlights: [],
     process: [],
     faqs: [],

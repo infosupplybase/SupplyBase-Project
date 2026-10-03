@@ -1,0 +1,316 @@
+import { useId } from 'react';
+import Icon from '../ui/Icon';
+import {
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../../data/acContent';
+
+const acOptionImages = {
+  'split': '/assets/ac-services/types/clean/split.png',
+  'window': '/assets/ac-services/types/clean/window.png',
+  'inverter': '/assets/ac-services/types/clean/inverter.jpg',
+  'cassette': '/assets/ac-services/types/clean/cassette.png',
+  'ductable': '/assets/ac-services/types/clean/ductable.png',
+  'concealed': '/assets/ac-services/types/clean/concealed.jpg',
+
+  'general-service': '/assets/ac-services/matched/filter-cleaning.jpg',
+  'jet-service': '/assets/ac-services/matched/jet-cleaning.jpg',
+  'deep-cleaning': '/assets/ac-services/matched/blower-cleaning.jpg',
+  'filter-cleaning': '/assets/ac-services/matched/filter-cleaning.jpg',
+  'cooling-check': '/assets/ac-services/matched/temperature-check.jpg',
+  'water-leakage-check': '/assets/ac-services/matched/drain-cleaning.jpg',
+  'drain-pipe-cleaning': '/assets/ac-services/matched/drain-cleaning.jpg',
+  'outdoor-unit-cleaning': '/assets/ac-services/matched/outdoor-cleaning.webp',
+
+  'not-cooling': '/assets/ac-services/matched/temperature-check.jpg',
+  'water-leakage': '/assets/ac-services/matched/drain-cleaning.jpg',
+  'not-starting': '/assets/ac-services/matched/electrical-diagnosis.webp',
+  'unusual-noise': '/assets/ac-services/matched/fan-motor-repair.jpg',
+  'bad-smell': '/assets/ac-services/matched/blower-cleaning.jpg',
+  'electrical-fault': '/assets/ac-services/matched/electrical-diagnosis.webp',
+
+  'ac-installation': '/assets/ac-services/installation.png',
+  'ac-uninstallation': '/assets/ac-services/uninstallation.jpeg',
+  'gas-charging': '/assets/ac-services/matched/pressure-testing.jpg',
+
+  'amc-2-services': '/assets/ac-services/matched/filter-cleaning.jpg',
+  'amc-3-services': '/assets/ac-services/matched/jet-cleaning.jpg',
+  'amc-4-services': '/assets/ac-services/matched/outdoor-cleaning.webp',
+
+  'gas-check': '/assets/ac-services/matched/pressure-testing.jpg',
+  'stand-check': '/assets/ac-services/matched/outdoor-bracket.png',
+  'anti-rust': '/assets/ac-services/matched/anti-rust-coating.png',
+  'extended-copper-pipe': '/assets/ac-services/matched/copper-pipe.jpg',
+  'outdoor-stand': '/assets/ac-services/matched/outdoor-bracket.png',
+  'stabilizer-installation': '/assets/ac-services/matched/stabilizer.jpg',
+  'mcb-installation': '/assets/ac-services/matched/isolator.jpg',
+  'core-cutting': '/assets/ac-services/matched/core-drilling.png',
+  'drain-extension': '/assets/ac-services/matched/drain-hose.jpg',
+  'outdoor-dismantling': '/assets/ac-services/matched/packed-ac.jpg',
+  'pipe-packing': '/assets/ac-services/matched/copper-pipe.jpg',
+  'safe-transport': '/assets/ac-services/matched/packed-ac.jpg',
+  'stand-removal': '/assets/ac-services/matched/outdoor-bracket.png',
+  'gas-recovery': '/assets/ac-services/matched/gas-recovery.jpg',
+  'leakage-detection': '/assets/ac-services/matched/leak-test.jpg',
+  'copper-pipe-repair': '/assets/ac-services/matched/copper-repair.jpg',
+  'vacuum-pressure-test': '/assets/ac-services/matched/pressure-testing.jpg',
+};
+
+function Choice({ option, checked, multiple, name, onChange }) {
+  const image = acOptionImages[option.value];
+
+  return (
+    <label
+      className={`ac-pop-option ${multiple ? 'ac-pop-addon' : ''} ${
+        checked ? 'selected' : ''
+      }`}
+    >
+      <input
+        type={multiple ? 'checkbox' : 'radio'}
+        name={name}
+        value={option.value}
+        checked={checked}
+        onChange={onChange}
+      />
+
+      {image && (
+        <img
+          className={`ac-pop-option-image ${
+            ['split', 'window', 'inverter', 'cassette', 'ductable', 'concealed', 'stand-check', 'anti-rust', 'extended-copper-pipe', 'outdoor-stand', 'stabilizer-installation', 'mcb-installation', 'drain-extension', 'pipe-packing', 'stand-removal', 'gas-recovery'].includes(option.value)
+              ? 'ac-pop-type-image'
+              : ''
+          }`}
+          src={image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+
+      <span className="ac-pop-option-body">
+        <strong>{option.label}</strong>
+
+        {option.hint && <small>{option.hint}</small>}
+
+        {option.price != null && (
+          <span className="ac-pop-option-price">
+            {option.inspection ? 'Inspection from ' : 'From '}
+            ₹{Number(option.price).toLocaleString('en-IN')}
+            {option.unit ? ` / ${option.unit}` : ''}
+          </span>
+        )}
+      </span>
+
+      <span className="ac-pop-option-check" aria-hidden="true">
+        <Icon name="check" size={14} />
+      </span>
+    </label>
+  );
+}
+function Choices({ options, value, name, onChange }) {
+  return (
+    <div className="ac-pop-option-grid">
+      {options.map((option) => (
+        <Choice
+          key={option.value}
+          option={option}
+          name={name}
+          checked={value === option.value}
+          onChange={() => onChange(option.value)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Quantity({ label, value, onChange }) {
+  const id = useId();
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: 16,
+        border: '1px solid #e7e7e7',
+        borderRadius: 12,
+      }}
+    >
+      <label htmlFor={id} style={{ fontWeight: 600 }}>{label}</label>
+
+      <input
+        id={id}
+        type="number"
+        min="1"
+        step="1"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: 80,
+          padding: 10,
+          border: '1px solid #d8d8d8',
+          borderRadius: 8,
+          textAlign: 'center',
+        }}
+      />
+    </div>
+  );
+}
+
+export default function AcServiceOptions({
+  category,
+  step,
+  answers = {},
+  onChange,
+}) {
+  const id = useId();
+  const services = acServicesByCategory[category] || [];
+  const addons = acAddonsByCategory[category] || [];
+  const selectedAddons = answers.addons || [];
+
+  if (step === 'service') {
+    return (
+      <div>
+        <Choices
+          options={services}
+          name={`${id}-service`}
+          value={answers.service}
+          onChange={(value) => onChange('service', value)}
+        />
+
+        {category === 'repair' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The technician will inspect your AC and confirm the repair cost.
+            The inspection fee is adjusted against the repair if you proceed.
+          </p>
+        )}
+
+        {category === 'installation' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The starting price shown applies to Split AC installation.
+            Pricing for other AC types will be confirmed.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (step === 'ac-details') {
+    return (
+      <div style={{ display: 'grid', gap: 22 }}>
+        <div>
+
+          <Choices
+            options={acTypes}
+            name={`${id}-type`}
+            value={answers.acType}
+            onChange={(value) => onChange('acType', value)}
+          />
+        </div>
+
+        {category === 'installation' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose AC capacity</h3>
+            <Choices
+              options={acCapacities}
+              name={`${id}-capacity`}
+              value={answers.capacity}
+              onChange={(value) => onChange('capacity', value)}
+            />
+          </div>
+        )}
+
+        {category === 'gas-charging' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose refrigerant</h3>
+            <Choices
+              options={acRefrigerants}
+              name={`${id}-refrigerant`}
+              value={answers.refrigerant}
+              onChange={(value) => onChange('refrigerant', value)}
+            />
+          </div>
+        )}
+
+        <Quantity
+          label="Number of AC units"
+          value={answers.units ?? 1}
+          onChange={(value) => onChange('units', value)}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'addons') {
+    return (
+      <div>
+        <p
+          className="question-hint"
+          style={{
+            padding: 14,
+            marginBottom: 18,
+            borderRadius: 10,
+            background: '#fff8e8',
+            color: '#785a16',
+          }}
+        >
+          Optional: select additional services if needed. You can continue
+          without selecting any.
+        </p>
+
+        <div className="ac-pop-option-grid">
+          {addons.map((option) => {
+            const checked = selectedAddons.includes(option.value);
+
+            return (
+              <div key={option.value}>
+                <Choice
+                  option={option}
+                  multiple
+                  name={`${id}-addons`}
+                  checked={checked}
+                  onChange={() => {
+                    onChange(
+                      'addons',
+                      checked
+                        ? selectedAddons.filter((value) => value !== option.value)
+                        : [...selectedAddons, option.value]
+                    );
+                  }}
+                />
+
+                {checked && option.unit && (
+                  <div style={{ marginTop: 8 }}>
+                    <Quantity
+                      label={`Quantity (${option.unit})`}
+                      value={answers.addonQuantities?.[option.value] ?? 1}
+                      onChange={(value) =>
+                        onChange('addonQuantities', {
+                          ...answers.addonQuantities,
+                          [option.value]: value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {addons.length === 0 && (
+          <p className="question-hint">
+            No additional services are listed for this category.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}

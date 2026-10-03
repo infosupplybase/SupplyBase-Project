@@ -13,7 +13,7 @@ const ICON_BY_SLUG = {
   'pop-ceiling-design': 'ceiling',
   plumbing: 'tap',
   electrical: 'bolt',
-  'other-services': 'settings',
+  'ac-services': 'fan',
 };
 
 const LABEL_OVERRIDES = {
@@ -66,9 +66,13 @@ export default function PopularServices() {
                 onClick={() => booking.open(category)}
               >
                 <span className="service-tile-photo">
-                  {category.heroImage ? (
+                  {(category.slug === 'ac-services' || category.heroImage) ? (
                     <img
-                      src={optimizedImage(category.heroImage)}
+                      src={
+                        category.slug === 'ac-services'
+                          ? '/assets/ac-services/ac-unit.jpg'
+                          : optimizedImage(category.heroImage)
+                      }
                       alt=""
                       width={200}
                       height={200}

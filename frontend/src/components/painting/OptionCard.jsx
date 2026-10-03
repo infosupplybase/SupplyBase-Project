@@ -37,15 +37,12 @@ const renovationImages = {
     '/assets/services/fabrication/staircase.webp',
 };
 
-const STANDARD_IMAGE = '/assets/painting/hero/painter-roller.webp';
+const UNFURNISHED_IMAGE = '/assets/painting/hero/painter-roller.webp';
 const RENOVATION_IMAGE =
   'https://www.avenir-renovations.fr/uploads/service/peinture-a-meaux-rZY1B.jpg';
-const COMPLETE_IMAGE = '/assets/projects/painting-finishing.webp';
 
 const packageImages = {
-  'standard-repaint': STANDARD_IMAGE,
-  'standard-repainting': STANDARD_IMAGE,
-  'complete-repaint': COMPLETE_IMAGE,
+  'unfurnished-home': UNFURNISHED_IMAGE,
   'renovation-repaint': RENOVATION_IMAGE,
   'renovation-repainting': RENOVATION_IMAGE,
   'renovation-painting': RENOVATION_IMAGE,
@@ -75,15 +72,13 @@ function findOptionImage(name, option) {
   if (isPaintingType) {
     // Match the displayed label first so each package uses its own photo.
     if (/renovation/.test(label)) return RENOVATION_IMAGE;
-    if (/standard/.test(label)) return STANDARD_IMAGE;
-    if (/complete/.test(label)) return COMPLETE_IMAGE;
+    if (/unfurnished/.test(label)) return UNFURNISHED_IMAGE;
 
     const mappedImage = packageImages[option.value];
     if (mappedImage) return mappedImage;
 
     if (/renovation/.test(text)) return RENOVATION_IMAGE;
-    if (/standard/.test(text)) return STANDARD_IMAGE;
-    if (/complete/.test(text)) return COMPLETE_IMAGE;
+    if (/unfurnished/.test(text)) return UNFURNISHED_IMAGE;
 
     return null;
   }
