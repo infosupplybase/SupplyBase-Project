@@ -184,7 +184,11 @@ async function refreshTokens() {
 
 async function send(path, { method = 'GET', body, auth = true } = {}) {
   const headers = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const isFormData = body instanceof FormData;
+
+  if (body !== undefined && !isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   const token = getAccessToken();
   if (auth && token) headers.Authorization = `Bearer ${token}`;
@@ -192,9 +196,12 @@ async function send(path, { method = 'GET', body, auth = true } = {}) {
   return fetch(`${BASE_URL}${path}`, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-    // Jobs carry customers' phone numbers and addresses: never keep a copy
-    // of an API answer in the browser's HTTP cache.
+    body:
+      body === undefined
+        ? undefined
+        : isFormData
+          ? body
+          : JSON.stringify(body),
     cache: 'no-store',
     credentials: 'omit',
     referrerPolicy: 'no-referrer',
@@ -252,22 +259,38 @@ export const api = {
    * application, and returns tokens. Nobody can ask for a role here — an admin
    * approving the application is what grants it.
    */
-  apply: (form) =>
-    request('/api/partners/apply', {
-      method: 'POST',
-      auth: false,
-      body: {
-        fullName: form.fullName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        password: form.password,
-        primaryTrade: form.primaryTrade,
-        experienceYears: Number(form.experienceYears),
-        city: form.city.trim(),
-        serviceAreas: form.serviceAreas.trim(),
-        languages: form.languages.trim(),
-      },
-    }),
+  apply: (form, documents) => {
+  const data = new FormData();
+
+  const requestData = {
+    fullName: form.fullName.trim(),
+    email: form.email.trim(),
+    phone: form.phone.trim(),
+    password: form.password,
+    primaryTrade: form.primaryTrade,
+    experienceYears: Number(form.experienceYears),
+    city: form.city.trim(),
+    serviceAreas: form.serviceAreas.trim(),
+    languages: form.languages.trim(),
+  };
+
+  data.append(
+    'request',
+    new Blob([JSON.stringify(requestData)], {
+      type: 'application/json',
+    })
+  );
+
+  data.append('aadhaarFront', documents.aadhaarFront);
+  data.append('aadhaarBack', documents.aadhaarBack);
+  data.append('panFront', documents.panFront);
+
+  return request('/api/partners/apply', {
+    method: 'POST',
+    auth: false,
+    body: data,
+  });
+},
 
   /** The signed-in user's own application. 404 (ApiError.status) if they never applied. */
   application: () => request('/api/partners/me'),

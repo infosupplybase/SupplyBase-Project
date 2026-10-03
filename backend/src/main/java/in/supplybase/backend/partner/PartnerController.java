@@ -24,6 +24,8 @@ import in.supplybase.backend.partner.dto.PartnerSummaryResponse;
 import in.supplybase.backend.partner.dto.UpdatePartnerStatusRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
 
 @RestController
 public class PartnerController {
@@ -42,12 +44,23 @@ public class PartnerController {
      * Public. Creates the login and a PENDING application, and signs the new
      * partner straight in so they land on their "under review" page.
      */
-    @PostMapping("/api/partners/apply")
-    public ResponseEntity<AuthResponse> apply(@Valid @RequestBody ApplyAsPartnerRequest request,
-                                              HttpServletRequest httpRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.apply(request, httpRequest.getRemoteAddr()));
-    }
+    @PostMapping(value = "/api/partners/apply", consumes = "multipart/form-data")
+public ResponseEntity<AuthResponse> apply(
+        @Valid @RequestPart("request") ApplyAsPartnerRequest request,
+        @RequestPart("aadhaarFront") MultipartFile aadhaarFront,
+        @RequestPart("aadhaarBack") MultipartFile aadhaarBack,
+        @RequestPart("panFront") MultipartFile panFront,
+        HttpServletRequest httpRequest) {
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+            .body(service.apply(
+                    request,
+                    aadhaarFront,
+                    aadhaarBack,
+                    panFront,
+                    httpRequest.getRemoteAddr()
+            ));
+}
 
     /** The signed-in user's own application. 404 if they never applied. */
     @GetMapping("/api/partners/me")

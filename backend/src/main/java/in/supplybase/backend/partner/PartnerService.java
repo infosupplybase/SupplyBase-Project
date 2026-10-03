@@ -27,6 +27,8 @@ import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.FileStorageService;
+import org.springframework.web.multipart.MultipartFile;
 import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.partner.dto.PartnerJobResponse;
@@ -60,16 +62,18 @@ public class PartnerService {
     private final BookingRepository bookings;
     private final ServiceCategoryRepository categories;
     private final AuthService authService;
+    private final FileStorageService fileStorageService;
 
     public PartnerService(PartnerProfileRepository partners, UserRepository users,
-                          BookingRepository bookings, ServiceCategoryRepository categories,
-                          AuthService authService) {
-        this.partners = partners;
-        this.users = users;
-        this.bookings = bookings;
-        this.categories = categories;
-        this.authService = authService;
-    }
+                      BookingRepository bookings, ServiceCategoryRepository categories,
+                      AuthService authService, FileStorageService fileStorageService) {
+    this.partners = partners;
+    this.users = users;
+    this.bookings = bookings;
+    this.categories = categories;
+    this.authService = authService;
+    this.fileStorageService = fileStorageService;
+}
 
     /* ------------------------------------------------------------ partner */
 
@@ -79,7 +83,12 @@ public class PartnerService {
      * phone checks all come from {@link AuthService#register}.
      */
     @Transactional
-    public AuthResponse apply(ApplyAsPartnerRequest request, String clientIp) {
+    public AuthResponse apply(
+        ApplyAsPartnerRequest request,
+        MultipartFile aadhaarFront,
+        MultipartFile aadhaarBack,
+        MultipartFile panFront,
+        String clientIp) {
         String trade = request.primaryTrade().trim();
         // Checked before the account is created so a bad trade never costs
         // anyone a sign-up attempt.
@@ -92,6 +101,18 @@ public class PartnerService {
                 clientIp);
 
         User user = users.getReferenceById(auth.user().id());
+
+        String documentDirectory = "partners/" + auth.user().id() + "/documents";
+
+FileStorageService.StoredFile storedAadhaarFront =
+        fileStorageService.store(aadhaarFront, documentDirectory);
+
+FileStorageService.StoredFile storedAadhaarBack =
+        fileStorageService.store(aadhaarBack, documentDirectory);
+
+FileStorageService.StoredFile storedPanFront =
+        fileStorageService.store(panFront, documentDirectory);
+
         partners.save(PartnerProfile.builder()
                 .user(user)
                 .primaryTrade(trade)
@@ -99,7 +120,10 @@ public class PartnerService {
                 .city(request.city().trim())
                 .serviceAreas(blankToNull(request.serviceAreas()))
                 .languages(blankToNull(request.languages()))
-                .status(PartnerStatus.PENDING)
+.aadhaarFrontPath(storedAadhaarFront.storageKey())
+.aadhaarBackPath(storedAadhaarBack.storageKey())
+.panFrontPath(storedPanFront.storageKey())
+.status(PartnerStatus.PENDING)
                 .build());
         return auth;
     }

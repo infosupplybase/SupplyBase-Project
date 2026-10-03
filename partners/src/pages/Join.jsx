@@ -205,7 +205,7 @@ export default function Join() {
 
     setBusy(true);
     try {
-      await applyAsPartner(form);
+      await applyAsPartner(form, documents);
       navigate('/', { replace: true });
     } catch (err) {
       // The API can reject what the browser cannot know (an email already in
@@ -318,7 +318,9 @@ export default function Join() {
 
                   <label htmlFor="pj-aadhaarFront" className="partner-document-button">
                     <Icon name="upload" size={16} />
-                    <span>Choose Photo</span>
+                    <span>
+                      {documents.aadhaarFront ? 'Photo Selected' : 'Choose Photo'}
+                    </span>
                   </label>
 
                   <span className="partner-document-name">
@@ -350,7 +352,9 @@ export default function Join() {
                     className="partner-document-button"
                   >
                     <Icon name="upload" size={16} />
-                    <span>Choose Photo</span>
+                    <span>
+                      {documents.aadhaarBack ? 'Photo Selected' : 'Choose Photo'}
+                    </span>
                   </label>
 
                   <span className="partner-document-name">
@@ -380,11 +384,13 @@ export default function Join() {
                   />
 
                   <label
-  htmlFor="pj-panFront"
-  className="partner-document-button partner-document-button-wide"
->
+                    htmlFor="pj-panFront"
+                    className="partner-document-button partner-document-button-wide"
+                  >
                     <Icon name="upload" size={16} />
-                    <span>Choose Photo</span>
+                    <span>
+                      {documents.panFront ? 'Photo Selected' : 'Choose Photo'}
+                    </span>
                   </label>
                 </div>
               </Field>
