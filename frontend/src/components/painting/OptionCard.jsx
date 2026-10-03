@@ -57,6 +57,16 @@ const imagesByQuestion = {
 };
 
 function findOptionImage(name, option) {
+  const paintingWallImages = {
+    '1-wall': '/assets/painting/walls/1-wall.jpg',
+    '2-walls': '/assets/painting/walls/2-walls.jpg',
+    'multiple-walls': '/assets/painting/walls/multiple-walls.jpg',
+  };
+
+  if (name === 'few_walls_area' && paintingWallImages[option.value]) {
+    return paintingWallImages[option.value];
+  }
+
   const label = String(option.label || '')
     .toLowerCase()
     .replace(/[_-]+/g, ' ');

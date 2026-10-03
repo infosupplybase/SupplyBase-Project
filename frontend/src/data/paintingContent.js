@@ -211,8 +211,7 @@ export const paintingFlows = {
     whatsIncluded: WHATS_INCLUDED_STANDARD,
     colourTabSet: 'standard',
     steps: [
-      { id: 'area', type: 'option', questionKey: 'few_walls_area', title: 'Which Area Do You Want to Paint?', showThumb: false, icon: 'building', notSureNote: true },
-      { id: 'painting_type', type: 'option', questionKey: 'few_walls_painting_type', title: 'Choose Painting Type', showThumb: false, icon: 'roller' },
+      { id: 'area', type: 'option', questionKey: 'few_walls_area', title: 'What Do You Want to Paint?', showThumb: false, icon: 'building', notSureNote: true },
       { id: 'brand', type: 'brand', title: 'Choose Paint Brand' },
       { id: 'product', type: 'product', questionKey: 'few_walls_product', title: 'Select Product Range' },
       { id: 'colour', type: 'colour', questionKey: 'few_walls_colour', title: 'Choose Your Colours' },

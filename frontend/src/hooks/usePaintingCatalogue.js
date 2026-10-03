@@ -5,9 +5,7 @@ let cachedForm = null;
 let pendingRequest = null;
 
 function loadPaintingForm() {
-  if (cachedForm) {
-    return Promise.resolve(cachedForm);
-  }
+  if (cachedForm) return Promise.resolve(cachedForm);
 
   if (!pendingRequest) {
     pendingRequest = api.serviceForm('painting')
@@ -38,14 +36,10 @@ export default function usePaintingCatalogue() {
         setError('');
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(friendlyError(err));
-        }
+        if (!cancelled) setError(friendlyError(err));
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       });
 
     return () => {
@@ -55,9 +49,25 @@ export default function usePaintingCatalogue() {
 
   const byKey = useMemo(() => {
     const map = new Map();
-
     (form?.questions || []).forEach((question) => {
       map.set(question.key, question);
+    });
+    return map;
+  }, [form]);
+
+  const priceIndex = useMemo(() => {
+    const map = new Map();
+
+    (form?.productPrices || []).forEach((entry) => {
+      const key = JSON.stringify([
+        entry.flowKey,
+        entry.paintingType,
+        entry.brand,
+        entry.homeType,
+        entry.productValue,
+      ]);
+
+      map.set(key, entry.price);
     });
 
     return map;
@@ -66,30 +76,58 @@ export default function usePaintingCatalogue() {
   const optionsFor = (questionKey) =>
     byKey.get(questionKey)?.options || [];
 
-  const productsByTier = (questionKey) => {
+  const productsByTier = (questionKey, selections = {}) => {
     const byTier = new Map();
     const sharedQuestions = [
       'full_home_product',
       'few_walls_product',
     ];
 
-    const options = sharedQuestions.includes(questionKey)
-      ? sharedQuestions.flatMap((key) => optionsFor(key))
-      : optionsFor(questionKey);
+    // Full Home now has its own registered Economy and Premium products.
+    const options = optionsFor(questionKey);
 
     const seen = new Set();
 
     options.forEach((option) => {
+      const productBrand = option.value.startsWith('berger-')
+        ? 'berger'
+        : 'asian-paints';
+
+      if (
+        sharedQuestions.includes(questionKey) &&
+        selections.paint_brand !== productBrand
+      ) {
+        return;
+      }
+
       if (seen.has(option.value)) return;
       seen.add(option.value);
 
-      const tier = option.group || 'Premium';
+      let price = option.price;
 
-      if (!byTier.has(tier)) {
-        byTier.set(tier, []);
+      if (sharedQuestions.includes(questionKey)) {
+        const fewWalls = questionKey === 'few_walls_product';
+        const ceiling = fewWalls &&
+          selections.few_walls_area === 'ceiling-paint';
+
+        const key = JSON.stringify([
+          questionKey,
+          fewWalls ? (ceiling ? 'ceiling-painting' : 'wall-painting') : selections.full_home_painting_type,
+          selections.paint_brand,
+          fewWalls ? (ceiling ? selections.few_walls_ceiling_type : selections.few_walls_area) : selections.home_type,
+          option.value,
+        ]);
+
+        price = priceIndex.get(key) ?? null;
       }
 
-      byTier.get(tier).push(option);
+      const tier = option.group || 'Premium';
+      if (!byTier.has(tier)) byTier.set(tier, []);
+
+      byTier.get(tier).push({
+        ...option,
+        price,
+      });
     });
 
     return byTier;
@@ -100,10 +138,7 @@ export default function usePaintingCatalogue() {
 
     optionsFor(questionKey).forEach((option) => {
       const tab = option.group || 'Popular';
-
-      if (!byTab.has(tab)) {
-        byTab.set(tab, []);
-      }
+      if (!byTab.has(tab)) byTab.set(tab, []);
 
       byTab.get(tab).push({
         ...option,

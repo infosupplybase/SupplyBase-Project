@@ -79,13 +79,58 @@ export default function PaintingFlow({
     return () => window.clearTimeout(timer);
   }, [choiceError]);
 
-  const configSteps = useMemo(() => flow?.steps || [], [flow]);
+  const configSteps = useMemo(() => {
+    const steps = flow?.steps || [];
+
+    if (
+      flowSlug !== 'few-walls' ||
+      answers.few_walls_area !== 'ceiling-paint'
+    ) {
+      return steps;
+    }
+
+    return [
+      steps[0],
+      {
+        id: 'ceiling_type',
+        type: 'option',
+        questionKey: 'few_walls_ceiling_type',
+        title: 'Choose Your Ceiling Type',
+        showThumb: false,
+        icon: 'ceiling',
+        required: true,
+      },
+      ...steps.slice(1),
+    ];
+  }, [flow, flowSlug, answers.few_walls_area]);
   const DETAILS = 1 + configSteps.length;
   const SCHEDULE = DETAILS + 1;
   const CONFIRM = SCHEDULE + 1;
 
   const setAnswer = (key) => (value) => {
-    setAnswers((a) => ({ ...a, [key]: value }));
+    setAnswers((a) => {
+      const next = { ...a, [key]: value };
+
+      if (key === 'few_walls_area' && value !== a.few_walls_area) {
+        delete next.few_walls_ceiling_type;
+        delete next.few_walls_product;
+      }
+
+      if (
+        key === 'few_walls_ceiling_type' &&
+        value !== a.few_walls_ceiling_type
+      ) {
+        delete next.few_walls_product;
+      }
+
+      if (key === 'paint_brand' && value !== a.paint_brand) {
+        delete next.full_home_product;
+        delete next.few_walls_product;
+        delete next.renovation_product;
+      }
+
+      return next;
+    });
     setErrors((e) => ({ ...e, [key]: undefined }));
     setSubmitError('');
   };
@@ -124,7 +169,7 @@ export default function PaintingFlow({
           return { stepIndex: i + 1, label: step.title.replace(/\?$/, ''), value: opt?.label, priceRupees: opt?.price ?? null };
         }
         if (step.type === 'product') {
-          const tiers = productsByTier(step.questionKey);
+          const tiers = productsByTier(step.questionKey, answers);
           const opt = [...tiers.values()].flat().find((o) => o.value === answers[step.questionKey]);
           return { stepIndex: i + 1, label: 'Product', value: opt?.label, priceRupees: opt?.price ?? null };
         }
@@ -147,6 +192,15 @@ export default function PaintingFlow({
         return { stepIndex: i + 1, label: step.title, value: '', priceRupees: null };
       });
   }, [flow, configSteps, answers, optionsFor, productsByTier, coloursByTab]);
+
+  const requiresPaintingSiteQuote =
+    (flowSlug === 'full-home' &&
+      (answers.full_home_painting_type === 'renovation-painting' ||
+        (answers.home_type === 'independent-house' &&
+          answers.full_home_painting_type === 'unfurnished-home'))) ||
+    flowSlug === 'renovation' ||
+    (flowSlug === 'few-walls' &&
+      answers.few_walls_area === 'multiple-walls');
 
   const itemsTotalPaise = useMemo(
     () => resolved.reduce((sum, r) => sum + Math.round((r.priceRupees || 0) * 100), 0),
@@ -178,6 +232,16 @@ export default function PaintingFlow({
 
     if (step.type === 'option') {
       const options = optionsFor(step.questionKey);
+
+      if (
+        step.questionKey === 'few_walls_ceiling_type' &&
+        options.length === 0
+      ) {
+        return reject(
+          step.questionKey,
+          'Ceiling options are unavailable. Please refresh and try again.'
+        );
+      }
       const valid = options.some(
         (option) => option.value === answers[step.questionKey]
       );
@@ -204,9 +268,7 @@ export default function PaintingFlow({
     }
 
     if (step.type === 'product') {
-      const products = answers.paint_brand === 'asian-paints'
-        ? [...productsByTier(step.questionKey).values()].flat()
-        : [];
+      const products = [...productsByTier(step.questionKey, answers).values()].flat();
 
       const valid = products.some(
         (product) => product.value === answers[step.questionKey]
@@ -319,7 +381,7 @@ export default function PaintingFlow({
         const value = answers[step.questionKey];
         if (value === undefined || value === '' || value === null) return;
         let opt;
-        if (step.type === 'product') opt = [...productsByTier(step.questionKey).values()].flat().find((o) => o.value === value);
+        if (step.type === 'product') opt = [...productsByTier(step.questionKey, answers).values()].flat().find((o) => o.value === value);
         else if (step.type === 'colour') opt = [...coloursByTab(step.questionKey).values()].flat().find((o) => o.value === value);
         else opt = optionsFor(step.questionKey).find((o) => o.value === value);
         flat.push({ key: step.questionKey, value, label: opt?.label || value });
@@ -673,12 +735,55 @@ if (modal) {
           )}
 
           {step.type === 'product' && (
-            <ProductPicker
-              productsByTier={productsByTier(step.questionKey)}
+            <>
+<ProductPicker
+              showAllProducts={step.questionKey === 'few_walls_product'}
+              productsByTier={productsByTier(step.questionKey, answers)}
+              hidePrices={requiresPaintingSiteQuote}
               brand={answers.paint_brand}
               value={answers[step.questionKey]}
               onSelect={setAnswer(step.questionKey)}
             />
+              {flowSlug === 'few-walls' &&
+                answers.paint_brand === 'asian-paints' &&
+                ['1-wall', '2-walls', 'multiple-walls'].includes(
+                  answers.few_walls_area
+                ) && (
+                  <div
+                    className="painting-wall-price-notes"
+                    style={{
+                      marginTop: 18,
+                      padding: '14px 16px',
+                      border: '1px solid #ead9aa',
+                      borderRadius: 12,
+                      background: '#fffaf0',
+                      color: '#685527',
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    <strong>Important notes</strong>
+                    <ul
+                      style={{
+                        margin: '8px 0 0',
+                        paddingLeft: 18,
+                      }}
+                    >
+                      <li>
+                        Painting prices apply to walls with no damage.
+                      </li>
+                      <li>
+                        Seepage or crack repairs may cost approximately
+                        {' '}₹2,499 extra, depending on inspection.
+                      </li>
+                      <li>
+                        Leakage waterproofing may cost approximately
+                        {' '}₹2,999 extra, depending on inspection.
+                      </li>
+                    </ul>
+                  </div>
+                )}
+            </>
           )}
 
           {step.type === 'colour' && (
@@ -705,7 +810,8 @@ if (modal) {
             <EstimateSummary
               rows={resolved}
               whatsIncluded={flow.whatsIncluded}
-              itemsTotalPaise={itemsTotalPaise}
+              itemsTotalPaise={requiresPaintingSiteQuote ? null : itemsTotalPaise}
+              siteVisitQuote={requiresPaintingSiteQuote}
               onEditStep={jumpToStep}
             />
           )}
