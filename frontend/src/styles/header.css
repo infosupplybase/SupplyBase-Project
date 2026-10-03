@@ -395,6 +395,12 @@
   background: var(--light-bg);
 }
 
+@media (max-width: 767px) {
+  .desktop-cart-btn {
+    display: none;
+  }
+}
+
 .notif-panel {
   width: min(280px, 80vw);
   padding: var(--space-4);

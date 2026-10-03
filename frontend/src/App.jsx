@@ -22,6 +22,7 @@ import PlumbingConsultationList from './pages/PlumbingConsultationList';
 import PlumbingConsultationBook from './pages/PlumbingConsultationBook';
 import PlumbingCart from './pages/PlumbingCart';
 import PlumbingCheckout from './pages/PlumbingCheckout';
+import Cart from './pages/Cart';
 import PaintingCategory from './pages/PaintingCategory';
 import PaintingFlow from './pages/PaintingFlow';
 import PopCeilingCategory from './pages/PopCeilingCategory';
@@ -100,6 +101,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
+        <Route path="cart" element={<Cart />} />
 
         {/* Old catalogue slugs, renamed when the backend categories were
             aligned with the marketing site (see V9 migration). Kept as
