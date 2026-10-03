@@ -103,21 +103,49 @@ export default function PlumbingConsultationBook({
 }
 
   const goNext = () => {
-    setError('');
-    if (stage === SCHEDULE) {
-      if (!date || !time) {
-        setErrors({ slot: 'Please choose a date and a time' });
-        return;
-      }
-    }
-    setStage((s) => Math.min(s + 1, CONFIRM));
+  setError('');
 
-if (modal) {
-  onStepChange?.();
-} else {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-  };
+  // STEP 1: Date & Time
+  if (stage === SCHEDULE) {
+    if (!date || !time) {
+      setErrors({ slot: 'Please choose a date and a time' });
+      setError('Please choose a date and time.');
+      return;
+    }
+
+    setStage(DETAILS);
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    return;
+  }
+
+  // STEP 2: Customer Details
+  if (stage === DETAILS) {
+    const nextErrors = validateDetails(details, pickedLocation);
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setError('Please fill in all required details.');
+      return;
+    }
+
+    setStage(CONFIRM);
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    return;
+  }
+};
 
   const goBack = () => {
   setError('');

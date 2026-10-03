@@ -351,33 +351,12 @@
    never sit on top of a photo or an option. */
 
 /* Wide screens, on the page. */
-@media (min-width: 768px) {
-  .wizard-foot:not(.modal-sticky-foot),
-  .pnt-step-actions:not(.modal-sticky-foot) {
-    position: sticky;
-    bottom: 0;
-    z-index: 6;
-    padding: 14px 0;
-    background: #ffffff;
-    border-top: 1px solid #e5e7eb;
-    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
-  }
-}
+
 
 /* Phones, on the page: .wizard-foot is already a fixed bar above the bottom
    navigation (wizard.css / bottom-nav.css); the painting-style action row
    gets the same reach, sitting just above that navigation. */
-@media (max-width: 767px) {
-  .pnt-step-actions:not(.modal-sticky-foot) {
-    position: sticky;
-    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-    z-index: 6;
-    padding: 12px 0;
-    background: #ffffff;
-    border-top: 1px solid #e5e7eb;
-    box-shadow: 0 -10px 24px -12px rgba(15, 23, 42, 0.18);
-  }
-}
+
 
 /* Inside the booking pop-up the bar is drawn in the pop-up's own footer
    (.bm-foot, see ModalFoot.jsx): a fixed strip under the scrolling area,
@@ -560,4 +539,19 @@
   .acct-tabs + * > h2 {
     margin-bottom: 14px !important;
   }
+}
+
+/* Booking footer buttons */
+.wizard-foot {
+  justify-content: space-between;
+}
+
+.wizard-foot .btn {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 80px;
+}
+
+.wizard-foot .btn-back {
+  min-width: 120px;
 }

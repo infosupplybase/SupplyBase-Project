@@ -11,7 +11,7 @@ export default function ViewCartBox({ cart = 'plumbing', onViewCart }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="plb-view-cart-box">
+    <div className="plb-view-cart-box sticky bottom-3 z-20">
       <div className="plb-view-cart-info">
         <span className="plb-view-cart-icon">
           <svg

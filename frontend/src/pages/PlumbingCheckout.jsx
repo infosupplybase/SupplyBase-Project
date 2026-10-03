@@ -92,7 +92,7 @@ export default function PlumbingCheckout({
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
   const scope = config.scope;
   const formBack = useFormBack();
-  const [stage, setStage] = useHistoryState(`${scope}:stage`, SCHEDULE, { push: true });
+  const [stage, setStage] = useState(SCHEDULE);
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
   const pickedLocation = usePickedLocation();
@@ -127,21 +127,49 @@ export default function PlumbingCheckout({
   }
 
   const goNext = () => {
-    setError('');
-    if (stage === SCHEDULE) {
-      if (!date || !time) {
-        setErrors({ slot: 'Please choose a date and a time' });
-        return;
-      }
+  setError('');
+
+  // STEP 1: Date & Time validation
+  if (stage === SCHEDULE) {
+    if (!date || !time) {
+      setErrors({ slot: 'Please choose a date and a time' });
+      setError('Please choose a date and time.');
+      return;
     }
-    setStage((s) => Math.min(s + 1, CONFIRM));
+
+    setStage(DETAILS);
 
     if (modal) {
       onStepChange?.();
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  };
+
+    return;
+  }
+
+  // STEP 2: Customer details validation
+  if (stage === DETAILS) {
+    const nextErrors = validateDetails(details, pickedLocation);
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setError('Please fill in all required details.');
+      return;
+    }
+
+    setStage(CONFIRM);
+
+    if (modal) {
+      onStepChange?.();
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    return;
+  }
+};
 
   const goBack = () => {
     setError('');
@@ -225,8 +253,8 @@ export default function PlumbingCheckout({
       <div
         className={
           modal
-  ? 'wizard-container !w-full !max-w-none !px-0 !pt-0 !pb-0 sm:!pb-6'
-  : 'wizard-container'
+            ? 'wizard-container !w-full !max-w-none !px-0 !pt-0 !pb-0 sm:!pb-6'
+            : 'wizard-container'
         }
       >
         <div className="wizard-top">
@@ -267,14 +295,26 @@ export default function PlumbingCheckout({
           ))}
         </ol>
 
-        <form onSubmit={handleSubmit} noValidate>
-          <div
-  className={
-    modal
-      ? 'wizard-card sm:!mb-6'
-      : 'wizard-card'
-  }
+        <form
+  onSubmit={(e) => {
+    e.preventDefault();
+
+    if (stage !== CONFIRM) {
+      goNext();
+      return;
+    }
+
+    handleSubmit(e);
+  }}
+  noValidate
 >
+          <div
+            className={
+              modal
+                ? 'wizard-card sm:!mb-6'
+                : 'wizard-card'
+            }
+          >
             {stage === SCHEDULE && (
               <>
                 <div className="wizard-card-head">
@@ -316,38 +356,38 @@ export default function PlumbingCheckout({
               </div>
             )}
 
-            <ModalFoot
-              className={
-                modal
-  ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-2 !gap-3 !border-0'
-                  : `wizard-foot ${stage === 0 ? 'single' : ''}`
-              }
-            >
+            <div
+  className={
+    modal && stage === DETAILS
+      ? '!mt-4 !flex !w-full !items-center !justify-center !gap-3'
+      : 'wizard-foot'
+  }
+>
               {(stage > 0 || modal) && (
-  <button
-    type="button"
-    className="btn btn-ghost btn-back !m-0 !w-full !justify-center"
-    onClick={goBack}
-  >
-    BACK
-  </button>
-)}
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-back !m-0 !w-[105px] !min-w-[105px] !max-w-[105px] !justify-center"
+                  onClick={goBack}
+                >
+                  BACK
+                </button>
+              )}
               {stage === CONFIRM ? (
-                <button type="submit" className="btn btn-primary !m-0 !w-full !justify-center" disabled={busy}>
+                <button type="submit" className="btn btn-primary !m-0 !w-[125px] !min-w-[135px] !max-w-[135px] !justify-center !px-2 !text-[10px] !tracking-[0.04em] !whitespace-nowrap" disabled={busy}>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
                 <button
   type="button"
-  className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center"
+  className="btn btn-primary !m-0 !w-auto !min-w-[100px] !flex !justify-center !px-4"
   onClick={goNext}
 >
-                  CONTINUE
-                  <Icon name="arrow-right" size={17} />
-                </button>
+  CONTINUE
+  <Icon name="arrow-right" size={17} />
+</button>
               )}
-            </ModalFoot>
+            </div>
           </div>
         </form>
       </div>
