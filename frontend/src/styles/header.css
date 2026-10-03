@@ -522,10 +522,9 @@
 
 .mega-inner {
   display: grid;
-  /* Four groups have anything in them now (DESIGN, FINISHING, MEP,
-     SPECIALIZED — the last holding only the single "Other Services"
-     catch-all tile) — plus the fixed-width CTA column. */
-  grid-template-columns: repeat(4, 1fr) 260px;
+  /* Three groups have anything in them now (DESIGN, FINISHING, MEP) —
+     plus the fixed-width CTA column. */
+  grid-template-columns: repeat(3, 1fr) 260px;
   gap: var(--space-5);
   padding: var(--space-6) var(--gutter);
   max-width: var(--container);
@@ -761,9 +760,12 @@
     flex-shrink: 0;
   }
 }
-/* ----------------------------------------------------- logout confirmation */
 
-.logout-modal-backdrop {
+/* ----------------------------------------------------- logout confirmation
+   "Are you sure?" before the header's log-out button signs the user out.
+   A centred card on desktop, a bottom sheet on phones (Prince). */
+
+.confirm-logout-backdrop {
   position: fixed;
   inset: 0;
   z-index: 3000;
@@ -775,7 +777,7 @@
   backdrop-filter: blur(4px);
 }
 
-.logout-modal {
+.confirm-logout-dialog {
   width: min(420px, 100%);
   padding: 30px;
   border: 1px solid var(--border);
@@ -783,10 +785,10 @@
   background: linear-gradient(180deg, #ffffff 0%, #fbf8f0 100%);
   box-shadow: var(--shadow-lg);
   text-align: center;
-  animation: logout-modal-rise 0.2s var(--ease);
+  animation: confirm-logout-rise 0.2s var(--ease);
 }
 
-.logout-modal-icon {
+.confirm-logout-icon {
   width: 54px;
   height: 54px;
   display: inline-flex;
@@ -798,7 +800,7 @@
   color: var(--gold-deep);
 }
 
-.logout-modal h2 {
+.confirm-logout-dialog h2 {
   margin: 0 0 10px;
   font-family: var(--font-display);
   font-size: 1.2rem;
@@ -807,59 +809,39 @@
   color: var(--ink);
 }
 
-.logout-modal p {
+.confirm-logout-dialog p {
   margin: 0;
   color: var(--ink-soft);
   font-size: 0.95rem;
   line-height: 1.55;
 }
 
-.logout-modal-actions {
+.confirm-logout-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin-top: 24px;
 }
 
-.logout-modal-actions button {
-  height: 44px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition:
-    background var(--t-fast) var(--ease),
-    color var(--t-fast) var(--ease),
-    box-shadow var(--t-fast) var(--ease);
+.confirm-logout-actions .btn {
+  width: 100%;
+  justify-content: center;
 }
 
-.logout-cancel-btn {
-  border: 1px solid var(--gold);
-  background: transparent;
-  color: var(--gold-deep);
+@media (max-width: 560px) {
+  .confirm-logout-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .confirm-logout-dialog {
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
-.logout-cancel-btn:hover {
-  background: var(--gold);
-  color: var(--on-gold);
-  box-shadow: var(--shadow-gold);
-}
-
-.logout-confirm-btn {
-  border: 1px solid red;
-  background: var(--white);
-  color: red;
-}
-
-.logout-confirm-btn:hover {
-  background: hsl(0, 97%, 65%);
-  box-shadow: var(--shadow);
-  color: black;
-}
-
-@keyframes logout-modal-rise {
+@keyframes confirm-logout-rise {
   from {
     opacity: 0;
     transform: translateY(12px) scale(0.98);

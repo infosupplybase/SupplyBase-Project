@@ -89,7 +89,7 @@ export const plumbingTabs = [
     icon: 'tap',
     heroTagline: 'Expert installation for a cleaner, smarter home.',
     overviewImage: '/assets/plumbing/overview/basin-sink-installation.webp',
-    filterTabs: ['All Services', 'Wash Basin', 'Kitchen Sink', 'Accessories', 'Repairs', 'Other Services'],
+    filterTabs: ['All Services', 'Wash Basin', 'Kitchen Sink', 'Accessories', 'Repairs'],
   },
   {
     slug: 'bathroom-accessories',
@@ -116,7 +116,7 @@ export const plumbingTabs = [
     icon: 'wrench',
     heroTagline: 'Identify. Repair. Prevent. For a leak-free home.',
     overviewImage: '/assets/plumbing/overview/leakage-repair-connections.webp',
-    filterTabs: ['All Services', 'Leakage Repair', 'Pipe Connections', 'Water Supply', 'Other Services'],
+    filterTabs: ['All Services', 'Leakage Repair', 'Pipe Connections', 'Water Supply'],
   },
   {
     slug: 'water-tank-motor-installation',
@@ -125,7 +125,7 @@ export const plumbingTabs = [
     icon: 'package',
     heroTagline: 'Safe water. Smooth flow. For a hassle-free home.',
     overviewImage: '/assets/plumbing/overview/water-tank-motor-installation.webp',
-    filterTabs: ['All Services', 'Water Tank', 'Motor', 'Pipeline & Fittings', 'Repairs', 'Other Services'],
+    filterTabs: ['All Services', 'Water Tank', 'Motor', 'Pipeline & Fittings', 'Repairs'],
   },
 ];
 

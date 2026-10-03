@@ -22,7 +22,7 @@ const serviceImages = {
   'pop-ceiling-design': '/assets/services/pop-ceiling-design.webp',
   plumbing: '/assets/services/plumber.webp',
   electrical: '/assets/services/electrician.avif',
-  'other-services': '/assets/services/other-services.webp',
+  'ac-services': '/assets/ac-services/ac-unit.webp',
 };
 
 export default function Services() {

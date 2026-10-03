@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
+import ConfirmLogoutDialog from '../ui/ConfirmLogoutDialog';
 import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
 import LocationSelector from './LocationSelector';
@@ -16,17 +17,15 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
   const { user, logout } = useAuth();
   const { openLogin } = useLoginGate();
 
   const handleLogout = async () => {
+    setConfirmLogout(false);
     await logout();
-    setShowLogoutConfirm(false);
     navigate('/');
   };
 
@@ -34,21 +33,16 @@ export default function Navbar() {
     ? (() => {
         const parts = user.fullName.trim().split(/\s+/).filter(Boolean);
         if (parts.length === 0) return 'U';
-
         const first = parts[0][0]?.toUpperCase() || '';
         const last = parts[parts.length - 1][0]?.toUpperCase() || '';
-
         return `${first}${last}` || 'U';
       })()
     : 'U';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
-
     window.addEventListener('scroll', onScroll, { passive: true });
-
     onScroll();
-
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
@@ -61,7 +55,6 @@ export default function Navbar() {
   // lock body scroll while the mobile drawer is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
-
     return () => {
       document.body.style.overflow = '';
     };
@@ -75,183 +68,107 @@ export default function Navbar() {
         setMobileOpen(false);
       }
     };
-
     window.addEventListener('keydown', onKey);
-
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   return (
     <>
       <div onMouseLeave={() => setMegaOpen(false)}>
-        <header className={`header ${scrolled ? 'scrolled' : ''}`}>
-          <div className="container">
-            <div className="header-inner">
+      <header className={`header ${scrolled ? 'scrolled' : ''}`}>
+        <div className="container">
+          <div className="header-inner">
+            <Link to="/" className="brand" aria-label={`${company.name} — home`}>
+              <img src="/assets/brand/logo.webp" alt={`${company.name} logo`} />
+            </Link>
 
-              <Link
-                to="/"
-                className="brand"
-                aria-label={`${company.name} — home`}
-              >
-                <img
-                  src="/assets/brand/logo.webp"
-                  alt={`${company.name} logo`}
-                />
-              </Link>
-
-              <nav className="nav" aria-label="Main">
-                {mainNav.map((item) =>
-                  item.hasMegaMenu ? (
-                    <div
-                      key={item.path}
-                      className="has-mega"
-                      onMouseEnter={() => setMegaOpen(true)}
-                      style={{ display: 'inline-flex' }}
-                    >
-                      <NavLink
-                        to={item.path}
-                        className={({ isActive }) =>
-                          `nav-link ${isActive ? 'active' : ''} ${
-                            megaOpen ? 'open' : ''
-                          }`
-                        }
-                        onClick={() => setMegaOpen(false)}
-                        aria-expanded={megaOpen}
-                      >
-                        {item.label}
-
-                        {/* <Icon
-                          name="chevron-down"
-                          size={15}
-                          className="nav-caret"
-                        /> */}
-                      </NavLink>
-                    </div>
-                  ) : (
+            <nav className="nav" aria-label="Main">
+              {mainNav.map((item) =>
+                item.hasMegaMenu ? (
+                  <div
+                    key={item.path}
+                    className="has-mega"
+                    onMouseEnter={() => setMegaOpen(true)}
+                    style={{ display: 'inline-flex' }}
+                  >
                     <NavLink
-                      key={item.path}
                       to={item.path}
-                      end={item.path === '/'}
                       className={({ isActive }) =>
-                        `nav-link ${isActive ? 'active' : ''}`
+                        `nav-link ${isActive ? 'active' : ''} ${megaOpen ? 'open' : ''}`
                       }
-                      onMouseEnter={() => setMegaOpen(false)}
+                      onClick={() => setMegaOpen(false)}
+                      aria-expanded={megaOpen}
                     >
                       {item.label}
+                      {/* <Icon name="chevron-down" size={15} className="nav-caret" /> */}
                     </NavLink>
-                  )
-                )}
-              </nav>
-
-              <div className="header-actions">
-                <LocationSelector />
-
-                <NotificationBell />
-
-                {user ? (
-                  <>
-                    <Link
-                      to="/dashboard"
-                      className="login-btn user-logout-btn"
-                    >
-                      <span
-                        className="user-avatar-badge"
-                        aria-hidden="true"
-                      >
-                        {initials}
-                      </span>
-
-                      <span className="logout-label">
-                        MY ACCOUNT
-                      </span>
-                    </Link>
-
-                    <button
-                      type="button"
-                      className="login-btn icon-only-btn"
-                      onClick={() => setShowLogoutConfirm(true)}
-                      aria-label="Log out"
-                      title="Log out"
-                    >
-                      <Icon name="log-out" size={17} />
-                    </button>
-                  </>
+                  </div>
                 ) : (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    end={item.path === '/'}
+                    className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                    onMouseEnter={() => setMegaOpen(false)}
+                  >
+                    {item.label}
+                  </NavLink>
+                )
+              )}
+            </nav>
+
+            <div className="header-actions">
+              <LocationSelector />
+              <NotificationBell />
+              {user ? (
+                <>
+                  <Link to="/dashboard" className="login-btn user-logout-btn">
+                    <span className="user-avatar-badge" aria-hidden="true">{initials}</span>
+                    <span className="logout-label">MY ACCOUNT</span>
+                  </Link>
                   <button
                     type="button"
-                    className="login-btn"
-                    onClick={openLogin}
+                    className="login-btn icon-only-btn"
+                    onClick={() => setConfirmLogout(true)}
+                    aria-label="Log out"
+                    title="Log out"
                   >
-                    <Icon name="user" size={17} />
-                    LOGIN
+                    <Icon name="log-out" size={17} />
                   </button>
-                )}
-
-                <button
-                  type="button"
-                  className="burger"
-                  aria-label="Open menu"
-                  onClick={() => setMobileOpen(true)}
-                >
-                  <Icon name="menu" size={22} />
+                </>
+              ) : (
+                <button type="button" className="login-btn" onClick={openLogin}>
+                  <Icon name="user" size={17} />
+                  LOGIN
                 </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* <ServiceMegaMenu
-          open={megaOpen}
-          scrolled={scrolled}
-          onNavigate={() => setMegaOpen(false)}
-        /> */}
-      </div>
-
-      {showLogoutConfirm && (
-        <div
-          className="logout-modal-backdrop"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="logout-modal-title"
-        >
-          <div className="logout-modal">
-            <div className="logout-modal-icon">
-              <Icon name="log-out" size={24} />
-            </div>
-
-            <h2 id="logout-modal-title">
-              LOG OUT
-            </h2>
-
-            <p>
-             Confirm logout
-            </p>
-
-            <div className="logout-modal-actions">
+              )}
               <button
                 type="button"
-                className="logout-cancel-btn"
-                onClick={() => setShowLogoutConfirm(false)}
+                className="burger"
+                aria-label="Open menu"
+                onClick={() => setMobileOpen(true)}
               >
-                CANCEL
-              </button>
-
-              <button
-                type="button"
-                className="logout-confirm-btn"
-                onClick={handleLogout}
-              >
-                Confirm 
+                <Icon name="menu" size={22} />
               </button>
             </div>
           </div>
         </div>
-      )}
 
-      <MobileMenu
-        open={mobileOpen}
-        onClose={() => setMobileOpen(false)}
+      </header>
+      {/* <ServiceMegaMenu
+  open={megaOpen}
+  scrolled={scrolled}
+  onNavigate={() => setMegaOpen(false)}
+/> */}
+</div>
+
+      <ConfirmLogoutDialog
+        open={confirmLogout}
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmLogout(false)}
       />
+
+      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>
   );
 }

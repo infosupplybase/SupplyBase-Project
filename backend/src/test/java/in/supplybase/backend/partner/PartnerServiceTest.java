@@ -3,6 +3,7 @@ package in.supplybase.backend.partner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockMultipartFile;
 
 import in.supplybase.backend.auth.AuthService;
 import in.supplybase.backend.auth.Role;
@@ -33,6 +35,7 @@ import in.supplybase.backend.booking.BookingRepository;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.FileStorageService;
 import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 
@@ -58,12 +61,23 @@ class PartnerServiceTest {
     private ServiceCategoryRepository categories;
     @Mock
     private AuthService authService;
+    @Mock
+    private FileStorageService files;
 
     private PartnerService service;
 
+    private static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F' };
+
+    private static PartnerDocuments photos() {
+        return new PartnerDocuments(
+                new MockMultipartFile("aadhaarFront", "front.jpg", "image/jpeg", JPEG),
+                new MockMultipartFile("aadhaarBack", "back.jpg", "image/jpeg", JPEG),
+                new MockMultipartFile("panFront", "pan.jpg", "image/jpeg", JPEG));
+    }
+
     @BeforeEach
     void setUp() {
-        service = new PartnerService(partners, users, bookings, categories, authService);
+        service = new PartnerService(partners, users, bookings, categories, authService, files);
         when(categories.findAllByOrderBySortOrderAsc()).thenReturn(List.of(category("electrical", "Electrical", null)));
         when(bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(any())).thenReturn(List.of());
     }
@@ -107,8 +121,12 @@ class PartnerServiceTest {
                     .thenReturn(Optional.of(category("electrical", "Electrical", null)));
             when(authService.register(any(RegisterRequest.class), any())).thenReturn(authFor(7L));
             when(users.getReferenceById(7L)).thenReturn(user(7L, Role.CUSTOMER));
+            when(files.store(any(), eq("partners/7/documents"))).thenReturn(
+                    new FileStorageService.StoredFile("partners/7/documents/a.jpg", "a.jpg", "image/jpeg", 8),
+                    new FileStorageService.StoredFile("partners/7/documents/b.jpg", "b.jpg", "image/jpeg", 8),
+                    new FileStorageService.StoredFile("partners/7/documents/c.jpg", "c.jpg", "image/jpeg", 8));
 
-            AuthResponse result = service.apply(applyRequest("electrical"), "1.2.3.4");
+            AuthResponse result = service.apply(applyRequest("electrical"), photos(), "1.2.3.4");
 
             ArgumentCaptor<PartnerProfile> saved = ArgumentCaptor.forClass(PartnerProfile.class);
             verify(partners).save(saved.capture());
@@ -117,7 +135,29 @@ class PartnerServiceTest {
             assertThat(saved.getValue().getCity()).isEqualTo("Thane");
             assertThat(saved.getValue().getServiceAreas()).isNull();
             assertThat(saved.getValue().getUser().getRole()).isEqualTo(Role.CUSTOMER);
+            assertThat(saved.getValue().getAadhaarFrontPath()).isEqualTo("partners/7/documents/a.jpg");
+            assertThat(saved.getValue().getAadhaarBackPath()).isEqualTo("partners/7/documents/b.jpg");
+            assertThat(saved.getValue().getPanFrontPath()).isEqualTo("partners/7/documents/c.jpg");
             assertThat(result.user().role()).isEqualTo(Role.CUSTOMER);
+        }
+
+        @Test
+        @DisplayName("refuses a document that is not a photo before creating any account")
+        void rejectsNonPhotoDocument() {
+            when(categories.findBySlugAndActiveTrue("electrical"))
+                    .thenReturn(Optional.of(category("electrical", "Electrical", null)));
+            var documents = new PartnerDocuments(
+                    new MockMultipartFile("aadhaarFront", "front.jpg", "image/jpeg", JPEG),
+                    new MockMultipartFile("aadhaarBack", "back.jpg", "image/jpeg", JPEG),
+                    new MockMultipartFile("panFront", "pan.jpg", "image/jpeg", "<html></html>".getBytes()));
+
+            assertThatThrownBy(() -> service.apply(applyRequest("electrical"), documents, "1.2.3.4"))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessageContaining("PAN card");
+
+            verify(authService, never()).register(any(), any());
+            verify(files, never()).store(any(), any());
+            verify(partners, never()).save(any());
         }
 
         @Test
@@ -125,7 +165,7 @@ class PartnerServiceTest {
         void rejectsUnknownTrade() {
             when(categories.findBySlugAndActiveTrue("astrology")).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> service.apply(applyRequest("astrology"), "1.2.3.4"))
+            assertThatThrownBy(() -> service.apply(applyRequest("astrology"), photos(), "1.2.3.4"))
                     .isInstanceOf(ApiException.class)
                     .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 
@@ -139,7 +179,7 @@ class PartnerServiceTest {
             when(categories.findBySlugAndActiveTrue("wiring"))
                     .thenReturn(Optional.of(category("wiring", "Wiring", "electrical")));
 
-            assertThatThrownBy(() -> service.apply(applyRequest("wiring"), "1.2.3.4"))
+            assertThatThrownBy(() -> service.apply(applyRequest("wiring"), photos(), "1.2.3.4"))
                     .isInstanceOf(ApiException.class)
                     .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 

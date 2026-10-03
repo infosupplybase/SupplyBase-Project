@@ -25,7 +25,7 @@ const ElectricalCategory = lazyPage(() => import('./pages/ElectricalCategory'));
 const ElectricalCart = lazyPage(() => import('./pages/ElectricalCart'));
 const ElectricalCheckout = lazyPage(() => import('./pages/ElectricalCheckout'));
 const ElectricalSubPage = lazyPage(() => import('./pages/ElectricalCheckout').then((m) => ({ default: m.ElectricalSubPage })));
-const OtherServicesCategory = lazyPage(() => import('./pages/OtherServicesCategory'));
+const AcServices = lazyPage(() => import('./pages/AcServices'));
 const PlumbingCategory = lazyPage(() => import('./pages/PlumbingCategory'));
 const PlumbingTab = lazyPage(() => import('./pages/PlumbingTab'));
 const PlumbingConsultationList = lazyPage(() => import('./pages/PlumbingConsultationList'));
@@ -52,6 +52,15 @@ const Profile = lazyPage(() => import('./pages/Profile'));
 const PartnerRedirect = lazyPage(() => import('./pages/PartnerRedirect'));
 const PrivacyPolicy = lazyPage(() => import('./pages/Legal').then((m) => ({ default: m.PrivacyPolicy })));
 const Terms = lazyPage(() => import('./pages/Legal').then((m) => ({ default: m.Terms })));
+
+const RETIRED_SERVICE_SLUGS = [
+  'other-services',
+  'architectural-design',
+  'civil-construction',
+  'furniture',
+  'fabrication',
+  'finishing',
+];
 
 /**
  * ROUTES
@@ -146,10 +155,18 @@ export default function App() {
         <Route path="services/electrical/checkout" element={<ElectricalCheckout />} />
         <Route path="services/electrical/:subSlug" element={<ElectricalSubPage />} />
 
-        {/* Other Services: the catch-all eighth tile, reactivated on
-            request. A category list in front of five existing generic
-            wizard pages, same shape as the electrical category list. */}
-        <Route path="services/other-services" element={<OtherServicesCategory />} />
+        {/* Other Services and the five services it listed are no longer
+            offered (V31 migration). Old or shared links go to the services
+            page rather than a "service not found" screen. */}
+        {RETIRED_SERVICE_SLUGS.flatMap((slug) => [
+          <Route key={`s-${slug}`} path={`services/${slug}`} element={<Navigate to="/services" replace />} />,
+          <Route key={`b-${slug}`} path={`booking/${slug}`} element={<Navigate to="/services" replace />} />,
+        ])}
+
+        {/* AC Services: its own booking flow (category -> options -> estimate ->
+            time -> details), V30 migration. */}
+        <Route path="services/ac-services" element={<AcServices />} />
+        <Route path="services/ac-services/:acCategory" element={<AcServices />} />
 
         {/* Plumbing Services: an itemised cart catalogue (V14 migration)
             replacing the old generic wizard for this one category. Exact
