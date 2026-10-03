@@ -506,7 +506,7 @@ export default function ElectricianService() {
               )}
               {stage === CONFIRM ? (
                 <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'BOOKING…' : 'PAY & CONFIRM BOOKING'}
+                  {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
@@ -578,7 +578,7 @@ function ElectricianSummary({ category, form, answers, date, time, estimate }) {
     <div style={{ marginTop: 26 }}>
       <div className="wizard-card-head">
         <h2>Booking Summary</h2>
-        <p>Please check everything before you pay.</p>
+        <p>Please check everything before you confirm.</p>
       </div>
 
       <dl className="review-list">
