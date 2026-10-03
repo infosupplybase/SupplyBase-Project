@@ -6,6 +6,7 @@ import { activeServices } from '../../data/services';
 import useServiceCatalogue, { serviceRoute } from '../../hooks/useServiceCatalogue';
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
+import { useLoginGate } from '../auth/LoginGate';
 
 /**
  * MobileMenu — slide-in navigation drawer for tablet and phone.
@@ -14,6 +15,7 @@ export default function MobileMenu({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { openLogin } = useLoginGate();
 
   const handleLogout = async () => {
     await logout();
@@ -92,9 +94,16 @@ export default function MobileMenu({ open, onClose }) {
               </button>
             </>
           ) : (
-            <NavLink to="/login" className="mobile-link" onClick={onClose}>
+            <button
+              type="button"
+              className="mobile-link text-left"
+              onClick={() => {
+                onClose();
+                openLogin();
+              }}
+            >
               LOGIN
-            </NavLink>
+            </button>
           )}
         </nav>
 

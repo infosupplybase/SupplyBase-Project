@@ -196,6 +196,27 @@
   color: #111111;
 }
 
+/* "Login" opens the sign-in card, so it is a button that looks like its
+   neighbouring links. */
+.ft-list .ft-link-btn {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #666666;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ft-list .ft-link-btn:hover {
+  color: #111111;
+}
+
 
 /* =========================================================================
    REMOVE OLD SERVICE ICONS

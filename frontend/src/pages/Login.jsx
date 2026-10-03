@@ -55,9 +55,9 @@ export default function Login() {
     <div className="auth-screen">
       <div className="auth-glow" aria-hidden="true" />
 
-      <div className="auth-card-wrap">
-        {/* Compact, so the whole form fits on one screen without scrolling */}
-        <div className="auth-card auth-compact">
+<div className="auth-card-wrap !bg-black/55 backdrop-blur-sm border border-yellow-400/20 shadow-xl">
+  {/* Compact, so the whole form fits on one screen without scrolling */}
+  <div className="auth-card auth-compact">
           <button type="button" className="auth-close" onClick={handleClose} aria-label="Close">
             <Icon name="close" size={18} />
           </button>
