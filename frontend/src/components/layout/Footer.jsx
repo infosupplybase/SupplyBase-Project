@@ -293,7 +293,7 @@ export default function Footer() {
               </li>
 
 
-             
+
 
             </ul>
 
@@ -434,7 +434,7 @@ export default function Footer() {
 
                 <a
                   href={`${partnersUrl}/login`}
-                  className="ft-legal-btn"
+                  className="ft-partner-login"
                 >
                   Partner Login
                 </a>
