@@ -174,6 +174,14 @@ class BookingControllerTest {
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isNotFound());
         }
+
+        @Test
+        @DisplayName("an id that is not a number is the caller's mistake: 400, not 500")
+        void nonNumericIdIsBadRequest() throws Exception {
+            mockMvc.perform(get("/api/bookings/abc").with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("\"id\" has a value we could not read."));
+        }
     }
 
     @Nested
