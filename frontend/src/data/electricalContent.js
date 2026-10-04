@@ -13,8 +13,8 @@ export const electricalGroups = [
     slug: 'fan-services',
     name: 'Fan Services',
     image: '/assets/services/electrician/group-fan.webp',
-    fromPrice: 79,
-    blurb: 'From ₹79',
+    fromPrice: 99,
+    blurb: 'From ₹99',
     note: '(Actual pricing)',
     items: [
       {
@@ -285,8 +285,8 @@ export const electricalGroups = [
     slug: 'mcb-db-inverter',
     name: 'MCB, DB & Inverter',
     image: '/assets/services/electrician/group-mcd.webp',
-    fromPrice: 199,
-    blurb: 'From ₹199',
+    fromPrice: 149,
+    blurb: 'From ₹149',
     note: '(Actual pricing)',
     items: [
       {

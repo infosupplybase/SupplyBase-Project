@@ -353,6 +353,11 @@
   margin-bottom: var(--space-4);
 }
 
+.plb-search:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-a24);
+}
+
 .plb-search input {
   flex: 1;
   border: none;

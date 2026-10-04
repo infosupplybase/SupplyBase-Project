@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import in.supplybase.backend.enquiry.dto.CreateEnquiryRequest;
 import in.supplybase.backend.enquiry.dto.EnquiryResponse;
 import in.supplybase.backend.enquiry.dto.UpdateEnquiryRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -30,8 +31,9 @@ public class EnquiryController {
     /** Public. This is what the quote form and contact form post to. */
     @PostMapping("/api/enquiries")
     public ResponseEntity<EnquiryResponse.Receipt> create(
-            @Valid @RequestBody CreateEnquiryRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
+            @Valid @RequestBody CreateEnquiryRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.create(request, httpRequest.getRemoteAddr()));
     }
 
     /* ----------------------------------------------------------- staff */

@@ -858,3 +858,31 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* Item count on the cart icon (header and phone bottom bar). */
+.desktop-cart-btn,
+.bottom-nav-icon {
+  position: relative;
+}
+
+.cart-count-badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+
+.bottom-nav-icon .cart-count-badge {
+  top: -6px;
+  right: 2px;
+  box-shadow: 0 0 0 2px var(--white);
+}

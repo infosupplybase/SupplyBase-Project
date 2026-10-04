@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import { useCart } from '../context/CartContext';
-import { formatRupees } from '../lib/money';
+import { formatRupees, formatItemPrice } from '../lib/money';
 
 export default function Cart() {
     const plumbing = useCart('plumbing');
@@ -116,7 +116,7 @@ function CartGroup({ title, cart, checkoutTo }) {
                             )}
 
                             <div className="plb-row-price">
-                                {formatRupees(item.unitPricePaise / 100)}
+                                {formatItemPrice(item.unitPricePaise / 100)}
                                 <span> × {item.quantity}</span>
                             </div>
                         </div>
@@ -157,7 +157,7 @@ function CartGroup({ title, cart, checkoutTo }) {
                             </div>
 
                             <span className="plb-cart-row-total">
-                                {formatRupees(
+                                {formatItemPrice(
                                     (item.unitPricePaise * item.quantity) / 100
                                 )}
                             </span>

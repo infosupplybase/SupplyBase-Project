@@ -70,7 +70,7 @@ export const indexable = {
   '/about': {
     title: 'About Us | Supplybase',
     description:
-      'Supplybase is a construction, architectural design, interior design and turnkey project execution company - one partner from the first drawing to handover.',
+      'Supplybase brings painting, waterproofing, plumbing, electrical, POP ceiling and interior design work under one accountable team - one partner from the first visit to handover.',
   },
   '/contact': {
     title: 'Contact Us | Supplybase',
@@ -114,6 +114,15 @@ export function resolveMeta(rawPath) {
       title: `${path.startsWith('/dashboard') ? 'My Account' : 'Sign in'} | ${SITE_NAME}`,
       description: homeMeta.description,
       canonical: SITE_URL + '/',
+      noindex: true,
+    };
+  }
+
+  if (path === '/cart') {
+    return {
+      title: `Your Cart | ${SITE_NAME}`,
+      description: homeMeta.description,
+      canonical: SITE_URL + '/services',
       noindex: true,
     };
   }

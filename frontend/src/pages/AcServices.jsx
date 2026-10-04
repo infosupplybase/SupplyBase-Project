@@ -97,6 +97,7 @@ function AcServicesContent({
     <AcServiceFlow
       key={categorySlug}
       categorySlug={categorySlug}
+      headingLevel={modal ? 'h2' : 'h1'}
       onBackToCatalogue={backToCategories}
       onStepChange={onStepChange}
       onContinue={(answers) => {

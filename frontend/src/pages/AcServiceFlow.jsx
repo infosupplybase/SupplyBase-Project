@@ -29,7 +29,11 @@ export default function AcServiceFlow({
   onBackToCatalogue,
   onContinue,
   onStepChange,
+  // The page's main heading on /services/ac-services/<type>; a sub-heading
+  // when the same flow is shown inside the booking pop-up.
+  headingLevel = 'h1',
 }) {
+  const Heading = headingLevel;
   const category = acCategories.find(
     (item) => item.slug === categorySlug
   );
@@ -235,7 +239,7 @@ export default function AcServiceFlow({
           <Icon name="arrow-left" size={20} />
         </button>
 
-        <h2 className="ac-pop-title">{category.label}</h2>
+        <Heading className="ac-pop-title">{category.label}</Heading>
 
         <a
           className="ac-pop-help"

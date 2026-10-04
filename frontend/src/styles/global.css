@@ -1214,7 +1214,8 @@ gmp-place-autocomplete {
 .booking-address-inputs input:focus {
   border-color: #e5a11a;
 
-  box-shadow: 0 0 0 2px rgba(229, 161, 26, 0.08);
+  /* the input has outline: none, so this ring is its only focus cue */
+  box-shadow: 0 0 0 3px rgba(229, 161, 26, 0.35);
 }
 
 
