@@ -2,6 +2,7 @@ package in.supplybase.backend.booking.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import in.supplybase.backend.booking.Booking;
@@ -16,6 +17,12 @@ public record BookingResponse(
         String workNature, String workOption, String workDetail,
         MaterialSupplier materialSupplier, String budgetRange,
         LocalDate preferredDate, String preferredSlot,
+        // The visit time the customer picked (appointment_slots). preferredSlot
+        // is only set on the old two-lane bookings, so new ones need this.
+        LocalTime appointmentTime,
+        // What the customer pays on the day, and their cart's total (null
+        // when nothing in the booking was priced). See BookingReceipt.
+        long visitFeePaise, Long itemsTotalPaise,
         String name, String phone, String whatsapp, String email,
         String address, String location, String pincode,
         boolean attachmentsPending, String adminNotes, Instant createdAt,
@@ -42,6 +49,8 @@ public record BookingResponse(
                 b.getMaterialSupplier(), b.getBudgetRange(),
                 b.getPreferredDate(),
                 b.getPreferredSlot() == null ? null : b.getPreferredSlot().label(),
+                b.getAppointmentSlot() == null ? null : b.getAppointmentSlot().getSlotTime(),
+                b.getVisitFeePaise(), b.getItemsTotalPaise(),
                 b.getName(), b.getPhone(), b.getWhatsapp(), b.getEmail(),
                 b.getAddress(), b.getLocation(), b.getPincode(),
                 b.isAttachmentsPending(), b.getAdminNotes(), b.getCreatedAt(),

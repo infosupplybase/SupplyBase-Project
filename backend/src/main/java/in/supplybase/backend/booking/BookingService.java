@@ -415,7 +415,12 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingResponse> forDate(LocalDate date) {
+        // In visit-time order: the picked time on new bookings, the old
+        // morning/afternoon lane (already the query's order) on legacy ones.
         return bookings.findByPreferredDateOrderByPreferredSlotAsc(date).stream()
+                .sorted(java.util.Comparator.comparing(
+                        (Booking b) -> b.getAppointmentSlot() == null ? null : b.getAppointmentSlot().getSlotTime(),
+                        java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
                 .map(BookingResponse::from)
                 .toList();
     }

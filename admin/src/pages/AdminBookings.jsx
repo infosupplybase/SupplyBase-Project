@@ -23,6 +23,7 @@ import {
   telHref,
   timeAgo,
   todayIso,
+  visitTime,
   whatsappHref,
 } from '../lib/format';
 
@@ -165,6 +166,7 @@ export default function AdminBookings() {
 
   const cartTotal = useMemo(() => {
     if (!selected || !selected.answers) return null;
+    if (selected.itemsTotalPaise != null) return selected.itemsTotalPaise;
     const priced = selected.answers.filter((a) => a.lineTotalPaise != null);
     return priced.length ? priced.reduce((sum, a) => sum + a.lineTotalPaise, 0) : null;
   }, [selected]);
@@ -333,7 +335,7 @@ export default function AdminBookings() {
                 <tr key={row.id} {...rowProps(() => setOpenId(String(row.id)), `Open booking ${row.bookingNumber}`)}>
                   {mode === 'day' ? (
                     <td>
-                      <strong>{row.preferredSlot || '—'}</strong>
+                      <strong>{visitTime(row) || '—'}</strong>
                     </td>
                   ) : (
                     <td>
@@ -358,7 +360,7 @@ export default function AdminBookings() {
                   ) : (
                     <td>
                       {formatDay(row.preferredDate)}
-                      <span className="admin-table-sub">{row.preferredSlot || '—'}</span>
+                      <span className="admin-table-sub">{visitTime(row) || '—'}</span>
                     </td>
                   )}
                   <td>{row.assignedProfessionalName || <span className="admin-table-sub">Not assigned</span>}</td>
@@ -491,8 +493,12 @@ export default function AdminBookings() {
                 <div>
                   <dt>Visit</dt>
                   <dd>
-                    {formatDay(selected.preferredDate)} · {selected.preferredSlot || 'no time chosen'}
+                    {formatDay(selected.preferredDate)} · {visitTime(selected) || 'no time chosen'}
                   </dd>
+                </div>
+                <div>
+                  <dt>To pay at the visit</dt>
+                  <dd>{formatRupees(selected.visitFeePaise)}</dd>
                 </div>
                 {selected.propertyType && (
                   <div>
