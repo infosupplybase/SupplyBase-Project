@@ -234,6 +234,14 @@
   margin-bottom: var(--space-5);
 }
 
+.ibc-design-grid--entrance {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ibc-design-grid--bed-back-wall {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .ibc-design-card {
   position: relative;
   background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
@@ -258,6 +266,16 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.ibc-design-card--entrance .ibc-design-media {
+  aspect-ratio: 1 / 1;
+  background: #f5f2ec;
+}
+
+.ibc-design-card--entrance .ibc-design-media img {
+  object-fit: cover;
+  object-position: center;
 }
 
 .ibc-wishlist {
@@ -292,6 +310,11 @@
   margin-bottom: 3px;
 }
 
+.ibc-design-card--entrance .ibc-design-name {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
 .ibc-design-price {
   display: block;
   color: var(--gold-deep);
@@ -319,6 +342,35 @@
   object-fit: cover;
 }
 
+.ibc-detail-media--entrance {
+  aspect-ratio: 1 / 1;
+  background: #f5f2ec;
+}
+
+.ibc-detail-media--entrance img {
+  object-fit: cover;
+  object-position: center;
+}
+
+.ibc-modal-design-media {
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+.ibc-modal-design-media--entrance {
+  aspect-ratio: 1 / 1;
+  background: #f5f2ec;
+}
+
+.ibc-modal-design-media--entrance img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  object-position: center;
+}
+
 .ibc-detail-head {
   display: flex;
   align-items: flex-start;
@@ -336,6 +388,19 @@
 .ibc-detail-tagline {
   color: var(--ink-muted);
   margin: 0;
+}
+
+.ibc-detail-description {
+  color: var(--ink-soft);
+  line-height: 1.65;
+  margin: calc(var(--space-4) * -1) 0 var(--space-3);
+}
+
+.ibc-estimate-note {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0 0 var(--space-5);
 }
 
 .ibc-detail-price {
@@ -695,8 +760,21 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .ibc-detail-head {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
   .ibc-space-grid,
   .ibc-design-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ibc-design-grid--entrance {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ibc-design-grid--bed-back-wall {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
