@@ -1845,12 +1845,12 @@ body:has(.wizard-shell) .floating-actions {
   padding: 0 !important;
   overflow: hidden;
 
-  background: #F3F0E8 !important;
+  background: #000000 !important;
 
-  border: 1px solid #D8D2C5 !important;
+  border: 1px solid #333333 !important;
   border-radius: 8px;
 
-  color: #171717;
+  color: #ffffff;
 
   box-shadow: none !important;
 
@@ -1878,9 +1878,9 @@ body:has(.wizard-shell) .floating-actions {
   margin: 0;
   padding: 8px 0 2px;
 
-  background: #F3F0E8 !important;
+  background: #000000 !important;
 
-  color: #111111 !important;
+  color: #ffffff !important;
 
   border: none !important;
 }
@@ -1898,7 +1898,7 @@ body:has(.wizard-shell) .floating-actions {
 
   background: transparent !important;
 
-  color: #111111 !important;
+  color: #ffffff !important;
 
   border: none !important;
 }
@@ -1913,8 +1913,8 @@ svg {
   width: 38px;
   height: 38px;
 
-  color: #111111 !important;
-  stroke: #111111 !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 
   stroke-width: 1.8;
 }
@@ -1936,9 +1936,9 @@ svg {
   margin: 0;
   padding: 5px 6px 8px;
 
-  background: #F3F0E8 !important;
+  background: #000000 !important;
 
-  color: #111111 !important;
+  color: #ffffff !important;
 
   text-align: center;
 
@@ -1962,7 +1962,7 @@ svg {
 
   font-weight: 700;
 
-  color: #171717 !important;
+  color: #ffffff !important;
 
   text-align: center;
 
@@ -1999,7 +1999,7 @@ svg {
    ============================================================ */
 
 .tile.waterproofing-service-tile:hover {
-  background: #F3F0E8 !important;
+  background: #000000 !important;
 
   border-color: #D4AF37 !important;
 
@@ -2010,13 +2010,13 @@ svg {
 }
 
 
-/* Keep icon black */
+/* Keep the icon white in every tile state. */
 
 .tile.waterproofing-service-tile:hover
 .waterproofing-service-icon,
 .tile.waterproofing-service-tile:hover
 .tile-icon-fallback {
-  color: #111111 !important;
+  color: #ffffff !important;
 }
 
 
@@ -2024,15 +2024,15 @@ svg {
 .waterproofing-service-icon
 .tile-icon-fallback
 svg {
-  color: #111111 !important;
-  stroke: #111111 !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 
-/* Hover text GOLD */
+/* Keep the label white on hover. */
 
 .tile.waterproofing-service-tile:hover .tile-label {
-  color: #C9A227 !important;
+  color: #ffffff !important;
 
   transform: none !important;
 }
@@ -2043,7 +2043,7 @@ svg {
    ============================================================ */
 
 .tile.waterproofing-service-tile:has(input:checked) {
-  background: #F3F0E8 !important;
+  background: #000000 !important;
 
   border-color: #D4AF37 !important;
 
@@ -2058,30 +2058,30 @@ svg {
 
 .tile.waterproofing-service-tile:has(input:checked)
 .tile-body {
-  background: #F3F0E8 !important;
+  background: #000000 !important;
 
   border: none !important;
 }
 
 
-/* Selected icon BLACK */
+/* Keep the selected icon white. */
 
 .tile.waterproofing-service-tile:has(input:checked)
 .waterproofing-service-icon,
 .tile.waterproofing-service-tile:has(input:checked)
 .tile-icon-fallback {
-  color: #111111 !important;
+  color: #ffffff !important;
 }
 
 
-/* Selected SVG BLACK */
+/* Keep the selected SVG white. */
 
 .tile.waterproofing-service-tile:has(input:checked)
 .waterproofing-service-icon
 .tile-icon-fallback
 svg {
-  color: #111111 !important;
-  stroke: #111111 !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 
@@ -2089,7 +2089,7 @@ svg {
 
 .tile.waterproofing-service-tile:has(input:checked)
 .tile-label {
-  color: #C9A227 !important;
+  color: #ffffff !important;
 
   font-weight: 700;
 

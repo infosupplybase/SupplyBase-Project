@@ -31,6 +31,14 @@ import ModalFoot from '../components/services/ModalFoot';
  * have one) -> Details/Schedule/Confirm. See V17's migration comment for
  * why every booking here shows the flat ₹99 fee regardless of brand.
  */
+// Each flow's own photo needs a different crop to keep the work in frame.
+const HERO_CLASS_BY_FLOW = {
+  'exterior-wall': 'pnt-hero-exterior-waterproofing',
+  terrace: 'pnt-hero-terrace-waterproofing',
+  'water-tank': 'pnt-hero-water-tank-waterproofing',
+  basement: 'pnt-hero-basement-waterproofing',
+};
+
 export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = false, onBackToCategories, onStepChange }) {
   const { flowSlug: routeFlowSlug } = useParams();
   const flowSlug = flowSlugProp || routeFlowSlug;
@@ -196,7 +204,14 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
             </button>
           </div>
         )}
-        <PaintingHero eyebrow="PROFESSIONAL" title={flow.title} tagline={flow.heroTagline} image={flow.intro.image} trustPoints={[]} />
+        <PaintingHero
+          eyebrow="PROFESSIONAL"
+          title={flow.title}
+          tagline={flow.heroTagline}
+          image={flow.intro.image}
+          trustPoints={[]}
+          className={HERO_CLASS_BY_FLOW[flow.slug] || ''}
+        />
         <section className="pnt-section">
           <div className="container container-narrow">
             <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
