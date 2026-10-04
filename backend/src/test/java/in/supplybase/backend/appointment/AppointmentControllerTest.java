@@ -123,6 +123,23 @@ class AppointmentControllerTest {
             mockMvc.perform(get("/api/appointments/available-slots").param("service", "ghost"))
                     .andExpect(status().isNotFound());
         }
+
+        @Test
+        @DisplayName("400s, not 500s, when ?service= is left out")
+        void missingServiceIsBadRequest() throws Exception {
+            mockMvc.perform(get("/api/appointments/available-slots"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("\"service\" is required."));
+        }
+
+        @Test
+        @DisplayName("400s, not 500s, when ?days= is not a number")
+        void nonNumericDaysIsBadRequest() throws Exception {
+            mockMvc.perform(get("/api/appointments/available-slots")
+                            .param("service", "plumbing").param("days", "lots"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("\"days\" has a value we could not read."));
+        }
     }
 
     @Nested
