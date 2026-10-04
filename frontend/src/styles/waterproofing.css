@@ -262,8 +262,6 @@
 }
 
 /* Hide pagination on mobile only */
-@media (max-width: 767px) {
   .wp-terrace-slider-dots {
     display: none;
   }
-}
