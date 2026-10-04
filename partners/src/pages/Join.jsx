@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import { COMPANY_NAME, SITE_URL } from '../config';
 import { useAuth, friendlyError } from '../context/AuthContext';
 import api from '../lib/api';
+import shrinkPhoto from '../lib/shrinkPhoto';
 
 /**
  * /join — a professional applying to work with Supplybase.
@@ -122,6 +123,9 @@ export default function Join() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [documents, setDocuments] = useState({ aadhaarFront: null, aadhaarBack: null, panFront: null });
+  const [preparing, setPreparing] = useState({});
+  // The latest pick per document, so a slow earlier pick cannot overwrite it.
+  const latestPick = useRef({});
 
   // already signed in? the dashboard explains what that means for them
   useEffect(() => {
@@ -150,15 +154,30 @@ export default function Join() {
     setError('');
   };
 
-  const chooseDocument = (key) => (e) => {
-    const file = e.target.files?.[0] || null;
+  const chooseDocument = (key) => async (e) => {
+    const input = e.target;
+    const picked = input.files?.[0] || null;
+    setError('');
+    if (picked && !PHOTO_TYPES.includes(picked.type)) {
+      setDocuments((d) => ({ ...d, [key]: null }));
+      setErrors((err) => ({ ...err, [key]: photoProblem(picked) }));
+      input.value = '';
+      return;
+    }
+    // Camera photos are several MB each; send a smaller copy (see shrinkPhoto).
+    latestPick.current[key] = picked;
+    setPreparing((p) => ({ ...p, [key]: true }));
+    const file = picked ? await shrinkPhoto(picked) : null;
+    if (latestPick.current[key] !== picked) return;
+    setPreparing((p) => ({ ...p, [key]: false }));
     const problem = file ? photoProblem(file) : '';
     // A file the API would refuse is not kept: the error says why.
     setDocuments((d) => ({ ...d, [key]: problem ? null : file }));
     setErrors((err) => ({ ...err, [key]: problem || undefined }));
-    setError('');
-    if (problem) e.target.value = '';
+    if (problem) input.value = '';
   };
+
+  const preparingPhotos = Object.values(preparing).some(Boolean);
 
   /** Field-level checks; the API repeats them and can add its own (email taken). */
   const validate = () => {
@@ -360,7 +379,11 @@ export default function Join() {
                       <span>{documents[doc.key] ? 'Change Photo' : 'Choose Photo'}</span>
                     </label>
                     <span className="partner-document-name">
-                      {documents[doc.key] ? documents[doc.key].name : 'No photo chosen'}
+                      {preparing[doc.key]
+                        ? 'Preparing photo…'
+                        : documents[doc.key]
+                          ? documents[doc.key].name
+                          : 'No photo chosen'}
                     </span>
                   </div>
                 </Field>
@@ -444,7 +467,7 @@ export default function Join() {
               </div>
             )}
 
-            <button type="submit" className="auth-submit" disabled={busy}>
+            <button type="submit" className="auth-submit" disabled={busy || preparingPhotos}>
               {busy ? 'Sending Application…' : 'Submit Application'}
               {!busy && <Icon name="arrow-right" size={18} />}
             </button>
