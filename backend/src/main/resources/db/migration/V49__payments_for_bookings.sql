@@ -1,9 +1,8 @@
 -- Lets a customer pay a booking's fee online through Razorpay.
 --
--- A booking payment is an ordinary payments row (same order, signature and
--- webhook plumbing as a project invoice) that also points at the booking it
--- pays for, so verifying the payment can mark that booking paid.
-ALTER TABLE payments
-    ADD COLUMN booking_id BIGINT DEFAULT NULL AFTER stage_id,
-    ADD KEY idx_payments_booking (booking_id),
-    ADD CONSTRAINT fk_payments_booking FOREIGN KEY (booking_id) REFERENCES bookings (id) ON DELETE SET NULL;
+-- Nothing to change: V5 already gave payments the booking_id column, its
+-- index and its foreign key to bookings (ON DELETE SET NULL), which is all
+-- a booking payment needs. This file first tried to add them again and
+-- failed with "Duplicate column name 'booking_id'", stopping the API from
+-- starting. It is kept as a no-op so the version number stays taken.
+SELECT 1;
