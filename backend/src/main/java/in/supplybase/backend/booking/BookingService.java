@@ -69,6 +69,9 @@ public class BookingService {
     private static final String PLUMBING_SLUG = "plumbing";
     private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
     private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+    // Joins a question key and an option value into one lookup key. Both the
+    // map that is built and every lookup into it must use this same constant.
+    private static final String OPTION_KEY_SEPARATOR = "\u0000";
 
     /**
      * Painting's itemised answer keys (see V15) — priced the same way
@@ -233,7 +236,7 @@ public class BookingService {
             if (option.getOptionValue() != null) {
                 allowedByKey.computeIfAbsent(option.getQuestionKey(), k -> new HashSet<>())
                         .add(option.getOptionValue());
-                optionByKeyAndValue.put(option.getQuestionKey() + " " + option.getOptionValue(), option);
+                optionByKeyAndValue.put(option.getQuestionKey() + OPTION_KEY_SEPARATOR + option.getOptionValue(), option);
             }
         }
 
@@ -332,7 +335,7 @@ public class BookingService {
             if ("cart_item".equals(input.key())
                     || (paintingBooking && PAINTING_PRICED_KEYS.contains(input.key()))) {
                 ServiceOption matched = optionByKeyAndValue.get(
-                        input.key() + " " + input.value());
+                        input.key() + OPTION_KEY_SEPARATOR + input.value());
 
                 Long unitPricePaise = matched == null ? null : matched.getPricePaise();
 
