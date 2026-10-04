@@ -209,3 +209,56 @@
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
 }
+
+/* Terrace waterproofing banner carousel (components/waterproofing/TerraceSlider) */
+.wp-terrace-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.wp-terrace-slider-track {
+  display: flex;
+  width: 100%;
+}
+
+.wp-terrace-slide-image {
+  width: 100%;
+  min-width: 100%;
+  flex: 0 0 100%;
+  display: block;
+}
+
+.wp-terrace-slider-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  z-index: 5;
+}
+
+.wp-terrace-slider-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+}
+
+.wp-terrace-slider-dot.active {
+  width: 22px;
+  border-radius: 10px;
+  background: #f5d033;
+}
+
+/* Dots are too small to tap on phones; the slides still advance. */
+@media (max-width: 767px) {
+  .wp-terrace-slider-dots {
+    display: none;
+  }
+}
