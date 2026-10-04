@@ -1,11 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/(about|book|booking|cart|contact|dashboard|interior-by-choice|login|materials|partner|privacy-policy|projects|quote|register|services|terms)",
+      "source": "/(about|book|booking|cart|contact|dashboard|interior-by-choice|login|materials|partner|privacy-policy|projects|quote|register|reset-password|verify-email|services|terms)",
       "destination": "/index.html"
     },
     {
-      "source": "/(about|book|booking|cart|contact|dashboard|interior-by-choice|login|materials|partner|privacy-policy|projects|quote|register|services|terms)/(.*)",
+      "source": "/(about|book|booking|cart|contact|dashboard|interior-by-choice|login|materials|partner|privacy-policy|projects|quote|register|reset-password|verify-email|services|terms)/(.*)",
       "destination": "/index.html"
     }
   ],
