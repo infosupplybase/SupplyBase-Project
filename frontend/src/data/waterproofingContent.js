@@ -88,6 +88,20 @@ export const wpBathroomServices = [
   // { slug: 'tile-resealing', name: 'Tile Re-sealing', tagline: 'Protects existing tiles and grout lines.', icon: 'layers', route: '/booking/waterproofing?preselect=Bathroom%20Tile%20Re-sealing' },
 ];
 
+/**
+ * The catalogue's service_needed value for each waterproofing flow (see
+ * V6/V17). Most flows share their name with the catalogue option; the walls
+ * and the bathroom floor are stored under an older, broader name.
+ */
+const WP_CATALOGUE_SERVICE = {
+  'interior-wall': 'Wall Waterproofing',
+  'exterior-wall': 'External Waterproofing',
+  'bathroom-floor': 'Bathroom Waterproofing',
+};
+
+/** The service_needed value a booking from this flow is stored under. */
+export const wpCatalogueService = (slug, name) => WP_CATALOGUE_SERVICE[slug] || name;
+
 const FEE_NOTE = 'Rates are indicative and may vary based on site condition, area and material selection. For projects above ₹5,000, a ₹99 home visit fee applies — adjusted in your final bill if you proceed.';
 
 /**
