@@ -13,8 +13,10 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -65,6 +67,31 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(400, "Bad Request",
                         "We could not read that request. Please check the values and try again.",
                         request.getRequestURI()));
+    }
+
+    /**
+     * A path or query value of the wrong type, e.g. GET /api/bookings/abc
+     * where an id belongs. The caller's mistake, so 400 rather than 500.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex,
+                                                       HttpServletRequest request) {
+        return ResponseEntity.badRequest()
+                .body(ApiError.of(400, "Bad Request",
+                        "\"" + ex.getName() + "\" has a value we could not read.",
+                        request.getRequestURI()));
+    }
+
+    /**
+     * A required query parameter was left out, e.g.
+     * GET /api/appointments/available-slots without ?service=.
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiError> handleMissingParameter(MissingServletRequestParameterException ex,
+                                                           HttpServletRequest request) {
+        return ResponseEntity.badRequest()
+                .body(ApiError.of(400, "Bad Request",
+                        "\"" + ex.getParameterName() + "\" is required.", request.getRequestURI()));
     }
 
     /**
