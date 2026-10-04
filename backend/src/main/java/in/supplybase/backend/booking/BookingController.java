@@ -11,7 +11,6 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.CurrentUser;
 import in.supplybase.backend.booking.dto.AdvanceBookingStatusRequest;
 import in.supplybase.backend.booking.dto.AssignProfessionalRequest;
@@ -49,22 +47,16 @@ public class BookingController {
     }
 
     /**
-     * Public — the booking wizard posts here.
-     *
-     * Signing in is not required, but if a token happens to be present the
-     * booking is attached to that account so it can show on their dashboard.
-     * Read optimistically rather than via CurrentUser.require(), which would
-     * throw for the visitors who make up most of this traffic.
+     * The booking wizard posts here. Signing in is required (SecurityConfig):
+     * every booking belongs to an account, so it shows on that customer's
+     * dashboard and nobody can book anonymously. The website asks the
+     * customer to sign in at the last step, keeping what they typed.
      */
     @PostMapping("/api/bookings")
     public ResponseEntity<BookingReceipt> create(
             @Valid @RequestBody CreateBookingRequest request) {
-        Long userId = null;
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser user) {
-            userId = user.id();
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request, userId));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.create(request, currentUser.require().id()));
     }
 
     /** A signed-in client's own bookings, for the dashboard. */
@@ -79,7 +71,7 @@ public class BookingController {
      * BookingService.checkAccess).
      */
     @GetMapping("/api/bookings/{id}")
-    public BookingResponse get(@PathVariable Long id) {
+    public BookingResponse get(@PathVariable("id") Long id) {
         return service.get(id, currentUser.require());
     }
 
@@ -89,33 +81,35 @@ public class BookingController {
      * owner-or-staff check as get() (see BookingService.checkAccess).
      */
     @PatchMapping("/api/bookings/{id}")
-    public BookingResponse updateMine(@PathVariable Long id,
+    public BookingResponse updateMine(@PathVariable("id") Long id,
             @Valid @RequestBody UpdateMyBookingRequest request) {
         return service.updateMine(id, request, currentUser.require());
     }
 
     @GetMapping("/api/bookings/{id}/files")
-    public List<BookingFileResponse> files(@PathVariable Long id) {
+    public List<BookingFileResponse> files(@PathVariable("id") Long id) {
         return service.listFiles(id, currentUser.require());
     }
 
     /**
-     * Public, like booking creation itself — keyed by the booking NUMBER
-     * (what BookingReceipt actually hands back), not the numeric id, and see
-     * {@link BookingService#uploadOwnFile} for why {@code phone} stands in
-     * for a signed-in owner check here.
+     * The booking wizard's photo upload, as the signed-in customer who made the
+     * booking - keyed by the booking NUMBER (what BookingReceipt actually
+     * hands back), see {@link BookingService#uploadOwnFile}. {@code phone} and
+     * {@code kind} are still accepted because earlier website builds send
+     * them, but are no longer used.
      */
     @PostMapping(value = "/api/bookings/by-number/{bookingNumber}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BookingFileResponse> uploadOwnFile(@PathVariable String bookingNumber,
-            @RequestParam String phone,
-            @RequestParam(defaultValue = "PHOTO") String kind,
+    public ResponseEntity<BookingFileResponse> uploadOwnFile(@PathVariable("bookingNumber") String bookingNumber,
+            @RequestParam(name = "phone", required = false) String phone,
+            @RequestParam(name = "kind", required = false) String kind,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.uploadOwnFile(bookingNumber, phone, kind, file));
+                .body(service.uploadOwnFile(bookingNumber, currentUser.require(), file));
     }
 
     @GetMapping("/api/bookings/{id}/files/{fileId}/download")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id, @PathVariable Long fileId) {
+    public ResponseEntity<byte[]> downloadFile(@PathVariable("id") Long id,
+                                               @PathVariable("fileId") Long fileId) {
         var file = service.downloadFile(id, fileId, currentUser.require());
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(
@@ -143,31 +137,31 @@ public class BookingController {
     }
 
     @PatchMapping("/api/admin/bookings/{id}")
-    public BookingResponse update(@PathVariable Long id,
+    public BookingResponse update(@PathVariable("id") Long id,
                                   @Valid @RequestBody UpdateBookingRequest request) {
         return service.update(id, request);
     }
 
     @PatchMapping("/api/admin/bookings/{id}/assign")
-    public BookingResponse assign(@PathVariable Long id,
+    public BookingResponse assign(@PathVariable("id") Long id,
                                   @Valid @RequestBody AssignProfessionalRequest request) {
         return service.assignProfessional(id, request.professionalId());
     }
 
     /** What the assigned partner earns for this job and whether it has been paid. Admin only. */
     @GetMapping("/api/admin/bookings/{id}/payout")
-    public PartnerPayoutResponse partnerPayout(@PathVariable Long id) {
+    public PartnerPayoutResponse partnerPayout(@PathVariable("id") Long id) {
         return service.partnerPayout(id);
     }
 
     @PatchMapping("/api/admin/bookings/{id}/payout")
-    public PartnerPayoutResponse setPartnerPayout(@PathVariable Long id,
+    public PartnerPayoutResponse setPartnerPayout(@PathVariable("id") Long id,
                                                   @Valid @RequestBody SetPartnerPayoutRequest request) {
         return service.setPartnerPayout(id, request.amountPaise(), request.paid());
     }
 
     @PostMapping(value = "/api/admin/bookings/{id}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BookingFileResponse> uploadFile(@PathVariable Long id,
+    public ResponseEntity<BookingFileResponse> uploadFile(@PathVariable("id") Long id,
             @RequestParam(defaultValue = "PHOTO") String kind,
             @RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -188,7 +182,7 @@ public class BookingController {
     }
 
     @PatchMapping("/api/professional/bookings/{id}/status")
-    public ProfessionalBookingResponse advanceStatus(@PathVariable Long id,
+    public ProfessionalBookingResponse advanceStatus(@PathVariable("id") Long id,
                                   @Valid @RequestBody AdvanceBookingStatusRequest request) {
         return service.advanceOwnBookingStatus(id, request.status(), currentUser.require().id());
     }

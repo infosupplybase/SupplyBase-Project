@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import PageHero from '../components/ui/PageHero';
@@ -9,6 +10,52 @@ import StatsSection from '../components/home/StatsSection';
 import ProcessSection from '../components/home/ProcessSection';
 
 import { company, whyUsPoints } from '../data/siteConfig';
+
+/**
+ * The about-us clip (1.6 MB). It used to autoplay on load, so every phone
+ * that opened /about downloaded all of it even if nobody scrolled down to
+ * it. Now nothing is fetched until it is on screen, it pauses when scrolled
+ * away, and it does not start by itself for people who ask for reduced
+ * motion (the controls still play it).
+ */
+function AboutVideo() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || typeof IntersectionObserver === 'undefined') return undefined;
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!reduceMotion) video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.25 }
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={ref}
+      className="supplybase-video"
+      muted
+      loop
+      playsInline
+      controls
+      preload="none"
+      aria-label="Supplybase team at work"
+    >
+      <source src="/assets/hero/aboutus.mp4" type="video/mp4" />
+      Your browser does not support video.
+    </video>
+  );
+}
 
 const pillars = [
   {
@@ -107,21 +154,7 @@ export default function About() {
                 delay={120}
               >
                 <div className="split-media w-full max-w-md">
-                  <video
-                    className="supplybase-video"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                    preload="metadata"
-                  >
-                    <source
-                      src="/assets/hero/aboutus.mp4"
-                      type="video/mp4"
-                    />
-                    Your browser does not support video.
-                  </video>
+                  <AboutVideo />
                 </div>
               </Reveal>
 

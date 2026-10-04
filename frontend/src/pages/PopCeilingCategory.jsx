@@ -1,43 +1,99 @@
 import { Link } from 'react-router-dom';
+import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
-import PaintingHero from '../components/painting/PaintingHero';
-import { popOverviewIntro, popCategories, popTrustPoints, POP_HERO_IMAGE } from '../data/popCeilingContent';
+import { popFlows, POP_HERO_IMAGE } from '../data/popCeilingContent';
 
-/**
- * /services/pop-ceiling-design — the six-row category list, matching the
- * reference's own "POP Category" screen (icon + name + description rows,
- * not photo cards — the reference reserves photography for the category
- * hero itself and the two detailed flow intros, not per-row thumbnails).
- * Reuses PaintingHero directly (a generic, prop-driven component) rather
- * than a new one — see popCeilingContent.js's header comment for image
- * sourcing.
- */
-export default function PopCeilingCategory() {
+const choices = [
+  {
+    slug: 'full-home',
+    description: 'Complete POP ceiling work for your entire home.',
+  },
+  {
+    slug: 'room',
+    description: 'Stylish POP ceiling work for one room.',
+  },
+];
+
+export default function PopCeilingCategory({
+  modal = false,
+  onSelectFlow,
+}) {
   return (
     <>
-      <PaintingHero
-        eyebrow={popOverviewIntro.eyebrow}
-        title={popOverviewIntro.title}
-        tagline={popOverviewIntro.text}
-        image={POP_HERO_IMAGE}
-        trustPoints={popTrustPoints}
-      />
+      {!modal && (
+        <PageHero
+          eyebrow="POP & GYPSUM"
+          title="POP Ceiling & Design"
+          text="Elegant ceilings. Beautiful spaces. Expert installation."
+          image={POP_HERO_IMAGE}
+          breadcrumbs={[
+            { label: 'Services', to: '/services' },
+            { label: 'POP Ceiling & Design' },
+          ]}
+        />
+      )}
 
-      <section className="pnt-section">
-        <div className="container container-narrow">
-          <div className="pnt-overview-list">
-            {popCategories.map((cat) => (
-              <Link key={cat.slug} to={cat.route} className="pnt-overview-card">
-                <span className="pnt-overview-photo pce-overview-icon">
-                  <Icon name={cat.icon} size={30} />
-                </span>
-                <span className="pnt-overview-body">
-                  <span className="pnt-overview-name">{cat.name}</span>
-                  <span className="pnt-overview-tagline">{cat.tagline}</span>
-                </span>
-                <Icon name="chevron-right" size={18} className="pnt-overview-arrow" />
-              </Link>
-            ))}
+      <section
+        className={modal ? 'plb-section !py-0 !pb-4' : 'plb-section'}
+      >
+        <div
+          className={
+            modal
+              ? 'container container-narrow !w-full !max-w-none !px-0'
+              : 'container container-narrow'
+          }
+        >
+          {/* Two journeys: a pair of equal cards, not two cells of the
+              three-column grid plumbing uses */}
+          <div className="plb-overview-grid !grid-cols-2">
+            {choices.map(({ slug, description }) => {
+              const flow = popFlows[slug];
+
+              const card = (
+                <>
+                  <span className="plb-overview-photo">
+                    <img
+                      src={flow.intro.image}
+                      alt=""
+                      width={200}
+                      height={125}
+                      loading="lazy"
+                    />
+                  </span>
+
+                  <span className="plb-overview-name">
+                    {flow.title}
+                    <Icon name="chevron-right" size={16} />
+                  </span>
+
+                  <span
+                    className="plb-overview-price-note"
+                    style={{ paddingTop: 8 }}
+                  >
+                    {description}
+                  </span>
+                </>
+              );
+
+              return modal ? (
+                <button
+                  key={slug}
+                  type="button"
+                  className="plb-overview-card !w-full !text-left"
+                  onClick={() => onSelectFlow(slug)}
+                >
+                  {card}
+                </button>
+              ) : (
+                <Link
+                  key={slug}
+                  to={`/services/pop-ceiling-design/${slug}`}
+                  className="plb-overview-card"
+                >
+                  {card}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

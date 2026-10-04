@@ -12,6 +12,8 @@ import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -56,6 +58,7 @@ export default function ElectricianService() {
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const [pendingFiles, setPendingFiles] = useState({});
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
@@ -256,6 +259,8 @@ export default function ElectricianService() {
     if (!validateDetails()) return;
     // A slow tap-happy double submit must not create two bookings.
     if (submittedRef.current || busy) return;
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
     submittedRef.current = true;
 
     setBusy(true);
@@ -287,6 +292,8 @@ export default function ElectricianService() {
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('ec', result.bookingNumber, details.phone);
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       const hasFiles = Object.values(pendingFiles).some((files) => files.length > 0);
@@ -499,7 +506,7 @@ export default function ElectricianService() {
               )}
               {stage === CONFIRM ? (
                 <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'BOOKING…' : 'PAY & CONFIRM BOOKING'}
+                  {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
@@ -542,7 +549,7 @@ function FileField({ question, files, onPick, onRemove, error }) {
       <input
         id={inputId}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         multiple
         onChange={onPick}
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
@@ -571,7 +578,7 @@ function ElectricianSummary({ category, form, answers, date, time, estimate }) {
     <div style={{ marginTop: 26 }}>
       <div className="wizard-card-head">
         <h2>Booking Summary</h2>
-        <p>Please check everything before you pay.</p>
+        <p>Please check everything before you confirm.</p>
       </div>
 
       <dl className="review-list">

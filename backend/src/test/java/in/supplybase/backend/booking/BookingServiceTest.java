@@ -748,6 +748,67 @@ class BookingServiceTest {
             assertThat(response.originalName()).isEqualTo("photo.jpg");
         }
 
+        private final MockMultipartFile jpeg = new MockMultipartFile("file", "wall.jpg", "image/jpeg",
+                new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F', 'I', 'F', 0, 1 });
+
+        private Booking ownedBooking() {
+            return Booking.builder().id(1L).bookingNumber("SB-20261003-000001")
+                    .user(User.builder().id(7L).build()).build();
+        }
+
+        @Test
+        @DisplayName("a customer can add a photo to their own booking, found by its number")
+        void ownerUploadsAPhoto() {
+            Booking booking = ownedBooking();
+            when(bookings.findByBookingNumber("SB-20261003-000001")).thenReturn(Optional.of(booking));
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(files.countByBookingIdAndKind(1L, "PHOTO")).thenReturn(2L);
+            when(storage.store(jpeg, "bookings/1"))
+                    .thenReturn(new FileStorageService.StoredFile("bookings/1/a.jpg", "wall.jpg", "image/jpeg", 12L));
+            when(users.findById(7L)).thenReturn(Optional.of(User.builder().id(7L).build()));
+            when(files.save(any(BookingFile.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            var response = service.uploadOwnFile("SB-20261003-000001", owner, jpeg);
+
+            assertThat(response.kind()).isEqualTo("PHOTO");
+            verify(storage).store(jpeg, "bookings/1");
+        }
+
+        @Test
+        @DisplayName("another customer cannot add to it, and nothing is stored")
+        void strangerIsRefused() {
+            when(bookings.findByBookingNumber("SB-20261003-000001")).thenReturn(Optional.of(ownedBooking()));
+
+            assertThatThrownBy(() -> service.uploadOwnFile("SB-20261003-000001", stranger, jpeg))
+                    .isInstanceOf(ApiException.class)
+                    .satisfies(e -> assertThat(((ApiException) e).getStatus()).isEqualTo(HttpStatus.NOT_FOUND));
+            verifyNoInteractions(storage);
+        }
+
+        @Test
+        @DisplayName("a file that is not a photo is refused before it is stored")
+        void nonPhotoIsRefused() {
+            when(bookings.findByBookingNumber("SB-20261003-000001")).thenReturn(Optional.of(ownedBooking()));
+            MockMultipartFile disguised = new MockMultipartFile("file", "photo.jpg", "image/jpeg",
+                    "<html>not a photo</html>".getBytes());
+
+            assertThatThrownBy(() -> service.uploadOwnFile("SB-20261003-000001", owner, disguised))
+                    .isInstanceOf(ApiException.class);
+            verifyNoInteractions(storage);
+        }
+
+        @Test
+        @DisplayName("a booking that already has the maximum number of photos takes no more")
+        void photoCap() {
+            when(bookings.findByBookingNumber("SB-20261003-000001")).thenReturn(Optional.of(ownedBooking()));
+            when(files.countByBookingIdAndKind(1L, "PHOTO")).thenReturn((long) in.supplybase.backend.common.PhotoUploads.MAX_PHOTOS_PER_BOOKING);
+
+            assertThatThrownBy(() -> service.uploadOwnFile("SB-20261003-000001", owner, jpeg))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessageContaining("most photos");
+            verifyNoInteractions(storage);
+        }
+
         @Test
         @DisplayName("a blank kind defaults to PHOTO")
         void uploadDefaultsKind() {

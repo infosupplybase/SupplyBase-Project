@@ -2,6 +2,7 @@ package in.supplybase.backend.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,15 +31,18 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint entryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
     private final AppProperties props;
+    private final boolean apiDocsEnabled;
 
     public SecurityConfig(JwtAuthenticationFilter jwtFilter,
                           RestAuthenticationEntryPoint entryPoint,
                           RestAccessDeniedHandler accessDeniedHandler,
-                          AppProperties props) {
+                          AppProperties props,
+                          @Value("${springdoc.api-docs.enabled:false}") boolean apiDocsEnabled) {
         this.jwtFilter = jwtFilter;
         this.entryPoint = entryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
         this.props = props;
+        this.apiDocsEnabled = apiDocsEnabled;
     }
 
     @Bean
@@ -60,7 +64,13 @@ public class SecurityConfig {
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint(entryPoint)
                 .accessDeniedHandler(accessDeniedHandler))
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> {
+                // API docs: only when API_DOCS_ENABLED=true (local development).
+                // Off by default, and then these paths need a token like any other.
+                if (apiDocsEnabled) {
+                    auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
+                }
+                auth
                 // --- public
                 .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
                                  "/api/auth/google", "/api/auth/refresh",
@@ -71,21 +81,15 @@ public class SecurityConfig {
                 // PENDING application; the PROFESSIONAL role only comes from an
                 // admin approving it (PartnerService.review).
                 .requestMatchers(HttpMethod.POST, "/api/partners/apply").permitAll()
-                // Public, but the JWT filter still runs first — so a signed-in
-                // visitor's booking gets attached to their account.
-                .requestMatchers(HttpMethod.POST, "/api/bookings").permitAll()
-                // The booking wizard's own photo upload for a booking it just
-                // created — see BookingService.uploadOwnFile for the
-                // phone-number ownership check that stands in for a login here.
-                .requestMatchers(HttpMethod.POST, "/api/bookings/by-number/*/files").permitAll()
+                // POST /api/bookings and the booking wizard's photo upload
+                // (/api/bookings/by-number/*/files) are NOT listed here: both
+                // need a signed-in account (anyRequest().authenticated()
+                // below), and the upload must belong to that customer.
                 // Razorpay authenticates itself with an HMAC signature in the
                 // request body, not with our JWT, so this must stay open.
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // API docs. Dev convenience — see backend/README.md's
-                // before-going-live checklist for gating this in production.
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                 // --- staff only
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -96,9 +100,15 @@ public class SecurityConfig {
                 // so it has to be readable before anyone signs in.
                 .requestMatchers(HttpMethod.GET, "/api/catalogue/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/appointments/available-slots").permitAll()
+                // HEAD is what uptime monitors and link checkers send; without
+                // these two lines it was answered 401 while GET answered 200,
+                // so a monitor on a public URL reported the site as down.
+                .requestMatchers(HttpMethod.HEAD, "/api/catalogue/**").permitAll()
+                .requestMatchers(HttpMethod.HEAD, "/api/appointments/available-slots").permitAll()
 
                 // --- everything else needs a token
-                .anyRequest().authenticated())
+                .anyRequest().authenticated();
+            })
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

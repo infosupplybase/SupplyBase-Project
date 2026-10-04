@@ -36,6 +36,19 @@ const submitToBackend = async (payload, source) => {
   }
 };
 
+/**
+ * A 10-digit number once the "+91" the placeholder suggests, a leading 0 and
+ * any spaces or dashes are taken off. Landlines are fine here (an office
+ * enquiry may give one), so unlike the booking form it does not insist on a
+ * mobile number.
+ */
+const isValidEnquiryPhone = (value) => {
+  let digits = String(value || '').replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
+  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+  return digits.length === 10;
+};
+
 const emptyForm = {
   name: '',
   phone: '',
@@ -64,29 +77,24 @@ export default function QuoteForm({ defaultService = '', compact = false, source
 
   const validate = () => {
     const next = {};
-    if (!form.name.trim()) {
-  next.name = 'Please enter your name';
-} else if (!/^[A-Za-z\s]+$/.test(form.name.trim())) {
-  next.name = 'Please enter a valid name';
-}
-    if (!form.phone.trim()) {
-  next.phone = 'Please enter your phone number';
-} else if (!/^\d{10}$/.test(form.phone.trim())) {
-  next.phone = 'Please enter a valid 10-digit phone number';
-}
+    // Letters in any script, plus the spaces, dots, apostrophes and hyphens
+    // real names carry (D'Souza, S. Kumar, Anne-Marie).
+    if (!form.name.trim()) next.name = 'Please enter your name';
+    else if (!/^[\p{L}\p{M}][\p{L}\p{M}\s.'-]*$/u.test(form.name.trim())) next.name = 'Please enter a valid name';
+    // Accepts the "+91" the placeholder suggests, spaces and a leading 0.
+    if (!form.phone.trim()) next.phone = 'Please enter your phone number';
+    else if (!isValidEnquiryPhone(form.phone)) next.phone = 'Please enter a valid 10-digit phone number';
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
       next.email = 'Please enter a valid email address';
     if (!form.projectType) next.projectType = 'Please select a project type';
-   if (!form.description.trim()) {
-  next.description = 'Please enter your project description';
-} else if (form.description.trim().length < 20) {
-  next.description = 'Please describe your project in a little more detail';
-}
+    if (!form.description.trim()) next.description = 'Please enter your project description';
+    else if (form.description.trim().length < 20)
+      next.description = 'Please describe your project in a little more detail';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (channel) => async (e) => {
+  const handleSubmit = (channel) => (e) => {
     e.preventDefault();
     if (!validate()) {
       const firstError = document.querySelector('.field.error input, .field.error select, .field.error textarea');
@@ -97,13 +105,16 @@ export default function QuoteForm({ defaultService = '', compact = false, source
     const payload = { ...form, fileNames: files.map((f) => f.name) };
     const message = buildEnquiryMessage(payload);
 
-    await submitToBackend(form, source);
-
+    // Open WhatsApp / the email app first, while the click still counts as
+    // the user's own action: a window opened after an `await` is treated as
+    // a pop-up and blocked (Safari on iPhone always does), which left people
+    // on "Thank you" with nothing sent. The backend save runs alongside.
     if (channel === 'email') {
       window.location.href = mailtoWith(`Project enquiry — ${form.name}`, message);
     } else {
       window.open(whatsappHref(message), '_blank', 'noopener');
     }
+    submitToBackend(form, source);
     setSent(channel);
   };
 
@@ -167,29 +178,29 @@ export default function QuoteForm({ defaultService = '', compact = false, source
           <label htmlFor="q-name">
             Full Name <span className="req">*</span>
           </label>
-          <input id="q-name" type="text" value={form.name} onChange={update('name')} placeholder="Your name" />
-          {errors.name && <span className="field-error">{errors.name}</span>}
+          <input id="q-name" autoComplete="name" aria-invalid={!!errors.name} aria-describedby={errors.name ? 'q-name-error' : undefined} type="text" value={form.name} onChange={update('name')} placeholder="Your name" />
+          {errors.name && <span className="field-error" id="q-name-error">{errors.name}</span>}
         </div>
 
         <div className={`field ${errors.phone ? 'error' : ''}`}>
           <label htmlFor="q-phone">
             Phone Number <span className="req">*</span>
           </label>
-          <input id="q-phone" type="tel" value={form.phone} onChange={update('phone')} placeholder="+91 " />
-          {errors.phone && <span className="field-error">{errors.phone}</span>}
+          <input id="q-phone" autoComplete="tel" inputMode="tel" aria-invalid={!!errors.phone} aria-describedby={errors.phone ? 'q-phone-error' : undefined} type="tel" value={form.phone} onChange={update('phone')} placeholder="+91 " />
+          {errors.phone && <span className="field-error" id="q-phone-error">{errors.phone}</span>}
         </div>
 
         <div className={`field ${errors.email ? 'error' : ''}`}>
           <label htmlFor="q-email">Email</label>
-          <input id="q-email" type="email" value={form.email} onChange={update('email')} placeholder="you@example.com" />
-          {errors.email && <span className="field-error">{errors.email}</span>}
+          <input id="q-email" autoComplete="email" aria-invalid={!!errors.email} aria-describedby={errors.email ? 'q-email-error' : undefined} type="email" value={form.email} onChange={update('email')} placeholder="you@example.com" />
+          {errors.email && <span className="field-error" id="q-email-error">{errors.email}</span>}
         </div>
 
         <div className={`field ${errors.projectType ? 'error' : ''}`}>
           <label htmlFor="q-type">
             Project Type <span className="req">*</span>
           </label>
-          <select id="q-type" value={form.projectType} onChange={update('projectType')}>
+          <select id="q-type" aria-invalid={!!errors.projectType} aria-describedby={errors.projectType ? 'q-type-error' : undefined} value={form.projectType} onChange={update('projectType')}>
             <option value="">Select project type</option>
             {projectTypes.map((type) => (
               <option key={type} value={type}>
@@ -197,7 +208,7 @@ export default function QuoteForm({ defaultService = '', compact = false, source
               </option>
             ))}
           </select>
-          {errors.projectType && <span className="field-error">{errors.projectType}</span>}
+          {errors.projectType && <span className="field-error" id="q-type-error">{errors.projectType}</span>}
         </div>
 
         <div className="field">
@@ -244,11 +255,13 @@ export default function QuoteForm({ defaultService = '', compact = false, source
           </label>
           <textarea
             id="q-desc"
+            aria-invalid={!!errors.description}
+            aria-describedby={errors.description ? 'q-desc-error' : undefined}
             value={form.description}
             onChange={update('description')}
             placeholder="Tell us about the property, the scope of work and your expected timeline."
           />
-          {errors.description && <span className="field-error">{errors.description}</span>}
+          {errors.description && <span className="field-error" id="q-desc-error">{errors.description}</span>}
         </div>
 
         {!compact && (

@@ -70,6 +70,23 @@ function passwordScore(password) {
 
 const STRENGTH = ['Too weak', 'Weak', 'Okay', 'Strong', 'Very strong'];
 
+/** The identity photos every application includes (Mandar). */
+const DOCUMENTS = [
+  { key: 'aadhaarFront', label: 'Aadhaar Card - Front', missing: 'Please add a photo of the front of your Aadhaar card' },
+  { key: 'aadhaarBack', label: 'Aadhaar Card - Back', missing: 'Please add a photo of the back of your Aadhaar card' },
+  { key: 'panFront', label: 'PAN Card - Front', missing: 'Please add a photo of the front of your PAN card' },
+];
+
+/** The same photo types and size the API accepts. */
+const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+
+function photoProblem(file) {
+  if (!PHOTO_TYPES.includes(file.type)) return 'Please choose a JPG, PNG or WebP photo';
+  if (file.size > MAX_PHOTO_BYTES) return 'That photo is over 10 MB - please choose a smaller one';
+  return '';
+}
+
 /**
  * One field of the dark card: label, icon, input, error.
  *
@@ -104,6 +121,7 @@ export default function Join() {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [documents, setDocuments] = useState({ aadhaarFront: null, aadhaarBack: null, panFront: null });
 
   // already signed in? the dashboard explains what that means for them
   useEffect(() => {
@@ -132,6 +150,16 @@ export default function Join() {
     setError('');
   };
 
+  const chooseDocument = (key) => (e) => {
+    const file = e.target.files?.[0] || null;
+    const problem = file ? photoProblem(file) : '';
+    // A file the API would refuse is not kept: the error says why.
+    setDocuments((d) => ({ ...d, [key]: problem ? null : file }));
+    setErrors((err) => ({ ...err, [key]: problem || undefined }));
+    setError('');
+    if (problem) e.target.value = '';
+  };
+
   /** Field-level checks; the API repeats them and can add its own (email taken). */
   const validate = () => {
     const next = {};
@@ -150,6 +178,9 @@ export default function Join() {
     else if (!Number.isInteger(years) || years < 0 || years > 60)
       next.experienceYears = 'Enter a whole number from 0 to 60';
     if (!form.city.trim()) next.city = 'Please enter your city';
+    for (const doc of DOCUMENTS) {
+      if (!documents[doc.key]) next[doc.key] = errors[doc.key] || doc.missing;
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -170,7 +201,7 @@ export default function Join() {
 
     setBusy(true);
     try {
-      await applyAsPartner(form);
+      await applyAsPartner(form, documents);
       navigate('/', { replace: true });
     } catch (err) {
       // The API can reject what the browser cannot know (an email already in
@@ -305,6 +336,36 @@ export default function Join() {
                 placeholder="Hindi, Marathi"
               />
             </Field>
+
+            <div className="partner-documents">
+              <p className="partner-documents-note">
+                <Icon name="shield" size={15} />
+                <span>
+                  Photos of your Aadhaar and PAN card are used only to verify who you are. They are
+                  kept private and only the {COMPANY_NAME} team can see them.
+                </span>
+              </p>
+              {DOCUMENTS.map((doc) => (
+                <Field key={doc.key} id={doc.key} error={errors[doc.key]} label={doc.label} icon="shield" required>
+                  <div className="partner-document-upload">
+                    <input
+                      id={`pj-${doc.key}`}
+                      type="file"
+                      accept={PHOTO_TYPES.join(',')}
+                      onChange={chooseDocument(doc.key)}
+                      className="partner-document-input"
+                    />
+                    <label htmlFor={`pj-${doc.key}`} className="partner-document-button">
+                      <Icon name="upload" size={16} />
+                      <span>{documents[doc.key] ? 'Change Photo' : 'Choose Photo'}</span>
+                    </label>
+                    <span className="partner-document-name">
+                      {documents[doc.key] ? documents[doc.key].name : 'No photo chosen'}
+                    </span>
+                  </div>
+                </Field>
+              ))}
+            </div>
 
             <div className="auth-row-2">
               <Field id="password" error={errors.password} label="Password" icon="lock" required>

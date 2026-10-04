@@ -11,9 +11,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -63,6 +65,32 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(400, "Bad Request",
                         "We could not read that request. Please check the values and try again.",
                         request.getRequestURI()));
+    }
+
+    /**
+     * A required file (or the JSON part of a multipart request) was not sent,
+     * e.g. a partner application without its PAN card photo. The caller's
+     * mistake, so 400 rather than the catch-all's 500.
+     */
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiError> handleMissingPart(MissingServletRequestPartException ex,
+                                                      HttpServletRequest request) {
+        return ResponseEntity.badRequest()
+                .body(ApiError.of(400, "Bad Request",
+                        "Please attach every required file and try again.", request.getRequestURI()));
+    }
+
+    /**
+     * The request came in a format this endpoint no longer takes - typically a
+     * page loaded before an update (the partner application moved from JSON
+     * to a form with photos). Reloading the page fixes it.
+     */
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiError> handleUnsupportedType(HttpMediaTypeNotSupportedException ex,
+                                                          HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ApiError.of(415, "Unsupported Media Type",
+                        "Please reload the page and try again.", request.getRequestURI()));
     }
 
     /**

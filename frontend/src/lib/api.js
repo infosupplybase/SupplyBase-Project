@@ -126,7 +126,20 @@ async function send(path, { method = 'GET', body, auth = true } = {}) {
  * on the backend for the phone-number check that stands in for a login).
  */
 async function uploadFile(path, formData) {
-  const response = await fetch(`${BASE_URL}${path}`, { method: 'POST', body: formData });
+  // A booking's photos are uploaded as the signed-in customer who made it, so
+  // the token goes along (and is refreshed once if it has just aged out).
+  const post = () => {
+    const token = getAccessToken();
+    return fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      body: formData,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+  };
+  let response = await post();
+  if (response.status === 401 && getRefreshToken() && (await refreshTokens())) {
+    response = await post();
+  }
   let payload = null;
   try {
     payload = await response.json();

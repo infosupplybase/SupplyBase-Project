@@ -1,7 +1,8 @@
 import Icon from '../ui/Icon';
 import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import optimizedImage from '../../lib/optimizedImage';
-import ServiceBookingModal, { useServiceBookingModal } from '../services/ServiceBookingModal';
+import { useServiceBookingModal } from '../services/useServiceBookingModal';
+import LazyServiceBookingModal, { useWarmBookingModal } from '../services/LazyServiceBookingModal';
 
 /** Backend `icon` values are free-text labels, not guaranteed to match a
     key in components/ui/Icon.jsx — used only as a placeholder if a category
@@ -14,7 +15,7 @@ const ICON_BY_SLUG = {
   'pop-ceiling-design': 'ceiling',
   plumbing: 'tap',
   electrical: 'bolt',
-  'other-services': 'settings',
+  'ac-services': 'fan',
 };
 
 /** Soft-hyphen (­, invisible unless the browser actually breaks the
@@ -35,6 +36,7 @@ export default function PopularServices() {
   const { services: categories, error } = useServiceCatalogue();
 
   const booking = useServiceBookingModal();
+  useWarmBookingModal();
 
   return (
     <section className="popular-services">
@@ -69,9 +71,13 @@ export default function PopularServices() {
                 onClick={() => booking.open(category)}
               >
                 <span className="service-tile-photo">
-                  {category.heroImage ? (
+                  {(category.slug === 'ac-services' || category.heroImage) ? (
                     <img
-                      src={optimizedImage(category.heroImage)}
+                      src={
+                        category.slug === 'ac-services'
+                          ? '/assets/ac-services/ac-unit.webp'
+                          : optimizedImage(category.heroImage)
+                      }
                       alt=""
                       width={200}
                       height={200}
@@ -93,7 +99,7 @@ export default function PopularServices() {
       </div>
 
       {booking.service && (
-        <ServiceBookingModal
+        <LazyServiceBookingModal
           key={booking.openToken}
           service={booking.service}
           onClose={booking.close}

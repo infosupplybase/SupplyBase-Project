@@ -395,6 +395,12 @@
   background: var(--light-bg);
 }
 
+@media (max-width: 767px) {
+  .desktop-cart-btn {
+    display: none;
+  }
+}
+
 .notif-panel {
   width: min(280px, 80vw);
   padding: var(--space-4);
@@ -522,10 +528,9 @@
 
 .mega-inner {
   display: grid;
-  /* Four groups have anything in them now (DESIGN, FINISHING, MEP,
-     SPECIALIZED — the last holding only the single "Other Services"
-     catch-all tile) — plus the fixed-width CTA column. */
-  grid-template-columns: repeat(4, 1fr) 260px;
+  /* Three groups have anything in them now (DESIGN, FINISHING, MEP) —
+     plus the fixed-width CTA column. */
+  grid-template-columns: repeat(3, 1fr) 260px;
   gap: var(--space-5);
   padding: var(--space-6) var(--gutter);
   max-width: var(--container);
@@ -760,4 +765,124 @@
     margin-left: 0;
     flex-shrink: 0;
   }
+}
+
+/* ----------------------------------------------------- logout confirmation
+   "Are you sure?" before the header's log-out button signs the user out.
+   A centred card on desktop, a bottom sheet on phones (Prince). */
+
+.confirm-logout-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(12, 11, 9, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.confirm-logout-dialog {
+  width: min(420px, 100%);
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf8f0 100%);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  animation: confirm-logout-rise 0.2s var(--ease);
+}
+
+.confirm-logout-icon {
+  width: 54px;
+  height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+}
+
+.confirm-logout-dialog h2 {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+}
+
+.confirm-logout-dialog p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.confirm-logout-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.confirm-logout-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 560px) {
+  .confirm-logout-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .confirm-logout-dialog {
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@keyframes confirm-logout-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Item count on the cart icon (header and phone bottom bar). */
+.desktop-cart-btn,
+.bottom-nav-icon {
+  position: relative;
+}
+
+.cart-count-badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+
+.bottom-nav-icon .cart-count-badge {
+  top: -6px;
+  right: 2px;
+  box-shadow: 0 0 0 2px var(--white);
 }

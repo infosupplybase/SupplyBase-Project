@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState, useRef } from 'react';
 
-import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/ui/Icon';
 
@@ -19,7 +19,10 @@ import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHisto
 import ModalFoot from '../components/services/ModalFoot';
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import { wpCategories } from '../data/waterproofingContent';
 
 
 
@@ -36,9 +39,6 @@ import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
  */
 
 const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
-
-const SCHEDULE = 3;
-const CONFIRM = 4;
 
 // const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
 const DEDICATED_FLOW_PREFIXES = ['wp_'];
@@ -79,12 +79,13 @@ const HIDDEN_SERVICES = {
 /** The question without any service that is not offered for now. */
 const withoutHiddenServices = (q, slug) => {
   const hidden = HIDDEN_SERVICES[slug];
-  if (!hidden || q.key !== 'service_needed' || !Array.isArray(q.options)) {
+  if (q.key !== 'service_needed' || !Array.isArray(q.options)) {
     return q;
   }
+  if (!hidden) return q;
   return {
     ...q,
-    options: q.options.filter((o) => !hidden.includes(o.value)),
+    options: q.options.filter((option) => !hidden.includes(option.value)),
   };
 };
 
@@ -102,6 +103,8 @@ export default function ServiceBooking({
   modal = false,
   onStepChange,
   onClose,
+  onSelectWaterproofingService,
+  preselectOption,
 }) {
   const { slug: routeSlug } = useParams();
 
@@ -109,13 +112,15 @@ export default function ServiceBooking({
 
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // The visit location pinned on the map (with a Google Maps key), or null.
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
 
   const [searchParams] = useSearchParams();
 
-  const preselect = searchParams.get('preselect');
+  const preselect = preselectOption || searchParams.get('preselect');
 
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -123,9 +128,9 @@ export default function ServiceBooking({
 
   // This form's step and answers live in the browser's history (see
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
-  const scope = `f:svc:${slug}`;
+  const scope = preselect ? `f:svc:${slug}:preselect:${preselect}` : `f:svc:${slug}`;
   const formBack = useFormBack();
-  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, preselect ? 1 : 0, { push: true });
 
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
 
@@ -171,21 +176,6 @@ export default function ServiceBooking({
         if (!result || !Array.isArray(result.questions)) {
           throw new Error('Invalid service form received from server.');
         }
-
-        /*
-         * Debug information.
-         *
-         * This also helps identify duplicate question keys such as "notes".
-         */
-        console.log(
-          'SERVICE FORM QUESTIONS:',
-          result.questions.map((q, index) => ({
-            index,
-            key: q.key,
-            text: q.text,
-            inputType: q.inputType,
-          }))
-        );
 
         setForm(result);
 
@@ -332,12 +322,40 @@ const stageQuestions = useMemo(() => {
     ...detailsQuestions.filter((q) => q.key === 'notes'),
   ];
 
-  return [
-    service,
-    property,
-    notesLast,
-  ];
+  if (slug === 'waterproofing') {
+    const serviceQuestion = service[0];
+    const catalogueServiceQuestion = form.questions.find((question) => question.key === 'service_needed');
+    const waterproofingServiceQuestion = serviceQuestion
+      ? [{
+          ...serviceQuestion,
+          key: 'wp_service_category',
+          text: 'Which waterproofing service do you need?',
+          inputType: 'SINGLE',
+          options: wpCategories.map((category) => {
+            const catalogueName = category.slug === 'interior-wall'
+              ? 'Wall Waterproofing'
+              : category.slug === 'exterior-wall'
+                ? 'External Waterproofing'
+                : category.name;
+            const option = catalogueServiceQuestion?.options?.find((item) =>
+              item.value === catalogueName || item.label === catalogueName
+            );
+            return option ? { ...option, label: category.name, icon: category.icon, route: category.route } : null;
+          }).filter(Boolean),
+          _questionId: 'wp_service_category',
+        }]
+      : [];
+    return [waterproofingServiceQuestion, notesLast];
+  }
+
+  return [service, property, notesLast];
 }, [form, slug]);
+
+  const scheduleStage = stageQuestions.length;
+  const confirmStage = scheduleStage + 1;
+  const stageLabels = slug === 'waterproofing'
+    ? ['Waterproofing', 'Details', 'Schedule', 'Confirm']
+    : STAGES;
   /**
    * Set answer.
    *
@@ -428,11 +446,11 @@ const stageQuestions = useMemo(() => {
    * Check whether current stage can be left.
    */
   const canLeaveStage = () => {
-    if (stage < SCHEDULE) {
+    if (stage < scheduleStage) {
       return validateQuestions(stageQuestions[stage]);
     }
 
-    if (stage === SCHEDULE) {
+    if (stage === scheduleStage) {
       if (!date || !time) {
         setErrors({
           slot: 'Please choose a date and a time',
@@ -458,7 +476,7 @@ const stageQuestions = useMemo(() => {
     }
 
     setStage((currentStage) =>
-      Math.min(currentStage + 1, CONFIRM)
+      Math.min(currentStage + 1, confirmStage)
     );
 
     if (!modal) {
@@ -499,6 +517,11 @@ const stageQuestions = useMemo(() => {
       return;
     }
 
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) {
+      return;
+    }
+
     setBusy(true);
     setError('');
 
@@ -509,10 +532,12 @@ const stageQuestions = useMemo(() => {
        * MULTI questions become one row per selected option.
        */
       const flat = [];
+      const seenAnswers = new Set();
 
       Object.entries(answers).forEach(([key, value]) => {
+        const submittedKey = key === 'wp_service_category' ? 'service_needed' : key;
         const question = form.questions.find(
-          (q) => q.key === key
+          (q) => q.key === submittedKey
         );
 
         const values = Array.isArray(value)
@@ -527,12 +552,16 @@ const stageQuestions = useMemo(() => {
               v !== undefined
           )
           .forEach((v) => {
+            const answerId = `${submittedKey}:${v}`;
+            if (seenAnswers.has(answerId)) return;
+            seenAnswers.add(answerId);
+
             const option = (
               question?.options || []
             ).find((o) => o.value === v);
 
             flat.push({
-              key,
+              key: submittedKey,
               value: String(v),
               label: option
                 ? option.label
@@ -571,6 +600,8 @@ const stageQuestions = useMemo(() => {
       });
 
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('bk', result.bookingNumber, details.phone);
 
       if (!modal) {
         window.scrollTo({
@@ -765,7 +796,7 @@ const stageQuestions = useMemo(() => {
               : 'wizard-steps'
           }
         >
-          {STAGES.map((label, index) => (
+          {stageLabels.map((label, index) => (
             <li
               key={label}
               className={`wstep ${
@@ -821,7 +852,7 @@ const stageQuestions = useMemo(() => {
                 Stages 1-3: Questions
             -------------------------------------------- */}
 
-            {stage < SCHEDULE &&
+            {stage < scheduleStage &&
               stageQuestions[stage].map(
                 (question, index) => (
               <QuestionField
@@ -831,6 +862,9 @@ const stageQuestions = useMemo(() => {
                 onChange={setAnswer(question.key)}
                 error={errors[question.key]}
                 serviceSlug={slug}
+                onWaterproofingServiceSelect={slug === 'waterproofing'
+                  ? (route) => onSelectWaterproofingService ? onSelectWaterproofingService(route) : navigate(route)
+                  : undefined}
               />
                 )
               )}
@@ -839,7 +873,7 @@ const stageQuestions = useMemo(() => {
                 Stage 4: Schedule
             -------------------------------------------- */}
 
-            {stage === SCHEDULE && (
+            {stage === scheduleStage && (
               <>
                 <div className="wizard-card-head">
                   <h2>
@@ -874,7 +908,7 @@ const stageQuestions = useMemo(() => {
                 Stage 5: Customer details + Summary
             -------------------------------------------- */}
 
-            {stage === CONFIRM && (
+            {stage === confirmStage && (
               <>
                 <div className="wizard-card-head">
                   <h2>
@@ -950,7 +984,7 @@ const stageQuestions = useMemo(() => {
                 </button>
               )}
 
-              {stage === CONFIRM ? (
+              {!(slug === 'waterproofing' && stage === 0) && (stage === confirmStage ? (
                 <button
                   type="submit"
                   className="
@@ -974,7 +1008,7 @@ const stageQuestions = useMemo(() => {
                 </button>
               ) : (
                 (
-                  stage >= SCHEDULE ||
+                  stage >= scheduleStage ||
                   (
                     stageQuestions[stage]
                       .length > 0 &&
@@ -1013,7 +1047,7 @@ const stageQuestions = useMemo(() => {
                     />
                   </button>
                 )
-              )}
+              ))}
             </ModalFoot>
           </div>
         </form>

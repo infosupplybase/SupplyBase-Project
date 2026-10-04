@@ -10,7 +10,7 @@ import { telHref, mailtoHref } from '../lib/contact';
  *     actually handles data and contracts before you go live.
  */
 
-const updated = 'August 2026';
+const updated = 'October 2026';
 
 export function PrivacyPolicy() {
   return (
@@ -26,42 +26,78 @@ export function PrivacyPolicy() {
           <p style={{ color: 'var(--grey-500)' }}>Last updated: {updated}</p>
 
           <h2>Information we collect</h2>
+          <ul>
+            <li>
+              <strong>Your account</strong> — your name, email address and phone number, and a password (kept only in
+              a scrambled form that we cannot read). If you sign in with Google, we receive your name and email
+              address from Google.
+            </li>
+            <li>
+              <strong>Bookings</strong> — the service you choose, your answers to the booking questions, your
+              preferred date and time, the name, phone number, WhatsApp number, email address, address, city and pin
+              code you enter, the location you pick on the map or choose to share from your device, and any photos
+              you attach.
+            </li>
+            <li>
+              <strong>Enquiries and quotations</strong> — what you type into the contact and quotation forms, or tell
+              us when you call or message us on WhatsApp.
+            </li>
+          </ul>
+
+          <h2>How the website handles your details</h2>
           <p>
-            When you use the enquiry form, call us or message us on WhatsApp, we receive the details you choose to
-            share — typically your name, phone number, email address, project location and a description of the work
-            you need.
+            Bookings, enquiries and account details are sent over an encrypted connection to our server and stored
+            there. Our team is notified so we can contact you. To keep you signed in, your browser stores a sign-in
+            token on your device until you sign out. This website does not use advertising trackers.
+          </p>
+          <p>
+            To understand how the website is used, we count page visits with Vercel Web Analytics. It sets no cookies
+            and does not identify you: it records the page, the website you came from, your country, and your device
+            and browser type, and visits cannot be linked across days or other websites.
           </p>
 
-          <h2>How the enquiry form works</h2>
+          <h2>Your location</h2>
           <p>
-            The enquiry form on this website does not send your details to a server. It prepares a message in your own
-            WhatsApp or email application with the information you entered, which you then send yourself. Any files you
-            select stay on your device until you attach them to that message.
+            We use a location only if you pick it on the map or press "Use my current location" — your browser asks
+            for your permission first, and you can type your address instead. It is used to find your address and so
+            that our team can reach your site.
           </p>
 
           <h2>How we use your information</h2>
           <ul>
-            <li>To understand your requirement and prepare a quotation</li>
-            <li>To contact you about your enquiry or an ongoing project</li>
+            <li>To arrange and carry out site visits and to prepare a quotation</li>
+            <li>To contact you about your booking, enquiry or an ongoing project</li>
+            <li>To show you your bookings in your account</li>
             <li>To keep records of work carried out for you</li>
           </ul>
 
           <h2>Sharing</h2>
-          <p>
-            We do not sell your information. We share it only with the members of our own team and, where necessary,
-            with suppliers or specialists working on your project.
-          </p>
+          <p>We do not sell your information. We share it only with:</p>
+          <ul>
+            <li>
+              the professional assigned to your visit, who receives your name, phone number, address and the details
+              of your request;
+            </li>
+            <li>suppliers or specialists working on your project, where necessary;</li>
+            <li>
+              the services that run this website — our hosting providers, our email delivery service and Google (the
+              map and address search, the fonts the pages use and, if you choose it, Google sign-in), which receive
+              the technical information any website visit involves, such as your IP address, and what you search for
+              on the map.
+            </li>
+          </ul>
 
           <h2>Retention</h2>
           <p>
-            Enquiry and project records are kept for as long as needed to serve you and to meet our legal and
-            accounting obligations.
+            Account, booking, enquiry and project records are kept for as long as needed to serve you and to meet our
+            legal and accounting obligations.
           </p>
 
           <h2>Your choices</h2>
           <p>
-            You can ask us what information we hold about you, ask us to correct it, or ask us to delete it, by
-            contacting us using the details below.
+            You can correct your name and phone number in your account. You can ask us what information we hold about
+            you, ask us to correct it, or ask us to delete it (including your account), by contacting us using the
+            details below.
           </p>
 
           <h2>Contact</h2>
@@ -96,6 +132,18 @@ export function Terms() {
             This website describes the services offered by {company.name}. The content is provided for general
             information and does not by itself form a contract.
           </p>
+
+          <h2>Your account and bookings</h2>
+          <ul>
+            <li>You need an account to book a site visit. Keep your password private and give us accurate details.</li>
+            <li>A booking is a request for a visit on the date and time you choose; our team contacts you to confirm it.</li>
+            <li>Someone must be able to give our team access to the site at the booked time.</li>
+            <li>
+              Where a home visit fee applies, it is shown when you book. It is paid to our team on the day of the
+              visit and is adjusted into your final bill if you go ahead with the work.
+            </li>
+            <li>To change or cancel a visit, contact us using the details below.</li>
+          </ul>
 
           <h2>Quotations</h2>
           <ul>
