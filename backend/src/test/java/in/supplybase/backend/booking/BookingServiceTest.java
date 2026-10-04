@@ -169,6 +169,59 @@ class BookingServiceTest {
         }
 
         @Test
+        @DisplayName("keeps the waterproofing service alongside the brand")
+        void waterproofingKeepsService() {
+            ServiceCategory category = ServiceCategory.builder()
+                    .id(7L).slug("waterproofing").name("Waterproofing")
+                    .visitFeePaise(9900L).active(true).build();
+            LocalDate date = LocalDate.now().plusDays(3);
+            LocalTime time = LocalTime.of(10, 0);
+
+            when(catalogue.requireCategory("waterproofing")).thenReturn(category);
+            when(bookings.countByPhoneAndCreatedAtAfter(any(), any())).thenReturn(0L);
+            when(appointments.reserve(anyLong(), any(), any()))
+                    .thenReturn(AppointmentSlot.builder().id(1L).capacity(1).bookedCount(1).build());
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(options.findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(7L))
+                    .thenReturn(List.of(
+                            ServiceOption.builder().categoryId(7L).stepNo(1)
+                                    .questionKey("service_needed")
+                                    .questionText("What waterproofing service do you need?")
+                                    .inputType("MULTI").optionValue("Water Tank Waterproofing")
+                                    .optionLabel("Water Tank Waterproofing").active(true).build(),
+                            ServiceOption.builder().categoryId(7L).stepNo(1)
+                                    .questionKey("service_needed")
+                                    .questionText("What waterproofing service do you need?")
+                                    .inputType("MULTI").optionValue("Bathroom Waterproofing")
+                                    .optionLabel("Bathroom Waterproofing").active(true).build(),
+                            ServiceOption.builder().categoryId(7L).stepNo(2)
+                                    .questionKey("wp_brand").questionText("Preferred brand")
+                                    .inputType("SINGLE").optionValue("asian-paints")
+                                    .optionLabel("Asian Paints").active(true).build()));
+
+            CreateBookingRequest request = new CreateBookingRequest(
+                    "waterproofing",
+                    List.of(new CreateBookingRequest.AnswerInput(
+                                    "service_needed", "Bathroom Waterproofing",
+                                    "Bathroom Floor Waterproofing", null),
+                            new CreateBookingRequest.AnswerInput(
+                                    "wp_brand", "asian-paints", "Asian Paints", null)),
+                    date, time, "Asha Rao", "9820011223", null, null,
+                    "12 MG Road", "Mumbai", "400001", null);
+
+            service.create(request, null);
+
+            ArgumentCaptor<List<BookingAnswer>> answersCaptor = ArgumentCaptor.forClass(List.class);
+            verify(answers).saveAll(answersCaptor.capture());
+            assertThat(answersCaptor.getValue())
+                    .extracting(BookingAnswer::getQuestionKey, BookingAnswer::getAnswerLabel)
+                    .containsExactly(
+                            org.assertj.core.groups.Tuple.tuple(
+                                    "service_needed", "Bathroom Floor Waterproofing"),
+                            org.assertj.core.groups.Tuple.tuple("wp_brand", "Asian Paints"));
+        }
+
+        @Test
         @DisplayName("attaches the booking to the signed-in user when one is present")
         void attachesSignedInUser() {
             ServiceCategory category = plumbingCategory();
