@@ -5,24 +5,10 @@ import AuthPanel from '../components/auth/AuthPanel';
 import { company } from '../data/siteConfig';
 import { useAuth } from '../context/AuthContext';
 
-/**
- * Account page — sign in and create account, on one screen.
- *
- * Both /login and /register render this component; the tab that opens is taken
- * from the URL, so each mode is still directly linkable and the back button
- * behaves. Switching tabs is a normal navigation between those two paths.
- * The form itself is AuthPanel, which the booking's last step (LoginGate)
- * shows too.
- *
- * NOTE: creating an account is public — anyone who completes the form can reach
- * /dashboard. To go back to invite-only, drop the /register route in App.jsx
- * and the "Sign Up" switch in AuthPanel; the sign-in half needs no other change.
- */
 export default function Login() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
   const mode = location.pathname === '/register' ? 'register' : 'login';
   const isRegister = mode === 'register';
 
@@ -35,7 +21,6 @@ export default function Login() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
-
   const fromParam = new URLSearchParams(location.search).get('from');
   const rememberedReturn = (() => {
     try {
@@ -44,7 +29,6 @@ export default function Login() {
       return null;
     }
   })();
-
   const redirectedFrom =
     (location.state && location.state.from) ||
     rememberedReturn?.path ||
@@ -64,20 +48,21 @@ export default function Login() {
   const pathnameWithoutHash = redirectedFrom.split('#')[0];
   const goTo = redirectedFrom;
 
-  // already signed in? go straight through
+  const finishSignIn = () => {
+    sessionStorage.removeItem('sb.bookingReturn');
+    navigate(goTo, {
+      replace: true,
+      state: redirectedState
+        ? { ...redirectedState, returnStage: redirectedStage }
+        : redirectedStage !== null
+          ? { returnStage: redirectedStage }
+          : undefined,
+    });
+  };
+
   useEffect(() => {
-    if (user) {
-      sessionStorage.removeItem('sb.bookingReturn');
-      navigate(goTo, {
-        replace: true,
-        state: redirectedState
-          ? { ...redirectedState, returnStage: redirectedStage }
-          : redirectedStage !== null
-            ? { returnStage: redirectedStage }
-            : undefined,
-      });
-    }
-  }, [user, goTo, navigate, redirectedState, redirectedStage]);
+    if (user) finishSignIn();
+  }, [user]);
 
   // messages from one tab must not linger on the other
   useEffect(() => {
@@ -210,6 +195,7 @@ export default function Login() {
       setBusy(false);
     }
   };
+
   /**
    * Closing the panel returns the visitor wherever they came from. On a direct
    * hit (a bookmark, a pasted link) there is nothing to go back to, so the home
@@ -221,14 +207,13 @@ export default function Login() {
     else navigate('/');
   };
 
-  // Escape closes it, the way any dialog is expected to behave
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') handleClose();
+    const onKey = (event) => {
+      if (event.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  });
+  }, [location.key, navigate]);
 
   return (
     <div className="auth-screen">
@@ -251,7 +236,7 @@ export default function Login() {
             onModeChange={(next) =>
               navigate(next === 'register' ? '/register' : '/login', { state: location.state })
             }
-            onDone={() => navigate(goTo, { replace: true })}
+            onDone={finishSignIn}
           />
         </div>
       </div>

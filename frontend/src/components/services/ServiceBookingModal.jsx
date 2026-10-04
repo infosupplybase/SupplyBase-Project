@@ -38,6 +38,7 @@ import ElectricalCart from '../../pages/ElectricalCart';
 import ElectricalCheckout from '../../pages/ElectricalCheckout';
 import { getElectricalGroup } from '../../data/electricalContent';
 
+
 /**
  * Opens the "Book a service" modal, shared by every page that lets someone
  * pick a service and book it: the Services page's own grid and the
@@ -133,6 +134,7 @@ export function useServiceBookingModal() {
  * until someone actually opens a booking).
  */
 export default function ServiceBookingModal({ service, onClose }) {
+  const navigate = useNavigate();
   const [selectedInteriorSpace, setSelectedInteriorSpace] = useHistoryState('bm:interiorSpace', null, { push: true });
   const [selectedInteriorDesign, setSelectedInteriorDesign] = useHistoryState('bm:interiorDesign', null, { push: true });
   const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
@@ -150,7 +152,11 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
   const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
-  const [selectedWaterproofingPage, setSelectedWaterproofingPage] = useHistoryState('bm:waterproofingPage', null, { push: true });
+  const [selectedOtherService, setSelectedOtherService] = useHistoryState(
+    'bm:otherService',
+    null,
+    { push: true }
+  );  const [selectedWaterproofingPage, setSelectedWaterproofingPage] = useHistoryState('bm:waterproofingPage', null, { push: true });
 
   // Every in-app BACK goes back through history, exactly like the
   // browser's Back button, so the two always agree.
@@ -182,7 +188,6 @@ export default function ServiceBookingModal({ service, onClose }) {
     (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
     (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow)) ||
     service.slug === 'ac-services';
-
   const openWaterproofingService = (route) => {
     const target = new URL(route, window.location.origin);
     const slug = target.pathname.split('/').filter(Boolean).pop();

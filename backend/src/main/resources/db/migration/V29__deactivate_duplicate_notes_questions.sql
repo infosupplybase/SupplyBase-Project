@@ -1,3 +1,4 @@
+git commit
 -- Duplicate notes rows left behind by earlier service-category migrations
 -- (Waterproofing had two identical "Tell us anything else about your work."
 -- rows). A category should show a single notes question, so the older copy is

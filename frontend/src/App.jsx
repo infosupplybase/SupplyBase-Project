@@ -128,7 +128,9 @@ export default function App() {
             list here. */}
         <Route path="services/electrical" element={<RequireBookingAuth><ElectricalCategory /></RequireBookingAuth>} />
         <Route path="services/electric" element={<RequireBookingAuth><ElectricalCategory /></RequireBookingAuth>} />
-        <Route path="services/electrical/:subSlug" element={<RequireBookingAuth><ElectricianService /></RequireBookingAuth>} />
+        <Route path="services/electrical/cart" element={<RequireBookingAuth><ElectricalCart /></RequireBookingAuth>} />
+        <Route path="services/electrical/checkout" element={<RequireBookingAuth><ElectricalCheckout /></RequireBookingAuth>} />
+        <Route path="services/electrical/:subSlug" element={<RequireBookingAuth><ElectricalSubPage /></RequireBookingAuth>} />
 
         {/* Other Services: the catch-all eighth tile, reactivated on
             request. A category list in front of five existing generic
