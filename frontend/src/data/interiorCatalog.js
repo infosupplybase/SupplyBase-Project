@@ -1,42 +1,34 @@
-/**
- * SUPPLYBASE — INTERIOR BY CHOICE CATALOGUE
- * ------------------------------------------
- * A browsable, ready-made design catalogue: pick a space, pick a design,
- * book a ₹99 home visit. This is placeholder content — real photography,
- * pricing and material specs replace it before launch — but the shape
- * (space -> designs -> colours/features/material detail) is the real one
- * the UI is built against.
- *
- * Booking submitted through this flow does not yet take a live payment;
- * see InteriorBooking.jsx.
- */
-
 export const interiorSpaces = [
   {
     slug: 'tv-wall',
     name: 'TV wall',
     image: '/assets/projects/tv_wall.webp',
   },
+
   {
     slug: 'bed-back-wall',
     name: 'Bed back wall',
     image: '/assets/projects/bedroom.webp',
   },
+
   {
     slug: 'living-room',
     name: 'Living room',
     image: '/assets/projects/Living_room.webp',
   },
+
   {
     slug: 'entrance',
     name: 'Entrance',
     image: '/assets/projects/home_Entrance.webp',
   },
+
   {
     slug: 'study',
     name: 'Study',
     image: '/assets/projects/study_room.webp',
   },
+
   {
     slug: 'mandir',
     name: 'Mandir',
@@ -44,13 +36,26 @@ export const interiorSpaces = [
   },
 ];
 
-/* Shared vocabulary so every design's feature list points at the same icon
-   and label rather than each entry spelling it out. */
 export const interiorFeatures = {
-  waterproof: { icon: 'droplet', label: 'Waterproof' },
-  'termite-resistant': { icon: 'shield', label: 'Termite Resistant' },
-  'easy-clean': { icon: 'check-circle', label: 'Easy to Clean' },
-  warranty: { icon: 'award', label: '5 Years Warranty' },
+  waterproof: {
+    icon: 'droplet',
+    label: 'Waterproof',
+  },
+
+  'termite-resistant': {
+    icon: 'shield',
+    label: 'Termite Resistant',
+  },
+
+  'easy-clean': {
+    icon: 'check-circle',
+    label: 'Easy to Clean',
+  },
+
+  warranty: {
+    icon: 'award',
+    label: '5 Years Warranty',
+  },
 };
 
 const subDesignNames = {
@@ -161,56 +166,11 @@ const subDesignNames = {
   ],
 
   'living-room': [
-    'Warm Neutrals',
-    'Modern Luxe',
-    'Contemporary Comfort',
-    'Beige Harmony',
-    'Wood & Stone',
-    'Soft Modern',
-    'Japandi Living',
-    'Scandinavian Light',
-    'Earthy Luxe',
-    'Modern Classic',
-    'Warm Walnut',
-    'Cream & Oak',
-    'Greige Living',
-    'Charcoal Luxe',
-    'Natural Textures',
-    'Minimal Calm',
-    'Hotel Living',
-    'Elegant Flutes',
-    'Urban Chic',
-    'Mocha Modern',
-    'Sage & Beige',
-    'Ivory Luxe',
-    'Stone Accent',
-    'Linear Living',
-    'Soft Contrast',
-    'Backlit Feature',
-    'Modern Arch',
-    'Classic Contemporary',
-    'Oak Frame',
-    'Textured Neutral',
-    'Black & Wood',
-    'Sandstone Luxe',
-    'Warm Grey',
-    'White Oak',
-    'Terracotta Calm',
-    'Graphite Modern',
-    'Natural Veneer',
-    'Quiet Luxury',
-    'Contemporary Edge',
-    'Cozy Minimal',
-    'Statement Wall',
-    'Light Luxury',
-    'Earth Tone Luxe',
-    'Modern Heritage',
-    'Clean Lines',
-    'Warm Contemporary',
-    'Timeless Neutral',
-    'Refined Minimal',
-    'Signature Living',
-    'Grand Living',
+    'Fluted Panel',
+    'Wooden Panel',
+    'Marble + Fluted Panel',
+    'Plain Panel',
+    'Designer Panel',
   ],
 
   entrance: [
@@ -373,7 +333,272 @@ const subDesignNames = {
   ],
 };
 
-//new 
+/* =========================================================
+   LIVING ROOM SUB OPTIONS
+   ========================================================= */
+
+export const livingRoomSubOptions = {
+  'Fluted Panel': [
+    'Natural Oak',
+    'Mocha Brown',
+    'Pecan Brown',
+    'Marble White',
+    'Black',
+    'White',
+    'Dark Grey',
+    'Light Grey',
+  ],
+
+  'Wooden Panel': [
+    'Natural Oak',
+    'Teak',
+    'Walnut',
+    'Wenge',
+    'Coffee',
+    'White Oak',
+    'Grey Wood',
+  ],
+
+  'Marble + Fluted Panel': [
+    'Fluted Centre + Marble Sides',
+    'Marble Centre + Fluted Sides',
+    '50/50 Marble + Fluted',
+    'Marble Strips + Fluted',
+    'Marble Border + Fluted',
+    'Vertical Marble + Fluted',
+  ],
+
+  'Plain Panel': [
+    'White',
+    'Light Grey',
+    'Dark Grey',
+    'Beige',
+    'Warm White',
+    'Wood Finish',
+  ],
+
+  'Designer Panel': [
+    'Geometric Pattern',
+    'Modern Lines',
+    'Arch Pattern',
+    'Wave Pattern',
+    'Luxury Pattern',
+    'Custom Pattern',
+  ],
+};
+
+/* =========================================================
+   LIVING ROOM MAIN IMAGES
+   ========================================================= */
+
+const livingRoomImages = {
+  'Fluted Panel':
+    '/assets/projects/interior-by-choice/living-room/fluted-panel.webp',
+
+  'Wooden Panel':
+    '/assets/projects/interior-by-choice/living-room/wooden-panel.webp',
+
+  'Marble + Fluted Panel':
+    '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel.webp',
+
+  'Plain Panel':
+    '/assets/projects/interior-by-choice/living-room/plain-panel.webp',
+
+  'Designer Panel':
+    '/assets/projects/interior-by-choice/living-room/designer-panel.webp',
+};
+
+/* =========================================================
+   LIVING ROOM COLOUR IMAGES
+   ========================================================= */
+
+export const livingRoomColorImages = {
+  'Fluted Panel': {
+    'Natural Oak':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/natural-oak.webp',
+
+    'Mocha Brown':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/mocha-brown.webp',
+
+    'Pecan Brown':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/pecan-brown.webp',
+
+    'Marble White':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/marble-white.webp',
+
+    Black:
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/black.webp',
+
+    White:
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/white.webp',
+
+    'Dark Grey':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/dark-grey.webp',
+
+    'Light Grey':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/light-grey.webp',
+  },
+
+  'Wooden Panel': {
+    'Natural Oak':
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/natural-oak.webp',
+
+    Teak:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/teak.webp',
+
+    Walnut:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/walnut.webp',
+
+    Wenge:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/wenge.webp',
+
+    Coffee:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/coffee.webp',
+
+    'White Oak':
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/white-oak.webp',
+
+    'Grey Wood':
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/grey-wood.webp',
+  },
+
+  'Marble + Fluted Panel': {
+    'Fluted Centre + Marble Sides':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/fluted-centre-marble-sides.webp',
+
+    'Marble Centre + Fluted Sides':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/marble-centre-fluted-sides.webp',
+
+    '50/50 Marble + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/50-50-marble-fluted.webp',
+
+    'Marble Strips + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/marble-strips-fluted.webp',
+
+    'Marble Border + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/marble-border-fluted.webp',
+
+    'Vertical Marble + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/vertical-marble-fluted.webp',
+  },
+
+  'Plain Panel': {
+    White:
+      '/assets/projects/interior-by-choice/living-room/plain-panel/white.webp',
+
+    'Light Grey':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/light-grey.webp',
+
+    'Dark Grey':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/dark-grey.webp',
+
+    Beige:
+      '/assets/projects/interior-by-choice/living-room/plain-panel/beige.webp',
+
+    'Warm White':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/warm-white.webp',
+
+    'Wood Finish':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/wood-finish.webp',
+  },
+
+  'Designer Panel': {
+    'Geometric Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/geometric-pattern.webp',
+
+    'Modern Lines':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/modern-lines.webp',
+
+    'Arch Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/arch-pattern.webp',
+
+    'Wave Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/wave-pattern.webp',
+
+    'Luxury Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/luxury-pattern.webp',
+
+    'Custom Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/custom-pattern.webp',
+  },
+};
+
+/* =========================================================
+   LIVING ROOM DETAILS / FEATURES
+   ========================================================= */
+
+export const livingRoomDescriptions = {
+  'Fluted Panel':
+    'Modern vertical lines for a stylish and elegant living room wall.',
+
+  'Wooden Panel':
+    'Warm wood finish for a rich and timeless look. Perfect for living room walls.',
+
+  'Marble + Fluted Panel':
+    'Marble with fluted panels for a premium and elegant living room look.',
+
+  'Plain Panel':
+    'Simple and clean wall design for a calm, modern living room.',
+
+  'Designer Panel':
+    'Unique patterns for a modern statement wall in your living room.',
+};
+
+export const livingRoomFeatures = [
+  {
+    icon: 'sparkles',
+    label: 'Elegant',
+    sublabel: 'Look',
+  },
+
+  {
+    icon: 'settings',
+    label: 'Easy to',
+    sublabel: 'Maintain',
+  },
+
+  {
+    icon: 'shield',
+    label: 'Durable',
+    sublabel: 'Material',
+  },
+
+  {
+    icon: 'home',
+    label: 'Suitable for',
+    sublabel: 'Mumbai Homes',
+  },
+];
+
+/* =========================================================
+   LIVING ROOM GALLERY IMAGES
+   ========================================================= */
+
+export const livingRoomGalleryImages = {
+  'Fluted Panel': [
+    '/assets/projects/interior-by-choice/living-room/fluted-panel.webp',
+  ],
+
+  'Wooden Panel': [
+    '/assets/projects/interior-by-choice/living-room/wooden-panel.webp',
+  ],
+
+  'Marble + Fluted Panel': [
+    '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel.webp',
+  ],
+
+  'Plain Panel': [
+    '/assets/projects/interior-by-choice/living-room/plain-panel.webp',
+  ],
+
+  'Designer Panel': [
+    '/assets/projects/interior-by-choice/living-room/designer-panel.webp',
+  ],
+};
+
+/* =========================================================
+   DESIGN PRESETS
+   ========================================================= */
 
 const designPresets = {
   'tv-wall': {
@@ -383,6 +608,7 @@ const designPresets = {
       'easy-clean',
       'warranty',
     ],
+
     materialDetails: {
       'Panel Type': 'WPC / MDF Fluted Panel',
       Thickness: '8 mm / 12 mm',
@@ -397,6 +623,7 @@ const designPresets = {
       'easy-clean',
       'warranty',
     ],
+
     materialDetails: {
       'Panel Type': 'MDF / Veneer Fluted Panel',
       Thickness: '8 mm / 12 mm',
@@ -411,6 +638,7 @@ const designPresets = {
       'easy-clean',
       'warranty',
     ],
+
     materialDetails: {
       'Panel Type': 'WPC / Veneer / Laminate Mix',
       Thickness: '8 mm / 10 mm',
@@ -419,12 +647,13 @@ const designPresets = {
     },
   },
 
-  entrance: {
+  'entrance': {
     features: [
       'waterproof',
       'easy-clean',
       'warranty',
     ],
+
     materialDetails: {
       'Panel Type': 'Veneer / Stone / MDF Mix',
       Thickness: '8 mm / 12 mm',
@@ -433,12 +662,13 @@ const designPresets = {
     },
   },
 
-  study: {
+  'study': {
     features: [
       'termite-resistant',
       'easy-clean',
       'warranty',
     ],
+
     materialDetails: {
       'Panel Type': 'Laminate / Veneer on MDF',
       Thickness: '8 mm / 12 mm',
@@ -447,19 +677,25 @@ const designPresets = {
     },
   },
 
-  mandir: {
+  'mandir': {
     features: [
       'easy-clean',
       'warranty',
     ],
+
     materialDetails: {
-      'Panel Type': 'MDF / Veneer / Marble-finish Panel',
+      'Panel Type':
+        'MDF / Veneer / Marble-finish Panel',
       Thickness: '8 mm / 12 mm',
       Finish: 'Matte / Woodgrain',
       'Installation Time': '2–3 Days',
     },
   },
 };
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
 const slugify = (value) =>
   value
@@ -472,71 +708,136 @@ const basePrices = {
   'tv-wall': 699,
   'bed-back-wall': 799,
   'living-room': 749,
-  entrance: 649,
-  study: 849,
-  mandir: 899,
+  'entrance': 649,
+  'study': 849,
+  'mandir' : 899,
 };
 
 const taglines = {
-  'tv-wall': 'Clean lines. Timeless look.',
-  'bed-back-wall': 'Calm colours, restful room.',
-  'living-room': 'Soft tones, easy to live in.',
-  entrance: 'A welcome that sets the tone.',
-  study: 'A focused, functional workspace.',
-  mandir: 'A peaceful, beautifully finished pooja space.',
+  'tv-wall':
+    'Clean lines. Timeless look.',
+
+  'bed-back-wall':
+    'Calm colours, restful room.',
+
+  'living-room':
+    'Soft tones, easy to live in.',
+
+  'entrance':
+    'A welcome that sets the tone.',
+
+  'study':
+    'A focused, functional workspace.',
+
+  'mandir':
+    'A peaceful, beautifully finished pooja space.',
 };
 
-export const interiorDesigns = interiorSpaces.flatMap((space) =>
-  subDesignNames[space.slug].map((name, index) => {
-    const preset = designPresets[space.slug];
+/* =========================================================
+   INTERIOR DESIGNS
+   ========================================================= */
 
-    const priceSteps = [0, 50, 100, 150, 200];
+export const interiorDesigns =
+  interiorSpaces.flatMap((space) =>
+    subDesignNames[space.slug].map(
+      (name, index) => {
+        const preset =
+          designPresets[space.slug];
 
-    const pricePerSqft =
-      basePrices[space.slug] +
-      priceSteps[index % priceSteps.length];
+        const priceSteps = [
+          0,
+          50,
+          100,
+          150,
+          200,
+        ];
 
-    const dedicatedImage =
-      `/assets/projects/interior-by-choice/${space.slug}/${slugify(name)}.webp`;
+        const pricePerSqft =
+          basePrices[space.slug] +
+          priceSteps[
+            index % priceSteps.length
+          ];
 
-    return {
-      slug: slugify(name),
-      spaceSlug: space.slug,
-      name,
-      tagline: taglines[space.slug],
-      pricePerSqft,
+        const dedicatedImage =
+          space.slug === 'living-room'
+            ? livingRoomImages[name]
+            : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
+                name
+              )}.webp`;
 
-      // Individual image path
-      image: dedicatedImage,
+        return {
+          slug: slugify(name),
 
-      // Agar individual image nahi hai to main category image use hogi
-      fallbackImage: space.image,
+          spaceSlug: space.slug,
 
-      colours: [
-        '#efe9e2',
-        '#d8c9b0',
-        '#6b4a34',
-        '#2e2e2e',
-      ],
+          name,
 
-      features: preset.features,
+          tagline:
+            taglines[space.slug],
 
-      materialDetails: preset.materialDetails,
-    };
-  })
-);
+          pricePerSqft,
 
+          image: dedicatedImage,
 
+          fallbackImage:
+            space.image,
 
+          colours: [
+            '#efe9e2',
+            '#d8c9b0',
+            '#6b4a34',
+            '#2e2e2e',
+          ],
 
+          features:
+            preset.features,
 
+          materialDetails:
+            preset.materialDetails,
+        };
+      }
+    )
+  );
 
-export const getSpaceBySlug = (slug) => interiorSpaces.find((s) => s.slug === slug);
+/* =========================================================
+   GET SPACE
+   ========================================================= */
 
-export const getDesignsBySpace = (spaceSlug) =>
-  interiorDesigns.filter((d) => d.spaceSlug === spaceSlug);
+export const getSpaceBySlug =
+  (slug) =>
+    interiorSpaces.find(
+      (space) =>
+        space.slug === slug
+    );
 
-export const getDesignBySlug = (spaceSlug, designSlug) =>
-  interiorDesigns.find((d) => d.spaceSlug === spaceSlug && d.slug === designSlug);
+/* =========================================================
+   GET DESIGNS BY SPACE
+   ========================================================= */
+
+export const getDesignsBySpace =
+  (spaceSlug) =>
+    interiorDesigns.filter(
+      (design) =>
+        design.spaceSlug ===
+        spaceSlug
+    );
+
+/* =========================================================
+   GET SINGLE DESIGN
+   ========================================================= */
+
+export const getDesignBySlug =
+  (spaceSlug, designSlug) =>
+    interiorDesigns.find(
+      (design) =>
+        design.spaceSlug ===
+          spaceSlug &&
+        design.slug ===
+          designSlug
+    );
+
+/* =========================================================
+   HOME VISIT FEE
+   ========================================================= */
 
 export const HOME_VISIT_FEE = 99;

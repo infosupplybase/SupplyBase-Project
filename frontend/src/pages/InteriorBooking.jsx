@@ -28,9 +28,14 @@ const CATEGORY_SLUG = 'interior-by-choice';
  * against.)
  */
 export default function InteriorBooking({
-  modal = false,
+  modal,
   spaceSlug: propSpaceSlug,
   designSlug: propDesignSlug,
+
+  selectedPanelName,
+  selectedColorName,
+  referenceImage,
+
   onBack,
   onStepChange,
 }) {
@@ -162,10 +167,31 @@ if (modal) {
 
           {(space || design) && step < 2 && (
             <div className="ibc-selected-service">
-              <img src={(design || space).image} alt={(design || space).name} />
+              <img
+  src={
+    referenceImage ||
+    design.image
+  }
+  alt={
+    selectedColorName
+      ? `${selectedPanelName} - ${selectedColorName}`
+      : design.name
+  }
+  className="
+    h-12
+    w-12
+    rounded-lg
+    object-cover
+  "
+/>
               <div>
                 <span className="ibc-selected-label">Selected Service</span>
                 <strong>{design ? `${space.name} – ${design.name}` : space.name}</strong>
+                {selectedColorName && (
+  <div className="mt-1 text-xs font-semibold text-[#9A5B2D]">
+    Colour: {selectedColorName}
+  </div>
+)}
                 {design && <span className="ibc-selected-price">₹{HOME_VISIT_FEE} (Visit Charge)</span>}
               </div>
               {modal ? (
@@ -188,7 +214,37 @@ if (modal) {
 
           {step === 0 && (
             <div className="ibc-form-panel">
-              <h3>Your Details</h3>
+
+{selectedColorName && (
+  <div
+    className="
+      mb-5
+      rounded-xl
+      border
+      border-[#ead8c8]
+      bg-[#fffaf6]
+      px-4
+      py-3
+    "
+  >
+    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9A5B2D]">
+      Your Selection
+    </p>
+
+    <div className="mt-1 text-sm font-bold text-gray-950">
+      Living Room – {selectedPanelName}
+    </div>
+
+    <div className="mt-1 text-sm text-gray-600">
+      Colour:{' '}
+      <span className="font-semibold text-gray-900">
+        {selectedColorName}
+      </span>
+    </div>
+  </div>
+)}
+
+<h3>Your Details</h3>
               <CustomerDetailsFields details={form} setDetail={setField} errors={errors} idPrefix="ib" />
               <div className="field" style={{ marginTop: 16 }}>
                 <label htmlFor="ib-notes">Any specific requirements? (Optional)</label>
