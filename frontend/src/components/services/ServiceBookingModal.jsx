@@ -1591,6 +1591,7 @@ onClick={() => {
                               text-left
                             "
                           >
+                            {/* h-full! so global.css's img { height: auto } can't shrink a non-square photo and leave a gap. */}
                             <img
                               loading="lazy"
                               decoding="async"
@@ -1599,7 +1600,7 @@ onClick={() => {
                               className="
                                 absolute
                                 inset-0
-                                h-full
+                                h-full!
                                 w-full
                                 object-cover
                                 transition
