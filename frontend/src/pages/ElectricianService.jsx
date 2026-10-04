@@ -372,7 +372,15 @@ export default function ElectricianService() {
 
   /* -------------------------------------------------------------- confirm */
   if (receipt) {
-    return <ElectricianConfirmation receipt={receipt} details={details} pendingFiles={pendingFiles} uploadState={uploadState} />;
+    return (
+      <ElectricianConfirmation
+        receipt={receipt}
+        details={details}
+        pendingFiles={pendingFiles}
+        uploadState={uploadState}
+        onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+      />
+    );
   }
 
   // Restored mid-way by a refresh: the step is known straight away, the
@@ -630,7 +638,7 @@ function ElectricianSummary({ category, form, answers, date, time, estimate }) {
   );
 }
 
-function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }) {
+function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState, onPaid }) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
   const fileCount = Object.values(pendingFiles).reduce((n, files) => n + files.length, 0);
   const uploadedCount = Object.values(uploadState).filter((s) => s === 'done').length;
@@ -682,7 +690,12 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
               </div>
             </dl>
 
-            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+            <PayBookingButton
+              bookingNumber={receipt.bookingNumber}
+              amountDisplay={receipt.visitFeeDisplay}
+              paid={receipt.paidOnline}
+              onPaid={onPaid}
+            />
 
             {fileCount > 0 && (
               <p className="elc-upload-status">

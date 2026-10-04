@@ -366,12 +366,19 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
-              <div className="pnt-fee-note">
-                <Icon name="info" size={17} />
-                <span>{receipt.message}</span>
-              </div>
+              {!receipt.paidOnline && (
+                <div className="pnt-fee-note">
+                  <Icon name="info" size={17} />
+                  <span>{receipt.message}</span>
+                </div>
+              )}
 
-              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+              <PayBookingButton
+                bookingNumber={receipt.bookingNumber}
+                amountDisplay={receipt.visitFeeDisplay}
+                paid={receipt.paidOnline}
+                onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+              />
 
               <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
               <div className="btn-row" style={{ marginTop: 12 }}>
