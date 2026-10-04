@@ -3,10 +3,12 @@ package in.supplybase.backend.booking;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -204,7 +206,9 @@ public class BookingService {
         }
 
         notifyStaff(saved);
-        return BookingReceipt.from(saved);
+        BookingReceipt receipt = BookingReceipt.from(saved);
+        emailCustomer(saved, receipt);
+        return receipt;
     }
 
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
@@ -788,6 +792,56 @@ public class BookingService {
             sender.send(message);
         } catch (Exception ex) {
             log.warn("Could not email booking {} — it is saved regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    private static final DateTimeFormatter EMAIL_DATE =
+            DateTimeFormatter.ofPattern("EEE, d MMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter EMAIL_TIME =
+            DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
+
+    /**
+     * Confirms the booking to the customer, at the email given on the form or
+     * else their account's. Same switch as the staff email (ENQUIRY_EMAIL),
+     * and best effort the same way: a mail failure never fails the booking.
+     */
+    private void emailCustomer(Booking booking, BookingReceipt receipt) {
+        if (!props.notifications().emailEnabled()) {
+            return;
+        }
+        String to = booking.getEmail() != null ? booking.getEmail()
+                : booking.getUser() != null ? blankToNull(booking.getUser().getEmail()) : null;
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (to == null || sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Your Supplybase booking %s — %s".formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel()));
+            String when = (booking.getPreferredDate() == null ? "—" : booking.getPreferredDate().format(EMAIL_DATE))
+                    + (receipt.time() == null ? "" : ", " + receipt.time().format(EMAIL_TIME));
+            message.setText((
+                    "Hello %s,\n\n"
+                    + "Thank you for booking with Supplybase.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Visit:     %s\n"
+                    + "Address:   %s, %s %s\n"
+                    + "Visit fee: %s\n\n"
+                    + "%s\n\n"
+                    + "%s"
+                    + "Need to change something? Just reply to this email.\n").formatted(
+                    booking.getName(), booking.getBookingNumber(), booking.getServiceLabel(), when,
+                    orDash(booking.getAddress()), orDash(booking.getCity()), orDash(booking.getPincode()),
+                    receipt.visitFeeDisplay(), receipt.message(),
+                    booking.getUser() == null ? ""
+                            : "See your booking any time: " + props.frontendUrl() + "/dashboard/bookings\n\n"));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email booking {} to the customer — it is saved regardless",
                     booking.getBookingNumber(), ex);
         }
     }
