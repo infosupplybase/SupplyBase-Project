@@ -1,7 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/(about|book|booking|cart|contact|dashboard|interior-by-choice|login|materials|partner|privacy-policy|projects|quote|register|services|terms)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(about|book|booking|cart|contact|dashboard|interior-by-choice|login|materials|partner|privacy-policy|projects|quote|register|services|terms)/(.*)",
       "destination": "/index.html"
     }
   ],
