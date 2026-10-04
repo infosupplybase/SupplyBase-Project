@@ -53,8 +53,12 @@ public class BookingService {
 
     private static final Logger log = LoggerFactory.getLogger(BookingService.class);
 
-    /** A real person does not book six site visits in an hour; a bot does. */
-    private static final int MAX_PER_PHONE_PER_HOUR = 5;
+    /**
+     * A real person does not book six visits for one service in an hour; a
+     * bot does. Counted per service, so someone booking a plumber, an
+     * electrician and a painter in one sitting is not stopped.
+     */
+    private static final int MAX_PER_PHONE_PER_SERVICE_PER_HOUR = 5;
 
     /**
      * The plumbing cart's pricing rule (from the approved rate card): actual
@@ -135,11 +139,12 @@ public class BookingService {
         ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
         String phone = PhoneNumbers.normalise(request.phone());
 
-        long recent = bookings.countByPhoneAndCreatedAtAfter(
-                phone, Instant.now().minus(Duration.ofHours(1)));
-        if (recent >= MAX_PER_PHONE_PER_HOUR) {
-            throw ApiException.badRequest(
-                    "We already have your booking. Please call us if it is urgent.");
+        long recent = bookings.countByPhoneAndCategoryAndCreatedAtAfter(
+                phone, category, Instant.now().minus(Duration.ofHours(1)));
+        if (recent >= MAX_PER_PHONE_PER_SERVICE_PER_HOUR) {
+            throw ApiException.badRequest("You have made " + MAX_PER_PHONE_PER_SERVICE_PER_HOUR
+                    + " " + category.getName() + " bookings from this number in the last hour."
+                    + " Please call us if you need another one now.");
         }
 
         // Reserving before saving means a full slot fails the whole request
