@@ -226,111 +226,24 @@ const subDesignNames = {
     'Statement Entry',
   ],
 
-  study: [
-    'Focus Minimal',
-    'Executive Wood',
-    'Modern Study',
-    'Warm Workroom',
-    'Japandi Study',
-    'Scandinavian Desk Wall',
-    'Walnut Office',
-    'Beige Study',
-    'Charcoal Executive',
-    'Natural Veneer Study',
-    'Fluted Workspace',
-    'Stone & Wood Study',
-    'Contemporary Office',
-    'Classic Library',
-    'Quiet Luxury Study',
-    'Minimalist Work Wall',
-    'Oak & Black Study',
-    'Cream & Walnut',
-    'Graphite Workspace',
-    'Soft Grey Office',
-    'Earthy Study',
-    'Hotel Executive',
-    'Backlit Study',
-    'Floating Desk Wall',
-    'Modern Shelving',
-    'Elegant Study',
-    'Urban Workspace',
-    'Warm Contemporary',
-    'Ivory Office',
-    'Mocha Study',
-    'Linear Workspace',
-    'Sage Study',
-    'Black & Brass Office',
-    'White Oak Study',
-    'Textured Study',
-    'Modern Heritage Office',
-    'Compact Study',
-    'Premium Workroom',
-    'Clean Geometry Study',
-    'Statement Library',
-    'Natural Calm Study',
-    'Contemporary Classic Study',
-    'Warm Minimal Workspace',
-    'Luxury Home Office',
-    'Refined Executive',
-    'Signature Study',
-    'Creative Workspace',
-    'Timeless Study',
-    'Grand Library',
-    'Smart Minimal Study',
-  ],
+'study': [
+  'Modern Study Workstation',
+  'Modern Study Table',
+  'Minimalist Study Desk',
+  'Modern Wooden Study Table',
+  'Modern Study Desk',
+],
 
-  mandir: [
-    'Traditional Mandir',
-    'Modern Mandir',
-    'Marble Mandir',
-    'Wooden Mandir',
-    'Backlit Mandir',
-    'Fluted Mandir',
-    'Minimal Pooja',
-    'Luxury Pooja',
-    'Compact Mandir',
-    'Grand Pooja',
-    'Warm Wood Mandir',
-    'White Marble Mandir',
-    'Stone Mandir',
-    'Brass Accent Mandir',
-    'Arch Mandir',
-    'Jaali Mandir',
-    'Contemporary Pooja',
-    'Classic Pooja Room',
-    'Japandi Mandir',
-    'Ivory Mandir',
-    'Walnut Pooja',
-    'Cream & Gold Mandir',
-    'Beige Mandir',
-    'Black & Brass Pooja',
-    'Temple Arch',
-    'Floating Mandir',
-    'Vertical Flute Mandir',
-    'Natural Stone Pooja',
-    'Soft Light Mandir',
-    'Elegant Pooja',
-    'Modern Heritage Mandir',
-    'Carved Wood Mandir',
-    'Minimal Arch Pooja',
-    'Warm Marble Mandir',
-    'Sandalwood Mandir',
-    'Statement Mandir',
-    'Sacred Niche',
-    'Contemporary Classic Pooja',
-    'Premium Pooja Wall',
-    'Quiet Luxury Mandir',
-    'Natural Wood Pooja',
-    'Textured Marble Mandir',
-    'Gold Detail Mandir',
-    'Slimline Mandir',
-    'Corner Mandir',
-    'Family Pooja Room',
-    'Traditional Luxe Mandir',
-    'Modern Spiritual',
-    'Signature Mandir',
-    'Grand Temple Wall',
-  ],
+ 'mandir': [
+  'Wall Mounted Mandir',
+  'Floor Standing Mandir',
+  'Corner Mandir',
+  'Open Shelf Mandir',
+  'Modern Premium Mandir',
+  'Wooden Carved Mandir',
+  'Marble Mandir',
+  'Contemporary Premium Mandir',
+],
 };
 
 /* =========================================================
@@ -406,6 +319,87 @@ const livingRoomImages = {
 
   'Designer Panel':
     '/assets/projects/interior-by-choice/living-room/designer-panel.webp',
+};
+
+
+
+/* =========================================================
+   MANDIR IMAGES
+   ========================================================= */
+
+export const mandirImages = {
+  'Wall Mounted Mandir':
+    '/assets/projects/interior-by-choice/mandir/wall-mounted-mandir.webp',
+
+  'Floor Standing Mandir':
+    '/assets/projects/interior-by-choice/mandir/floor-standing-mandir.webp',
+
+  'Corner Mandir':
+    '/assets/projects/interior-by-choice/mandir/corner-mandir.webp',
+
+  'Open Shelf Mandir':
+    '/assets/projects/interior-by-choice/mandir/open-shelf-mandir.webp',
+
+  'Modern Premium Mandir':
+    '/assets/projects/interior-by-choice/mandir/modern-premium-mandir.webp',
+
+  'Wooden Carved Mandir':
+    '/assets/projects/interior-by-choice/mandir/wooden-carved-mandir.webp',
+
+  'Marble Mandir':
+    '/assets/projects/interior-by-choice/mandir/marble-mandir.webp',
+
+  'Contemporary Premium Mandir':
+    '/assets/projects/interior-by-choice/mandir/contemporary-premium-mandir.webp',
+};
+
+
+
+/* =========================================================
+   MANDIR DESCRIPTIONS
+   ========================================================= */
+
+export const mandirDescriptions = {
+  'Wall Mounted Mandir':
+    'Compact design, ideal for small spaces.',
+
+  'Floor Standing Mandir':
+    'Classic and clean look with storage.',
+
+  'Corner Mandir':
+    'Space-saving design for compact homes.',
+
+  'Open Shelf Mandir':
+    'Minimal style with open shelves.',
+
+  'Modern Premium Mandir':
+    'Marble finish, LED lighting, premium look.',
+
+  'Wooden Carved Mandir':
+    'Traditional design with intricate detailing.',
+
+  'Marble Mandir':
+    'Premium finish, elegant and durable.',
+
+  'Contemporary Premium Mandir':
+    'Stylish, modern and space efficient.',
+};
+
+
+export const mandirGroups = {
+  basic: [
+    'Wall Mounted Mandir',
+    'Floor Standing Mandir',
+    'Corner Mandir',
+    'Open Shelf Mandir',
+  ],
+
+  premium: [
+    'Modern Premium Mandir',
+    'Wooden Carved Mandir',
+    'Marble Mandir',
+    'Contemporary Premium Mandir',
+  ],
 };
 
 /* =========================================================
@@ -759,11 +753,13 @@ export const interiorDesigns =
           ];
 
         const dedicatedImage =
-          space.slug === 'living-room'
-            ? livingRoomImages[name]
-            : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
-                name
-              )}.webp`;
+  space.slug === 'living-room'
+    ? livingRoomImages[name]
+    : space.slug === 'mandir'
+      ? mandirImages[name]
+      : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
+          name
+        )}.webp`;
 
         return {
           slug: slugify(name),
