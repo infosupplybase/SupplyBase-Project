@@ -19,6 +19,7 @@ import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
 
+
 /**
  * One page, six journeys (Terrace / Exterior Wall / Bathroom-Floor /
  * Interior Wall / Water Tank / Basement) — driven by wpFlows[flowSlug]
@@ -55,6 +56,28 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  const terraceSlides = [
+    '/assets/waterproofing/terrace-slider/terrace-4.png',
+    '/assets/waterproofing/terrace-slider/terrace-3.png',
+    '/assets/waterproofing/terrace-slider/terrace-5.png',
+    '/assets/waterproofing/terrace-slider/terrace-1.png',
+    '/assets/waterproofing/terrace-slider/terrace-2.png',
+  ];
+
+  const [terraceSlide, setTerraceSlide] = useState(0);
+const [terraceTransition, setTerraceTransition] = useState(true);
+
+  useEffect(() => {
+  if (flowSlug !== 'terrace' || stage !== 0) return;
+
+  const timer = setInterval(() => {
+    setTerraceTransition(true);
+    setTerraceSlide((current) => current + 1);
+  }, 4000);
+
+  return () => clearInterval(timer);
+}, [flowSlug, stage]);
 
   // STAGES: 0 intro, 1 work stages, 2 brand, 3 rates, [4 benefits], then
   // DETAILS/SCHEDULE/CONFIRM. Computed once per flow since only some flows
@@ -190,7 +213,59 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
             </button>
           </div>
         )}
-        <PaintingHero eyebrow="PROFESSIONAL" title={flow.title} tagline={flow.heroTagline} image={flow.intro.image} trustPoints={[]} />
+        {flowSlug === 'terrace' ? (
+          <div className="wp-terrace-slider">
+            <div
+  className="wp-terrace-slider-track"
+  style={{
+    transform: `translateX(-${terraceSlide * 100}%)`,
+    transition: terraceTransition ? 'transform 0.7s ease-in-out' : 'none',
+  }}
+  onTransitionEnd={() => {
+    if (terraceSlide === terraceSlides.length) {
+      setTerraceTransition(false);
+      setTerraceSlide(0);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTerraceTransition(true);
+        });
+      });
+    }
+  }}
+>
+  {[...terraceSlides, terraceSlides[0]].map((image, index) => (
+    <img
+      key={`${image}-${index}`}
+      src={image}
+      alt={`SupplyBase Terrace Waterproofing ${(index % terraceSlides.length) + 1}`}
+      className="wp-terrace-slide-image"
+    />
+  ))}
+</div>
+
+            <div className="wp-terrace-slider-dots">
+              {terraceSlides.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className={`wp-terrace-slider-dot ${terraceSlide === index ? 'active' : ''
+                    }`}
+                  onClick={() => setTerraceSlide(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <PaintingHero
+            eyebrow="PROFESSIONAL"
+            title={flow.title}
+            tagline={flow.heroTagline}
+            image={flow.intro.image}
+            trustPoints={[]}
+          />
+        )}
         <section className="pnt-section">
           <div className="container container-narrow">
             <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
