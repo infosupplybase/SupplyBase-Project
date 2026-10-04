@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
@@ -19,8 +19,15 @@ export default function MobileMenu({ open, onClose, onRequestLogout }) {
   // Live catalogue, with the static list only as the "not loaded yet" fill-in.
   const { services } = useServiceCatalogue(activeServices);
 
+  // Move focus into the drawer when it opens, so a keyboard or screen-reader
+  // user lands in the menu instead of behind it.
+  const closeRef = useRef(null);
+  useEffect(() => {
+    if (open) closeRef.current?.focus();
+  }, [open]);
+
   return (
-    <div className={`mobile-menu ${open ? 'open' : ''}`}>
+    <div id="mobile-menu" className={`mobile-menu ${open ? 'open' : ''}`}>
       <div className="mobile-backdrop" onClick={onClose} />
       <div
   className="
@@ -38,7 +45,7 @@ export default function MobileMenu({ open, onClose, onRequestLogout }) {
           <Link to="/" onClick={onClose}>
             <img loading="lazy" decoding="async" src="/assets/brand/logo.webp" alt={company.name} />
           </Link>
-          <button type="button" className="mobile-close" onClick={onClose} aria-label="Close menu">
+          <button type="button" className="mobile-close" onClick={onClose} aria-label="Close menu" ref={closeRef}>
             <Icon name="close" size={20} />
           </button>
         </div>

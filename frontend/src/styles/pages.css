@@ -72,6 +72,10 @@
   display: block;
   width: 100%;
   height: auto;
+  /* the clip's own shape (480x848), so the box is the right size before
+     any of the video has loaded */
+  aspect-ratio: 480 / 848;
+  background: var(--light-bg);
 }
 
 /* checked list */
