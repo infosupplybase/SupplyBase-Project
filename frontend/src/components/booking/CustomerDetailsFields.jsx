@@ -54,6 +54,7 @@ export function AddressFields({
       address: place.address,
       latitude: place.latitude,
       longitude: place.longitude,
+      label: place.label,
     });
 
     // City and pincode follow the chosen address when it knows them.

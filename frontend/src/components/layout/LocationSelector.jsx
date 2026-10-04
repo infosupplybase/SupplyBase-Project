@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from '../ui/Icon';
-import { useLocationContext } from '../../context/LocationContext';
-import GoogleLocationPicker, { hasGoogleMaps } from './GoogleLocationPicker';
+import { useLocationContext, usePickedLocation } from '../../context/LocationContext';
+import { hasGoogleMaps } from './GoogleLocationPicker';
+import SavedAddressPicker from '../booking/SavedAddressPicker';
 
 /** Header control showing the customer's selected location — real state
     (LocationContext), not a hard-coded city. With a Google Maps key it opens
-    the map picker (search, tap the map, or use the current location);
+    the address popup (type an address, label it, pick from saved ones);
     without one it offers the published service areas. */
 export default function LocationSelector() {
   return hasGoogleMaps ? <GoogleLocationButton /> : <ServiceAreaMenu />;
@@ -43,7 +44,6 @@ function LocationButton({ open, ...props }) {
 }
 
 function GoogleLocationButton() {
-  const { setLocation } = useLocationContext();
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
@@ -56,15 +56,76 @@ function GoogleLocationButton() {
         />
       </div>
 
-      <GoogleLocationPicker
-        open={pickerOpen}
-        onClose={() => setPickerOpen(false)}
-        onSelect={(selectedLocation) => {
-          setLocation(selectedLocation);
-          setPickerOpen(false);
-        }}
-      />
+      {pickerOpen && <LocationPopup onClose={() => setPickerOpen(false)} />}
     </>
+  );
+}
+
+/** "Your location": add a typed address with a label, or tap a saved one. */
+function LocationPopup({ onClose }) {
+  const { setLocation } = useLocationContext();
+  const pickedLocation = usePickedLocation();
+
+  useEffect(() => {
+    const onKey = (e) => {
+      // The map picker opened from inside handles its own Escape.
+      if (e.key === 'Escape' && document.querySelectorAll('.google-location-modal').length < 2) {
+        onClose();
+      }
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="google-location-overlay"
+      onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="google-location-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="location-popup-title"
+      >
+        <div className="google-location-header">
+          <div>
+            <span className="google-location-brand">SUPPLYBASE</span>
+            <h2 id="location-popup-title">YOUR LOCATION</h2>
+            <p>Type your address and save it, or pick one of your saved places.</p>
+          </div>
+          <button
+            type="button"
+            className="google-location-close"
+            onClick={onClose}
+            aria-label="Close"
+          >
+            <Icon name="close" size={20} />
+          </button>
+        </div>
+
+        <div className="loc-book-modal-body">
+          <SavedAddressPicker
+            selected={pickedLocation}
+            idPrefix="hdr"
+            onUse={(place) => {
+              setLocation({
+                address: place.address,
+                latitude: place.latitude,
+                longitude: place.longitude,
+                label: place.label,
+              });
+              onClose();
+            }}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 

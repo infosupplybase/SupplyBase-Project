@@ -50,6 +50,7 @@ function readStoredLocation() {
         address,
         latitude,
         longitude: parsed.longitude ?? null,
+        label: parsed.label || '',
         chosen: parsed.chosen ?? wasChosen(address, latitude),
       };
     }
@@ -99,6 +100,8 @@ export function LocationProvider({ children }) {
         address: next.address || DEFAULT_LOCATION.address,
         latitude: next.latitude ?? null,
         longitude: next.longitude ?? null,
+        // A saved address's own name ("Home"), shown in the header.
+        label: next.label || '',
         chosen: true,
       });
 
@@ -126,7 +129,7 @@ export function LocationProvider({ children }) {
 
         // For the header: a short place name, and whether the customer set
         // it themselves (until then it is only the default service area).
-        shortLocation: shortNameFor(locationData.address),
+        shortLocation: locationData.label || shortNameFor(locationData.address),
         locationChosen: Boolean(locationData.chosen),
 
         latitude: locationData.latitude,
