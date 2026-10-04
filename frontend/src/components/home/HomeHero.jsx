@@ -138,43 +138,10 @@ export default function HomeHero() {
   };
 
   return (
-    <section className="home-hero">
+    <section className="sb-restored-search">
 
-      {/* Hero background image */}
-      <div className="home-hero-media">
-        <img
-          src="/assets/hero-team.webp"
-          alt="Supplybase professionals at work in a home"
-          width={1600}
-          height={595}
-          // React 18 doesn't special-case this DOM property (that landed in
-          // React 19), so the camelCase JSX prop name is passed straight
-          // through as a literal, wrongly-cased HTML attribute unless it's
-          // spelled the way the browser actually expects it.
-          fetchpriority="high"
-        />
-
-        <div className="home-hero-gradient" />
-      </div>
-
-      <div className="container home-hero-inner">
-
-        {/* Hero text */}
-        <div className="home-hero-copy">
-          <p className="home-hero-eyebrow">Home &amp; workspace services</p>
-
-          <h1>
-            Home services for your
-            {' '}
-            <span className="home-hero-accent">home &amp; workspace</span>
-          </h1>
-
-          <p className="home-hero-sub">
-            Skilled professionals, quality work, at your doorstep.
-          </p>
-        </div>
-
-        {/* Search */}
+      <div className="sb-restored-search__inner">
+{/* Search */}
         <div
           className="home-search"
           ref={boxRef}
