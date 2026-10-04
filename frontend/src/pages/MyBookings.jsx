@@ -7,6 +7,7 @@ import AccountTabs from '../components/account/AccountTabs';
 import AccountSidebar from '../components/account/AccountSidebar';
 import api, { friendlyError } from '../lib/api';
 import { bookingStatusLabel, bookingStatusTone } from '../lib/bookingStatus';
+import { bookingVisitTime } from '../lib/visitTime';
 
 const formatDate = (value) =>
   value
@@ -98,7 +99,7 @@ export default function MyBookings() {
                             <li>
                               <Icon name="calendar" size={15} />
                               {formatDate(b.preferredDate)}
-                              {b.preferredSlot ? ` · ${b.preferredSlot}` : ''}
+                              {bookingVisitTime(b) ? ` · ${bookingVisitTime(b)}` : ''}
                             </li>
                           )}
                           {(b.location || b.address) && (
