@@ -13,8 +13,9 @@ import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
 import InteriorDesignDetail from './pages/InteriorDesignDetail';
 import InteriorBooking from './pages/InteriorBooking';
 import ElectricalCategory from './pages/ElectricalCategory';
+import ElectricalCart from './pages/ElectricalCart';
+import ElectricalCheckout, { ElectricalSubPage } from './pages/ElectricalCheckout';
 import ElectricianService from './pages/ElectricianService';
-import OtherServicesCategory from './pages/OtherServicesCategory';
 import PlumbingCategory from './pages/PlumbingCategory';
 import PlumbingTab from './pages/PlumbingTab';
 import PlumbingConsultationList from './pages/PlumbingConsultationList';
@@ -132,10 +133,9 @@ export default function App() {
         <Route path="services/electrical/checkout" element={<RequireBookingAuth><ElectricalCheckout /></RequireBookingAuth>} />
         <Route path="services/electrical/:subSlug" element={<RequireBookingAuth><ElectricalSubPage /></RequireBookingAuth>} />
 
-        {/* Other Services: the catch-all eighth tile, reactivated on
-            request. A category list in front of five existing generic
-            wizard pages, same shape as the electrical category list. */}
-        <Route path="services/other-services" element={<RequireBookingAuth><OtherServicesCategory /></RequireBookingAuth>} />
+        {/* Other Services was withdrawn in V31; keep old links working by
+            sending them to the current service list. */}
+        <Route path="services/other-services" element={<Navigate to="/services" replace />} />
 
         {/* Plumbing Services: an itemised cart catalogue (V14 migration)
             replacing the old generic wizard for this one category. Exact
