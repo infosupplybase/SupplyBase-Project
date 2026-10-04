@@ -56,6 +56,26 @@ export const interiorFeatures = {
     icon: 'award',
     label: '5 Years Warranty',
   },
+
+  'premium-wood': {
+    icon: 'layers',
+    label: 'Premium Wood Finish',
+  },
+
+  'designer-panel': {
+    icon: 'blueprint',
+    label: 'Designer Panel',
+  },
+
+  'durable-hardware': {
+    icon: 'key',
+    label: 'Durable Hardware',
+  },
+
+  installation: {
+    icon: 'check-circle',
+    label: 'Installation & Finishing',
+  },
 };
 
 const subDesignNames = {
@@ -123,46 +143,6 @@ const subDesignNames = {
     'Earthy Bedroom',
     'Modern Panel',
     'Luxury Upholstery',
-    'Vertical Wood',
-    'Stone & Wood',
-    'Taupe Harmony',
-    'Charcoal Luxe',
-    'Cream & Oak',
-    'Japandi Bedroom',
-    'Scandinavian Calm',
-    'Contemporary Warmth',
-    'Natural Veneer',
-    'Soft Grey',
-    'Mocha Retreat',
-    'Sage Bedroom',
-    'Blush Neutral',
-    'Textured Headboard',
-    'Floating Bed Wall',
-    'Backlit Luxe',
-    'Minimal Arch',
-    'Modern Classic',
-    'Warm Walnut',
-    'Sand Beige',
-    'Elegant Flute',
-    'Urban Bedroom',
-    'Graphite & Oak',
-    'White Wood Calm',
-    'Cocoa Luxe',
-    'Linear Headboard',
-    'Hotel Minimal',
-    'Earth Tone Retreat',
-    'Black Accent',
-    'Cream Stone',
-    'Modern Symmetry',
-    'Oak & Beige',
-    'Soft Luxury',
-    'Statement Headboard',
-    'Natural Calm',
-    'Contemporary Classic',
-    'Warm Modern',
-    'Quiet Luxury',
-    'Signature Bedroom',
-    'Dreamy Minimal',
   ],
 
   'living-room': [
@@ -174,56 +154,33 @@ const subDesignNames = {
   ],
 
   entrance: [
-    'Grand Foyer',
-    'Minimal Welcome',
-    'Warm Entry',
-    'Modern Console',
-    'Luxury Foyer',
-    'Fluted Entrance',
-    'Wood & Stone Entry',
-    'Beige Welcome',
-    'Classic Entry',
-    'Contemporary Foyer',
-    'Japandi Entry',
-    'Scandinavian Welcome',
-    'Natural Oak Entry',
-    'Marble Console',
-    'Statement Mirror Wall',
-    'Backlit Entrance',
-    'Archway Welcome',
-    'Modern Classic Entry',
-    'Taupe Foyer',
-    'Charcoal Entry',
-    'Warm Walnut Foyer',
-    'Cream Stone Entry',
-    'Elegant Flute',
-    'Urban Welcome',
-    'Earthy Entrance',
-    'Black & Brass Entry',
-    'Ivory Foyer',
-    'Soft Grey Welcome',
-    'Mocha Entry',
-    'Linear Console',
-    'Hotel Style Foyer',
-    'Slimline Entry',
-    'Textured Welcome',
-    'Oak & Beige Entry',
-    'Graphite Foyer',
-    'Natural Veneer Entry',
-    'Quiet Luxury Foyer',
-    'Modern Heritage Entry',
-    'Sage Accent Entry',
-    'Terracotta Welcome',
-    'Clean Geometry Entry',
-    'Contemporary Classic Foyer',
-    'Warm Minimal Entry',
-    'Luxury Arch Entry',
-    'Stone Luxe Foyer',
-    'Soft Contrast Entry',
-    'Signature Entrance',
-    'Premium Welcome',
-    'Refined Foyer',
-    'Statement Entry',
+    'Warli Art Wooden Entrance Door',
+    'Contemporary LED Entrance Door',
+    'Mandala Carved Wooden Entrance Door',
+    'Arched Cane & Jali Entrance Door',
+    'Glass & Grill Modern Entrance Door',
+    'Jali Panel Wooden Entrance Door',
+    'Vertical Groove Wooden Entrance Door',
+    'Geometric Wood Panel Entrance Door',
+    'Arched Ribbed Wooden Door',
+    'Wood & Mesh Panel Entrance Door',
+    'Vertical Glass Inlay Entrance Door',
+    'Diagonal Glass Inlay Entrance Door',
+    'Geometric Panel Wooden Entrance Door',
+    'Hexagon Panel Wooden Entrance Door',
+    'Arched Glass-Grill Entrance Door',
+    'Traditional Metal Jali Entrance Door',
+    'Contemporary Grill Panel Entrance Door',
+    'Vertical Slat Glass Entrance Door',
+    'Carved Leaf Pattern Entrance Door',
+    'Curved Slat Wooden Entrance Door',
+    'Geometric Glass-Grill Entrance Door',
+    'Carved Metal-Accent Entrance Door',
+    'Modern Geometric Designer Door',
+    'Beige Vertical-Grille Entrance Door',
+    'Fluted Panel Modern Entrance Door',
+    'Geometric Fluted Wooden Door',
+    'Premium Fluted Wooden Entrance Door',
   ],
 
   study: [
@@ -649,16 +606,18 @@ const designPresets = {
 
   'entrance': {
     features: [
-      'waterproof',
-      'easy-clean',
-      'warranty',
+      'premium-wood',
+      'designer-panel',
+      'durable-hardware',
+      'installation',
     ],
 
     materialDetails: {
-      'Panel Type': 'Veneer / Stone / MDF Mix',
-      Thickness: '8 mm / 12 mm',
-      Finish: 'Matte / Satin',
-      'Installation Time': '1–3 Days',
+      Finish: 'Premium wood finish',
+      Design: 'Custom designer panel',
+      Hardware: 'Durable door hardware',
+      Lighting: 'LED lighting optional',
+      Installation: 'Installation and finishing included',
     },
   },
 
@@ -733,6 +692,214 @@ const taglines = {
     'A peaceful, beautifully finished pooja space.',
 };
 
+const entranceDoorDetails = [
+  {
+    pdfPage: 1,
+    priceRange: '₹70,000 – ₹1,60,000',
+    tagline: 'A perfect blend of tradition, culture and modern elegance.',
+    description: 'A premium wooden entrance with intricate Warli art, clean lines and a high-quality finish.',
+  },
+  {
+    pdfPage: 2,
+    priceRange: '₹70,000 – ₹1,50,000',
+    tagline: 'Modern design with a luxurious finish.',
+    description: 'A contemporary wooden door with a patterned panel, LED lighting and premium hardware.',
+  },
+  {
+    pdfPage: 3,
+    priceRange: '₹65,000 – ₹1,40,000',
+    tagline: 'Traditional artistry meets modern elegance.',
+    description: 'An elegant wooden entrance with a carved mandala panel and a refined premium finish.',
+  },
+  {
+    pdfPage: 4,
+    priceRange: '₹70,000 – ₹1,50,000',
+    tagline: 'Traditional craftsmanship with a timeless arch.',
+    description: 'An arched wooden entrance featuring a cane and jali panel with warm lighting.',
+  },
+  {
+    pdfPage: 5,
+    priceRange: '₹60,000 – ₹1,20,000',
+    tagline: 'Modern design with timeless elegance.',
+    description: 'A glass-and-grill entrance with an openable mesh panel and contemporary hardware.',
+  },
+  {
+    pdfPage: 6,
+    priceRange: '₹55,000 – ₹1,20,000',
+    tagline: 'Warm wood with a distinctive jali detail.',
+    description: 'A rich wooden finish paired with a decorative jali panel, clean lines and a statement handle.',
+  },
+  {
+    pdfPage: 7,
+    priceRange: '₹60,000 – ₹1,25,000',
+    tagline: 'Modern design with natural wood warmth.',
+    description: 'A wooden entrance with vertical grooves, a modern cut-out detail and clean contemporary lines.',
+  },
+  {
+    pdfPage: 8,
+    priceRange: '₹55,000 – ₹1,20,000',
+    tagline: 'A contemporary geometric statement.',
+    description: 'A stylish wooden panel door with geometric detailing and refined modern hardware.',
+  },
+  {
+    pdfPage: 9,
+    priceRange: '₹50,000 – ₹1,10,000',
+    tagline: 'A sleek arch with a warm wooden finish.',
+    description: 'A modern wooden door with an arched ribbed panel and a minimal, polished look.',
+  },
+  {
+    pdfPage: 10,
+    priceRange: '₹60,000 – ₹1,20,000',
+    tagline: 'Modern detailing for a welcoming entrance.',
+    description: 'A wooden entrance with panel detailing, mesh inserts, clean lines and contemporary hardware.',
+  },
+  {
+    pdfPage: 11,
+    priceRange: '₹55,000 – ₹1,15,000',
+    tagline: 'Bright, clean lines with vertical glass inlays.',
+    description: 'A modern wooden door with vertical glass inlays, a clean finish and contemporary hardware.',
+  },
+  {
+    pdfPage: 12,
+    priceRange: '₹50,000 – ₹1,10,000',
+    tagline: 'A bold diagonal design with glass accents.',
+    description: 'A warm wooden entrance with diagonal panel detailing, glass inserts and modern hardware.',
+  },
+  {
+    pdfPage: 13,
+    priceRange: '₹45,000 – ₹1,00,000',
+    tagline: 'Modern geometry with an understated finish.',
+    description: 'A wooden entrance with a geometric panel design, clean lines and a warm finish.',
+  },
+  {
+    pdfPage: 14,
+    priceRange: '₹60,000 – ₹1,25,000',
+    tagline: 'A striking geometric pattern in natural wood.',
+    description: 'A contemporary wooden door with a distinctive hexagon panel and elegant detailing.',
+  },
+  {
+    pdfPage: 15,
+    priceRange: '₹50,000 – ₹1,00,000',
+    tagline: 'An elegant arch with glass and grill details.',
+    description: 'A sleek wooden entrance with an arched glass-grill panel and a timeless finish.',
+  },
+  {
+    pdfPage: 16,
+    priceRange: '₹55,000 – ₹1,10,000',
+    tagline: 'Traditional patterns meet modern metalwork.',
+    description: 'A wooden entrance with an intricately designed metal panel and contemporary hardware.',
+  },
+  {
+    pdfPage: 18,
+    priceRange: '₹45,000 – ₹95,000',
+    tagline: 'A contemporary grill design with clean lines.',
+    description: 'A modern wooden entrance with a geometric grill panel and a warm, understated finish.',
+  },
+  {
+    pdfPage: 19,
+    priceRange: '₹50,000 – ₹1,00,000',
+    tagline: 'Vertical slats and glass create a bright welcome.',
+    description: 'A natural wood-finish entrance with a vertical slat glass panel and modern hardware.',
+  },
+  {
+    pdfPage: 21,
+    priceRange: '₹50,000 – ₹1,20,000',
+    tagline: 'A carved leaf detail with a natural finish.',
+    description: 'A wooden entrance featuring a beautifully carved leaf pattern and clean panel detailing.',
+  },
+  {
+    pdfPage: 22,
+    priceRange: '₹60,000 – ₹1,25,000',
+    tagline: 'Contemporary curves meet vertical wood slats.',
+    description: 'A sleek wooden entrance with vertical slat detailing, a curved design and modern hardware.',
+  },
+  {
+    pdfPage: 23,
+    priceRange: '₹55,000 – ₹1,10,000',
+    tagline: 'Geometric glass and grill details, in a warm finish.',
+    description: 'A modern wooden door with geometric glass-grill detailing and a secure, refined finish.',
+  },
+  {
+    pdfPage: 24,
+    priceRange: '₹65,000 – ₹1,40,000',
+    tagline: 'Detailed carving with contemporary metal accents.',
+    description: 'A designer entrance combining carved details, metal accents and a vertical glass grill.',
+  },
+  {
+    pdfPage: 25,
+    priceRange: '₹40,000 – ₹85,000',
+    tagline: 'Contemporary geometry with a matte finish.',
+    description: 'A geometric inlay door with a rich matte finish and modern smart hardware.',
+  },
+  {
+    pdfPage: 26,
+    priceRange: '₹45,000 – ₹95,000',
+    tagline: 'Premium aesthetics with a soft beige finish.',
+    description: 'A wood-toned designer door with a vertical grille and contemporary hardware.',
+  },
+  {
+    pdfPage: 27,
+    priceRange: '₹60,000 – ₹1,20,000',
+    tagline: 'Fluted panels and modern metalwork.',
+    description: 'A contemporary entrance with vertical fluted panels, a wooden handle and a stylish metal grill.',
+  },
+  {
+    pdfPage: 28,
+    priceRange: '₹40,000 – ₹85,000',
+    tagline: 'Geometric detailing on a modern fluted door.',
+    description: 'A modern wooden door with vertical fluted panels and geometric design details.',
+  },
+  {
+    pdfPage: 29,
+    priceRange: '₹55,000 – ₹1,20,000',
+    tagline: 'A premium finish with added character and durability.',
+    description: 'A wooden entrance with vertical fluted panels, geometric detailing and a warm finish.',
+  },
+];
+
+const bedBackWallDetails = [
+  {
+    priceRange: '₹45,000 – ₹75,000',
+    description: 'Soft neutral panels and warm lighting create a calm, minimal bedroom backdrop.',
+  },
+  {
+    priceRange: '₹50,000 – ₹85,000',
+    description: 'Rich wood panelling brings classic warmth and a timeless finish to the bedroom.',
+  },
+  {
+    priceRange: '₹60,000 – ₹1,00,000',
+    description: 'Upholstered geometric panels and balanced bedside lighting create a refined hotel-inspired look.',
+  },
+  {
+    priceRange: '₹50,000 – ₹85,000',
+    description: 'Warm beige panels and soft lighting bring a relaxed, welcoming feel to the room.',
+  },
+  {
+    priceRange: '₹65,000 – ₹1,05,000',
+    description: 'A fluted headboard wall adds texture and a distinctive architectural detail.',
+  },
+  {
+    priceRange: '₹55,000 – ₹95,000',
+    description: 'A bold walnut feature wall pairs natural wood grain with warm ambient lighting.',
+  },
+  {
+    priceRange: '₹50,000 – ₹85,000',
+    description: 'An ivory arched feature wall and subtle lighting create a light, elegant bedroom.',
+  },
+  {
+    priceRange: '₹55,000 – ₹90,000',
+    description: 'Earthy green tones and natural textures give the bedroom a calm, grounded character.',
+  },
+  {
+    priceRange: '₹60,000 – ₹1,00,000',
+    description: 'Clean geometric panels in layered neutral tones create a contemporary focal wall.',
+  },
+  {
+    priceRange: '₹70,000 – ₹1,20,000',
+    description: 'Soft upholstered panels and blush-toned accents create a plush, luxurious headboard wall.',
+  },
+];
+
 /* =========================================================
    INTERIOR DESIGNS
    ========================================================= */
@@ -764,6 +931,14 @@ export const interiorDesigns =
             : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
                 name
               )}.webp`;
+        const entranceDetails =
+          space.slug === 'entrance'
+            ? entranceDoorDetails[index]
+            : null;
+        const bedBackWallDetail =
+          space.slug === 'bed-back-wall'
+            ? bedBackWallDetails[index]
+            : null;
 
         return {
           slug: slugify(name),
@@ -773,21 +948,41 @@ export const interiorDesigns =
           name,
 
           tagline:
+            entranceDetails?.tagline ||
             taglines[space.slug],
 
           pricePerSqft,
 
-          image: dedicatedImage,
+          priceRange:
+            entranceDetails?.priceRange ||
+            bedBackWallDetail?.priceRange,
+
+          description:
+            entranceDetails?.description ||
+            bedBackWallDetail?.description,
+
+          image: entranceDetails
+            ? `/assets/projects/interior-by-choice/entrance/door-${String(
+                entranceDetails.pdfPage
+              ).padStart(2, '0')}.webp`
+            : bedBackWallDetail
+              ? `/assets/projects/interior-by-choice/bed-back-wall/design-${String(
+                  index + 1
+                ).padStart(2, '0')}.webp`
+            : dedicatedImage,
 
           fallbackImage:
             space.image,
 
-          colours: [
-            '#efe9e2',
-            '#d8c9b0',
-            '#6b4a34',
-            '#2e2e2e',
-          ],
+          colours:
+            space.slug === 'entrance'
+              ? []
+              : [
+                  '#efe9e2',
+                  '#d8c9b0',
+                  '#6b4a34',
+                  '#2e2e2e',
+                ],
 
           features:
             preset.features,
