@@ -7,7 +7,7 @@
 // measurement ("page changes based on browser history events"), which is on
 // by default for a web data stream.
 (function () {
-  var MEASUREMENT_ID = 'G-XXXXXXXXXX';
+  var MEASUREMENT_ID = 'G-V3NXRZJG5J';
 
   // Google's placeholder ID: do nothing until the real one is filled in.
   if (!/^G-[A-Z0-9]+$/.test(MEASUREMENT_ID) || MEASUREMENT_ID === 'G-XXXXXXXXXX') return;
