@@ -3,14 +3,14 @@ import Icon from '../ui/Icon';
 import { formatRupees } from '../../lib/money';
 import { PRODUCT_GAP_MESSAGE } from '../../data/paintingContent';
 
-const TIERS = ['Economy', 'Premium', 'Luxury'];
+const TIERS = ['Economy', 'Premium'];
 
 const BRAND_LOGOS = {
   'asian-paints': '/assets/materials/asian-paints.webp',
   berger: '/assets/materials/berger-paints.webp',
 };
 
-function ProductCard({ product, brand, name, selected, onSelect }) {
+function ProductCard({ product, brand, name, selected, onSelect, hidePrices = false }) {
   const [failedLogo, setFailedLogo] = useState(null);
   const logo = BRAND_LOGOS[brand];
   const showLogo = Boolean(logo && failedLogo !== logo);
@@ -103,7 +103,7 @@ function ProductCard({ product, brand, name, selected, onSelect }) {
           </span>
         )}
 
-        {product.price != null && (
+        {!hidePrices && product.price != null && (
           <span className="pnt-product-price">
             From {formatRupees(product.price)}
           </span>
@@ -136,6 +136,8 @@ export default function ProductPicker({
   brand,
   value,
   onSelect,
+  hidePrices = false,
+  showAllProducts = false,
 }) {
   const pickerId = useId();
 
@@ -153,10 +155,9 @@ export default function ProductPicker({
   const [chosenTab, setChosenTab] = useState(null);
   const tab = chosenTab || defaultTier;
 
-  const products =
-    brand === 'asian-paints'
-      ? productsByTier.get(tab) || []
-      : [];
+  const products = showAllProducts
+    ? [...productsByTier.values()].flat()
+    : productsByTier.get(tab) || [];
 
   return (
     <div className="pnt-product-picker">
@@ -171,8 +172,8 @@ export default function ProductPicker({
         className="pnt-tabs"
         aria-label="Paint product ranges"
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          display: showAllProducts ? 'none' : 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           gap: 6,
           padding: 5,
           borderRadius: 12,
@@ -245,6 +246,7 @@ export default function ProductPicker({
               brand={brand}
               name={`${pickerId}-product`}
               selected={value === product.value}
+              hidePrices={hidePrices}
               onSelect={onSelect}
             />
           ))}

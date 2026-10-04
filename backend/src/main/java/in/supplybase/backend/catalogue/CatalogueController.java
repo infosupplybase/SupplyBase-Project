@@ -28,6 +28,7 @@ import jakarta.validation.Valid;
 @RestController
 public class CatalogueController {
 
+
     private final CatalogueService service;
 
     public CatalogueController(CatalogueService service) {

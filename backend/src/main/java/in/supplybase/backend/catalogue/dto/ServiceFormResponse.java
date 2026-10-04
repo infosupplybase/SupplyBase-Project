@@ -2,6 +2,15 @@ package in.supplybase.backend.catalogue.dto;
 
 import java.util.List;
 
-/** Everything needed to draw one service's booking form. */
-public record ServiceFormResponse(CategoryResponse category, List<QuestionResponse> questions) {
+/** The catalogue and its contextual painting package prices. */
+public record ServiceFormResponse(
+        CategoryResponse category,
+        List<QuestionResponse> questions,
+        List<PaintingPriceResponse> productPrices) {
+
+    public ServiceFormResponse(
+            CategoryResponse category,
+            List<QuestionResponse> questions) {
+        this(category, questions, List.of());
+    }
 }

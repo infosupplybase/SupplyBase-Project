@@ -27,6 +27,9 @@ public class CatalogueService {
     /** Every service's home visit is ₹99 unless the admin sets otherwise. */
     private static final BigDecimal DEFAULT_VISIT_FEE = new BigDecimal("99.00");
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private PaintingProductPriceRepository paintingPrices;
+
     private final ServiceCategoryRepository categories;
     private final ServiceOptionRepository options;
 
@@ -96,7 +99,17 @@ public class CatalogueService {
     @Transactional(readOnly = true)
     public ServiceFormResponse form(String slug) {
         ServiceCategory category = requireCategory(slug);
-        return new ServiceFormResponse(CategoryResponse.from(category), foldQuestions(category.getId()));
+        List<in.supplybase.backend.catalogue.dto.PaintingPriceResponse> productPrices =
+                "painting".equals(category.getSlug())
+                        ? paintingPrices.findAllByOrderByIdAsc().stream()
+                                .map(in.supplybase.backend.catalogue.dto.PaintingPriceResponse::from)
+                                .toList()
+                        : List.of();
+
+        return new ServiceFormResponse(
+                CategoryResponse.from(category),
+                foldQuestions(category.getId()),
+                productPrices);
     }
 
     private List<QuestionResponse> foldQuestions(Long categoryId) {

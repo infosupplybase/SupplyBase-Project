@@ -85,6 +85,10 @@ public class BookingService {
             "few_walls_painting_type", "few_walls_product", "few_walls_addon",
             "renovation_repair", "renovation_addon");
 
+    // paintingBhkPricing: package prices are read from the database.
+    @org.springframework.beans.factory.annotation.Autowired
+    private in.supplybase.backend.catalogue.PaintingProductPriceRepository paintingPrices;
+
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
     private final UserRepository users;
@@ -233,6 +237,70 @@ public class BookingService {
             }
         }
 
+        Map<String, String> paintingSelections = new HashMap<>();
+        boolean paintingBooking = "painting".equals(category.getSlug());
+
+        if (paintingBooking) {
+            Set<String> singleKeys = Set.of(
+                    "home_type", "paint_brand", "few_walls_area", "few_walls_ceiling_type",
+                    "full_home_painting_type", "full_home_product",
+                    "few_walls_painting_type", "few_walls_product");
+
+            Set<String> seenAnswers = new HashSet<>();
+            for (CreateBookingRequest.AnswerInput input : submitted) {
+                String identity = input.key() + "\u0000" + input.value();
+                if (!seenAnswers.add(identity)) {
+                    throw ApiException.badRequest("The same painting option was submitted twice.");
+                }
+                if (singleKeys.contains(input.key())
+                        && paintingSelections.putIfAbsent(input.key(), input.value()) != null) {
+                    throw ApiException.badRequest("Choose only one option for each painting question.");
+                }
+            }
+
+            if (paintingSelections.containsKey("full_home_product")
+                    && paintingSelections.containsKey("few_walls_product")) {
+                throw ApiException.badRequest("Choose one painting journey.");
+            }
+
+            if (paintingSelections.containsKey("full_home_product")
+                    && (!paintingSelections.containsKey("home_type")
+                        || !paintingSelections.containsKey("paint_brand")
+                        || !paintingSelections.containsKey("full_home_painting_type"))) {
+                throw ApiException.badRequest("Choose your home, painting type and brand.");
+            }
+        }
+
+        if (paintingBooking
+                && paintingSelections.containsKey("few_walls_product")
+                && (!paintingSelections.containsKey("few_walls_area")
+                    || !paintingSelections.containsKey("paint_brand"))) {
+            throw ApiException.badRequest("Choose your walls and paint brand.");
+        }
+
+        if (paintingBooking
+                && paintingSelections.containsKey("few_walls_product")
+                && "ceiling-paint".equals(paintingSelections.get("few_walls_area"))
+                && !Set.of("plain-ceiling", "design-ceiling").contains(
+                        paintingSelections.getOrDefault("few_walls_ceiling_type", ""))) {
+            throw ApiException.badRequest("Choose Plain Ceiling or Design Ceiling.");
+        }
+
+        boolean renovationSiteQuote = paintingBooking
+                && ("renovation-painting".equals(
+                            paintingSelections.get("full_home_painting_type"))
+                    || submitted.stream().anyMatch(
+                            input -> "renovation_area".equals(input.key())));
+
+        boolean paintingSiteQuote = paintingBooking
+                && (("unfurnished-home".equals(
+                            paintingSelections.get("full_home_painting_type"))
+                        && "independent-house".equals(
+                            paintingSelections.get("home_type")))
+                    || ("multiple-walls".equals(
+                            paintingSelections.get("few_walls_area"))
+                        && paintingSelections.containsKey("few_walls_product")));
+
         List<BookingAnswer> rows = new ArrayList<>();
         long itemsTotalPaise = 0L;
         boolean hasConsultationAnswer = false;
@@ -261,12 +329,60 @@ public class BookingService {
                     .answerValue(input.value())
                     .answerLabel(input.label());
 
-            if ("cart_item".equals(input.key()) || PAINTING_PRICED_KEYS.contains(input.key())) {
-                ServiceOption matched = optionByKeyAndValue.get(input.key() + " " + input.value());
-                if (matched != null && matched.getPricePaise() != null) {
-                    int quantity = input.quantity() == null ? 1 : Math.max(1, input.quantity());
-                    long lineTotal = matched.getPricePaise() * quantity;
-                    row.quantity(quantity).unitPricePaise(matched.getPricePaise()).lineTotalPaise(lineTotal);
+            if ("cart_item".equals(input.key())
+                    || (paintingBooking && PAINTING_PRICED_KEYS.contains(input.key()))) {
+                ServiceOption matched = optionByKeyAndValue.get(
+                        input.key() + " " + input.value());
+
+                Long unitPricePaise = matched == null ? null : matched.getPricePaise();
+
+                // Home and painting type identify the package; they are not extra charges.
+                if (paintingBooking && Set.of(
+                        "home_type", "full_home_painting_type",
+                        "few_walls_painting_type").contains(input.key())) {
+                    unitPricePaise = null;
+                }
+
+                if (paintingBooking && Set.of(
+                        "full_home_product", "few_walls_product").contains(input.key())) {
+                    String productBrand = input.value().startsWith("berger-")
+                            ? "berger" : "asian-paints";
+
+                    if (!productBrand.equals(paintingSelections.get("paint_brand"))) {
+                        throw ApiException.badRequest(
+                                "Choose a product from your selected paint brand.");
+                    }
+
+                    boolean fewWalls = "few_walls_product".equals(input.key());
+                    boolean ceiling = fewWalls && "ceiling-paint".equals(
+                            paintingSelections.get("few_walls_area"));
+                    unitPricePaise = null;
+
+                    if (!paintingSiteQuote) {
+                        unitPricePaise = paintingPrices
+                                .findByFlowKeyAndPaintingTypeAndBrandAndHomeTypeAndProductValue(
+                                        input.key(),
+                                        fewWalls ? (ceiling ? "ceiling-painting" : "wall-painting")
+                                                : paintingSelections.get("full_home_painting_type"),
+                                        paintingSelections.get("paint_brand"),
+                                        fewWalls ? (ceiling
+                                                ? paintingSelections.get("few_walls_ceiling_type")
+                                                : paintingSelections.get("few_walls_area"))
+                                                : paintingSelections.get("home_type"),
+                                        input.value())
+                                .map(in.supplybase.backend.catalogue.PaintingProductPrice::getPricePaise)
+                                .orElse(null);
+                    }
+                }
+
+                if (unitPricePaise != null) {
+                    // A painting package or selected add-on is counted once.
+                    int quantity = paintingBooking ? 1
+                            : input.quantity() == null ? 1 : Math.max(1, input.quantity());
+                    long lineTotal = unitPricePaise * quantity;
+                    row.quantity(quantity)
+                            .unitPricePaise(unitPricePaise)
+                            .lineTotalPaise(lineTotal);
                     itemsTotalPaise += lineTotal;
                 }
             } else if ("consultation_type".equals(input.key())) {
@@ -276,7 +392,7 @@ public class BookingService {
             rows.add(row.build());
         }
         answers.saveAll(rows);
-        return new CartPricing(itemsTotalPaise, hasConsultationAnswer);
+        return new CartPricing((paintingSiteQuote || renovationSiteQuote) ? 0L : itemsTotalPaise, hasConsultationAnswer);
     }
 
     /* ------------------------------------------------------------- reads */
