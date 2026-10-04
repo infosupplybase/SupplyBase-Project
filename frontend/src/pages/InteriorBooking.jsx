@@ -16,6 +16,8 @@ import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 
 const STEPS = ['Details', 'Schedule', 'Confirm'];
 const CATEGORY_SLUG = 'interior-by-choice';
+// The API accepts up to 400 characters per answer.
+const NOTES_MAX = 400;
 
 
 /**
@@ -113,7 +115,9 @@ const designSlug = propDesignSlug || params.designSlug;
     try {
       const result = await api.createBooking({
         serviceSlug: CATEGORY_SLUG,
-        answers: [{ key: 'notes', value: notesParts.join(' ').slice(0, 400), label: 'Selected design and requirements' }],
+        // No label: the booking shows a label in place of the value, and
+        // staff need to read the selection itself.
+        answers: [{ key: 'notes', value: notesParts.join(' ').slice(0, NOTES_MAX) }],
         preferredDate: date,
         preferredTime: time,
         name: form.name.trim(),
@@ -258,7 +262,7 @@ if (modal) {
               <CustomerDetailsFields details={form} setDetail={setField} errors={errors} idPrefix="ib" />
               <div className="field" style={{ marginTop: 16 }}>
                 <label htmlFor="ib-notes">Any specific requirements? (Optional)</label>
-                <textarea id="ib-notes" rows={3} value={form.notes || ''} onChange={setField('notes')} />
+                <textarea id="ib-notes" rows={3} maxLength={300} value={form.notes || ''} onChange={setField('notes')} />
               </div>
               <button type="button" className="btn btn-primary ibc-form-submit" onClick={goToSchedule}>
                 Continue

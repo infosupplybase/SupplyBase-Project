@@ -174,7 +174,10 @@ export default function InteriorDesignFlow({
 
       const result = await api.createBooking({
         serviceSlug: 'interior-design',
-        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 500), label: 'Selected project, package and requirements' }],
+        // 400 is the API's limit per answer (500 was rejected as a whole
+        // booking). No label: the booking shows a label in place of the
+        // value, and staff need to read the selection itself.
+        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 400) }],
         preferredDate: date,
         preferredTime: time,
         name: details.name,
@@ -894,6 +897,7 @@ export default function InteriorDesignFlow({
               id="id-requirements"
               rows={3}
               placeholder="e.g. more storage, study table, TV unit, etc."
+              maxLength={300}
               value={requirements}
               onChange={(e) => setRequirements(e.target.value)}
             />
