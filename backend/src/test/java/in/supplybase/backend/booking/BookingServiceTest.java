@@ -178,7 +178,7 @@ class BookingServiceTest {
             LocalTime time = LocalTime.of(10, 0);
 
             when(catalogue.requireCategory("waterproofing")).thenReturn(category);
-            when(bookings.countByPhoneAndCreatedAtAfter(any(), any())).thenReturn(0L);
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(any(), any(), any())).thenReturn(0L);
             when(appointments.reserve(anyLong(), any(), any()))
                     .thenReturn(AppointmentSlot.builder().id(1L).capacity(1).bookedCount(1).build());
             when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
