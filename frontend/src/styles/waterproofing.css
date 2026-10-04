@@ -256,9 +256,7 @@
   background: #f5d033;
 }
 
-/* Dots are too small to tap on phones; the slides still advance. */
-@media (max-width: 767px) {
-  .wp-terrace-slider-dots {
-    display: none;
-  }
+/* Dots are hidden on every screen size; the slides still advance. */
+.wp-terrace-slider-dots {
+  display: none;
 }
