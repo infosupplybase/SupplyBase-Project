@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
-import Icon from '../ui/Icon';
-import GoogleLocationPicker, {
-  getCurrentLocation,
-  hasGoogleMaps,
-} from '../layout/GoogleLocationPicker';
+import { hasGoogleMaps } from '../layout/GoogleLocationPicker';
+import SavedAddressPicker from './SavedAddressPicker';
 import {
   useLocationContext,
   usePickedLocation,
@@ -36,17 +33,12 @@ export function Field({ id, label, required, hint, error, ...rest }) {
 /**
  * The visit address.
  *
- * With a Google Maps key the customer can:
- * - Pin the project location on a map
- * - Use their current location
+ * With a Google Maps key the customer types an address (or uses their current
+ * location, or taps the map), checks what it resolved to, labels it and adds
+ * it to their saved addresses (SavedAddressPicker). Once a location is
+ * selected the building name is requested; room and floor are optional.
  *
- * Once a location is selected:
- * - Building name is requested
- * - Room number is optional
- * - Floor is optional
- *
- * Without Google Maps:
- * - Customer can enter the address manually.
+ * Without Google Maps the customer types the address.
  */
 export function AddressFields({
   details,
@@ -57,46 +49,22 @@ export function AddressFields({
   const { setLocation } = useLocationContext();
   const pickedLocation = usePickedLocation();
 
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [locating, setLocating] = useState(false);
-  const [locateError, setLocateError] = useState('');
+  const useAddress = (place) => {
+    setLocation({
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
+    });
 
-  const locateMe = async () => {
-    setLocating(true);
-    setLocateError('');
+    // City and pincode follow the chosen address when it knows them.
+    const fill = (key, value) => {
+      if (value && value !== details[key]) {
+        setDetail(key)({ target: { value } });
+      }
+    };
 
-    try {
-      const here = await getCurrentLocation();
-
-      setLocation({
-        address: here.address,
-        latitude: here.latitude,
-        longitude: here.longitude,
-      });
-
-      // Only fill values that the customer has not already entered.
-      const fill = (key, value) => {
-        if (
-          value &&
-          !String(details[key] || '').trim()
-        ) {
-          setDetail(key)({
-            target: {
-              value,
-            },
-          });
-        }
-      };
-
-      fill('city', here.city);
-      fill('pincode', here.pincode);
-    } catch (err) {
-      setLocateError(
-        err.message || 'Unable to get your current location.'
-      );
-    } finally {
-      setLocating(false);
-    }
+    fill('city', place.city);
+    fill('pincode', place.pincode);
   };
 
   return (
@@ -114,73 +82,13 @@ export function AddressFields({
             <label>
               Project Location <span className="req">*</span>
             </label>
-
-            {pickedLocation && (
-              <button
-                type="button"
-                className="booking-use-location"
-                onClick={() => setPickerOpen(true)}
-              >
-                <Icon name="map-pin" size={14} />
-                Change on map
-              </button>
-            )}
           </div>
 
-          {/* Selected location */}
-          {pickedLocation ? (
-            <div className="booking-selected-location">
-              <Icon name="map-pin" size={15} />
-
-              <div className="booking-location-text">
-                <span className="booking-location-label">
-                  Selected location
-                </span>
-
-                <span className="booking-location-address">
-                  {pickedLocation.address}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="booking-location-empty"
-              onClick={() => setPickerOpen(true)}
-            >
-              <Icon name="map-pin" size={15} />
-              Select your location on the map
-            </button>
-          )}
-
-          {/* Current location */}
-          <button
-            type="button"
-            className="booking-current-location"
-            onClick={locateMe}
-            disabled={locating}
-            aria-busy={locating}
-          >
-            <Icon
-              name="locate"
-              size={17}
-              className={locating ? 'spin-slow' : ''}
-            />
-
-            {locating
-              ? 'Finding your location…'
-              : 'Use my current location'}
-          </button>
-
-          {/* Location error */}
-          {locateError && (
-            <span
-              className="field-error booking-current-location-error"
-              role="alert"
-            >
-              {locateError}
-            </span>
-          )}
+          <SavedAddressPicker
+            selected={pickedLocation}
+            onUse={useAddress}
+            idPrefix={idPrefix}
+          />
 
           {/* Building / Room / Floor */}
           {pickedLocation && (
@@ -283,17 +191,6 @@ export function AddressFields({
         )}
       </div>
 
-      {/* Google location picker */}
-      {hasGoogleMaps && (
-        <GoogleLocationPicker
-          open={pickerOpen}
-          onClose={() => setPickerOpen(false)}
-          onSelect={(selectedLocation) => {
-            setLocation(selectedLocation);
-            setPickerOpen(false);
-          }}
-        />
-      )}
     </>
   );
 }

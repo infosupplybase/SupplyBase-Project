@@ -26,14 +26,15 @@ let googleMapsPromise = null;
  * of leaving them with a broken map.
  */
 let mapsAuthFailed = false;
-const MAPS_AUTH_FAILED = 'supplybase:maps-auth-failed';
+export const mapsKeyRejected = () => mapsAuthFailed;
+export const MAPS_AUTH_FAILED = 'supplybase:maps-auth-failed';
 const MAPS_UNAVAILABLE_MESSAGE =
   'The map is not available right now. Please close this and type your address instead.';
 
 /*
  * Load Google Maps JavaScript API
  */
-function loadGoogleMaps() {
+export function loadGoogleMaps() {
   if (window.google?.maps) {
     return Promise.resolve(window.google.maps);
   }
@@ -142,7 +143,7 @@ function geolocationMessage(geoError) {
  * or null if it cannot say (the key may not have the Geocoding API enabled),
  * in which case callers fall back to the bare coordinates.
  */
-async function reverseGeocode(latitude, longitude) {
+export async function reverseGeocode(latitude, longitude) {
   try {
     const googleMaps = await loadGoogleMaps();
     const { Geocoder } = await googleMaps.importLibrary('geocoding');
