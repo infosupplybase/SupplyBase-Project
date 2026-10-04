@@ -53,7 +53,8 @@ export default function InteriorDesignDetail() {
       <section className="ibc-section">
         <div className="container container-narrow">
           <div className="ibc-detail-media">
-            <img src={design.image} alt={design.name} />
+           <img src={design.image} alt={design.name} onError={(e) => { e.currentTarget.onerror = null;
+           e.currentTarget.src = design.fallbackImage;}}/>
           </div>
 
           <div className="ibc-detail-head">
