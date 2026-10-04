@@ -31,9 +31,18 @@ const emptyForm = {
   languages: '',
 };
 
-/** Ten digits after the +91 and the spaces are taken out. */
-const isValidPhone = (value) =>
-  /^[6-9]\d{9}$/.test(String(value).replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
+/**
+ * Ten digits after the +91 and the spaces are taken out. The 91 or 0 prefix
+ * is only stripped when the length says one is there, so a real number that
+ * starts with 91 (9123456780) is not mangled — the same rule as the website
+ * and the API.
+ */
+const isValidPhone = (value) => {
+  let digits = String(value || '').replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
+  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+  return /^[6-9]\d{9}$/.test(digits);
+};
 
 const COMMON_PASSWORDS = ['password', '12345678', '123456789', 'qwerty123', 'supplybase', 'iloveyou', 'abcd1234'];
 
