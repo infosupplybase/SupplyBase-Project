@@ -13,6 +13,7 @@ import { composeAddress, emptyDetails, validateDetails as checkDetails } from '.
 import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
 import { formatVisitDate, formatVisitTime } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const STEPS = ['Details', 'Schedule', 'Confirm'];
 const CATEGORY_SLUG = 'interior-by-choice';
@@ -347,6 +348,8 @@ if (modal) {
                   quotation. <strong>{receipt.visitFeeDisplay} will be adjusted in your final project cost!</strong>
                 </p>
               </div>
+
+              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
               <Link
   to="/dashboard"

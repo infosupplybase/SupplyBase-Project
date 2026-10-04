@@ -275,6 +275,23 @@ updateProfile: (profile) =>
 
   myBookings: () => request('/api/bookings/mine'),
 
+  /* --------------------------------------------------------- payments */
+
+  /** Opens (or reuses) the Razorpay order for a booking's fee. The amount is the server's, never ours. */
+  startBookingPayment: (bookingNumber) =>
+    request(`/api/payments/bookings/${encodeURIComponent(bookingNumber)}/order`, { method: 'POST' }),
+
+  /** Hands checkout's signed result to the server, which verifies it before marking anything paid. */
+  verifyPayment: ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) =>
+    request('/api/payments/verify', {
+      method: 'POST',
+      body: {
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+      },
+    }),
+
   /** One booking in full, including the real answers given in the wizard. */
   booking: (id) => request(`/api/bookings/${id}`),
 

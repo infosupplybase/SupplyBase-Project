@@ -22,6 +22,7 @@ import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
 import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
@@ -369,6 +370,8 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                 <Icon name="info" size={17} />
                 <span>{receipt.message}</span>
               </div>
+
+              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
               <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
               <div className="btn-row" style={{ marginTop: 12 }}>

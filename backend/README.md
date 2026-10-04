@@ -128,6 +128,7 @@ Signed in — send `Authorization: Bearer <accessToken>`:
 | `GET` | `/api/projects/{id}` | One project (yours, or any if staff) |
 | `GET` | `/api/payments/mine` | What I owe and what I have paid |
 | `POST` | `/api/payments/{id}/order` | Start checkout — returns a Razorpay order |
+| `POST` | `/api/payments/bookings/{bookingNumber}/order` | Start checkout for a booking's fee (amount comes from the booking) |
 | `POST` | `/api/payments/verify` | Confirm a completed checkout |
 
 Staff only (`ADMIN` or `MANAGER`) — everything under `/api/admin`:

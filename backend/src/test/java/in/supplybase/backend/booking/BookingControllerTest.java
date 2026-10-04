@@ -158,7 +158,7 @@ class BookingControllerTest {
                             "plumbing", "Plumbing", null, null, null, null, null, null, null,
                             LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                             "Asha Rao", "9820011223", null, null, null, null, null,
-                            false, null, null, null, null, null, List.of()));
+                            false, null, null, null, null, null, List.of(), null));
 
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isOk())
@@ -210,7 +210,7 @@ class BookingControllerTest {
                             LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                             "Asha Rao", "9820011223", "9820011223", "asha@example.com",
                             "New House", "Pune", "411001",
-                            false, null, null, null, null, null, List.of()));
+                            false, null, null, null, null, null, List.of(), null));
 
             mockMvc.perform(patch("/api/bookings/9")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -410,7 +410,7 @@ class BookingControllerTest {
                     "plumbing", "Plumbing", null, null, null, null, null, null, null,
                     LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                     "Asha Rao", "9820011223", null, null, null, null, null,
-                    false, null, null, null, null, null, List.of());
+                    false, null, null, null, null, null, List.of(), null);
         }
     }
 
@@ -563,7 +563,7 @@ class BookingControllerTest {
                     BookingType.SERVICE, BookingStatus.WORK_COMPLETED, "plumbing", "Plumbing",
                     null, null, null, null, null, null, null, LocalDate.now(), "10:00 AM", null, 9900L, null,
                     "Asha Rao", "9820011223", null, null, null, null, null,
-                    false, null, null, 5L, "Ravi Kumar", null, List.of()));
+                    false, null, null, 5L, "Ravi Kumar", null, List.of(), null));
 
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isOk())
