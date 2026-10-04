@@ -13,7 +13,7 @@ import {
   livingRoomDescriptions,
   livingRoomFeatures,
   livingRoomGalleryImages,
-
+  studyGalleryImages,
   mandirImages,
   mandirDescriptions,
   mandirGroups,
@@ -379,100 +379,137 @@ onStepChange={
                           BACK
                         </button>
 
-                        <div
-                          className="
-                            grid
-                            grid-cols-1
-                            gap-6
-                            md:grid-cols-2
-                          "
-                        >
-                          <div
-                            className="
-                              overflow-hidden
-                              rounded-xl
-                            "
-                          >
-                            <img
-                              loading="lazy"
-                              decoding="async"
-                              src={design.image}
-                              alt={design.name}
-                              className="
-                                h-auto
-                                max-h-[420px]
-                                w-full
-                                object-cover
-                              "
-                            />
-                          </div>
+<div
+  className="
+    grid
+    grid-cols-1
+    gap-6
+    md:grid-cols-2
+    md:items-start
+  "
+>
+  <div
+    className="
+      overflow-hidden
+      rounded-2xl
+      bg-gray-100
+      shadow-sm
+    "
+  >
+    <img
+      loading="eager"
+      decoding="async"
+      src={design.image}
+      alt={design.name}
+      className="
+        block
+        h-[300px]
+        w-full
+        object-cover
+        sm:h-[360px]
+        md:h-[420px]
+      "
+    />
+  </div>
 
-                          <div>
-                            <p
-                              className="
-                                mb-2
-                                text-sm
-                                font-semibold
-                                uppercase
-                                tracking-[0.14em]
-                                text-amber-500
-                              "
-                            >
-                              {space?.name}
-                            </p>
+   <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+  <p
+    className="
+      text-xs
+      font-semibold
+      uppercase
+      tracking-[0.14em]
+      text-[#9A5B2D]
+    "
+  >
+    {space?.name}
+  </p>
 
-                            <h3
-                              className="
-                                text-2xl
-                                font-bold
-                                text-gray-950
-                              "
-                            >
-                              {design.name}
-                            </h3>
+  <h3
+    className="
+      mt-2
+      text-2xl
+      font-bold
+      leading-tight
+      text-gray-950
+    "
+  >
+    {design.name}
+  </h3>
 
-                            {design.tagline && (
-                              <p
-                                className="
-                                  mt-2
-                                  text-sm
-                                  leading-6
-                                  text-gray-500
-                                "
-                              >
-                                {design.tagline}
-                              </p>
-                            )}
+  {design.tagline && (
+    <p
+      className="
+        mt-2
+        text-sm
+        leading-6
+        text-gray-500
+      "
+    >
+      {design.tagline}
+    </p>
+  )}
 
-                            <p
-                              className="
-                                mt-3
-                                text-lg
-                                font-semibold
-                                text-gray-900
-                              "
-                            >
-                              ₹
-                              {
-                                design.pricePerSqft
-                              }{' '}
-                              / sq.ft.
-                            </p>
+  {design.estimatedPrice ? (
+    <div
+      className="
+        mt-5
+        rounded-xl
+        bg-[#faf7f3]
+        px-4
+        py-3
+      "
+    >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
+        Estimated Price
+      </p>
 
-                            {design.description && (
-                              <p
-                                className="
-                                  mt-4
-                                  text-sm
-                                  leading-6
-                                  text-gray-600
-                                "
-                              >
-                                {
-                                  design.description
-                                }
-                              </p>
-                            )}
+      <p className="mt-1 text-xl font-bold text-gray-950">
+        {design.estimatedPrice}
+      </p>
+    </div>
+  ) : (
+    <p className="mt-4 text-lg font-semibold text-gray-900">
+      ₹{design.pricePerSqft} / sq.ft.
+    </p>
+  )}
+
+  {design.description && (
+  <div className="mt-4 rounded-2xl bg-[#fafafa] p-4">
+    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
+      About this design
+    </p>
+
+    <p className="mt-2 text-sm leading-6 text-gray-700">
+      {design.description}
+    </p>
+  </div>
+)}
+
+
+{design.features?.length > 0 && (
+  <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4">
+    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
+      Key Features
+    </p>
+
+    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      {design.features.map((feature, index) => (
+        <div
+          key={`${feature}-${index}`}
+          className="flex items-start gap-2"
+        >
+          <span className="mt-0.5 text-[#9A5B2D]">✓</span>
+
+          <span className="text-sm leading-6 text-gray-700">
+            {feature}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
 
                             <button
                               type="button"
@@ -814,7 +851,7 @@ onStepChange={
 
                                             }}
                                           >
-                                           
+
                                           </span>
 
                                           <span
@@ -889,7 +926,28 @@ onStepChange={
                                     shadow-md
                                   "
                                 >
-                                  <span className="mr-2 inline-block h-7 w-7 rounded-full bg-[#c99560] align-middle" />
+                                 <span
+  className="mr-2 inline-block h-7 w-7 shrink-0 rounded-full border border-black/10 align-middle"
+  style={{
+    backgroundColor:
+      {
+        'Natural Oak': '#d7b083',
+        Teak: '#a96532',
+        Walnut: '#75411f',
+        Wenge: '#2b211b',
+        Coffee: '#7b5035',
+        'White Oak': '#ead7bc',
+        'Grey Wood': '#9b9b9b',
+        'Mocha Brown': '#7a4b2d',
+        'Pecan Brown': '#a66a3f',
+        'Marble White': '#e9e5df',
+        Black: '#202020',
+        White: '#f5f5f5',
+        'Dark Grey': '#555555',
+        'Light Grey': '#bcbcbc',
+      }[selectedLivingRoomColor] || '#c9b7a4',
+  }}
+/>
 
                                   <span className="align-middle text-sm font-semibold text-gray-900">
                                     {
@@ -1649,7 +1707,7 @@ onClick={() => {
       <div className="grid grid-cols-2 gap-4">
 
         <div>
-          
+
 
           <p className="mt-1 text-sm font-semibold text-gray-950">
               <span className="text-xl text-[#9A5B2D]">
@@ -1660,7 +1718,7 @@ onClick={() => {
 
 
         <div>
-         
+
 
           <p className="mt-1 text-sm font-semibold text-gray-950">
             <span className="text-xl text-[#9A5B2D]">
@@ -1671,7 +1729,7 @@ onClick={() => {
 
 
         <div>
-          
+
 
           <p className="mt-1 text-sm font-semibold text-gray-950">
             <span className="text-xl text-[#9A5B2D]">
@@ -1682,7 +1740,7 @@ onClick={() => {
 
 
         <div>
-         
+
 
           <p className="mt-1 text-sm font-semibold text-gray-950">
             <span className="text-xl text-[#9A5B2D]">
@@ -1721,10 +1779,151 @@ onClick={() => {
     </button>
 
   </div>
+  ) : selectedInteriorSpace === 'study' ? (
+
+  <div className="space-y-8">
+
+    {getDesignsBySpace('study').map((design) => {
+      const gallery = design.galleryImages || {};
+
+      return (
+        <div
+          key={design.slug}
+          className="
+            overflow-hidden
+            rounded-2xl
+            border
+            border-gray-200
+            bg-white
+            shadow-sm
+          "
+        >
+
+          {/* DESIGN NAME */}
+          <div className="px-5 pt-5">
+            <h3 className="text-xl font-bold text-gray-950">
+              {design.name}
+            </h3>
+          </div>
+
+          {/* MAIN IMAGE */}
+          <button
+            type="button"
+            className="
+              mt-4
+              block
+              w-full
+              border-0
+              bg-transparent
+              p-0
+            "
+            onClick={() => {
+              setSelectedInteriorDesign(design.slug);
+              scrollModalToTop();
+            }}
+          >
+            <div className="px-4">
+  <div className="h-[370px] overflow-hidden rounded-xl bg-gray-100">
+    <img
+      src={design.image}
+      alt={design.name}
+      className="!block !h-[370px] !min-h-0 w-full object-cover"
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+</div>
+          </button>
+
+          {/* FRONT / SIDE / DETAIL */}
+          <div className="grid grid-cols-3 gap-3 px-4 pt-4">
+
+            {/* FRONT */}
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <img
+                src={gallery.front || design.image}
+                alt={`${design.name} Front View`}
+                className="h-24 w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+
+              <div className="px-2 py-2 text-center">
+                <span className="text-xs font-semibold text-gray-700">
+                  Front View
+                </span>
+              </div>
+            </div>
+
+            {/* SIDE */}
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <img
+                src={gallery.side || design.image}
+                alt={`${design.name} Side View`}
+                className="h-24 w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+
+              <div className="px-2 py-2 text-center">
+                <span className="text-xs font-semibold text-gray-700">
+                  Side View
+                </span>
+              </div>
+            </div>
+
+            {/* DETAIL */}
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <img
+                src={gallery.detail || design.image}
+                alt={`${design.name} Detail View`}
+                className="h-24 w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+
+              <div className="px-2 py-2 text-center">
+                <span className="text-xs font-semibold text-gray-700">
+                  Detail View
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* PRICE */}
+          <div className="px-5 pb-5 pt-5">
+            <div className="rounded-xl bg-[#faf7f3] px-4 py-3">
+              <span className="
+                block
+                text-[11px]
+                font-semibold
+                uppercase
+                tracking-wide
+                text-gray-500
+              ">
+                Estimated Price
+              </span>
+
+              <span className="
+                mt-1
+                block
+                text-lg
+                font-bold
+                text-gray-950
+              ">
+                {design.estimatedPrice}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      );
+    })}
+
+  </div>
 ) : (
-
-
-  <div className="ibc-design-grid">
+ <div className="ibc-design-grid">
                         {getDesignsBySpace(
                           selectedInteriorSpace
                         ).map(
@@ -1796,13 +1995,23 @@ onClick={() => {
                                   {design.name}
                                 </span>
 
-                                <span className="ibc-design-price">
-                                  ₹
-                                  {
-                                    design.pricePerSqft
-                                  }{' '}
-                                  / sq.ft.
-                                </span>
+<span className="ibc-design-price">
+  {design.estimatedPrice ? (
+    <span className="flex flex-col gap-0.5">
+      <span className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+        Estimated Price
+      </span>
+
+      <span className="text-sm font-bold text-gray-950">
+        {design.estimatedPrice}
+      </span>
+    </span>
+  ) : (
+    <span>
+      ₹{design.pricePerSqft} / sq.ft.
+    </span>
+  )}
+</span>
                               </button>
                             </div>
                           )
@@ -1810,7 +2019,7 @@ onClick={() => {
                       </div>
                     )}
 
-                   {!selectedLivingRoomOption &&
+                   {/* {!selectedLivingRoomOption &&
                     !selectedLivingRoomColor &&
                     selectedInteriorSpace !== 'mandir' && (
                         <button
@@ -1834,7 +2043,7 @@ onClick={() => {
                         >
                           Customise Your Design
                         </button>
-                      )}
+                      )} */}
                   </div>
                 </>
               ) : (

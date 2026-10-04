@@ -246,6 +246,53 @@ const subDesignNames = {
 ],
 };
 
+
+export const studyGalleryImages = {
+  'Modern Study Workstation': {
+    front :
+      '/assets/projects/interior-by-choice/study/modern-study-workstation-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-study-workstation-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-study-workstation-detail.webp',
+  },
+
+  'Modern Study Table': {
+    front:
+      '/assets/projects/interior-by-choice/study/modern-study-table-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-study-table-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-study-table-detail.webp',
+  },
+
+  'Minimalist Study Desk': {
+    front:
+      '/assets/projects/interior-by-choice/study/minimalist-study-desk-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/minimalist-study-desk-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/minimalist-study-desk-detail.webp',
+  },
+
+  'Modern Wooden Study Table': {
+    front:
+      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-detail.webp',
+  },
+
+  'Modern Study Desk': {
+    front:
+      '/assets/projects/interior-by-choice/study/modern-study-desk-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-study-desk-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-study-desk-detail.webp',
+  },
+};
 /* =========================================================
    LIVING ROOM SUB OPTIONS
    ========================================================= */
@@ -698,6 +745,82 @@ const slugify = (value) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
+const tvEstimatedPrices = [
+  // 1–28 : PDF मधले exact prices
+  '₹65,000 – ₹1,05,000',
+  '₹55,000 – ₹95,000',
+  '₹60,000 – ₹1,00,000',
+  '₹40,000 – ₹75,000',
+  '₹50,000 – ₹90,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹80,000',
+  '₹45,000 – ₹85,000',
+  '₹40,000 – ₹75,000',
+  '₹40,000 – ₹70,000',
+  '₹32,000 – ₹55,000',
+  '₹38,000 – ₹65,000',
+  '₹42,000 – ₹72,000',
+  '₹55,000 – ₹95,000',
+  '₹45,000 – ₹85,000',
+  '₹35,000 – ₹60,000',
+  '₹28,000 – ₹55,000',
+  '₹32,000 – ₹58,000',
+  '₹45,000 – ₹85,000',
+  '₹55,000 – ₹95,000',
+  '₹35,000 – ₹60,000',
+  '₹32,000 – ₹58,000',
+  '₹38,000 – ₹70,000',
+  '₹35,000 – ₹60,000',
+  '₹28,000 – ₹50,000',
+  '₹25,000 – ₹45,000',
+  '₹30,000 – ₹55,000',
+  '₹25,000 – ₹45,000',
+
+  // 29–50 : Estimated prices
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹75,000',
+  '₹32,000 – ₹55,000',
+  '₹35,000 – ₹60,000',
+  '₹40,000 – ₹65,000',
+  '₹38,000 – ₹65,000',
+  '₹45,000 – ₹80,000',
+  '₹35,000 – ₹60,000',
+  '₹30,000 – ₹50,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹75,000',
+  '₹35,000 – ₹60,000',
+  '₹50,000 – ₹85,000',
+  '₹35,000 – ₹60,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹80,000',
+  '₹38,000 – ₹65,000',
+  '₹30,000 – ₹55,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹75,000',
+  '₹35,000 – ₹60,000',
+  '₹40,000 – ₹70,000',
+];
+
+
+    const studyEstimatedPrices = [
+  '₹18,000 – ₹35,000', // Modern Study Workstation
+  '₹12,000 – ₹28,000', // Modern Study Table
+  '₹12,000 – ₹28,000', // Minimalist Study Desk
+  '₹15,000 – ₹30,000', // Modern Wooden Study Table
+  '₹18,000 – ₹35,000', // Modern Study Desk
+];
+
+const mandirEstimatedPrices = [
+  '₹8,000 – ₹18,000',   // Wall Mounted Mandir
+  '₹8,000 – ₹18,000',   // Floor Standing Mandir
+  '₹8,000 – ₹18,000',   // Corner Mandir
+  '₹8,000 – ₹18,000',   // Open Shelf Mandir
+  '₹25,000 – ₹75,000',  // Modern Premium Mandir
+  '₹25,000 – ₹75,000',  // Wooden Carved Mandir
+  '₹25,000 – ₹75,000',  // Marble Mandir
+  '₹25,000 – ₹75,000',  // Contemporary Premium Mandir
+];
+
 const basePrices = {
   'tv-wall': 699,
   'bed-back-wall': 799,
@@ -727,6 +850,15 @@ const taglines = {
     'A peaceful, beautifully finished pooja space.',
 };
 
+
+const studyDescriptions = [
+  'A practical study setup with dedicated workspace, storage and a clean modern finish.',
+  'A compact study table design designed for everyday work, study and comfortable use.',
+  'A simple and minimal desk setup that keeps the workspace clean and organised.',
+  'A warm wooden study table design with a comfortable work surface and practical storage.',
+  'A modern study desk designed for a neat, functional and comfortable workspace.',
+];
+
 /* =========================================================
    INTERIOR DESIGNS
    ========================================================= */
@@ -752,6 +884,8 @@ export const interiorDesigns =
             index % priceSteps.length
           ];
 
+
+
         const dedicatedImage =
   space.slug === 'living-room'
     ? livingRoomImages[name]
@@ -768,12 +902,31 @@ export const interiorDesigns =
 
           name,
 
-          tagline:
-            taglines[space.slug],
+         tagline:
+  taglines[space.slug],
 
-          pricePerSqft,
+description:
+  space.slug === 'study'
+    ? studyDescriptions[index]
+    : null,
+
+pricePerSqft,
+
+         estimatedPrice:
+  space.slug === 'study'
+    ? studyEstimatedPrices[index]
+    : space.slug === 'tv-wall'
+      ? tvEstimatedPrices[index]
+      : space.slug === 'mandir'
+        ? mandirEstimatedPrices[index]
+        : null,
 
           image: dedicatedImage,
+
+          galleryImages:
+  space.slug === 'study'
+    ? studyGalleryImages[name]
+    : null,
 
           fallbackImage:
             space.image,
@@ -794,6 +947,9 @@ export const interiorDesigns =
       }
     )
   );
+
+
+
 
 /* =========================================================
    GET SPACE
