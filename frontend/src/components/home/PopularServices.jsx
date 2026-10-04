@@ -18,6 +18,10 @@ const ICON_BY_SLUG = {
   'ac-services': 'fan',
 };
 
+const HOME_IMAGE_OVERRIDES = {
+  waterproofing: '/assets/waterproofing/hero/Preventive-waterproofing.webp',
+};
+
 /** Soft-hyphen (­, invisible unless the browser actually breaks the
     line there) insertion points for the two labels that are a single long
     word with no space to wrap at. Deliberately explicit rather than relying
@@ -63,37 +67,42 @@ export default function PopularServices() {
 
         {!error && categories && (
           <div className="service-tile-grid">
-            {categories.map((category, index) => (
-              <button
-                key={category.slug}
-                type="button"
-                className="service-tile"
-                onClick={() => booking.open(category)}
-              >
-                <span className="service-tile-photo">
-                  {(category.slug === 'ac-services' || category.heroImage) ? (
-                    <img
-                      src={
-                        category.slug === 'ac-services'
-                          ? '/assets/ac-services/ac-unit.webp'
-                          : optimizedImage(category.heroImage)
-                      }
-                      alt=""
-                      width={200}
-                      height={200}
-                      /* The first row is on screen straight away; the rest can wait. */
-                      loading={index < 4 ? 'eager' : 'lazy'}
-                      decoding="async"
-                    />
-                  ) : (
-                    <span className="service-tile-placeholder">
-                      <Icon name={ICON_BY_SLUG[category.slug] || category.icon} size={34} />
-                    </span>
-                  )}
-                </span>
-                <span className="service-tile-name">{displayName(category)}</span>
-              </button>
-            ))}
+            {categories.map((category, index) => {
+              const heroImage =
+                HOME_IMAGE_OVERRIDES[category.slug] || category.heroImage;
+
+              return (
+                <button
+                  key={category.slug}
+                  type="button"
+                  className="service-tile"
+                  onClick={() => booking.open(category)}
+                >
+                  <span className="service-tile-photo">
+                    {(category.slug === 'ac-services' || heroImage) ? (
+                      <img
+                        src={
+                          category.slug === 'ac-services'
+                            ? '/assets/ac-services/ac-unit.webp'
+                            : optimizedImage(heroImage)
+                        }
+                        alt=""
+                        width={200}
+                        height={200}
+                        /* The first row is on screen straight away; the rest can wait. */
+                        loading={index < 4 ? 'eager' : 'lazy'}
+                        decoding="async"
+                      />
+                    ) : (
+                      <span className="service-tile-placeholder">
+                        <Icon name={ICON_BY_SLUG[category.slug] || category.icon} size={34} />
+                      </span>
+                    )}
+                  </span>
+                  <span className="service-tile-name">{displayName(category)}</span>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
