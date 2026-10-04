@@ -58,8 +58,8 @@ export default function InteriorSpaceGallery() {
                 <Reveal key={design.slug} delay={i * 40}>
                   <div className="ibc-design-card">
                     <Link to={`/interior-by-choice/${spaceSlug}/${design.slug}`} className="ibc-design-media">
-                      <img src={design.image} alt={design.name} loading="lazy" />
-                    </Link>
+                      <img src={design.image} alt={design.name} loading="lazy" onError={(e) => { e.currentTarget.onerror = null;
+                       e.currentTarget.src = design.fallbackImage; }}/></Link>
                     <button
                       type="button"
                       className={`ibc-wishlist ${wishlist.has(design.slug) ? 'active' : ''}`}
