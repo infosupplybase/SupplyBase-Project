@@ -1,0 +1,740 @@
+﻿===== FILE: backend\src\main\java\in\supplybase\backend\catalogue\CatalogueService.java =====
+package in.supplybase.backend.catalogue;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import in.supplybase.backend.catalogue.dto.CategoryResponse;
+import in.supplybase.backend.catalogue.dto.CreateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.CreateQuestionRequest;
+import in.supplybase.backend.catalogue.dto.QuestionResponse;
+import in.supplybase.backend.catalogue.dto.SearchResultResponse;
+import in.supplybase.backend.catalogue.dto.ServiceFormResponse;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryActiveRequest;
+import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.Money;
+
+@Service
+public class CatalogueService {
+
+    /** Every service's home visit is ₹99 unless the admin sets otherwise. */
+    private static final BigDecimal DEFAULT_VISIT_FEE = new BigDecimal("99.00");
+
+    private final ServiceCategoryRepository categories;
+    private final ServiceOptionRepository options;
+
+    public CatalogueService(ServiceCategoryRepository categories,
+                            ServiceOptionRepository options) {
+        this.categories = categories;
+        this.options = options;
+    }
+
+    /** The seven main categories, in order — a sub-service is left out (see {@link #form}). */
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> listCategories() {
+        return categories.findByActiveTrueAndParentSlugIsNullOrderBySortOrderAsc().stream()
+                .map(CategoryResponse::from)
+                .toList();
+    }
+
+    /**
+     * Catalogue-wide search across both main categories and sub-services
+     * (electrician's seven detailed journeys) — capped at 20 so a broad term
+     * like "installation" returns a shortlist, not the whole table.
+     */
+    @Transactional(readOnly = true)
+    public List<SearchResultResponse> search(String q) {
+        String query = q == null ? "" : q.trim();
+        if (query.isEmpty()) {
+            return List.of();
+        }
+        return categories.search(query).stream()
+                .limit(20)
+                .map(SearchResultResponse::from)
+                .toList();
+    }
+
+    /**
+     * Short and historical names that people type or bookmark. A guess this
+     * close deserves the right page, not a 404.
+     */
+    private static final Map<String, String> SLUG_ALIASES = Map.of(
+            "paint", "painting",
+            "waterproof", "waterproofing",
+            "electric", "electrical",
+            "electrician", "electrical",
+            "interior", "interior-design",
+            "interiors", "interior-design",
+            "interior-choice", "interior-by-choice",
+            "plumber", "plumbing",
+            "pop-false-ceiling", "pop-ceiling-design",
+            "pop-ceiling", "pop-ceiling-design");
+
+    @Transactional(readOnly = true)
+    public ServiceCategory requireCategory(String slug) {
+        String key = slug == null ? "" : slug.trim().toLowerCase();
+        return categories.findBySlugAndActiveTrue(key)
+                .or(() -> Optional.ofNullable(SLUG_ALIASES.get(key))
+                        .flatMap(categories::findBySlugAndActiveTrue))
+                .orElseThrow(() -> ApiException.notFound("That service"));
+    }
+
+    /**
+     * Builds one service's form from its option rows.
+     *
+     * The rows arrive flat, already ordered by step then sort order; this
+     * folds them into questions. A LinkedHashMap keeps that order, so the
+     * form's shape is decided by the data, not by this code.
+     */
+    @Transactional(readOnly = true)
+    public ServiceFormResponse form(String slug) {
+        ServiceCategory category = requireCategory(slug);
+        return new ServiceFormResponse(CategoryResponse.from(category), foldQuestions(category.getId()));
+    }
+
+    private List<QuestionResponse> foldQuestions(Long categoryId) {
+        Map<String, QuestionBuilder> byKey = new LinkedHashMap<>();
+        for (ServiceOption row : options
+                .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(categoryId)) {
+            QuestionBuilder builder = byKey.computeIfAbsent(
+                    row.getStepNo() + ":" + row.getQuestionKey(),
+                    key -> new QuestionBuilder(row));
+            if (row.getOptionValue() != null) {
+                builder.options.add(new QuestionResponse.OptionResponse(
+                        row.getOptionValue(), row.getOptionLabel(),
+                        row.getOptionHint(), row.getOptionGroup(),
+                        row.getPricePaise() == null ? null : Money.paiseToRupees(row.getPricePaise())));
+            }
+        }
+        return byKey.values().stream().map(QuestionBuilder::build).toList();
+    }
+
+    /* ----------------------------------------------------------- staff */
+
+    /** Every category, active or not — the admin screen manages both. */
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> listAllCategories() {
+        return categories.findAllByOrderBySortOrderAsc().stream()
+                .map(CategoryResponse::from)
+                .toList();
+    }
+
+    /** Looks a category up by slug regardless of active status, for admin edits. */
+    @Transactional(readOnly = true)
+    public ServiceCategory requireAnyCategory(String slug) {
+        String key = slug == null ? "" : slug.trim().toLowerCase();
+        return categories.findBySlug(key)
+                .orElseThrow(() -> ApiException.notFound("That service"));
+    }
+
+    @Transactional
+    public CategoryResponse createCategory(CreateCategoryRequest request) {
+        String slug = request.slug().trim().toLowerCase();
+        if (categories.existsBySlug(slug)) {
+            throw ApiException.conflict("A service with that slug already exists.");
+        }
+
+        BigDecimal visitFee = request.visitFee() == null ? DEFAULT_VISIT_FEE : request.visitFee();
+        ServiceCategory category = ServiceCategory.builder()
+                .slug(slug)
+                .name(request.name().trim())
+                .tagline(request.tagline())
+                .description(request.description())
+                .icon(request.icon())
+                .heroImage(request.heroImage())
+                .visitFeePaise(Money.rupeesToPaise(visitFee))
+                .sortOrder(request.sortOrder())
+                .active(true)
+                .build();
+
+        return CategoryResponse.from(categories.save(category));
+    }
+
+    /** The slug is the path identifier and is never changed here. */
+    @Transactional
+    public CategoryResponse updateCategory(String slug, UpdateCategoryRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+
+        BigDecimal visitFee = request.visitFee() == null ? DEFAULT_VISIT_FEE : request.visitFee();
+        category.setName(request.name().trim());
+        category.setTagline(request.tagline());
+        category.setDescription(request.description());
+        category.setIcon(request.icon());
+        category.setHeroImage(request.heroImage());
+        category.setVisitFeePaise(Money.rupeesToPaise(visitFee));
+        category.setSortOrder(request.sortOrder());
+
+        return CategoryResponse.from(categories.save(category));
+    }
+
+    /**
+     * Soft delete: {@code active} goes false, the row stays.
+     *
+     * Bookings and enquiries reference a category by slug/FK, and
+     * {@code service_options} cascades on delete from {@code service_categories},
+     * so a hard delete here would corrupt history and silently wipe every
+     * question this category ever asked.
+     */
+    @Transactional
+    public void deactivateCategory(String slug) {
+        ServiceCategory category = requireAnyCategory(slug);
+        category.setActive(false);
+        categories.save(category);
+    }
+
+    /** Turns a category back on, or off — the admin screen's toggle. */
+    @Transactional
+    public CategoryResponse setCategoryActive(String slug, UpdateCategoryActiveRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+        category.setActive(request.active());
+        return CategoryResponse.from(categories.save(category));
+    }
+
+    /**
+     * Every active question for a category, admin or not — {@link #form}
+     * cannot be reused here because it 404s on an inactive category, and the
+     * admin screen needs to open exactly those to reactivate them.
+     */
+    @Transactional(readOnly = true)
+    public List<QuestionResponse> listQuestions(String slug) {
+        ServiceCategory category = requireAnyCategory(slug);
+        return foldQuestions(category.getId());
+    }
+
+    /**
+     * Creates one question, one {@code ServiceOption} row per option — or a
+     * single row with no option fields for a TEXT/NUMBER/FILE question, the
+     * same shape {@link #form} already knows how to read.
+     */
+    @Transactional
+    public QuestionResponse createQuestion(String slug, CreateQuestionRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+        List<ServiceOption> rows = buildOptionRows(category.getId(), request);
+        options.saveAll(rows);
+        return toQuestionResponse(rows);
+    }
+
+    /**
+     * Replaces every row for {@code questionKey}: the existing rows are
+     * deleted and fresh ones inserted from the request body. Simplest correct
+     * approach for "a question is really N rows" — trying to diff and patch
+     * individual option rows in place would need to match old options to new
+     * ones by value, which the request has no stable id to do reliably.
+     */
+    @Transactional
+    public QuestionResponse updateQuestion(String slug, String questionKey, CreateQuestionRequest request) {
+        ServiceCategory category = requireAnyCategory(slug);
+        List<ServiceOption> existing = options.findByCategoryIdAndQuestionKey(category.getId(), questionKey);
+        if (existing.isEmpty()) {
+            throw ApiException.notFound("That question");
+        }
+        options.deleteByCategoryIdAndQuestionKey(category.getId(), questionKey);
+
+        List<ServiceOption> rows = buildOptionRows(category.getId(), request);
+        options.saveAll(rows);
+        return toQuestionResponse(rows);
+    }
+
+    /**
+     * Soft delete: {@code active} goes false on every row sharing this key.
+     *
+     * A booking's stored answers copy the question text and key at booking
+     * time (see {@code BookingService.storeAnswers}), so nothing downstream
+     * breaks either way — soft delete is kept only for consistency with the
+     * category delete, and so it can be undone.
+     */
+    @Transactional
+    public void deactivateQuestion(String slug, String questionKey) {
+        ServiceCategory category = requireAnyCategory(slug);
+        List<ServiceOption> rows = options.findByCategoryIdAndQuestionKey(category.getId(), questionKey);
+        if (rows.isEmpty()) {
+            throw ApiException.notFound("That question");
+        }
+        rows.forEach(row -> row.setActive(false));
+        options.saveAll(rows);
+    }
+
+    private List<ServiceOption> buildOptionRows(Long categoryId, CreateQuestionRequest request) {
+        List<CreateQuestionRequest.OptionInput> optionInputs = request.options();
+        if (optionInputs == null || optionInputs.isEmpty()) {
+            return List.of(ServiceOption.builder()
+                    .categoryId(categoryId)
+                    .stepNo(request.stepNo())
+                    .questionKey(request.questionKey())
+                    .questionText(request.questionText())
+                    .inputType(request.inputType())
+                    .required(request.required())
+                    .sortOrder(0)
+                    .active(true)
+                    .build());
+        }
+
+        List<ServiceOption> rows = new ArrayList<>();
+        int sortOrder = 1;
+        for (CreateQuestionRequest.OptionInput option : optionInputs) {
+            rows.add(ServiceOption.builder()
+                    .categoryId(categoryId)
+                    .stepNo(request.stepNo())
+                    .questionKey(request.questionKey())
+                    .questionText(request.questionText())
+                    .inputType(request.inputType())
+                    .required(request.required())
+                    .optionValue(option.value())
+                    .optionLabel(option.label())
+                    .optionHint(option.hint())
+                    .optionGroup(option.group())
+                    .pricePaise(option.price() == null ? null : Money.rupeesToPaise(option.price()))
+                    .sortOrder(sortOrder++)
+                    .active(true)
+                    .build());
+        }
+        return rows;
+    }
+
+    private QuestionResponse toQuestionResponse(List<ServiceOption> rows) {
+        ServiceOption first = rows.get(0);
+        List<QuestionResponse.OptionResponse> optionResponses = rows.stream()
+                .filter(row -> row.getOptionValue() != null)
+                .map(row -> new QuestionResponse.OptionResponse(
+                        row.getOptionValue(), row.getOptionLabel(), row.getOptionHint(), row.getOptionGroup(),
+                        row.getPricePaise() == null ? null : Money.paiseToRupees(row.getPricePaise())))
+                .toList();
+        return new QuestionResponse(first.getStepNo(), first.getQuestionKey(), first.getQuestionText(),
+                first.getInputType(), first.isRequired(), optionResponses);
+    }
+
+    private static final class QuestionBuilder {
+        private final ServiceOption first;
+        private final List<QuestionResponse.OptionResponse> options = new ArrayList<>();
+
+        private QuestionBuilder(ServiceOption first) {
+            this.first = first;
+        }
+
+        private QuestionResponse build() {
+            return new QuestionResponse(first.getStepNo(), first.getQuestionKey(),
+                    first.getQuestionText(), first.getInputType(), first.isRequired(),
+                    List.copyOf(options));
+        }
+    }
+}
+
+
+===== FILE: backend\src\main\java\in\supplybase\backend\catalogue\CatalogueController.java =====
+package in.supplybase.backend.catalogue;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PatchMapping;
+
+import in.supplybase.backend.catalogue.dto.CategoryResponse;
+import in.supplybase.backend.catalogue.dto.CreateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.CreateQuestionRequest;
+import in.supplybase.backend.catalogue.dto.QuestionResponse;
+import in.supplybase.backend.catalogue.dto.SearchResultResponse;
+import in.supplybase.backend.catalogue.dto.ServiceFormResponse;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryRequest;
+import in.supplybase.backend.catalogue.dto.UpdateCategoryActiveRequest;
+import jakarta.validation.Valid;
+
+/** Public. The booking form cannot be drawn until this has answered. */
+@RestController
+public class CatalogueController {
+
+    private final CatalogueService service;
+
+    public CatalogueController(CatalogueService service) {
+        this.service = service;
+    }
+
+    /** The four services. */
+    @GetMapping("/api/catalogue/services")
+    public List<CategoryResponse> services() {
+        return service.listCategories();
+    }
+
+    /** One service's questions, in order, ready to render. */
+    @GetMapping("/api/catalogue/services/{slug}/form")
+    public ServiceFormResponse form(@PathVariable("slug") String slug) {
+        return service.form(slug);
+    }
+
+    /** Search across active main categories and sub-services. */
+    @GetMapping("/api/catalogue/search")
+    public List<SearchResultResponse> search(
+            @RequestParam(name = "q", defaultValue = "") String q) {
+        return service.search(q);
+    }
+
+    /* ----------------------------------------------------------- staff */
+
+    /** Every category, including inactive ones — there are only ever a handful. */
+    @GetMapping("/api/admin/catalogue/categories")
+    public List<CategoryResponse> listCategories() {
+        return service.listAllCategories();
+    }
+
+    @PostMapping("/api/admin/catalogue/categories")
+    public ResponseEntity<CategoryResponse> createCategory(
+            @Valid @RequestBody CreateCategoryRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.createCategory(request));
+    }
+
+    @PutMapping("/api/admin/catalogue/categories/{slug}")
+    public CategoryResponse updateCategory(
+            @PathVariable("slug") String slug,
+            @Valid @RequestBody UpdateCategoryRequest request) {
+        return service.updateCategory(slug, request);
+    }
+
+    /** Soft delete: sets active=false, keeps the row and its questions. */
+    @DeleteMapping("/api/admin/catalogue/categories/{slug}")
+    public ResponseEntity<Void> deleteCategory(
+            @PathVariable("slug") String slug) {
+        service.deactivateCategory(slug);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Turns a category back on, or off — same effect as delete when active=false. */
+    @PatchMapping("/api/admin/catalogue/categories/{slug}/active")
+    public CategoryResponse setCategoryActive(
+            @PathVariable("slug") String slug,
+            @Valid @RequestBody UpdateCategoryActiveRequest request) {
+        return service.setCategoryActive(slug, request);
+    }
+
+    /** Every question on this category's form, for the admin editor. */
+    @GetMapping("/api/admin/catalogue/categories/{slug}/questions")
+    public List<QuestionResponse> listQuestions(
+            @PathVariable("slug") String slug) {
+        return service.listQuestions(slug);
+    }
+
+    @PostMapping("/api/admin/catalogue/categories/{slug}/questions")
+    public ResponseEntity<QuestionResponse> createQuestion(
+            @PathVariable("slug") String slug,
+            @Valid @RequestBody CreateQuestionRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.createQuestion(slug, request));
+    }
+
+    @PutMapping("/api/admin/catalogue/categories/{slug}/questions/{questionKey}")
+    public QuestionResponse updateQuestion(
+            @PathVariable("slug") String slug,
+            @PathVariable("questionKey") String questionKey,
+            @Valid @RequestBody CreateQuestionRequest request) {
+        return service.updateQuestion(slug, questionKey, request);
+    }
+
+    /** Soft delete: sets active=false on every row sharing this questionKey. */
+    @DeleteMapping("/api/admin/catalogue/categories/{slug}/questions/{questionKey}")
+    public ResponseEntity<Void> deleteQuestion(
+            @PathVariable("slug") String slug,
+            @PathVariable("questionKey") String questionKey) {
+        service.deactivateQuestion(slug, questionKey);
+        return ResponseEntity.noContent().build();
+    }
+}
+
+
+===== FILE: backend\src\main\java\in\supplybase\backend\catalogue\ServiceOption.java =====
+package in.supplybase.backend.catalogue;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+/**
+ * One answer option on one booking question.
+ *
+ * Rows sharing a questionKey are one question; the question's text and input
+ * type are repeated on each row so a single query can build a whole form
+ * without a second table to join.
+ */
+@Entity
+@Table(name = "service_options")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ServiceOption {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "category_id", nullable = false)
+    private Long categoryId;
+
+    @Column(name = "step_no", nullable = false)
+    private int stepNo;
+
+    @Column(name = "question_key", nullable = false, length = 60)
+    private String questionKey;
+
+    @Column(name = "question_text", nullable = false, length = 200)
+    private String questionText;
+
+    /** SINGLE | MULTI | TEXT | NUMBER | FILE */
+    @Column(name = "input_type", nullable = false, length = 20)
+    private String inputType;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean required = false;
+
+    @Column(name = "option_value", length = 80)
+    private String optionValue;
+
+    @Column(name = "option_label", length = 160)
+    private String optionLabel;
+
+    /** The plain-English explanation under an option, e.g. what a putty coat does. */
+    @Column(name = "option_hint", length = 300)
+    private String optionHint;
+
+    /** Groups options inside one question — "Painting" vs "Waterproofing". */
+    @Column(name = "option_group", length = 60)
+    private String optionGroup;
+
+    /** Paise. Null for options with no add-on cost of their own (most of them). */
+    @Column(name = "price_paise")
+    private Long pricePaise;
+
+    @Column(name = "sort_order", nullable = false)
+    @Builder.Default
+    private int sortOrder = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean active = true;
+}
+
+
+===== FILE: backend\src\main\java\in\supplybase\backend\catalogue\ServiceOptionRepository.java =====
+package in.supplybase.backend.catalogue;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ServiceOptionRepository extends JpaRepository<ServiceOption, Long> {
+
+    List<ServiceOption> findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(Long categoryId);
+
+    List<ServiceOption> findByCategoryIdAndQuestionKey(Long categoryId, String questionKey);
+
+    void deleteByCategoryIdAndQuestionKey(Long categoryId, String questionKey);
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\CategoryResponse.java =====
+package in.supplybase.backend.catalogue.dto;
+
+import java.math.BigDecimal;
+
+import in.supplybase.backend.catalogue.ServiceCategory;
+import in.supplybase.backend.common.Money;
+
+public record CategoryResponse(
+        String slug, String parentSlug, String name, String tagline, String description,
+        String icon, String heroImage, BigDecimal visitFee, String visitFeeDisplay,
+        BigDecimal estimateMin, BigDecimal estimateMax,
+        int sortOrder, boolean active) {
+
+    public static CategoryResponse from(ServiceCategory c) {
+        return new CategoryResponse(c.getSlug(), c.getParentSlug(), c.getName(), c.getTagline(),
+                c.getDescription(), c.getIcon(), c.getHeroImage(),
+                Money.paiseToRupees(c.getVisitFeePaise()),
+                "₹" + Money.formatRupees(c.getVisitFeePaise()),
+                c.getEstimateMinPaise() == null ? null : Money.paiseToRupees(c.getEstimateMinPaise()),
+                c.getEstimateMaxPaise() == null ? null : Money.paiseToRupees(c.getEstimateMaxPaise()),
+                c.getSortOrder(), c.isActive());
+    }
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\CreateCategoryRequest.java =====
+package in.supplybase.backend.catalogue.dto;
+
+import java.math.BigDecimal;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+/** What an admin submits to add a new service category. */
+public record CreateCategoryRequest(
+        @NotBlank(message = "A slug is required")
+        @Pattern(regexp = "^[a-z0-9-]+$", message = "A slug may only contain lowercase letters, numbers and hyphens")
+        String slug,
+
+        @NotBlank(message = "A name is required")
+        @Size(max = 80) String name,
+
+        @Size(max = 160) String tagline,
+        String description,
+        @Size(max = 40) String icon,
+        String heroImage,
+
+        BigDecimal visitFee,
+        int sortOrder) {
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\CreateQuestionRequest.java =====
+package in.supplybase.backend.catalogue.dto;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+/**
+ * What an admin submits to add or replace one question on a service's
+ * booking form. A "question" here is one or more {@code ServiceOption} rows
+ * sharing a questionKey — one row per option for SINGLE/MULTI, or a single
+ * row with no option fields for TEXT/NUMBER/FILE.
+ */
+public record CreateQuestionRequest(
+        int stepNo,
+
+        @NotBlank(message = "A question key is required")
+        @Size(max = 60) String questionKey,
+
+        @NotBlank(message = "Question text is required")
+        @Size(max = 200) String questionText,
+
+        @NotBlank(message = "An input type is required")
+        @Pattern(regexp = "^(SINGLE|MULTI|TEXT|NUMBER|FILE)$",
+                message = "inputType must be one of SINGLE, MULTI, TEXT, NUMBER, FILE")
+        String inputType,
+
+        boolean required,
+
+        List<OptionInput> options) {
+
+    /** {@code price}, in rupees, is optional — only add-on options price themselves. */
+    public record OptionInput(String value, String label, String hint, String group, BigDecimal price) {
+    }
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\QuestionResponse.java =====
+package in.supplybase.backend.catalogue.dto;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * One question, ready to render. The frontend walks these in order and draws
+ * the right control for inputType — it holds no copy of the question list.
+ */
+public record QuestionResponse(
+        int stepNo, String key, String text, String inputType, boolean required,
+        List<OptionResponse> options) {
+
+    /** `price` is null for the vast majority of options — only an add-on
+        question's choices carry one. */
+    public record OptionResponse(String value, String label, String hint, String group, BigDecimal price) {
+    }
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\SearchResultResponse.java =====
+package in.supplybase.backend.catalogue.dto;
+
+import in.supplybase.backend.catalogue.ServiceCategory;
+
+/**
+ * One catalogue search hit — a main category or a sub-service (electrician's
+ * seven detailed journeys today). {@code parentSlug} tells the frontend which
+ * route to build: a sub-service opens under its parent, a main category opens
+ * at its own slug.
+ */
+public record SearchResultResponse(
+        String slug, String parentSlug, String name, String tagline, String icon) {
+
+    public static SearchResultResponse from(ServiceCategory c) {
+        return new SearchResultResponse(c.getSlug(), c.getParentSlug(), c.getName(),
+                c.getTagline(), c.getIcon());
+    }
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\ServiceFormResponse.java =====
+package in.supplybase.backend.catalogue.dto;
+
+import java.util.List;
+
+/** Everything needed to draw one service's booking form. */
+public record ServiceFormResponse(CategoryResponse category, List<QuestionResponse> questions) {
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\UpdateCategoryActiveRequest.java =====
+package in.supplybase.backend.catalogue.dto;
+
+/** What an admin submits to reactivate or deactivate a category. */
+public record UpdateCategoryActiveRequest(boolean active) {
+}
+
+
+===== FILE: E:\SupplyBase\SupplyBase-Project\backend\src\main\java\in\supplybase\backend\catalogue\dto\UpdateCategoryRequest.java =====
+package in.supplybase.backend.catalogue.dto;
+
+import java.math.BigDecimal;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+/**
+ * What an admin submits to edit a service category.
+ *
+ * The slug is not here — it is the path identifier and stays immutable once
+ * created, since bookings and enquiries reference a category by slug.
+ */
+public record UpdateCategoryRequest(
+        @NotBlank(message = "A name is required")
+        @Size(max = 80) String name,
+
+        @Size(max = 160) String tagline,
+        String description,
+        @Size(max = 40) String icon,
+        String heroImage,
+
+        BigDecimal visitFee,
+        int sortOrder) {
+}
+
+

@@ -1,0 +1,154 @@
+.sb-image-slider {
+  width: 100%;
+  margin: 0;
+  background: #fff;
+}
+
+.sb-image-slider__viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1366 / 560;
+  overflow: hidden;
+  background: #f5f5f5;
+  touch-action: pan-y;
+}
+
+.sb-image-slider__track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 550ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.sb-image-slider__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  height: 100%;
+}
+
+.sb-image-slider__slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+}
+
+.sb-image-slider__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .65);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .9);
+  color: #252525;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, .15);
+  cursor: pointer;
+}
+
+.sb-image-slider__arrow--previous {
+  left: 18px;
+}
+
+.sb-image-slider__arrow--next {
+  right: 18px;
+}
+
+.sb-image-slider__arrow svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sb-image-slider__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 40px;
+  padding: 4px 12px;
+}
+
+.sb-image-slider__dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sb-image-slider__dot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sb-image-slider__dot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #c9c9c9;
+  transition: width 200ms ease, background 200ms ease;
+}
+
+.sb-image-slider__dot.is-active::before {
+  width: 22px;
+  background: #b58b28;
+}
+
+.sb-image-slider__pause {
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #555;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.sb-image-slider button:focus-visible {
+  outline: 2px solid #b58b28;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .sb-image-slider__arrow {
+    width: 28px;
+    height: 28px;
+  }
+
+  .sb-image-slider__arrow--previous {
+    left: 6px;
+  }
+
+  .sb-image-slider__arrow--next {
+    right: 6px;
+  }
+
+  .sb-image-slider__arrow svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-image-slider__track,
+  .sb-image-slider__dot::before {
+    transition: none;
+  }
+}

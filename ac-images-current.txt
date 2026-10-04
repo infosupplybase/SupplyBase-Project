@@ -1,0 +1,771 @@
+﻿===== FILE: frontend\src\data\acContent.js =====
+export const acTypes = [
+  { value: 'split', label: 'Split AC' },
+  { value: 'window', label: 'Window AC' },
+  { value: 'inverter', label: 'Inverter AC' },
+  { value: 'cassette', label: 'Cassette AC' },
+  { value: 'ductable', label: 'Ductable AC' },
+  { value: 'concealed', label: 'Concealed AC' },
+];
+
+export const acCapacities = [
+  { value: '1-ton', label: '1 Ton' },
+  { value: '1-5-ton', label: '1.5 Ton' },
+  { value: '2-ton', label: '2 Ton' },
+];
+
+// R32 is visible in the reference dropdown.
+// Other dropdown choices need confirmation.
+export const acRefrigerants = [
+  { value: 'r32', label: 'R32' },
+];
+
+export const acCategories = [
+  {
+    slug: 'regular',
+    label: 'Regular AC Services',
+    hint: 'Cleaning, check-up and maintenance',
+  },
+  {
+    slug: 'repair',
+    label: 'AC Repair',
+    hint: 'Help with cooling, leakage, noise and other problems',
+  },
+  {
+    slug: 'installation',
+    label: 'AC Installation',
+    hint: 'New AC installation with testing',
+  },
+  {
+    slug: 'uninstallation',
+    label: 'AC Uninstallation',
+    hint: 'Safe dismantling and handling',
+  },
+  {
+    slug: 'gas-charging',
+    label: 'Gas Charging',
+    hint: 'AC gas check and refilling',
+  },
+  {
+    slug: 'amc',
+    label: 'Annual Maintenance (AMC)',
+    hint: 'Scheduled maintenance throughout the year',
+  },
+];
+
+// Reference starting prices in rupees.
+// These are display data; the backend must validate booking prices.
+export const acServicesByCategory = {
+  regular: [
+    {
+      value: 'general-service',
+      label: 'AC General Service',
+      hint: 'Basic cleaning and check-up',
+      price: 499,
+    },
+    {
+      value: 'jet-service',
+      label: 'AC Jet Service',
+      hint: 'High pressure cleaning',
+      price: 699,
+    },
+    {
+      value: 'deep-cleaning',
+      label: 'AC Deep Cleaning',
+      hint: 'Complete indoor and outdoor cleaning',
+      price: 899,
+    },
+    {
+      value: 'filter-cleaning',
+      label: 'AC Filter Cleaning',
+      hint: 'Filter and airflow cleaning',
+      price: 299,
+    },
+    {
+      value: 'cooling-check',
+      label: 'AC Cooling Check',
+      hint: 'Performance and cooling check',
+      price: 299,
+    },
+    {
+      value: 'water-leakage-check',
+      label: 'Water Leakage Check',
+      hint: 'Leakage detection and fix',
+      price: 299,
+    },
+    {
+      value: 'drain-pipe-cleaning',
+      label: 'AC Drain Pipe Cleaning',
+      hint: 'Drain line cleaning and check',
+      price: 299,
+    },
+    {
+      value: 'outdoor-unit-cleaning',
+      label: 'Outdoor Unit Cleaning',
+      hint: 'Outdoor unit cleaning and check',
+      price: 399,
+    },
+  ],
+
+  repair: [
+    {
+      value: 'not-cooling',
+      label: 'AC Not Cooling',
+      hint: 'Cooling issues and low airflow',
+      price: 249,
+      inspection: true,
+    },
+    {
+      value: 'water-leakage',
+      label: 'Water Leakage',
+      hint: 'Water leakage problems',
+      price: 249,
+      inspection: true,
+    },
+    {
+      value: 'not-starting',
+      label: 'AC Not Starting',
+      hint: 'Power and starting issues',
+      price: 249,
+      inspection: true,
+    },
+    {
+      value: 'unusual-noise',
+      label: 'Unusual Noise',
+      hint: 'Abnormal sound or vibration',
+      price: 249,
+      inspection: true,
+    },
+    {
+      value: 'bad-smell',
+      label: 'Bad Smell',
+      hint: 'Cleaning and repair for fresh air',
+      price: 249,
+      inspection: true,
+    },
+    {
+      value: 'electrical-fault',
+      label: 'Electrical Fault',
+      hint: 'PCB, sensor, capacitor and other electrical issues',
+      price: 349,
+      inspection: true,
+    },
+  ],
+
+  installation: [
+    {
+      value: 'ac-installation',
+      label: 'AC Installation',
+      hint: 'The reference shows Split AC installation from this price',
+      price: 1499,
+      referenceAcType: 'split',
+    },
+  ],
+
+  uninstallation: [
+    {
+      value: 'ac-uninstallation',
+      label: 'AC Uninstallation',
+      hint: 'Safe dismantling and handling',
+      price: 499,
+    },
+  ],
+
+  'gas-charging': [
+    {
+      value: 'gas-charging',
+      label: 'AC Gas Charging',
+      hint: 'Gas level check and refrigerant charging',
+      price: 1499,
+    },
+  ],
+
+  amc: [
+    {
+      value: 'amc-2-services',
+      label: '2 Service AMC',
+      hint: 'Every 6 months',
+      price: 1499,
+      visits: 2,
+    },
+    {
+      value: 'amc-3-services',
+      label: '3 Service AMC',
+      hint: 'Every 4 months',
+      price: 1999,
+      visits: 3,
+    },
+    {
+      value: 'amc-4-services',
+      label: '4 Service AMC',
+      hint: 'Every 3 months',
+      price: 2499,
+      visits: 4,
+    },
+  ],
+};
+
+export const acAddonsByCategory = {
+  regular: [
+    { value: 'gas-check', label: 'Gas Check', price: 299 },
+    { value: 'stand-check', label: 'Outdoor Stand Check', price: 199 },
+    { value: 'anti-rust', label: 'Anti-Rust Coating', price: 299 },
+  ],
+
+  repair: [],
+
+  installation: [
+    {
+      value: 'extended-copper-pipe',
+      label: 'Extended Copper Pipe',
+      price: 199,
+      unit: 'ft',
+    },
+    {
+      value: 'outdoor-stand',
+      label: 'Outdoor Stand (Heavy Duty)',
+      price: 499,
+    },
+    {
+      value: 'stabilizer-installation',
+      label: 'Stabilizer Installation',
+      price: 299,
+    },
+    {
+      value: 'mcb-installation',
+      label: 'MCB / Isolator Installation',
+      price: 249,
+    },
+    {
+      value: 'core-cutting',
+      label: 'Core Cutting',
+      price: 399,
+      unit: 'hole',
+    },
+    {
+      value: 'drain-extension',
+      label: 'Drain Pipe Extension',
+      price: 99,
+      unit: 'ft',
+    },
+  ],
+
+  uninstallation: [
+    {
+      value: 'outdoor-dismantling',
+      label: 'Outdoor Unit Dismantling (separate location)',
+      price: 299,
+    },
+    {
+      value: 'pipe-packing',
+      label: 'Copper Pipe Care & Packing',
+      price: 199,
+    },
+    {
+      value: 'safe-transport',
+      label: 'Safe Transport (within same building)',
+      price: 199,
+    },
+    {
+      value: 'stand-removal',
+      label: 'Outdoor Stand Removal',
+      price: 149,
+    },
+    {
+      value: 'gas-recovery',
+      label: 'Gas Recovery (if required)',
+      price: 299,
+    },
+  ],
+
+  'gas-charging': [
+    {
+      value: 'leakage-detection',
+      label: 'Leakage Detection (Soap Test)',
+      price: 199,
+    },
+    {
+      value: 'copper-pipe-repair',
+      label: 'Copper Pipe Repair (if required)',
+      price: 299,
+    },
+    {
+      value: 'vacuum-pressure-test',
+      label: 'Vacuuming & Pressure Test',
+      price: 199,
+    },
+  ],
+
+  amc: [],
+};
+
+===== FILE: frontend\src\components\ac\AcServiceOptions.jsx =====
+import { useId } from 'react';
+import Icon from '../ui/Icon';
+import {
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../../data/acContent';
+
+const acOptionImages = {
+  split: '/assets/ac-services/types/split.jpg',
+  window: '/assets/ac-services/types/window.jpg',
+  inverter: '/assets/ac-services/types/inverter.jpg',
+  cassette: '/assets/ac-services/types/cassette.jpg',
+  ductable: '/assets/ac-services/types/ductable.jpg',
+  concealed: '/assets/ac-services/types/concealed.jpg',
+  'general-service': '/assets/ac-services/regular-service.png',
+  'jet-service': '/assets/ac-services/regular-service.png',
+  'deep-cleaning': '/assets/ac-services/regular-service.png',
+  'filter-cleaning': '/assets/ac-services/regular-service.png',
+  'cooling-check': '/assets/ac-services/repair.jpg',
+  'water-leakage-check': '/assets/ac-services/repair.jpg',
+  'drain-pipe-cleaning': '/assets/ac-services/regular-service.png',
+  'outdoor-unit-cleaning': '/assets/ac-services/maintenance.jpg',
+  'not-cooling': '/assets/ac-services/repair.jpg',
+  'water-leakage': '/assets/ac-services/repair.jpg',
+  'not-starting': '/assets/ac-services/repair.jpg',
+  'unusual-noise': '/assets/ac-services/repair.jpg',
+  'bad-smell': '/assets/ac-services/repair.jpg',
+  'electrical-fault': '/assets/ac-services/repair.jpg',
+  'ac-installation': '/assets/ac-services/installation.png',
+  'ac-uninstallation': '/assets/ac-services/uninstallation.jpeg',
+  'gas-charging': '/assets/ac-services/gas-charging.jpg',
+  'amc-2-services': '/assets/ac-services/maintenance.jpg',
+  'amc-3-services': '/assets/ac-services/maintenance.jpg',
+  'amc-4-services': '/assets/ac-services/maintenance.jpg',
+};
+
+function Choice({ option, checked, multiple, name, onChange }) {
+  const image = !multiple ? acOptionImages[option.value] : null;
+
+  return (
+    <label
+      className={`ac-pop-option ${multiple ? 'ac-pop-addon' : ''} ${
+        checked ? 'selected' : ''
+      }`}
+    >
+      <input
+        type={multiple ? 'checkbox' : 'radio'}
+        name={name}
+        value={option.value}
+        checked={checked}
+        onChange={onChange}
+      />
+
+      {image && (
+        <img
+          className={`ac-pop-option-image ${
+            ['split', 'window', 'inverter', 'cassette', 'ductable', 'concealed']
+              .includes(option.value)
+              ? 'ac-pop-type-image'
+              : ''
+          }`}
+          src={image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+
+      <span className="ac-pop-option-body">
+        <strong>{option.label}</strong>
+
+        {option.hint && <small>{option.hint}</small>}
+
+        {option.price != null && (
+          <span className="ac-pop-option-price">
+            {option.inspection ? 'Inspection from ' : 'From '}
+            ₹{Number(option.price).toLocaleString('en-IN')}
+            {option.unit ? ` / ${option.unit}` : ''}
+          </span>
+        )}
+      </span>
+
+      <span className="ac-pop-option-check" aria-hidden="true">
+        <Icon name="check" size={14} />
+      </span>
+    </label>
+  );
+}
+function Choices({ options, value, name, onChange }) {
+  return (
+    <div className="ac-pop-option-grid">
+      {options.map((option) => (
+        <Choice
+          key={option.value}
+          option={option}
+          name={name}
+          checked={value === option.value}
+          onChange={() => onChange(option.value)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Quantity({ label, value, onChange }) {
+  const id = useId();
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: 16,
+        border: '1px solid #e7e7e7',
+        borderRadius: 12,
+      }}
+    >
+      <label htmlFor={id} style={{ fontWeight: 600 }}>{label}</label>
+
+      <input
+        id={id}
+        type="number"
+        min="1"
+        step="1"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: 80,
+          padding: 10,
+          border: '1px solid #d8d8d8',
+          borderRadius: 8,
+          textAlign: 'center',
+        }}
+      />
+    </div>
+  );
+}
+
+export default function AcServiceOptions({
+  category,
+  step,
+  answers = {},
+  onChange,
+}) {
+  const id = useId();
+  const services = acServicesByCategory[category] || [];
+  const addons = acAddonsByCategory[category] || [];
+  const selectedAddons = answers.addons || [];
+
+  if (step === 'service') {
+    return (
+      <div>
+        <Choices
+          options={services}
+          name={`${id}-service`}
+          value={answers.service}
+          onChange={(value) => onChange('service', value)}
+        />
+
+        {category === 'repair' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The technician will inspect your AC and confirm the repair cost.
+            The inspection fee is adjusted against the repair if you proceed.
+          </p>
+        )}
+
+        {category === 'installation' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The starting price shown applies to Split AC installation.
+            Pricing for other AC types will be confirmed.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (step === 'ac-details') {
+    return (
+      <div style={{ display: 'grid', gap: 22 }}>
+        <div>
+          
+          <Choices
+            options={acTypes}
+            name={`${id}-type`}
+            value={answers.acType}
+            onChange={(value) => onChange('acType', value)}
+          />
+        </div>
+
+        {category === 'installation' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose AC capacity</h3>
+            <Choices
+              options={acCapacities}
+              name={`${id}-capacity`}
+              value={answers.capacity}
+              onChange={(value) => onChange('capacity', value)}
+            />
+          </div>
+        )}
+
+        {category === 'gas-charging' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose refrigerant</h3>
+            <Choices
+              options={acRefrigerants}
+              name={`${id}-refrigerant`}
+              value={answers.refrigerant}
+              onChange={(value) => onChange('refrigerant', value)}
+            />
+          </div>
+        )}
+
+        <Quantity
+          label="Number of AC units"
+          value={answers.units ?? 1}
+          onChange={(value) => onChange('units', value)}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'addons') {
+    return (
+      <div>
+        <p
+          className="question-hint"
+          style={{
+            padding: 14,
+            marginBottom: 18,
+            borderRadius: 10,
+            background: '#fff8e8',
+            color: '#785a16',
+          }}
+        >
+          Optional: select additional services if needed. You can continue
+          without selecting any.
+        </p>
+
+        <div className="ac-pop-option-grid">
+          {addons.map((option) => {
+            const checked = selectedAddons.includes(option.value);
+
+            return (
+              <div key={option.value}>
+                <Choice
+                  option={option}
+                  multiple
+                  name={`${id}-addons`}
+                  checked={checked}
+                  onChange={() => {
+                    onChange(
+                      'addons',
+                      checked
+                        ? selectedAddons.filter((value) => value !== option.value)
+                        : [...selectedAddons, option.value]
+                    );
+                  }}
+                />
+
+                {checked && option.unit && (
+                  <div style={{ marginTop: 8 }}>
+                    <Quantity
+                      label={`Quantity (${option.unit})`}
+                      value={answers.addonQuantities?.[option.value] ?? 1}
+                      onChange={(value) =>
+                        onChange('addonQuantities', {
+                          ...answers.addonQuantities,
+                          [option.value]: value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {addons.length === 0 && (
+          <p className="question-hint">
+            No additional services are listed for this category.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+===== FILE: frontend\src\pages\AcServicesCategory.jsx =====
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import PageHero from '../components/ui/PageHero';
+import Icon from '../components/ui/Icon';
+import { acCategories } from '../data/acContent';
+
+const categoryImages = {
+  regular: '/assets/ac-services/regular-service.png',
+  repair: '/assets/ac-services/repair.jpg',
+  installation: '/assets/ac-services/installation.png',
+  uninstallation: '/assets/ac-services/uninstallation.jpeg',
+  'gas-charging': '/assets/ac-services/gas-charging.jpg',
+  amc: '/assets/ac-services/maintenance.jpg',
+};
+
+const categoryIcons = {
+  regular: 'settings',
+  repair: 'settings',
+  installation: 'plus',
+  uninstallation: 'settings',
+  'gas-charging': 'settings',
+  amc: 'calendar',
+};
+
+function CategoryVisual({ category }) {
+  const [failedImage, setFailedImage] = useState(null);
+  const image = categoryImages[category.slug];
+  const showImage = image && failedImage !== image;
+
+  return (
+    <span
+      className="plb-overview-photo"
+      aria-hidden="true"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        height: 125,
+        overflow: 'hidden',
+        background: '#fff8e8',
+        color: '#9a7317',
+      }}
+    >
+      {showImage ? (
+        <img
+          src={image}
+          alt=""
+          width={300}
+          height={125}
+          loading="lazy"
+          decoding="async"
+          onError={() => setFailedImage(image)}
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+          }}
+        />
+      ) : (
+        <Icon
+          name={categoryIcons[category.slug] || 'settings'}
+          size={42}
+        />
+      )}
+    </span>
+  );
+}
+
+export default function AcServicesCategory({
+  modal = false,
+  onSelectFlow,
+}) {
+  return (
+    <>
+      {!modal && (
+        <PageHero
+          eyebrow="AC SERVICES"
+          title="AC Services"
+          text="Choose the care your air conditioner needs."
+          breadcrumbs={[
+            { label: 'Services', to: '/services' },
+            { label: 'AC Services' },
+          ]}
+        />
+      )}
+
+      <section
+        className={modal ? 'plb-section !py-0 !pb-4' : 'plb-section'}
+      >
+        <div
+          className={
+            modal
+              ? 'container container-narrow !w-full !max-w-none !px-0'
+              : 'container container-narrow'
+          }
+        >
+          <div
+            className="plb-overview-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gap: 14,
+            }}
+          >
+            {acCategories.map((category) => {
+              const content = (
+                <>
+                  <CategoryVisual category={category} />
+
+                  <span className="plb-overview-name">
+                    {category.label}
+                    <Icon name="chevron-right" size={16} />
+                  </span>
+
+                  <span
+                    className="plb-overview-price-note"
+                    style={{ paddingTop: 8 }}
+                  >
+                    {category.hint}
+                  </span>
+                </>
+              );
+
+              return modal ? (
+                <button
+                  key={category.slug}
+                  type="button"
+                  className="plb-overview-card !w-full !text-left"
+                  onClick={() => onSelectFlow?.(category.slug)}
+                >
+                  {content}
+                </button>
+              ) : (
+                <Link
+                  key={category.slug}
+                  to={`/services/ac-services/${category.slug}`}
+                  className="plb-overview-card"
+                >
+                  {content}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+===== AVAILABLE AC IMAGES =====
+
+FullName                                                                                 Length
+--------                                                                                 ------
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\ac-unit.jpg            3125
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\gas-charging.jpg     131710
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\installation.png     651447
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\maintenance.jpg      186041
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\regular-service.png 1503635
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\repair.jpg            56654
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\uninstallation.jpeg  267808
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\types\cassette.jpg   264042
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\types\concealed.jpg  406899
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\types\ductable.jpg   418783
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\types\inverter.jpg   262906
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\types\split.jpg      251408
+E:\SupplyBase\SupplyBase-Project\frontend\public\assets\ac-services\types\window.jpg     131256
+
+
+

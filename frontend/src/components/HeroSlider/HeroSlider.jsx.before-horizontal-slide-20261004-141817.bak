@@ -54,7 +54,7 @@ export default function HeroSlider() {
       if (!document.hidden) {
         setActive((current) => (current + 1) % slides.length);
       }
-    }, 4000);
+    }, 6000);
 
     return () => window.clearInterval(timer);
   }, [active, reducedMotion, interacting, searchFocused]);
@@ -141,10 +141,6 @@ export default function HeroSlider() {
           setInteracting(false);
         }}
       >
-        <div
-          className="sb-final-banner__track"
-          style={{ transform: `translateX(-${active * 100}%)` }}
-        >
         {slides.map((slide, index) => (
           <picture
             key={slide.src}
@@ -171,7 +167,6 @@ export default function HeroSlider() {
             />
           </picture>
         ))}
-        </div>
       </div>
 
       <div

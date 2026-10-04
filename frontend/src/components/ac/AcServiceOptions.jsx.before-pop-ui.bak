@@ -1,0 +1,267 @@
+import { useId } from 'react';
+import Icon from '../ui/Icon';
+import {
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../../data/acContent';
+
+function Choice({ option, checked, multiple, name, onChange }) {
+  return (
+    <label
+      className={`pnt-option ${checked ? 'selected' : ''}`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: 16,
+        border: `2px solid ${checked ? '#d9a624' : '#e7e7e7'}`,
+        borderRadius: 12,
+        background: checked ? '#fff9e9' : '#ffffff',
+        cursor: 'pointer',
+        minWidth: 0,
+      }}
+    >
+      <input
+        type={multiple ? 'checkbox' : 'radio'}
+        name={name}
+        value={option.value}
+        checked={checked}
+        onChange={onChange}
+        style={{ accentColor: '#b58a20', flexShrink: 0 }}
+      />
+
+      <span
+        className="pnt-option-body"
+        style={{ display: 'flex', flexDirection: 'column', gap: 5 }}
+      >
+        <strong className="pnt-option-label">{option.label}</strong>
+
+        {option.hint && (
+          <span className="pnt-option-hint">{option.hint}</span>
+        )}
+
+        {option.price != null && (
+          <span className="pnt-option-price">
+            {option.inspection ? 'Inspection from ' : 'From '}
+            ₹{option.price.toLocaleString('en-IN')}
+            {option.unit ? ` / ${option.unit}` : ''}
+          </span>
+        )}
+      </span>
+
+      {checked && (
+        <span aria-hidden="true" style={{ marginLeft: 'auto', color: '#9a7317' }}>
+          <Icon name="check" size={18} />
+        </span>
+      )}
+    </label>
+  );
+}
+
+function Choices({ options, value, name, onChange }) {
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      {options.map((option) => (
+        <Choice
+          key={option.value}
+          option={option}
+          name={name}
+          checked={value === option.value}
+          onChange={() => onChange(option.value)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Quantity({ label, value, onChange }) {
+  const id = useId();
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: 16,
+        border: '1px solid #e7e7e7',
+        borderRadius: 12,
+      }}
+    >
+      <label htmlFor={id} style={{ fontWeight: 600 }}>{label}</label>
+
+      <input
+        id={id}
+        type="number"
+        min="1"
+        step="1"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: 80,
+          padding: 10,
+          border: '1px solid #d8d8d8',
+          borderRadius: 8,
+          textAlign: 'center',
+        }}
+      />
+    </div>
+  );
+}
+
+export default function AcServiceOptions({
+  category,
+  step,
+  answers = {},
+  onChange,
+}) {
+  const id = useId();
+  const services = acServicesByCategory[category] || [];
+  const addons = acAddonsByCategory[category] || [];
+  const selectedAddons = answers.addons || [];
+
+  if (step === 'service') {
+    return (
+      <div>
+        <Choices
+          options={services}
+          name={`${id}-service`}
+          value={answers.service}
+          onChange={(value) => onChange('service', value)}
+        />
+
+        {category === 'repair' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The technician will inspect your AC and confirm the repair cost.
+            The inspection fee is adjusted against the repair if you proceed.
+          </p>
+        )}
+
+        {category === 'installation' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The starting price shown applies to Split AC installation.
+            Pricing for other AC types will be confirmed.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (step === 'ac-details') {
+    return (
+      <div style={{ display: 'grid', gap: 22 }}>
+        <div>
+          <h3 style={{ marginBottom: 12 }}>Choose your AC type</h3>
+          <Choices
+            options={acTypes}
+            name={`${id}-type`}
+            value={answers.acType}
+            onChange={(value) => onChange('acType', value)}
+          />
+        </div>
+
+        {category === 'installation' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose AC capacity</h3>
+            <Choices
+              options={acCapacities}
+              name={`${id}-capacity`}
+              value={answers.capacity}
+              onChange={(value) => onChange('capacity', value)}
+            />
+          </div>
+        )}
+
+        {category === 'gas-charging' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose refrigerant</h3>
+            <Choices
+              options={acRefrigerants}
+              name={`${id}-refrigerant`}
+              value={answers.refrigerant}
+              onChange={(value) => onChange('refrigerant', value)}
+            />
+          </div>
+        )}
+
+        <Quantity
+          label="Number of AC units"
+          value={answers.units ?? 1}
+          onChange={(value) => onChange('units', value)}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'addons') {
+    return (
+      <div>
+        <p
+          className="question-hint"
+          style={{
+            padding: 14,
+            marginBottom: 18,
+            borderRadius: 10,
+            background: '#fff8e8',
+            color: '#785a16',
+          }}
+        >
+          Optional: select additional services if needed. You can continue
+          without selecting any.
+        </p>
+
+        <div style={{ display: 'grid', gap: 12 }}>
+          {addons.map((option) => {
+            const checked = selectedAddons.includes(option.value);
+
+            return (
+              <div key={option.value}>
+                <Choice
+                  option={option}
+                  multiple
+                  name={`${id}-addons`}
+                  checked={checked}
+                  onChange={() => {
+                    onChange(
+                      'addons',
+                      checked
+                        ? selectedAddons.filter((value) => value !== option.value)
+                        : [...selectedAddons, option.value]
+                    );
+                  }}
+                />
+
+                {checked && option.unit && (
+                  <div style={{ marginTop: 8 }}>
+                    <Quantity
+                      label={`Quantity (${option.unit})`}
+                      value={answers.addonQuantities?.[option.value] ?? 1}
+                      onChange={(value) =>
+                        onChange('addonQuantities', {
+                          ...answers.addonQuantities,
+                          [option.value]: value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {addons.length === 0 && (
+          <p className="question-hint">
+            No additional services are listed for this category.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}

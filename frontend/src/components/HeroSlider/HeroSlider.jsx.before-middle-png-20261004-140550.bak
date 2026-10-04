@@ -5,27 +5,18 @@ import './HeroSlider.css';
 const slides = [
   {
     src: '/assets/home-slider/1.jpeg',
-    mobileSrc: '/assets/home-slider/4.jpeg',
-    mobileWidth: 1455,
-    mobileHeight: 1081,
     width: 2048,
     height: 684,
     alt: 'SupplyBase painting services: Fresh Walls, Brighter Spaces. Get 5% off.',
   },
   {
-    src: '/assets/home-slider/2.png',
-    mobileSrc: '/assets/home-slider/5.jpeg',
-    mobileWidth: 1454,
-    mobileHeight: 1082,
+    src: '/assets/home-slider/2.jpeg',
     width: 2170,
     height: 725,
     alt: 'SupplyBase POP and ceiling designs: Stylish Ceilings for Modern Homes. Get 5% off.',
   },
   {
     src: '/assets/home-slider/3.jpeg',
-    mobileSrc: '/assets/home-slider/6.jpeg',
-    mobileWidth: 1455,
-    mobileHeight: 1081,
     width: 2048,
     height: 684,
     alt: 'SupplyBase waterproofing services: Keep Your Home Safe from Water Damage. Get 5% off.',
@@ -54,7 +45,7 @@ export default function HeroSlider() {
       if (!document.hidden) {
         setActive((current) => (current + 1) % slides.length);
       }
-    }, 4000);
+    }, 6000);
 
     return () => window.clearInterval(timer);
   }, [active, reducedMotion, interacting, searchFocused]);
@@ -104,10 +95,7 @@ export default function HeroSlider() {
     <section
       className="sb-home-banner sb-final-banner"
       aria-label="SupplyBase service offers"
-      style={{
-        '--banner-ratio': `${current.width} / ${current.height}`,
-        '--mobile-banner-ratio': `${current.mobileWidth} / ${current.mobileHeight}`,
-      }}
+      style={{ '--banner-ratio': `${current.width} / ${current.height}` }}
     >
       <div
         className="sb-final-banner__images"
@@ -141,37 +129,23 @@ export default function HeroSlider() {
           setInteracting(false);
         }}
       >
-        <div
-          className="sb-final-banner__track"
-          style={{ transform: `translateX(-${active * 100}%)` }}
-        >
         {slides.map((slide, index) => (
-          <picture
+          <img
             key={slide.src}
             className={`sb-final-banner__image ${
               active === index ? 'is-active' : ''
             }`}
+            src={slide.src}
+            alt={slide.alt}
+            width={slide.width}
+            height={slide.height}
             aria-hidden={active !== index}
-          >
-            <source
-              media="(max-width: 767px)"
-              srcSet={slide.mobileSrc}
-              width={slide.mobileWidth}
-              height={slide.mobileHeight}
-            />
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width={slide.width}
-              height={slide.height}
-              loading="eager"
-              fetchpriority={index === 0 ? 'high' : 'auto'}
-              decoding="async"
-              draggable={false}
-            />
-          </picture>
+            loading="eager"
+            fetchpriority={index === 0 ? 'high' : 'auto'}
+            decoding="async"
+            draggable={false}
+          />
         ))}
-        </div>
       </div>
 
       <div

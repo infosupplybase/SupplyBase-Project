@@ -1,0 +1,4246 @@
+﻿===== FILE: backend/src/main/resources/application.yml =====
+===== YOUR YASH VERSION =====
+spring:
+  application:
+    name: supplybase-api
+
+  config:
+    import: optional:file:./.env[.properties]
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:supplybase}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8
+    username: ${DB_USER:root}
+    password: "${DB_PASSWORD}"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      pool-name: supplybase-pool
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Kolkata
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 60MB
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: "${MAIL_PASSWORD:}"
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+server:
+  port: ${PORT:${SERVER_PORT:8080}}
+  error:
+    include-message: always
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    mail:
+      enabled: false
+
+app:
+  cors-allowed-origins: ${CORS_ORIGINS:http://localhost:[*],http://127.0.0.1:[*]}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
+  jwt:
+    secret: "${JWT_SECRET:}"
+    access-token-minutes: ${JWT_ACCESS_MINUTES:15}
+    refresh-token-days: ${JWT_REFRESH_DAYS:30}
+    issuer: supplybase-projects
+
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: "${RAZORPAY_KEY_SECRET:}"
+    webhook-secret: "${RAZORPAY_WEBHOOK_SECRET:}"
+    currency: INR
+
+  notifications:
+    enquiry-recipient: ${ENQUIRY_EMAIL:}
+
+  bootstrap:
+    admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    admin-password: "${BOOTSTRAP_ADMIN_PASSWORD:}"
+
+  booking:
+    expiry-hours: ${BOOKING_EXPIRY_HOURS:24}
+
+  storage-root-dir: ${STORAGE_ROOT_DIR:./uploads}
+
+logging:
+  level:
+    in.supplybase.backend: ${LOG_LEVEL:INFO}
+===== INCOMING MAIN VERSION =====
+# ---------------------------------------------------------------------------
+# SUPPLYBASE PROJECTS API
+#
+# Nothing secret is written in this file. Every credential is read from an
+# environment variable, with a development-only fallback after the ':'.
+# Copy .env.example to .env and fill it in ΓÇö see backend/README.md.
+# ---------------------------------------------------------------------------
+spring:
+  application:
+    name: supplybase-api
+
+  config:
+    # Reads backend/.env as a property source, so `./mvnw spring-boot:run` works
+    # with no shell exports and no extra dependency. `optional:` means a missing
+    # .env is not an error ΓÇö in production the same names come from real
+    # environment variables, which take precedence over anything in the file.
+    import: optional:file:./.env[.properties]
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:supplybase}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata&characterEncoding=utf8
+    username: ${DB_USER:root}
+    # No fallback: a password written here would be committed to git. Set
+    # DB_PASSWORD in backend/.env (or the server's environment); without it
+    # the API refuses to start and names the missing variable.
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      pool-name: supplybase-pool
+
+  jpa:
+    # never `update` or `create`: Flyway owns the schema, and letting Hibernate
+    # also mutate it means two tools fighting over the same tables. `validate`
+    # makes the app refuse to start if the entities and the migrations disagree.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Kolkata
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 60MB
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+server:
+  # Render and Railway provide PORT. SERVER_PORT remains useful locally.
+  port: ${PORT:${SERVER_PORT:8080}}
+  error:
+    include-message: always
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    # ENQUIRY_EMAIL/MAIL_USER are optional (see .env.example) ΓÇö without real
+    # credentials this indicator's SMTP connection test fails and would
+    # otherwise take the whole /actuator/health status DOWN even though the
+    # app itself is healthy.
+    mail:
+      enabled: false
+
+app:
+  # Where the React site runs. Anything not matching is refused by CORS.
+  # These are PATTERNS: [*] covers whichever port Vite ends up on in
+  # development. Set CORS_ORIGINS to exact origins in production.
+  cors-allowed-origins: ${CORS_ORIGINS:http://localhost:[*],http://127.0.0.1:[*]}
+  # The single frontend origin used to build links emailed out (password
+  # reset, email verification). Not a CORS list, just one URL.
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  jwt:
+    # No fixed fallback on purpose ΓÇö see JwtService.resolveSecret for why a
+    # value baked in here would itself be a security hole. Left unset, a
+    # fresh secret is generated for each run instead (fine for local dev;
+    # every session dies on the next restart, so set a real one for anything
+    # that needs to stay signed in). MUST be set in production.
+    secret: ${JWT_SECRET:}
+    access-token-minutes: ${JWT_ACCESS_MINUTES:15}
+    refresh-token-days: ${JWT_REFRESH_DAYS:30}
+    issuer: supplybase-projects
+  google:
+    # Google Cloud Console -> APIs & Services -> Credentials -> OAuth client ID
+    # (type: Web application). This is the PUBLIC client id; there is no secret
+    # here, because ID-token sign-in never needs one.
+    client-id: ${GOOGLE_CLIENT_ID:}
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+    currency: INR
+  notifications:
+    # Where new enquiries are emailed. Blank disables the email entirely.
+    enquiry-recipient: ${ENQUIRY_EMAIL:}
+  bootstrap:
+    # Set both to create (or promote) the first ADMIN account on startup.
+    # Leave blank in production once an admin exists ΓÇö this only ever acts
+    # while zero admins are in the database.
+    admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
+    admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+  booking:
+    # How long a PAYMENT_PENDING or BOOKING_REQUESTED booking is held before
+    # BookingExpiryJob auto-cancels it and releases its appointment seat.
+    expiry-hours: ${BOOKING_EXPIRY_HOURS:24}
+  # Local-disk root for uploaded project documents and booking files. Fine for
+  # local/current use, but this does NOT survive a redeploy on Render/Railway's
+  # ephemeral filesystem ΓÇö swap FileStorageService for S3-compatible storage
+  # before relying on uploads persisting across deploys.
+  storage-root-dir: ${STORAGE_ROOT_DIR:./uploads}
+
+logging:
+  level:
+    in.supplybase.backend: ${LOG_LEVEL:INFO}
+
+===== FILE: frontend/src/components/services/ServiceBookingModal.jsx =====
+===== YOUR YASH VERSION =====
+import { useCallback, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  useFormBack,
+  useHistoryState,
+} from '../../hooks/useHistoryState';
+import { ModalFooterContext } from './ModalFoot';
+import ServiceBooking from '../../pages/ServiceBooking';
+import InteriorBooking from '../../pages/InteriorBooking';
+import {
+  interiorSpaces,
+  getDesignsBySpace,
+  getDesignBySlug,
+  HOME_VISIT_FEE,
+} from '../../data/interiorCatalog';
+import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
+import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
+import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
+import PaintingCategory from '../../pages/PaintingCategory';
+import PaintingFlow from '../../pages/PaintingFlow';
+import PopCeilingCategory from '../../pages/PopCeilingCategory';
+import PopCeilingFlow from '../../pages/PopCeilingFlow';
+import PlumbingCategory from '../../pages/PlumbingCategory';
+import PlumbingTab from '../../pages/PlumbingTab';
+import PlumbingCart from '../../pages/PlumbingCart';
+import PlumbingCheckout from '../../pages/PlumbingCheckout';
+import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
+import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
+import OtherServicesCategory from '../../pages/OtherServicesCategory';
+
+function stripBooking(usr) {
+  const out = {};
+
+  Object.keys(usr).forEach((key) => {
+    if (
+      key !== 'bookingModal' &&
+      key !== '__formPush' &&
+      !key.startsWith('bm:') &&
+      !key.startsWith('f:')
+    ) {
+      out[key] = usr[key];
+    }
+  });
+
+  return out;
+}
+
+export function useServiceBookingModal() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const entry = location.state?.bookingModal || null;
+
+  return {
+    service: entry ? entry.service : null,
+    openToken: entry ? entry.base : 0,
+
+    open: (nextService) => {
+      const base = window.history.state?.idx || 0;
+      const usr = window.history.state?.usr || {};
+      const { pathname, search, hash } = window.location;
+
+      navigate(
+        { pathname, search, hash },
+        {
+          state: {
+            ...stripBooking(usr),
+            bookingModal: { service: nextService, base },
+            __formPush: true,
+          },
+        }
+      );
+    },
+
+    close: () => {
+      const idx = window.history.state?.idx;
+      const base = entry?.base;
+
+      if (
+        typeof idx === 'number' &&
+        typeof base === 'number' &&
+        idx > base
+      ) {
+        navigate(base - idx);
+      } else {
+        const usr = window.history.state?.usr || {};
+        const { pathname, search, hash } = window.location;
+
+        navigate(
+          { pathname, search, hash },
+          {
+            replace: true,
+            state: stripBooking(usr),
+          }
+        );
+      }
+    },
+  };
+}
+
+export default function ServiceBookingModal({ service, onClose }) {
+  const [selectedInteriorSpace, setSelectedInteriorSpace] =
+    useHistoryState('bm:interiorSpace', null, { push: true });
+
+  const [selectedInteriorDesign, setSelectedInteriorDesign] =
+    useHistoryState('bm:interiorDesign', null, { push: true });
+
+  const [showInteriorBooking, setShowInteriorBooking] =
+    useHistoryState('bm:interiorBooking', false, { push: true });
+
+  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] =
+    useHistoryState('bm:idCategory', null, { push: true });
+
+  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] =
+    useHistoryState('bm:idProject', null, { push: true });
+
+  const [selectedPaintingFlow, setSelectedPaintingFlow] =
+    useHistoryState('bm:paintingFlow', null, { push: true });
+
+  const [selectedPopFlow, setSelectedPopFlow] =
+    useHistoryState('bm:popFlow', null, { push: true });
+
+  const [selectedPlumbingTab, setSelectedPlumbingTab] =
+    useHistoryState('bm:plumbingTab', null, { push: true });
+
+  const [plumbingView, setPlumbingView] =
+    useHistoryState('bm:plumbingView', 'category', { push: true });
+
+  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] =
+    useHistoryState('bm:plumbingConsultation', null, { push: true });
+
+  const [selectedOtherService, setSelectedOtherService] =
+    useHistoryState('bm:otherService', null, { push: true });
+
+  const formBack = useFormBack();
+  const modalScrollRef = useRef(null);
+  const [footerNode, setFooterNode] = useState(null);
+
+  const scrollModalToTop = useCallback(() => {
+    requestAnimationFrame(() => {
+      modalScrollRef.current?.scrollTo({
+        top: 0,
+        behavior: 'auto',
+      });
+    });
+  }, []);
+
+  if (!service) return null;
+
+  const hideMainHeader =
+    (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
+    (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow));
+
+  const wideModal =
+    service.slug === 'interior-by-choice' ||
+    service.slug === 'interior-design';
+
+  return (
+    <div
+      className="
+        fixed inset-0 z-[2000] flex items-center justify-center
+        bg-black/65 backdrop-blur-[3px] p-4
+      "
+      onClick={onClose}
+    >
+      <div
+        className={`
+          relative w-full
+          ${wideModal ? 'max-w-[1000px]' : 'max-w-[550px]'}
+          flex flex-col max-h-[88vh] h-auto overflow-hidden
+          rounded-2xl bg-white shadow-2xl
+          max-sm:h-[92vh] max-sm:max-h-[92vh] max-sm:rounded-xl
+        `}
+        style={
+          service.slug === 'painting'
+            ? { height: '88dvh', maxHeight: '88dvh' }
+            : undefined
+        }
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          className={`
+            !absolute !right-5 !z-50 !flex !h-10 !w-10
+            !items-center !justify-center !rounded-full !border
+            !border-gray-200 !bg-white !text-xl !text-gray-700
+            !shadow-sm transition hover:!bg-gray-100
+            ${hideMainHeader ? '!top-3' : '!top-5'}
+          `}
+          aria-label="Close booking modal"
+        >
+          Γ£ò
+        </button>
+
+        {hideMainHeader ? (
+          <div className="h-14 shrink-0" aria-hidden="true" />
+        ) : (
+          <>
+            <div className="shrink-0 px-6 pt-6 pr-16">
+              <p className="mb-1 text-sm font-semibold uppercase tracking-[0.16em] text-amber-500">
+                Book a service
+              </p>
+
+              <h2 className="text-2xl font-bold text-gray-950">
+                {service.name}
+              </h2>
+            </div>
+
+            <div className="mt-5 mb-4 h-px shrink-0 bg-gray-200" />
+          </>
+        )}
+
+        <ModalFooterContext.Provider value={footerNode}>
+          <div
+            ref={modalScrollRef}
+            className="
+              bm-scroll min-h-0 flex-auto overflow-y-auto px-6 pb-6
+              max-sm:flex-1 [scrollbar-width:none]
+              [&::-webkit-scrollbar]:hidden
+            "
+          >
+            {service.slug === 'interior-by-choice' ? (
+              <>
+                {showInteriorBooking ? (
+                  <InteriorBooking
+                    modal={true}
+                    spaceSlug={selectedInteriorSpace}
+                    designSlug={selectedInteriorDesign}
+                    onBack={() => {
+                      formBack(() => setShowInteriorBooking(false));
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                  />
+                ) : selectedInteriorSpace && selectedInteriorDesign ? (
+                  <div className="pb-2 md:pb-8">
+                    {(() => {
+                      const design = getDesignBySlug(
+                        selectedInteriorSpace,
+                        selectedInteriorDesign
+                      );
+
+                      const space = interiorSpaces.find(
+                        (item) => item.slug === selectedInteriorSpace
+                      );
+
+                      if (!design) {
+                        return (
+                          <p className="ibc-empty">
+                            Design details could not be loaded.
+                          </p>
+                        );
+                      }
+
+                      return (
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm mb-4"
+                            onClick={() => {
+                              formBack(() =>
+                                setSelectedInteriorDesign(null)
+                              );
+                              scrollModalToTop();
+                            }}
+                          >
+                            BACK
+                          </button>
+
+                          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <div className="overflow-hidden rounded-xl">
+                              <img
+                                loading="lazy"
+                                decoding="async"
+                                src={design.image}
+                                alt={design.name}
+                                className="h-auto max-h-[420px] w-full object-cover"
+                              />
+                            </div>
+
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-600">
+                                {space?.name}
+                              </p>
+
+                              <h3 className="mt-2 text-2xl font-bold text-gray-950">
+                                {design.name}
+                              </h3>
+
+                              {design.tagline && (
+                                <p className="mt-2 text-sm leading-6 text-gray-500">
+                                  {design.tagline}
+                                </p>
+                              )}
+
+                              <p className="mt-3 text-lg font-semibold text-gray-900">
+                                Γé╣{design.pricePerSqft} / sq.ft.
+                              </p>
+
+                              {design.description && (
+                                <p className="mt-4 text-sm leading-6 text-gray-600">
+                                  {design.description}
+                                </p>
+                              )}
+
+                              <button
+                                type="button"
+                                className="btn btn-primary mt-6 w-full md:w-auto"
+                                onClick={() => {
+                                  setShowInteriorBooking(true);
+                                  scrollModalToTop();
+                                }}
+                              >
+                                CUSTOMISE THIS DESIGN
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                ) : selectedInteriorSpace ? (
+                  <div className="pb-2 md:pb-8">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm mb-4"
+                      onClick={() => {
+                        formBack(() => {
+                          setSelectedInteriorSpace(null);
+                          setSelectedInteriorDesign(null);
+                        });
+                        scrollModalToTop();
+                      }}
+                    >
+                      BACK
+                    </button>
+
+                    <div className="ibc-filter-row">
+                      {interiorSpaces.map((space) => (
+                        <button
+                          key={space.slug}
+                          type="button"
+                          className={`ibc-filter-chip ${
+                            space.slug === selectedInteriorSpace
+                              ? 'active'
+                              : ''
+                          }`}
+                          onClick={() => {
+                            setSelectedInteriorSpace(space.slug);
+                            setSelectedInteriorDesign(null);
+                            scrollModalToTop();
+                          }}
+                        >
+                          {space.name}
+                        </button>
+                      ))}
+                    </div>
+
+                    {getDesignsBySpace(selectedInteriorSpace).length === 0 ? (
+                      <p className="ibc-empty">
+                        More designs for this space are on the way.
+                        Book a home visit and our designer will bring
+                        options for you.
+                      </p>
+                    ) : (
+                      <div className="ibc-design-grid">
+                        {getDesignsBySpace(selectedInteriorSpace).map(
+                          (design) => (
+                            <div
+                              key={design.slug}
+                              className="ibc-design-card"
+                            >
+                              <button
+                                type="button"
+                                className="ibc-design-media !block !w-full !border-0 !p-0"
+                                onClick={() => {
+                                  setSelectedInteriorDesign(design.slug);
+                                  scrollModalToTop();
+                                }}
+                              >
+                                <img
+                                  src={design.image}
+                                  alt={design.name}
+                                  loading="lazy"
+                                />
+                              </button>
+
+                              <button
+                                type="button"
+                                className="ibc-design-body !w-full !border-0 !text-left"
+                                onClick={() => {
+                                  setSelectedInteriorDesign(design.slug);
+                                  scrollModalToTop();
+                                }}
+                              >
+                                <span className="ibc-design-name">
+                                  {design.name}
+                                </span>
+                                <span className="ibc-design-price">
+                                  Γé╣{design.pricePerSqft} / sq.ft.
+                                </span>
+                              </button>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="btn btn-primary ibc-customise-cta"
+                      onClick={() => {
+                        setSelectedInteriorDesign(null);
+                        setShowInteriorBooking(true);
+                        scrollModalToTop();
+                      }}
+                    >
+                      Customise Your Design
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pb-2 md:pb-8">
+                    <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                      <p className="text-sm font-semibold text-gray-900">
+                        Book a Home Visit at just Γé╣{HOME_VISIT_FEE}
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-gray-600">
+                        Get expert advice, measurement and a custom
+                        design as per your choice.
+                      </p>
+                    </div>
+
+                    <h3 className="mb-4 text-lg font-bold text-gray-950">
+                      Choose Your Space
+                    </h3>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      {interiorSpaces.map((space) => (
+                        <button
+                          key={space.slug}
+                          type="button"
+                          onClick={() => {
+                            setSelectedInteriorSpace(space.slug);
+                            setSelectedInteriorDesign(null);
+                            scrollModalToTop();
+                          }}
+                          className="
+                            group relative overflow-hidden rounded-xl
+                            border border-gray-200 bg-white text-left shadow-sm
+                            transition hover:-translate-y-1 hover:shadow-lg
+                          "
+                        >
+                          <img
+                            src={space.image}
+                            alt={space.name}
+                            loading="lazy"
+                            className="h-[170px] w-full object-cover transition duration-300 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                          <span className="absolute bottom-3 left-4 text-base font-semibold text-white">
+                            {space.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : service.slug === 'interior-design' ? (
+              selectedInteriorDesignProject ? (
+                <InteriorDesignFlow
+                  modal={true}
+                  categorySlug={selectedInteriorDesignCategory}
+                  projectSlug={selectedInteriorDesignProject}
+                  onBackToCatalogue={() => {
+                    formBack(() =>
+                      setSelectedInteriorDesignProject(null)
+                    );
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : selectedInteriorDesignCategory ? (
+                <InteriorDesignCatalogue
+                  modal={true}
+                  categorySlug={selectedInteriorDesignCategory}
+                  onSelectProject={(projectSlug) => {
+                    setSelectedInteriorDesignProject(projectSlug);
+                    scrollModalToTop();
+                  }}
+                  onBack={() => {
+                    formBack(() => {
+                      setSelectedInteriorDesignCategory(null);
+                      setSelectedInteriorDesignProject(null);
+                    });
+                    scrollModalToTop();
+                  }}
+                />
+              ) : (
+                <InteriorDesignCategory
+                  modal={true}
+                  onSelectCategory={(categorySlug) => {
+                    setSelectedInteriorDesignCategory(categorySlug);
+                    setSelectedInteriorDesignProject(null);
+                    scrollModalToTop();
+                  }}
+                  onCustom={() => {
+                    console.log('Custom interior design');
+                  }}
+                />
+              )
+            ) : service.slug === 'painting' ? (
+              <div className="painting-modal-scope">
+                {selectedPaintingFlow ? (
+                  <PaintingFlow
+                    modal={true}
+                    flowSlug={selectedPaintingFlow}
+                    onBackToCategories={() => {
+                      formBack(() => setSelectedPaintingFlow(null));
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                  />
+                ) : (
+                  <PaintingCategory
+                    modal={true}
+                    onSelectFlow={(flowSlug) => {
+                      setSelectedPaintingFlow(flowSlug);
+                      scrollModalToTop();
+                    }}
+                  />
+                )}
+              </div>
+            ) : service.slug === 'pop-ceiling-design' ? (
+              <div className="painting-modal-scope">
+                {selectedPopFlow ? (
+                  <PopCeilingFlow
+                    modal={true}
+                    flowSlug={selectedPopFlow}
+                    onBackToCategories={() => {
+                      formBack(() => setSelectedPopFlow(null));
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                  />
+                ) : (
+                  <PopCeilingCategory
+                    modal={true}
+                    onSelectFlow={(flowSlug) => {
+                      setSelectedPopFlow(flowSlug);
+                      scrollModalToTop();
+                    }}
+                  />
+                )}
+              </div>
+            ) : service.slug === 'plumbing' ? (
+              <div className="plumbing-modal-scope">
+                {plumbingView === 'category' ? (
+                  <PlumbingCategory
+                    modal={true}
+                    onSelectTab={(tabSlug) => {
+                      setSelectedPlumbingTab(tabSlug);
+                      setPlumbingView('tab');
+                      scrollModalToTop();
+                    }}
+                    onSelectConsultation={() => {
+                      setSelectedPlumbingConsultation(null);
+                      setPlumbingView('consultations');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'tab' ? (
+                  <PlumbingTab
+                    modal={true}
+                    tabSlug={selectedPlumbingTab}
+                    onBackToCategories={() => {
+                      formBack(() => {
+                        setSelectedPlumbingTab(null);
+                        setPlumbingView('category');
+                      });
+                      scrollModalToTop();
+                    }}
+                    onOpenConsultation={() => {
+                      setSelectedPlumbingConsultation(null);
+                      setPlumbingView('consultations');
+                      scrollModalToTop();
+                    }}
+                    onViewCart={() => {
+                      setPlumbingView('cart');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'cart' ? (
+                  <PlumbingCart
+                    modal={true}
+                    onBackToServices={() => {
+                      formBack(() =>
+                        setPlumbingView(
+                          selectedPlumbingTab ? 'tab' : 'category'
+                        )
+                      );
+                      scrollModalToTop();
+                    }}
+                    onCheckout={() => {
+                      setPlumbingView('checkout');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'checkout' ? (
+                  <PlumbingCheckout
+                    modal={true}
+                    onBackToCart={() => {
+                      formBack(() => setPlumbingView('cart'));
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                    onBackToServices={() => {
+                      setSelectedPlumbingTab(null);
+                      setPlumbingView('category');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'consultations' ? (
+                  <PlumbingConsultationList
+                    modal={true}
+                    onBackToCategories={() => {
+                      formBack(() => {
+                        setSelectedPlumbingConsultation(null);
+                        setPlumbingView('category');
+                      });
+                      scrollModalToTop();
+                    }}
+                    onSelectType={(typeSlug) => {
+                      setSelectedPlumbingConsultation(typeSlug);
+                      setPlumbingView('consultation-book');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : plumbingView === 'consultation-book' ? (
+                  <PlumbingConsultationBook
+                    modal={true}
+                    typeSlug={selectedPlumbingConsultation}
+                    onBackToConsultations={() => {
+                      formBack(() => {
+                        setSelectedPlumbingConsultation(null);
+                        setPlumbingView('consultations');
+                      });
+                      scrollModalToTop();
+                    }}
+                    onStepChange={scrollModalToTop}
+                    onBackToServices={() => {
+                      setSelectedPlumbingConsultation(null);
+                      setPlumbingView('category');
+                      scrollModalToTop();
+                    }}
+                  />
+                ) : null}
+              </div>
+            ) : service.slug === 'other-services' ? (
+              selectedOtherService ? (
+                <ServiceBooking
+                  serviceSlug={selectedOtherService}
+                  modal={true}
+                  onClose={onClose}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : (
+                <OtherServicesCategory
+                  modal={true}
+                  onSelectService={(serviceSlug) => {
+                    setSelectedOtherService(serviceSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              )
+            ) : (
+              <ServiceBooking
+                serviceSlug={service.slug}
+                modal={true}
+                onClose={onClose}
+                onStepChange={scrollModalToTop}
+              />
+            )}
+          </div>
+        </ModalFooterContext.Provider>
+
+        <div ref={setFooterNode} className="bm-foot" />
+      </div>
+    </div>
+  );
+}
+===== INCOMING MAIN VERSION =====
+import { useCallback, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
+import Icon from '../ui/Icon';
+import { ModalFooterContext } from './ModalFoot';
+import ServiceBooking from '../../pages/ServiceBooking';
+import InteriorBooking from '../../pages/InteriorBooking';
+import {
+  interiorSpaces,
+  getDesignsBySpace,
+  getDesignBySlug,
+  HOME_VISIT_FEE,
+} from '../../data/interiorCatalog';
+import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
+import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
+import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
+import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
+import PaintingCategory from '../../pages/PaintingCategory';
+import PaintingFlow from '../../pages/PaintingFlow';
+import PopCeilingCategory from '../../pages/PopCeilingCategory';
+import PopCeilingFlow from '../../pages/PopCeilingFlow';
+import PlumbingCategory from '../../pages/PlumbingCategory';
+import PlumbingTab from '../../pages/PlumbingTab';
+import PlumbingCart from '../../pages/PlumbingCart';
+import PlumbingCheckout from '../../pages/PlumbingCheckout';
+import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
+import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
+import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import ElectricalCategory from '../../pages/ElectricalCategory';
+import ElectricalTab from '../../pages/ElectricalTab';
+import ElectricalCart from '../../pages/ElectricalCart';
+import ElectricalCheckout from '../../pages/ElectricalCheckout';
+import { getElectricalGroup } from '../../data/electricalContent';
+
+/**
+ * Opens the "Book a service" modal, shared by every page that lets someone
+ * pick a service and book it: the Services page's own grid and the
+ * homepage's Popular Services tiles both render this component so the
+ * booking flow is identical (same catalogue, same steps) no matter which
+ * page you started from.
+ *
+ * Usage: const booking = useServiceBookingModal(); ... onClick={() =>
+ * booking.open(service)} ... {booking.service && <ServiceBookingModal
+ * key={booking.openToken} service={booking.service} onClose={booking.close}
+ * />}
+ *
+ * Which screen the booking is on lives in the browser's history (see
+ * hooks/useHistoryState): opening it and every screen inside it are history
+ * entries, so the browser's Back button goes back one screen (and closes the
+ * booking from its first screen) and a refresh reopens it where it was.
+ * `key={booking.openToken}` still remounts the modal fresh for each new
+ * booking, so a half-finished sub-flow never leaks into the next one.
+ */
+export function useServiceBookingModal() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const entry = (location.state && location.state.bookingModal) || null;
+
+  return {
+    service: entry ? entry.service : null,
+    // Stable for as long as this booking is open (every screen inside it
+    // shares the entry it was opened from), new for the next one.
+    openToken: entry ? entry.base : 0,
+    open: (nextService) => {
+      const base = (window.history.state && window.history.state.idx) || 0;
+      const usr = (window.history.state && window.history.state.usr) || {};
+      const { pathname, search, hash } = window.location;
+      // A history entry of its own: Back closes the booking instead of
+      // leaving the page, and a refresh reopens it where it was.
+      navigate(
+        { pathname, search, hash },
+        { state: { ...stripBooking(usr), bookingModal: { service: nextService, base }, __formPush: true } }
+      );
+    },
+    close: () => {
+      const idx = window.history.state && window.history.state.idx;
+      const base = entry && entry.base;
+      if (typeof idx === 'number' && typeof base === 'number' && idx > base) {
+        // Unwind every screen of this booking in one go, back to the page
+        // as it was before it opened.
+        navigate(base - idx);
+      } else {
+        const usr = (window.history.state && window.history.state.usr) || {};
+        const { pathname, search, hash } = window.location;
+        navigate({ pathname, search, hash }, { replace: true, state: stripBooking(usr) });
+      }
+    },
+  };
+}
+
+/** The history state with this booking's screens and forms removed. */
+function stripBooking(usr) {
+  const out = {};
+  Object.keys(usr).forEach((k) => {
+    if (k !== 'bookingModal' && k !== '__formPush' && !k.startsWith('bm:') && !k.startsWith('f:')) out[k] = usr[k];
+  });
+  return out;
+}
+
+export default function ServiceBookingModal({ service, onClose }) {
+  const [selectedInteriorSpace, setSelectedInteriorSpace] = useHistoryState('bm:interiorSpace', null, { push: true });
+  const [selectedInteriorDesign, setSelectedInteriorDesign] = useHistoryState('bm:interiorDesign', null, { push: true });
+  const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
+  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
+  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
+  // Interior Design -> "Custom": the requirements box, then details + schedule.
+  const [showCustomInteriorDesign, setShowCustomInteriorDesign] = useHistoryState('bm:idCustom', false, { push: true });
+  const [showCustomInteriorDetails, setShowCustomInteriorDetails] = useHistoryState('bm:idCustomDetails', false, { push: true });
+  const [customInteriorRequirements, setCustomInteriorRequirements] = useHistoryState('bm:idCustomRequirements', '');
+  const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
+  const [selectedPopFlow, setSelectedPopFlow] = useHistoryState('bm:popFlow', null, { push: true });
+  const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
+  const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
+  // Electrical: category -> service list -> cart -> checkout, like plumbing.
+  const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
+  const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
+  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
+  const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
+
+  // Every in-app BACK goes back through history, exactly like the
+  // browser's Back button, so the two always agree.
+  const formBack = useFormBack();
+
+  const modalScrollRef = useRef(null);
+
+  // The pop-up's footer: the forms draw their Back / Continue bar here
+  // (see ModalFoot), below the scrolling area rather than over it.
+  const [footerNode, setFooterNode] = useState(null);
+
+  // One stable function: the forms scroll the pop-up to the top when their
+  // step changes, and a new function on every render (every tap saves the
+  // answer to history, which re-renders the pop-up) would look like a step
+  // change and throw the customer back to the top after each choice.
+  const scrollModalToTop = useCallback(() => {
+    requestAnimationFrame(() => {
+      modalScrollRef.current?.scrollTo({
+        top: 0,
+        behavior: 'auto',
+      });
+    });
+  }, []);
+
+  return (
+    <div
+      className="
+        fixed
+        inset-0
+        z-[2000]
+        flex
+        items-center
+        justify-center
+        bg-black/65
+        backdrop-blur-[3px]
+        p-4
+      "
+      onClick={onClose}
+    >
+      <div
+        className={`
+          relative
+          w-full
+
+         ${service.slug === 'interior-by-choice'
+  ? 'max-w-[800px]'
+  : service.slug === 'interior-design'
+    ? 'max-w-[800px]'
+    : service.slug === 'electrical'
+      ? 'max-w-[640px]'
+      : 'max-w-[550px]'
+}
+
+          flex
+          flex-col
+          max-h-[88vh]
+          h-auto
+          overflow-hidden
+          rounded-2xl
+          bg-white
+          shadow-2xl
+
+          max-sm:h-[92vh]
+          max-sm:max-h-[92vh]
+          max-sm:rounded-xl
+        `}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* CLOSE BUTTON */}
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="
+            !absolute
+            !right-5
+            !top-5
+            !z-50
+
+            !flex
+            !h-10
+            !w-10
+            !items-center
+            !justify-center
+
+            !rounded-full
+            !border
+            !border-gray-200
+            !bg-white
+
+            !text-xl
+            !text-gray-700
+
+            !shadow-sm
+
+            transition
+
+            hover:!bg-gray-100
+          "
+          aria-label="Close booking modal"
+        >
+          Γ£ò
+        </button>
+
+        {/* MODAL HEADER ΓÇö hidden inside a POP flow, which shows its own
+            title and step count */}
+
+        {!(service.slug === 'pop-ceiling-design' && selectedPopFlow) && (
+        <>
+        <div className="shrink-0 px-6 pt-6 pr-16">
+          <p
+            className="
+              mb-1
+              text-sm
+              font-semibold
+              uppercase
+              tracking-[0.16em]
+              text-amber-500
+            "
+          >
+            Book a service
+          </p>
+
+          <h2
+            className="
+              text-2xl
+              font-bold
+              text-gray-950
+            "
+          >
+            {/* The cart names itself below ("Your Cart (3 items)"), like
+                plumbing's, so only the service list swaps in its category */}
+            {service.slug === 'electrical' && electricalView === 'tab'
+              ? getElectricalGroup(electricalTab)?.name || service.name
+              : service.name}
+          </h2>
+
+          {/* <p
+            className="
+              mt-2
+              text-sm
+              leading-6
+              text-gray-500
+            "
+          >
+            {service.description}
+          </p> */}
+        </div>
+
+        <div className="mt-1 mb-4 h-px shrink-0 bg-gray-200" />
+        </>
+        )}
+
+        {/* MODAL SCROLL AREA */}
+
+        <ModalFooterContext.Provider value={footerNode}>
+        <div
+          ref={modalScrollRef}
+          className="
+            bm-scroll
+            min-h-0
+            flex-auto
+            overflow-y-auto
+
+            px-6
+            pb-6
+
+            max-sm:flex-1
+
+            [scrollbar-width:none]
+            [&::-webkit-scrollbar]:hidden
+          "
+        >
+          {service.slug === 'interior-by-choice' ? (
+            <>
+              {/* ========================================= */}
+              {/* DESIGN DETAIL */}
+              {/* ========================================= */}
+
+              {showInteriorBooking ? (
+                <InteriorBooking
+                  modal={true}
+                  spaceSlug={selectedInteriorSpace}
+                  designSlug={selectedInteriorDesign}
+                  onBack={() => {
+                    formBack(() => setShowInteriorBooking(false));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : selectedInteriorSpace &&
+                selectedInteriorDesign ? (
+                <div className="pb-2 md:pb-8">
+                  {(() => {
+                    const design =
+                      getDesignBySlug(
+                        selectedInteriorSpace,
+                        selectedInteriorDesign
+                      );
+
+                    const space =
+                      interiorSpaces.find(
+                        (item) =>
+                          item.slug ===
+                          selectedInteriorSpace
+                      );
+
+                    if (!design) {
+                      return (
+                        <p className="ibc-empty">
+                          Design details could not be loaded.
+                        </p>
+                      );
+                    }
+
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm mb-4"
+                          onClick={() => {
+                            formBack(() => setSelectedInteriorDesign(null));
+
+                            scrollModalToTop();
+                          }}
+                        >
+                          {/* <Icon
+                            name="arrow-left"
+                            size={16}
+                          /> */}
+
+                          BACK
+                        </button>
+
+                        <div
+                          className="
+                            grid
+                            grid-cols-1
+                            gap-6
+                            md:grid-cols-2
+                          "
+                        >
+                          {/* DESIGN IMAGE */}
+
+                          <div
+                            className="
+                              overflow-hidden
+                              rounded-xl
+                            "
+                          >
+                            <img loading="lazy" decoding="async"
+                              src={design.image}
+                              alt={design.name}
+                              className="
+                                h-auto
+                                max-h-[420px]
+                                w-full
+                                object-cover
+                              "
+                            />
+                          </div>
+
+                          {/* DESIGN INFORMATION */}
+
+                          <div>
+                            <p
+                              className="
+                                mb-2
+                                text-sm
+                                font-semibold
+                                uppercase
+                                tracking-[0.14em]
+                                text-amber-500
+                              "
+                            >
+                              {space?.name}
+                            </p>
+
+                            <h3
+                              className="
+                                text-2xl
+                                font-bold
+                                text-gray-950
+                              "
+                            >
+                              {design.name}
+                            </h3>
+
+                            {design.tagline && (
+                              <p
+                                className="
+                                  mt-2
+                                  text-sm
+                                  leading-6
+                                  text-gray-500
+                                "
+                              >
+                                {design.tagline}
+                              </p>
+                            )}
+
+                            <p
+                              className="
+                                mt-3
+                                text-lg
+                                font-semibold
+                                text-gray-900
+                              "
+                            >
+                              Γé╣{design.pricePerSqft} / sq.ft.
+                            </p>
+
+                            {design.description && (
+                              <p
+                                className="
+                                  mt-4
+                                  text-sm
+                                  leading-6
+                                  text-gray-600
+                                "
+                              >
+                                {design.description}
+                              </p>
+                            )}
+
+                            <button
+                              type="button"
+                              className="
+    btn
+    btn-primary
+    mt-6
+    w-full
+    md:w-auto
+  "
+                              onClick={() => {
+                                setShowInteriorBooking(true);
+                                scrollModalToTop();
+                              }}
+                            >
+                              CUSTOMISE THIS DESIGN
+
+                              {/* <Icon
+                                name="arrow-right"
+                                size={17}
+                              /> */}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              ) : selectedInteriorSpace ? (
+                <>
+                  {/* ========================================= */}
+                  {/* DESIGN GALLERY */}
+                  {/* ========================================= */}
+
+                  <div className="pb-2 md:pb-8">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm mb-4"
+                      onClick={() => {
+                        formBack(() => {
+                          setSelectedInteriorSpace(null);
+                          setSelectedInteriorDesign(null);
+                        });
+
+                        scrollModalToTop();
+                      }}
+                    >
+                      {/* <Icon
+                        name="arrow-left"
+                        size={16}
+                      /> */}
+
+                      BACK
+                    </button>
+
+                    {/* SPACE FILTER */}
+
+                    <div className="ibc-filter-row">
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            className={`ibc-filter-chip ${space.slug ===
+                              selectedInteriorSpace
+                              ? 'active'
+                              : ''
+                              }`}
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
+
+                              setSelectedInteriorDesign(
+                                null
+                              );
+
+                              scrollModalToTop();
+                            }}
+                          >
+                            {space.name}
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                    {/* DESIGN CARDS */}
+
+                    {getDesignsBySpace(
+                      selectedInteriorSpace
+                    ).length === 0 ? (
+                      <p className="ibc-empty">
+                        More designs for this space
+                        are on the way. Book a home
+                        visit and our designer will
+                        bring options for you.
+                      </p>
+                    ) : (
+                      <div className="ibc-design-grid">
+                        {getDesignsBySpace(
+                          selectedInteriorSpace
+                        ).map((design) => (
+                          <div
+                            key={design.slug}
+                            className="ibc-design-card"
+                          >
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-media
+                                !block
+                                !w-full
+                                !border-0
+                                !p-0
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
+
+                                scrollModalToTop();
+                              }}
+                            >
+                              <img
+                                src={design.image}
+                                alt={design.name}
+                                loading="lazy"
+                              />
+                            </button>
+
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-body
+                                !w-full
+                                !border-0
+                                !text-left
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
+
+                                scrollModalToTop();
+                              }}
+                            >
+                              <span className="ibc-design-name">
+                                {design.name}
+                              </span>
+
+                              <span className="ibc-design-price">
+                                Γé╣{design.pricePerSqft}{' '}
+                                / sq.ft.
+                              </span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="
+    btn
+    btn-primary
+    ibc-customise-cta
+  "
+                      onClick={() => {
+                        setSelectedInteriorDesign(null);
+                        setShowInteriorBooking(true);
+                        scrollModalToTop();
+                      }}
+                    >
+                      Customise Your Design
+
+                      {/* <Icon
+                        name="arrow-right"
+                        size={17}
+                      /> */}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* ========================================= */}
+                  {/* CHOOSE SPACE */}
+                  {/* ========================================= */}
+
+                  <div className="pb-2 md:pb-8">
+                    {/* <div
+                      className="
+                        mb-5
+                        rounded-xl
+                        border
+                        border-amber-200
+                        bg-amber-50
+                        p-4
+                      "
+                    >
+                      <p
+                        className="
+                          text-sm
+                          font-semibold
+                          text-gray-900
+                        "
+                      >
+                        Book a Home Visit at just Γé╣
+                        {HOME_VISIT_FEE}
+                      </p>
+
+                      <p
+                        className="
+                          mt-1
+                          text-sm
+                          leading-6
+                          text-gray-600
+                        "
+                      >
+                        Get expert advice,
+                        measurement and a custom
+                        design as per your choice.
+                      </p>
+                    </div> */}
+
+                    <h3
+                      className="
+                        mb-4
+                        text-lg
+                        font-bold
+                        text-gray-950
+                      "
+                    >
+                      Choose Your Space
+                    </h3>
+
+                    <div
+                      className="
+                        grid
+                        grid-cols-1
+                        gap-4
+                        sm:grid-cols-2
+                      "
+                    >
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
+
+                              setSelectedInteriorDesign(
+                                null
+                              );
+
+                              scrollModalToTop();
+                            }}
+                            className="
+                              group
+                              relative
+                              overflow-hidden
+                              rounded-xl
+                              text-left
+                            "
+                          >
+                            <img loading="lazy" decoding="async"
+                              src={space.image}
+                              alt={space.name}
+                              className="
+                                h-36
+                                w-full
+                                object-cover
+
+                                transition
+                                duration-300
+
+                                group-hover:scale-105
+
+                                sm:h-44
+                              "
+                            />
+
+                            <div
+                              className="
+                                absolute
+                                inset-0
+                                bg-gradient-to-t
+                                from-black/70
+                                via-black/10
+                                to-transparent
+                              "
+                            />
+
+                            <span
+                              className="
+                                absolute
+                                bottom-3
+                                left-4
+                                text-base
+                                font-semibold
+                                text-white
+                              "
+                            >
+                              {space.name}
+                            </span>
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          ) : service.slug === 'interior-design' ? (
+            showCustomInteriorDesign ? (
+              <InteriorDesignCustomFlow
+                initialRequirements={customInteriorRequirements}
+                onDraftChange={setCustomInteriorRequirements}
+                onBack={() => {
+                  formBack(() => setShowCustomInteriorDesign(false));
+                  scrollModalToTop();
+                }}
+                onContinue={(requirements) => {
+                  setCustomInteriorRequirements(requirements);
+                  setShowCustomInteriorDesign(false);
+                  setShowCustomInteriorDetails(true);
+                  scrollModalToTop();
+                }}
+              />
+            ) : showCustomInteriorDetails ? (
+              <InteriorDesignFlow
+                modal={true}
+                startAtDetails={true}
+                customRequirements={customInteriorRequirements}
+                onBackToCatalogue={() => {
+                  formBack(() => {
+                    setShowCustomInteriorDetails(false);
+                    setShowCustomInteriorDesign(true);
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignProject ? (
+              <InteriorDesignFlow
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                projectSlug={selectedInteriorDesignProject}
+                onBackToCatalogue={() => {
+                  formBack(() => setSelectedInteriorDesignProject(null));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignCategory ? (
+              <InteriorDesignCatalogue
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                onSelectProject={(projectSlug) => {
+                  setSelectedInteriorDesignProject(projectSlug);
+                  scrollModalToTop();
+                }}
+                onBack={() => {
+                  formBack(() => {
+                    setSelectedInteriorDesignCategory(null);
+                    setSelectedInteriorDesignProject(null);
+                  });
+                  scrollModalToTop();
+                }}
+              />
+            ) : (
+              <InteriorDesignCategory
+                modal={true}
+                onSelectCategory={(categorySlug) => {
+                  setSelectedInteriorDesignCategory(categorySlug);
+                  setSelectedInteriorDesignProject(null);
+                  scrollModalToTop();
+                }}
+                onCustom={() => {
+                  setShowCustomInteriorDesign(true);
+                  scrollModalToTop();
+                }}
+              />
+            )
+          ) : service.slug === 'painting' ? (
+            selectedPaintingFlow ? (
+              <div className="painting-modal-scope">
+                <PaintingFlow
+                  modal={true}
+                  flowSlug={selectedPaintingFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPaintingFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              </div>
+            ) : (
+              <div className="painting-modal-scope">
+                <PaintingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPaintingFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              </div>
+            )
+          ) : service.slug === 'plumbing' ? (
+            <div className="plumbing-modal-scope">
+            {plumbingView === 'category' ? (
+              <PlumbingCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setSelectedPlumbingTab(tabSlug);
+                  setPlumbingView('tab');
+                  scrollModalToTop();
+                }}
+                onSelectConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'tab' ? (
+              <PlumbingTab
+                modal={true}
+                tabSlug={selectedPlumbingTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setSelectedPlumbingTab(null);
+                    setPlumbingView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onOpenConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setPlumbingView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'cart' ? (
+              <PlumbingCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setPlumbingView(selectedPlumbingTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setPlumbingView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'checkout' ? (
+              <PlumbingCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setPlumbingView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingTab(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultations' ? (
+              <PlumbingConsultationList
+                modal={true}
+                onBackToCategories={() => {
+                  formBack(() => setPlumbingView('category'));
+                  scrollModalToTop();
+                }}
+                onSelectConsultationType={(typeSlug) => {
+                  setSelectedPlumbingConsultation(typeSlug);
+                  setPlumbingView('consultation-book');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultation-book' ? (
+              <PlumbingConsultationBook
+                modal={true}
+                typeSlug={selectedPlumbingConsultation}
+                onBackToConsultations={() => {
+                  formBack(() => {
+                    setSelectedPlumbingConsultation(null);
+                    setPlumbingView('consultations');
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'pop-ceiling-design' ? (
+            <div className="painting-modal-scope">
+              {selectedPopFlow ? (
+                <PopCeilingFlow
+                  modal={true}
+                  flowSlug={selectedPopFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPopFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : (
+                <PopCeilingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPopFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              )}
+            </div>
+          ) : service.slug === 'electrical' ? (
+            <div className="electrical-modal-scope">
+            {electricalView === 'category' ? (
+              <ElectricalCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setElectricalTab(tabSlug);
+                  setElectricalView('tab');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'tab' ? (
+              <ElectricalTab
+                modal={true}
+                tabSlug={electricalTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setElectricalTab(null);
+                    setElectricalView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setElectricalView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'cart' ? (
+              <ElectricalCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setElectricalView(electricalTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setElectricalView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'checkout' ? (
+              <ElectricalCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setElectricalView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setElectricalTab(null);
+                  setElectricalView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'other-services' ? (
+            selectedOtherService ? (
+              <ServiceBooking
+                serviceSlug={selectedOtherService}
+                modal={true}
+                onClose={onClose}
+                onStepChange={scrollModalToTop}
+              />
+            ) : (
+              <OtherServicesCategory
+                modal={true}
+                onSelectService={(serviceSlug) => {
+                  setSelectedOtherService(serviceSlug);
+                  scrollModalToTop();
+                }}
+              />
+            )
+          ) : (
+            <ServiceBooking
+              serviceSlug={service.slug}
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
+          )}
+        </div>
+        </ModalFooterContext.Provider>
+
+        {/* MODAL FOOTER ΓÇö filled by the current step's Back / Continue bar,
+            hidden while a step has none */}
+
+        <div ref={setFooterNode} className="bm-foot" />
+      </div>
+    </div>
+  );
+}
+
+===== FILE: frontend/src/data/popCeilingImages.js =====
+===== YOUR YASH VERSION =====
+export const popHomeTypeImages = {
+  '1bhk': '/assets/services/architectural-design/1bhk.webp',
+  '1 BHK': '/assets/services/architectural-design/1bhk.webp',
+  '2bhk': '/assets/services/architectural-design/2bhk.webp',
+  '2 BHK': '/assets/services/architectural-design/2bhk.webp',
+  '3bhk': '/assets/services/architectural-design/3bhk.webp',
+  '3 BHK': '/assets/services/architectural-design/3bhk.webp',
+  '4bhk': '/assets/services/architectural-design/4bhk.webp',
+  '4 BHK+': '/assets/services/architectural-design/4bhk.webp',
+  'villa-independent-house':
+    '/assets/services/architectural-design/villa-bungalow.webp',
+  'Villa / Bungalow':
+    '/assets/services/architectural-design/villa-bungalow.webp',
+  duplex:
+    'https://images.squarespace-cdn.com/content/v1/5db15c735ac5482d25b56a59/1717586845197-BL4PI97N191MRAB1SFCQ/IMG_1283.jpg',
+  Office: '/assets/waterproofing/hero/office.webp',
+  Shop: '/assets/waterproofing/hero/shop.webp',
+  'Shop / Commercial': '/assets/waterproofing/hero/shop.webp',
+  Commercial: '/assets/waterproofing/hero/commercial.webp',
+  'Building / Society': '/assets/waterproofing/hero/building.webp',
+  Other: '/assets/waterproofing/hero/other.webp',
+};
+
+export const popRoomTypeImages = {
+  'living-room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Living Room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  bedroom: '/assets/projects/bedroom.webp',
+  Bedroom: '/assets/projects/bedroom.webp',
+  'dining-room': '/assets/pop-ceiling/hero/diningroom.webp',
+  'Dining Room': '/assets/pop-ceiling/hero/diningroom.webp',
+  'study-room': '/assets/pop-ceiling/hero/studyroom.webp',
+  'Study Room': '/assets/pop-ceiling/hero/studyroom.webp',
+  'kids-room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  'Kids Room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  Kitchen: '/assets/waterproofing/hero/kitchen.webp',
+  'Office / Commercial Space': '/assets/waterproofing/hero/office.webp',
+  'other-room': '/assets/projects/modern-interior.webp',
+  'Other Room': '/assets/projects/modern-interior.webp',
+  'POP Ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Gypsum Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'False Ceiling': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  Cornice: '/assets/pop-ceiling/hero/cornice.webp',
+  'Partition Work': '/assets/pop-ceiling/hero/partition-work.webp',
+  'LED Cove & Lighting': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'POP Repair & Renovation': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  Other: '/assets/pop-ceiling/hero/other.webp',
+};
+
+export const popDesignStyleImages = {
+  'flat-ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
+  'Flat Ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
+
+  'double-layer-ceiling':
+    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+  'Double Layer Ceiling':
+    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+
+  'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
+  'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
+
+  'border-ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
+  'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
+
+  'non-drop-ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
+  'Non Drop Ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
+
+  'recessed-ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
+  'Recessed Ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
+
+  simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
+  Simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
+  'simple-elegant': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  'Simple & Elegant': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  modern: '/assets/projects/modern-interior.webp',
+  Modern: '/assets/projects/modern-interior.webp',
+  classic: '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  Classic: '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  luxury: '/assets/projects/Living_room.webp',
+  Luxury: '/assets/projects/Living_room.webp',
+  'cove-ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Cove Ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'tray-ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
+  'Tray Ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
+  'custom-design': '/assets/pop-ceiling/hero/custom.webp',
+  'Custom Design': '/assets/pop-ceiling/hero/custom.webp',
+};
+
+export const popAddonImages = {
+  'pop-cornice': '/assets/pop-ceiling/hero/cornice.webp',
+  'POP Cornice (Ceiling Borders)': '/assets/pop-ceiling/hero/cornice.webp',
+  'pop-moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'POP Moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'curtain-cove-pelmet': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'Curtain Cove / Pelmet': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'pop-wall-moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'POP Wall Moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'pop-wall-panels': '/assets/projects/modern-interior.webp',
+  'POP Wall Panels': '/assets/projects/modern-interior.webp',
+  'tv-wall-pop': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'TV Wall (POP)': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'ceiling-repair': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  'Ceiling Repair (if required)':
+    '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+};
+
+export const popCeilingImages = {
+  'POP Ceiling': '/assets/services/pop-ceiling-design.webp',
+  'Gypsum Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'Designer Ceiling': '/assets/pop-ceiling/hero/designer-ceiling.webp',
+  'Wall Moulding': '/assets/pop-ceiling/hero/wall.webp',
+  Cornice: '/assets/pop-ceiling/hero/cornice.webp',
+  'Partition Work': '/assets/pop-ceiling/hero/partition-work.webp',
+  'LED Cove & Lighting': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  Other: '/assets/pop-ceiling/hero/false-ceiling.webp',
+  'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'POP Repair & Renovation':
+    '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  'POP Design': '/assets/services/pop-ceiling-design.webp',
+  'False Ceiling': '/assets/pop-ceiling/hero/false-ceiling.webp',
+};
+
+export default popCeilingImages;
+===== INCOMING MAIN VERSION =====
+/**
+ * Image mappings for POP Ceiling & Design.
+ * Keys may match either an option's value or its label.
+ */
+
+export const popHomeTypeImages = {
+  '1bhk': '/assets/pop-ceiling/hero/1bhk.webp',
+  '1 BHK': '/assets/pop-ceiling/hero/1bhk.webp',
+  '2bhk': '/assets/waterproofing/hero/two.webp',
+  '2 BHK': '/assets/waterproofing/hero/two.webp',
+  '3bhk': '/assets/waterproofing/hero/three.webp',
+  '3 BHK': '/assets/waterproofing/hero/three.webp',
+  '4bhk': '/assets/waterproofing/hero/modern-house.webp',
+  '4 BHK+': '/assets/waterproofing/hero/modern-house.webp',
+  'villa-independent-house': '/assets/waterproofing/hero/Villa.webp',
+  'Villa / Bungalow': '/assets/waterproofing/hero/Villa.webp',
+  duplex: '/assets/waterproofing/hero/modern-house.webp',
+  Office: '/assets/waterproofing/hero/office.webp',
+  Shop: '/assets/waterproofing/hero/shop.webp',
+  'Shop / Commercial': '/assets/waterproofing/hero/shop.webp',
+  Commercial: '/assets/waterproofing/hero/commercial.webp',
+  'Building / Society': '/assets/waterproofing/hero/building.webp',
+  Other: '/assets/waterproofing/hero/other.webp',
+};
+
+export const popRoomTypeImages = {
+  'living-room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Living Room': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  bedroom: '/assets/projects/bedroom.webp',
+  Bedroom: '/assets/projects/bedroom.webp',
+  'dining-room': '/assets/pop-ceiling/hero/diningroom.webp',
+  'Dining Room': '/assets/pop-ceiling/hero/diningroom.webp',
+  'study-room': '/assets/pop-ceiling/hero/studyroom.webp',
+  'Study Room': '/assets/pop-ceiling/hero/studyroom.webp',
+  'kids-room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  'Kids Room': '/assets/pop-ceiling/hero/kidsroom.webp',
+  Kitchen: '/assets/waterproofing/hero/kitchen.webp',
+  'Office / Commercial Space': '/assets/waterproofing/hero/office.webp',
+  'other-room': '/assets/projects/modern-interior.webp',
+  'Other Room': '/assets/projects/modern-interior.webp',
+  'POP Ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Gypsum Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'False Ceiling': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  Cornice: '/assets/pop-ceiling/hero/cornice.webp',
+  'Partition Work': '/assets/pop-ceiling/hero/partition-work.webp',
+  'LED Cove & Lighting': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'POP Repair & Renovation': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  Other: '/assets/pop-ceiling/hero/other.webp',
+};
+
+const flatCeilingImage =
+  'https://images.pexels.com/photos/7752771/pexels-photo-7752771.jpeg?auto=compress&cs=tinysrgb&w=800';
+
+const borderCeilingImage =
+  'https://images.pexels.com/photos/12269245/pexels-photo-12269245.jpeg?auto=compress&cs=tinysrgb&w=800';
+
+const nonDropCeilingImage =
+  'https://images.pexels.com/photos/6316055/pexels-photo-6316055.jpeg?auto=compress&cs=tinysrgb&w=800';
+
+export const popDesignStyleImages = {
+  'flat-ceiling': flatCeilingImage,
+  'Flat Ceiling': flatCeilingImage,
+
+  'double-layer-ceiling': '/assets/pop-ceiling/hero/designer-ceiling.webp',
+  'Double Layer Ceiling': '/assets/pop-ceiling/hero/designer-ceiling.webp',
+
+  'floating-ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'Floating Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+
+  'border-ceiling': borderCeilingImage,
+  'Border Ceiling': borderCeilingImage,
+
+  'non-drop-ceiling': nonDropCeilingImage,
+  'Non Drop Ceiling': nonDropCeilingImage,
+
+  'recessed-ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
+  'Recessed Ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
+
+  // Existing values retained for other catalogue views.
+  simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
+  Simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
+  'simple-elegant': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  'Simple & Elegant': '/assets/pop-ceiling/hero/false-ceiling.webp',
+  modern: '/assets/projects/modern-interior.webp',
+  Modern: '/assets/projects/modern-interior.webp',
+  classic: '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  Classic: '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  luxury: '/assets/projects/Living_room.webp',
+  Luxury: '/assets/projects/Living_room.webp',
+  'cove-ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'Cove Ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
+  'tray-ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
+  'Tray Ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
+  'custom-design': '/assets/pop-ceiling/hero/custom.webp',
+  'Custom Design': '/assets/pop-ceiling/hero/custom.webp',
+};
+
+export const popAddonImages = {
+  'pop-cornice': '/assets/pop-ceiling/hero/cornice.webp',
+  'POP Cornice (Ceiling Borders)': '/assets/pop-ceiling/hero/cornice.webp',
+  'pop-moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'POP Moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'curtain-cove-pelmet': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'Curtain Cove / Pelmet': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  'pop-wall-moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'POP Wall Moulding': '/assets/pop-ceiling/hero/wall.webp',
+  'pop-wall-panels': '/assets/projects/modern-interior.webp',
+  'POP Wall Panels': '/assets/projects/modern-interior.webp',
+  'tv-wall-pop': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'TV Wall (POP)': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'ceiling-repair': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  'Ceiling Repair (if required)': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+};
+
+export const popCeilingImages = {
+  'POP Ceiling': '/assets/services/pop-ceiling-design.webp',
+  'Gypsum Ceiling': '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
+  'Designer Ceiling': '/assets/pop-ceiling/hero/designer-ceiling.webp',
+  'Wall Moulding': '/assets/pop-ceiling/hero/wall.webp',
+  Cornice: '/assets/pop-ceiling/hero/cornice.webp',
+  'Partition Work': '/assets/pop-ceiling/hero/partition-work.webp',
+  'LED Cove & Lighting': '/assets/pop-ceiling/hero/led-cove-lighting.webp',
+  Other: '/assets/pop-ceiling/hero/false-ceiling.webp',
+  'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
+  'POP Repair & Renovation': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
+  'POP Design': '/assets/services/pop-ceiling-design.webp',
+  'False Ceiling': '/assets/pop-ceiling/hero/false-ceiling.webp',
+};
+
+export default popCeilingImages;
+
+===== FILE: frontend/src/pages/PopCeilingCategory.jsx =====
+===== YOUR YASH VERSION =====
+import { Link } from 'react-router-dom';
+import PageHero from '../components/ui/PageHero';
+import Icon from '../components/ui/Icon';
+import { popFlows } from '../data/popCeilingContent';
+
+const choices = [
+  {
+    slug: 'full-home',
+    description: 'Complete POP ceiling work for your entire home.',
+  },
+  {
+    slug: 'room',
+    description: 'Stylish POP ceiling work for one room.',
+  },
+];
+
+export default function PopCeilingCategory({
+  modal = false,
+  onSelectFlow,
+}) {
+  return (
+    <>
+      {!modal && (
+        <PageHero
+          eyebrow="POP & GYPSUM"
+          title="POP Ceiling & Design"
+          text="Elegant ceilings. Beautiful spaces. Expert installation."
+          breadcrumbs={[
+            { label: 'Services', to: '/services' },
+            { label: 'POP Ceiling & Design' },
+          ]}
+        />
+      )}
+
+      <section
+        className={modal ? 'plb-section !py-0 !pb-4' : 'plb-section'}
+      >
+        <div
+          className={
+            modal
+              ? 'container container-narrow !w-full !max-w-none !px-0'
+              : 'container container-narrow'
+          }
+        >
+          <div
+            className={
+              modal
+                ? 'plb-overview-grid !grid-cols-2'
+                : 'plb-overview-grid'
+            }
+          >
+            {choices.map(({ slug, description }) => {
+              const flow = popFlows[slug];
+
+              const card = (
+                <>
+                  <span className="plb-overview-photo">
+                    <img
+                      src={flow.intro.image}
+                      alt=""
+                      width={200}
+                      height={125}
+                      loading="lazy"
+                    />
+                  </span>
+
+                  <span className="plb-overview-name">
+                    {flow.title}
+                    <Icon name="chevron-right" size={16} />
+                  </span>
+
+                  <span
+                    className="plb-overview-price-note"
+                    style={{ paddingTop: 8 }}
+                  >
+                    {description}
+                  </span>
+                </>
+              );
+
+              return modal ? (
+                <button
+                  key={slug}
+                  type="button"
+                  className="plb-overview-card !w-full !text-left"
+                  onClick={() => onSelectFlow(slug)}
+                >
+                  {card}
+                </button>
+              ) : (
+                <Link
+                  key={slug}
+                  to={`/services/pop-ceiling-design/${slug}`}
+                  className="plb-overview-card"
+                >
+                  {card}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+===== INCOMING MAIN VERSION =====
+import { Link } from 'react-router-dom';
+import PageHero from '../components/ui/PageHero';
+import Icon from '../components/ui/Icon';
+import { popFlows, POP_HERO_IMAGE } from '../data/popCeilingContent';
+
+const choices = [
+  {
+    slug: 'full-home',
+    description: 'Complete POP ceiling work for your entire home.',
+  },
+  {
+    slug: 'room',
+    description: 'Stylish POP ceiling work for one room.',
+  },
+];
+
+export default function PopCeilingCategory({
+  modal = false,
+  onSelectFlow,
+}) {
+  return (
+    <>
+      {!modal && (
+        <PageHero
+          eyebrow="POP & GYPSUM"
+          title="POP Ceiling & Design"
+          text="Elegant ceilings. Beautiful spaces. Expert installation."
+          image={POP_HERO_IMAGE}
+          breadcrumbs={[
+            { label: 'Services', to: '/services' },
+            { label: 'POP Ceiling & Design' },
+          ]}
+        />
+      )}
+
+      <section
+        className={modal ? 'plb-section !py-0 !pb-4' : 'plb-section'}
+      >
+        <div
+          className={
+            modal
+              ? 'container container-narrow !w-full !max-w-none !px-0'
+              : 'container container-narrow'
+          }
+        >
+          {/* Two journeys: a pair of equal cards, not two cells of the
+              three-column grid plumbing uses */}
+          <div className="plb-overview-grid !grid-cols-2">
+            {choices.map(({ slug, description }) => {
+              const flow = popFlows[slug];
+
+              const card = (
+                <>
+                  <span className="plb-overview-photo">
+                    <img
+                      src={flow.intro.image}
+                      alt=""
+                      width={200}
+                      height={125}
+                      loading="lazy"
+                    />
+                  </span>
+
+                  <span className="plb-overview-name">
+                    {flow.title}
+                    <Icon name="chevron-right" size={16} />
+                  </span>
+
+                  <span
+                    className="plb-overview-price-note"
+                    style={{ paddingTop: 8 }}
+                  >
+                    {description}
+                  </span>
+                </>
+              );
+
+              return modal ? (
+                <button
+                  key={slug}
+                  type="button"
+                  className="plb-overview-card !w-full !text-left"
+                  onClick={() => onSelectFlow(slug)}
+                >
+                  {card}
+                </button>
+              ) : (
+                <Link
+                  key={slug}
+                  to={`/services/pop-ceiling-design/${slug}`}
+                  className="plb-overview-card"
+                >
+                  {card}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+===== FILE: frontend/src/pages/PopCeilingFlow.jsx =====
+===== YOUR YASH VERSION =====
+import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
+import Icon from '../components/ui/Icon';
+import PaintingHero from '../components/painting/PaintingHero';
+import StepIndicator from '../components/painting/StepIndicator';
+import OptionCard from '../components/painting/OptionCard';
+import EstimateSummary from '../components/painting/EstimateSummary';
+import AddonList from '../components/pop-ceiling/AddonList';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import SlotPicker from '../components/booking/SlotPicker';
+import usePopCeilingCatalogue from '../hooks/usePopCeilingCatalogue';
+import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
+import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { useAuth } from '../context/AuthContext';
+import api, { friendlyError } from '../lib/api';
+import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
+
+/**
+ * One page, two journeys (Full Home / Room) ΓÇö driven by popFlows[flowSlug]
+ * (see popCeilingContent.js) and the live catalogue
+ * (usePopCeilingCatalogue), same architecture as PaintingFlow. Stage 0 is
+ * the flow's intro; stages 1..N are the flow's configured steps (last is
+ * always "summary"); then Details, Schedule and Confirm, reusing the same
+ * shared components every other rebuilt category uses.
+ *
+ * No priced options exist anywhere in this category's new catalogue rows
+ * (see V16's migration comment ΓÇö the reference's add-ons are all a rate
+ * PER SQ. FT. with no measured area to multiply by), so unlike
+ * PaintingFlow there is no client-side estimate total: itemsTotalPaise is
+ * always null, and EstimateSummary already renders "To be confirmed on
+ * site visit" whenever that's the case.
+ */
+export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
+  const params = useParams();
+  const flowSlug = propFlowSlug || params.flowSlug;
+  const flow = popFlows[flowSlug];
+  const { user } = useAuth();
+  const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
+
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:pop:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
+    ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
+    : emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+  const [choiceError, setChoiceError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  const configSteps = useMemo(() => flow?.steps || [], [flow]);
+  const DETAILS = 1 + configSteps.length;
+  const SCHEDULE = DETAILS + 1;
+  const CONFIRM = SCHEDULE + 1;
+
+  const setAnswer = (key) => (value) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+    setChoiceError('');
+    setSubmitError('');
+  };
+
+  const toggleMulti = (key) => (value) => {
+    setAnswers((a) => {
+      const list = Array.isArray(a[key]) ? a[key] : [];
+      return {
+        ...a,
+        [key]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+      };
+    });
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const setDetail = (key) => (e) => {
+    setDetails((d) => ({ ...d, [key]: e.target.value }));
+    setErrors((err) => ({ ...err, [key]: undefined }));
+    setSubmitError('');
+  };
+
+  /** Every step's answer resolved to a label for the summary ΓÇö never a
+      price (see the file header note: POP never computes one). */
+  const resolved = useMemo(() => {
+    if (!flow) return [];
+    return configSteps
+      .filter((s) => s.type !== 'summary')
+      .map((step, i) => {
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          const opts = optionsFor(step.questionKey).filter((o) => chosen.includes(o.value));
+          return {
+            stepIndex: i + 1,
+            label: step.title.replace(' (Optional)', '').replace(' (optional)', ''),
+            value: opts.map((o) => o.label).join(', '),
+          };
+        }
+        const opt = optionsFor(step.questionKey).find((o) => o.value === answers[step.questionKey]);
+        const notesKey = step.notesFor === opt?.value ? notesKeyFor(step) : null;
+        const note = notesKey ? answers[notesKey] : null;
+        return {
+          stepIndex: i + 1,
+          label: step.title.replace(/\?$/, ''),
+          value: note ? `${opt?.label} ΓÇö ${note}` : opt?.label,
+        };
+      });
+  }, [flow, configSteps, answers, optionsFor]);
+
+  if (!flow) return modal ? null : <Navigate to="/services/pop-ceiling-design" replace />;
+
+  const jumpToStep = (i) => {
+    setStage(i);
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const validateStep = (step) => {
+    if ((step.type === 'option' || step.type === 'style') && !answers[step.questionKey]) {
+      setErrors({ [step.questionKey]: 'Please choose an option' });
+      if (modal) setChoiceError('Choose an option to continue.');
+      return false;
+    }
+    return true;
+  };
+
+  const goNext = () => {
+    setSubmitError('');
+    const step = configSteps[stage - 1];
+    if (step && !validateStep(step)) return;
+    setStage((s) => Math.min(s + 1, CONFIRM));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goBack = () => {
+    setSubmitError('');
+    if (modal && stage === 0) {
+      onBackToCategories?.();
+      return;
+    }
+    formBack(() => setStage((s) => Math.max(s - 1, 0)));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const canLeaveDetails = () => {
+    const next = validateDetails(details);
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    if (!date || !time) {
+      setErrors({ slot: 'Please choose a date and a time' });
+      return;
+    }
+
+    setBusy(true);
+    setSubmitError('');
+    try {
+      const flat = [];
+      configSteps.forEach((step) => {
+        if (step.type === 'summary') return;
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          chosen.forEach((v) => {
+            const opt = optionsFor(step.questionKey).find((o) => o.value === v);
+            flat.push({ key: step.questionKey, value: v, label: opt?.label || v });
+          });
+          return;
+        }
+        const value = answers[step.questionKey];
+        if (value === undefined || value === '' || value === null) return;
+        const opt = optionsFor(step.questionKey).find((o) => o.value === value);
+        flat.push({ key: step.questionKey, value, label: opt?.label || value });
+
+        if (step.notesFor === value) {
+          const notesKey = notesKeyFor(step);
+          const note = answers[notesKey];
+          if (note) flat.push({ key: notesKey, value: note, label: note });
+        }
+      });
+
+      const result = await api.createBooking({
+        serviceSlug: 'pop-ceiling-design',
+        answers: flat,
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name,
+        phone: details.phone,
+        whatsapp: details.whatsapp || null,
+        email: details.email || null,
+        address: details.address,
+        city: details.city,
+        pincode: details.pincode || null,
+      });
+      setReceipt(result);
+      setStage(CONFIRM);
+      if (modal) onStepChange?.();
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      setSubmitError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <p className="question-hint">Loading servicesΓÇª</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{loadError}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------------- intro */
+  if (stage === 0) {
+    if (modal) {
+      return (
+        <div className="pop-modal-intro">
+          <img
+            src={flow.intro.image}
+            alt={`${flow.title} ceiling design`}
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 20 }}
+          />
+          <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
+            {flow.intro.heading}
+          </h2>
+          <p style={{ color: 'var(--ink-muted)', fontSize: 14, marginBottom: 14 }}>
+            {flow.heroTagline}
+          </p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+            GET STARTED <Icon name="arrow-right" size={17} />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={onBackToCategories}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px auto 0' }}
+          >
+            <Icon name="arrow-left" size={15} /> BACK TO POP SERVICES
+          </button>
+          <div className="pnt-included" style={{ marginTop: 18 }}>
+            <h3>What&rsquo;s Included?</h3>
+            <ul>
+              {flow.whatsIncluded.map((item) => (
+                <li key={item}><Icon name="check" size={14} strokeWidth={3} />{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <>
+        {!modal && <PaintingHero
+          eyebrow={flow.intro.eyebrow}
+          title={flow.title}
+          tagline={flow.heroTagline}
+          image={flow.intro.image}
+          trustPoints={[]}
+        />}
+        <section className="pnt-section">
+          <div className="container container-narrow">
+            {modal && <button type="button" className="btn btn-ghost btn-sm" onClick={onBackToCategories}>BACK TO POP SERVICES</button>}
+            <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
+
+            <ul className="pnt-intro-trust">
+              {flow.intro.points.map((t) => (
+                <li key={t.label}>
+                  <Icon name={t.icon} size={22} />
+                  <span>{t.label}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="pnt-included">
+              <h3>What&rsquo;s Included?</h3>
+              <ul>
+                {flow.whatsIncluded.map((item) => (
+                  <li key={item}>
+                    <Icon name="check" size={14} strokeWidth={3} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+              Get Started <Icon name="arrow-right" size={17} />
+            </button>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  /* --------------------------------------------------------- confirmed */
+  if (stage === CONFIRM && receipt) {
+    const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <div className="wizard-card">
+            <div className="confirmed">
+              <div className="confirmed-tick">
+                <Icon name="check" size={38} strokeWidth={3} />
+              </div>
+              <h2>Booking Confirmed!</h2>
+              <p>Our expert will visit your home, measure your space and provide a detailed quotation.</p>
+
+              <dl className="confirmed-panel">
+                <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
+                <div><dt>Service</dt><dd>{flow.title}</dd></div>
+                <div><dt>Location</dt><dd>{details.city}</dd></div>
+              </dl>
+
+              <div className="pnt-fee-note">
+                <Icon name="info" size={17} />
+                <span>{receipt.message}</span>
+              </div>
+
+              <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
+              <div className="btn-row" style={{ marginTop: 12 }}>
+                <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+                  <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
+                </a>
+                {modal ? <button type="button" className="btn btn-ghost btn-back" onClick={onBackToCategories}>BACK TO POP CEILING</button> : <Link to="/services/pop-ceiling-design" className="btn btn-ghost btn-back">BACK TO POP CEILING</Link>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------------------------------------------ details */
+  if (stage === DETAILS) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Your Details</h2>
+                <p>We will contact you to confirm the appointment.</p>
+              </div>
+              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pce" />
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <div className="wizard-foot">
+                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
+                <button type="submit" className="btn btn-primary">CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* ----------------------------------------------------------- schedule */
+  if (stage === SCHEDULE) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Book a Home Visit</h2>
+                <p>Our team will visit your site to measure and quote.</p>
+              </div>
+              <SlotPicker
+                serviceSlug="pop-ceiling-design"
+                date={date}
+                time={time}
+                onPick={(d, t) => { setDate(d); setTime(t); setErrors((e) => ({ ...e, slot: undefined })); }}
+                error={errors.slot}
+              />
+
+              <div className="pnt-fee-strip">
+                <span>{category ? category.visitFeeDisplay : 'Γé╣ΓÇö'}</span>
+                <span>Adjustable in final bill</span>
+              </div>
+
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <div className="wizard-foot">
+                <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
+                <button type="submit" className="btn btn-primary" disabled={busy}>
+                  {busy ? 'BOOKINGΓÇª' : 'BOOK HOME VISIT'} <Icon name="arrow-right" size={17} />
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------- config step */
+  const step = configSteps[stage - 1];
+  const selectedValue = answers[step?.questionKey];
+  const showNotes = step?.notesFor && step.notesFor === selectedValue;
+  const notesKey = showNotes ? notesKeyFor(step) : null;
+
+  return (
+    <div className={modal ? 'pnt-flow-shell pop-modal-scope' : 'pnt-flow-shell'}>
+      <div className="container container-narrow">
+        <FlowTopBar flow={flow} onBack={goBack} plain />
+        {modal ? (
+          <p className="pop-modal-progress" aria-live="polite">
+            STEP {stage} OF {configSteps.length} <span>{step.title}</span>
+          </p>
+        ) : (
+          <StepIndicator steps={configSteps} activeIndex={stage - 1} />
+        )}
+
+        <div className="pnt-step-card">
+          {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
+
+          {(step.type === 'option' || step.type === 'style') && (
+            <>
+              <div className="pnt-option-list">
+                {optionsFor(step.questionKey).map((opt) => (
+                  modal ? (
+                    <PopImageOption
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      image={getPopOptionImage(step.questionKey, opt, flow.intro.image)}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  ) : (
+                    <OptionCard
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      icon={step.type === 'style' ? (DESIGN_STYLE_ICONS[opt.value] || step.icon) : step.icon}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  )
+                ))}
+              </div>
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+
+              {showNotes && (
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label htmlFor={`pce-${notesKey}`}>{step.notesLabel}</label>
+                  <textarea
+                    id={`pce-${notesKey}`}
+                    rows={3}
+                    placeholder={step.notesPlaceholder}
+                    value={answers[notesKey] || ''}
+                    onChange={(e) => setAnswer(notesKey)(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {step.type === 'addon' && (
+            <AddonList
+              options={optionsFor(step.questionKey)}
+              selected={Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : []}
+              onToggle={toggleMulti(step.questionKey)}
+            />
+          )}
+
+          {step.type === 'summary' && (
+            <EstimateSummary
+              rows={resolved}
+              whatsIncluded={flow.whatsIncluded}
+              itemsTotalPaise={null}
+              onEditStep={jumpToStep}
+            />
+          )}
+
+          <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot pop-modal-actions' : 'pnt-step-actions'}>
+            {!modal && <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>}
+            <button type="button" className="btn btn-primary" onClick={goNext}>
+              {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
+            </button>
+          </ModalFoot>
+        </div>
+      </div>
+      {modal && choiceError && createPortal(
+        <div className="pop-choice-toast" role="alert">
+          <Icon name="info" size={20} />
+          <span>{choiceError}</span>
+          <button type="button" onClick={() => setChoiceError('')} aria-label="Dismiss message">├ù</button>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+function getPopOptionImage(questionKey, option, fallback) {
+  const images = questionKey === 'pop_home_type'
+    ? popHomeTypeImages
+    : questionKey === 'pop_room_type'
+      ? popRoomTypeImages
+      : popDesignStyleImages;
+  return images[option.value] || images[option.label] || fallback;
+}
+
+function PopImageOption({ option, name, image, checked, onSelect }) {
+  return (
+    <label className={`pop-image-option ${checked ? 'selected' : ''}`}>
+      <input type="radio" name={name} value={option.value} checked={checked} onChange={() => onSelect(option.value)} />
+      <img src={image} alt="" width={200} height={105} loading="lazy" />
+      <span className="pop-image-option-content">
+        <strong>{option.label}</strong>
+        {option.hint && <small>{option.hint}</small>}
+      </span>
+      <span className="pop-image-option-check" aria-hidden="true"><Icon name="check" size={14} /></span>
+    </label>
+  );
+}
+
+/** Local, non-catalogue answer key for a step's optional free-text
+    follow-up (Other Room's description, Custom Design's brief) ΓÇö matched
+    to the real TEXT catalogue rows added in V16 (pop_room_notes /
+    pop_design_notes) via each step's own id. */
+function notesKeyFor(step) {
+  return step.id === 'room_type' ? 'pop_room_notes' : 'pop_design_notes';
+}
+
+function FlowTopBar({ flow, onBack, plain }) {
+  return (
+    <div className={plain ? 'pnt-top' : 'wizard-top'}>
+      <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">
+        <Icon name="arrow-left" size={20} />
+      </button>
+      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.title}</h1>
+      <a
+        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.title}.`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={plain ? 'pnt-help' : 'wizard-help'}
+      >
+        Need help?
+      </a>
+    </div>
+  );
+}
+===== INCOMING MAIN VERSION =====
+import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
+import Icon from '../components/ui/Icon';
+import PaintingHero from '../components/painting/PaintingHero';
+import StepIndicator from '../components/painting/StepIndicator';
+import OptionCard from '../components/painting/OptionCard';
+import EstimateSummary from '../components/painting/EstimateSummary';
+import AddonList from '../components/pop-ceiling/AddonList';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import SlotPicker from '../components/booking/SlotPicker';
+import usePopCeilingCatalogue from '../hooks/usePopCeilingCatalogue';
+import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import { useAuth } from '../context/AuthContext';
+import api, { friendlyError } from '../lib/api';
+import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
+
+/**
+ * One page, two journeys (Full Home / Room) ΓÇö driven by popFlows[flowSlug]
+ * (see popCeilingContent.js) and the live catalogue
+ * (usePopCeilingCatalogue), same architecture as PaintingFlow. Stage 0 is
+ * the flow's intro; stages 1..N are the flow's configured steps (last is
+ * always "summary"); then Details, Schedule and Confirm, reusing the same
+ * shared components every other rebuilt category uses.
+ *
+ * No priced options exist anywhere in this category's new catalogue rows
+ * (see V16's migration comment ΓÇö the reference's add-ons are all a rate
+ * PER SQ. FT. with no measured area to multiply by), so unlike
+ * PaintingFlow there is no client-side estimate total: itemsTotalPaise is
+ * always null, and EstimateSummary already renders "To be confirmed on
+ * site visit" whenever that's the case.
+ */
+
+// The Details / Schedule button bar in the booking pop-up ΓÇö the same layout
+// as Painting's (a narrow BACK and a wide action on phones, right-aligned on
+// wider screens), drawn in the pop-up's footer by ModalFoot.
+const MODAL_FOOT =
+  'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3';
+const MODAL_BACK =
+  'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto';
+const MODAL_NEXT =
+  'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-auto md:!min-w-[170px] md:!flex-none md:!px-4';
+
+export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
+  const params = useParams();
+  const flowSlug = propFlowSlug || params.flowSlug;
+  const flow = popFlows[flowSlug];
+  const { user } = useAuth();
+  const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
+
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:pop:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
+    ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
+    : emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+  const [choiceError, setChoiceError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  const configSteps = useMemo(() => flow?.steps || [], [flow]);
+  const DETAILS = 1 + configSteps.length;
+  const SCHEDULE = DETAILS + 1;
+  const CONFIRM = SCHEDULE + 1;
+
+  const setAnswer = (key) => (value) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+    setChoiceError('');
+    setSubmitError('');
+  };
+
+  const toggleMulti = (key) => (value) => {
+    setAnswers((a) => {
+      const list = Array.isArray(a[key]) ? a[key] : [];
+      return {
+        ...a,
+        [key]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+      };
+    });
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const setDetail = (key) => (e) => {
+    setDetails((d) => ({ ...d, [key]: e.target.value }));
+    setErrors((err) => ({ ...err, [key]: undefined }));
+    setSubmitError('');
+  };
+
+  /** Every step's answer resolved to a label for the summary ΓÇö never a
+      price (see the file header note: POP never computes one). */
+  const resolved = useMemo(() => {
+    if (!flow) return [];
+    return configSteps
+      .filter((s) => s.type !== 'summary')
+      .map((step, i) => {
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          const opts = optionsFor(step.questionKey).filter((o) => chosen.includes(o.value));
+          return {
+            stepIndex: i + 1,
+            label: step.title.replace(' (Optional)', '').replace(' (optional)', ''),
+            value: opts.map((o) => o.label).join(', '),
+          };
+        }
+        const opt = optionsFor(step.questionKey).find((o) => o.value === answers[step.questionKey]);
+        const notesKey = step.notesFor === opt?.value ? notesKeyFor(step) : null;
+        const note = notesKey ? answers[notesKey] : null;
+        return {
+          stepIndex: i + 1,
+          label: step.title.replace(/\?$/, ''),
+          value: note ? `${opt?.label} ΓÇö ${note}` : opt?.label,
+        };
+      });
+  }, [flow, configSteps, answers, optionsFor]);
+
+  if (!flow) return modal ? null : <Navigate to="/services/pop-ceiling-design" replace />;
+
+  const jumpToStep = (i) => {
+    setStage(i);
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const validateStep = (step) => {
+    if ((step.type === 'option' || step.type === 'style') && !answers[step.questionKey]) {
+      setErrors({ [step.questionKey]: 'Please choose an option' });
+      if (modal) setChoiceError('Choose an option to continue.');
+      return false;
+    }
+    return true;
+  };
+
+  const goNext = () => {
+    setSubmitError('');
+    const step = configSteps[stage - 1];
+    if (step && !validateStep(step)) return;
+    setStage((s) => Math.min(s + 1, CONFIRM));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goBack = () => {
+    setSubmitError('');
+    if (modal && stage === 0) {
+      onBackToCategories?.();
+      return;
+    }
+    formBack(() => setStage((s) => Math.max(s - 1, 0)));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const canLeaveDetails = () => {
+    const next = validateDetails(details, pickedLocation);
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    if (!date || !time) {
+      setErrors({ slot: 'Please choose a date and a time' });
+      return;
+    }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
+
+    setBusy(true);
+    setSubmitError('');
+    try {
+      const flat = [];
+      configSteps.forEach((step) => {
+        if (step.type === 'summary') return;
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          chosen.forEach((v) => {
+            const opt = optionsFor(step.questionKey).find((o) => o.value === v);
+            flat.push({ key: step.questionKey, value: v, label: opt?.label || v });
+          });
+          return;
+        }
+        const value = answers[step.questionKey];
+        if (value === undefined || value === '' || value === null) return;
+        const opt = optionsFor(step.questionKey).find((o) => o.value === value);
+        flat.push({ key: step.questionKey, value, label: opt?.label || value });
+
+        if (step.notesFor === value) {
+          const notesKey = notesKeyFor(step);
+          const note = answers[notesKey];
+          if (note) flat.push({ key: notesKey, value: note, label: note });
+        }
+      });
+
+      const result = await api.createBooking({
+        serviceSlug: 'pop-ceiling-design',
+        answers: flat,
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name,
+        phone: details.phone,
+        whatsapp: details.whatsapp || null,
+        email: details.email || null,
+        address: composeAddress(details, pickedLocation),
+        city: details.city,
+        pincode: details.pincode || null,
+      });
+      setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pce', result.bookingNumber, details.phone);
+      setStage(CONFIRM);
+      if (modal) onStepChange?.();
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      setSubmitError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <p className="question-hint">Loading servicesΓÇª</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{loadError}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------------- intro */
+  if (stage === 0) {
+    if (modal) {
+      return (
+        <div className="pop-modal-intro">
+          <img
+            src={flow.intro.image}
+            alt={`${flow.title} ceiling design`}
+            // 64px down: below the pop-up's close button, the header being hidden here.
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 64 }}
+          />
+          <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
+            {flow.intro.heading}
+          </h2>
+          <p style={{ color: 'var(--ink-muted)', fontSize: 14, marginBottom: 14 }}>
+            {flow.heroTagline}
+          </p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+            GET STARTED <Icon name="arrow-right" size={17} />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={onBackToCategories}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px auto 0' }}
+          >
+            <Icon name="arrow-left" size={15} /> BACK TO POP SERVICES
+          </button>
+          <div className="pnt-included" style={{ marginTop: 18 }}>
+            <h3>What&rsquo;s Included?</h3>
+            <ul>
+              {flow.whatsIncluded.map((item) => (
+                <li key={item}><Icon name="check" size={14} strokeWidth={3} />{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <>
+        {!modal && <PaintingHero
+          eyebrow={flow.intro.eyebrow}
+          title={flow.title}
+          tagline={flow.heroTagline}
+          image={flow.intro.image}
+          trustPoints={[]}
+        />}
+        <section className="pnt-section">
+          <div className="container container-narrow">
+            {modal && <button type="button" className="btn btn-ghost btn-sm" onClick={onBackToCategories}>BACK TO POP SERVICES</button>}
+            <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
+
+            <ul className="pnt-intro-trust">
+              {flow.intro.points.map((t) => (
+                <li key={t.label}>
+                  <Icon name={t.icon} size={22} />
+                  <span>{t.label}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="pnt-included">
+              <h3>What&rsquo;s Included?</h3>
+              <ul>
+                {flow.whatsIncluded.map((item) => (
+                  <li key={item}>
+                    <Icon name="check" size={14} strokeWidth={3} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+              Get Started <Icon name="arrow-right" size={17} />
+            </button>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  /* --------------------------------------------------------- confirmed */
+  if (stage === CONFIRM && receipt) {
+    const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <div className="wizard-card">
+            <div className="confirmed">
+              <div className="confirmed-tick">
+                <Icon name="check" size={38} strokeWidth={3} />
+              </div>
+              <h2>Booking Confirmed!</h2>
+              <p>Our expert will visit your home, measure your space and provide a detailed quotation.</p>
+
+              <dl className="confirmed-panel">
+                <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
+                <div><dt>Service</dt><dd>{flow.title}</dd></div>
+                <div><dt>Location</dt><dd>{details.city}</dd></div>
+              </dl>
+
+              <div className="pnt-fee-note">
+                <Icon name="info" size={17} />
+                <span>{receipt.message}</span>
+              </div>
+
+              <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
+              <div className="btn-row" style={{ marginTop: 12 }}>
+                <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+                  <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
+                </a>
+                {modal ? <button type="button" className="btn btn-ghost btn-back" onClick={onBackToCategories}>BACK TO POP CEILING</button> : <Link to="/services/pop-ceiling-design" className="btn btn-ghost btn-back">BACK TO POP CEILING</Link>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------------------------------------------ details */
+  if (stage === DETAILS) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Your Details</h2>
+                <p>We will contact you to confirm the appointment.</p>
+              </div>
+              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pce" />
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              {/* In the booking pop-up this bar goes in the pop-up's footer
+                  (ModalFoot), under the form rather than over its fields ΓÇö
+                  the same as Painting's steps. */}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'}>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* ----------------------------------------------------------- schedule */
+  if (stage === SCHEDULE) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Book a Home Visit</h2>
+                <p>Our team will visit your site to measure and quote.</p>
+              </div>
+              <SlotPicker
+                serviceSlug="pop-ceiling-design"
+                date={date}
+                time={time}
+                onPick={(d, t) => { setDate(d); setTime(t); setErrors((e) => ({ ...e, slot: undefined })); }}
+                error={errors.slot}
+              />
+
+              <div className="pnt-fee-strip">
+                <span>{category ? category.visitFeeDisplay : 'Γé╣ΓÇö'}</span>
+                <span>Adjustable in final bill</span>
+              </div>
+
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'} disabled={busy}>
+                  {busy ? 'BOOKINGΓÇª' : 'BOOK HOME VISIT'} <Icon name="arrow-right" size={17} />
+                </button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------- config step */
+  const step = configSteps[stage - 1];
+  const selectedValue = answers[step?.questionKey];
+  const showNotes = step?.notesFor && step.notesFor === selectedValue;
+  const notesKey = showNotes ? notesKeyFor(step) : null;
+
+  return (
+    <div className={modal ? 'pnt-flow-shell pop-modal-scope' : 'pnt-flow-shell'}>
+      <div className="container container-narrow">
+        <FlowTopBar flow={flow} onBack={goBack} plain />
+        {modal ? (
+          <p className="pop-modal-progress" aria-live="polite">
+            STEP {stage} OF {configSteps.length} <span>{step.title}</span>
+          </p>
+        ) : (
+          <StepIndicator steps={configSteps} activeIndex={stage - 1} />
+        )}
+
+        <div className="pnt-step-card">
+          {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
+
+          {(step.type === 'option' || step.type === 'style') && (
+            <>
+              <div className="pnt-option-list">
+                {optionsFor(step.questionKey).map((opt) => (
+                  modal ? (
+                    <PopImageOption
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      image={getPopOptionImage(step.questionKey, opt, flow.intro.image)}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  ) : (
+                    <OptionCard
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      icon={step.type === 'style' ? (DESIGN_STYLE_ICONS[opt.value] || step.icon) : step.icon}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  )
+                ))}
+              </div>
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+
+              {showNotes && (
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label htmlFor={`pce-${notesKey}`}>{step.notesLabel}</label>
+                  <textarea
+                    id={`pce-${notesKey}`}
+                    rows={3}
+                    placeholder={step.notesPlaceholder}
+                    value={answers[notesKey] || ''}
+                    onChange={(e) => setAnswer(notesKey)(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {step.type === 'addon' && (
+            <AddonList
+              options={optionsFor(step.questionKey)}
+              selected={Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : []}
+              onToggle={toggleMulti(step.questionKey)}
+            />
+          )}
+
+          {step.type === 'summary' && (
+            <EstimateSummary
+              rows={resolved}
+              whatsIncluded={flow.whatsIncluded}
+              itemsTotalPaise={null}
+              onEditStep={jumpToStep}
+            />
+          )}
+
+          <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot pop-modal-actions' : 'pnt-step-actions'}>
+            {!modal && <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>}
+            <button type="button" className="btn btn-primary" onClick={goNext}>
+              {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
+            </button>
+          </ModalFoot>
+        </div>
+      </div>
+      {modal && choiceError && createPortal(
+        <div className="pop-choice-toast" role="alert">
+          <Icon name="info" size={20} />
+          <span>{choiceError}</span>
+          <button type="button" onClick={() => setChoiceError('')} aria-label="Dismiss message">├ù</button>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+function getPopOptionImage(questionKey, option, fallback) {
+  const images = questionKey === 'pop_home_type'
+    ? popHomeTypeImages
+    : questionKey === 'pop_room_type'
+      ? popRoomTypeImages
+      : popDesignStyleImages;
+  return images[option.value] || images[option.label] || fallback;
+}
+
+function PopImageOption({ option, name, image, checked, onSelect }) {
+  return (
+    <label className={`pop-image-option ${checked ? 'selected' : ''}`}>
+      <input type="radio" name={name} value={option.value} checked={checked} onChange={() => onSelect(option.value)} />
+      <img src={image} alt="" width={200} height={105} loading="lazy" />
+      <span className="pop-image-option-content">
+        <strong>{option.label}</strong>
+        {option.hint && <small>{option.hint}</small>}
+      </span>
+      <span className="pop-image-option-check" aria-hidden="true"><Icon name="check" size={14} /></span>
+    </label>
+  );
+}
+
+/** Local, non-catalogue answer key for a step's optional free-text
+    follow-up (Other Room's description, Custom Design's brief) ΓÇö matched
+    to the real TEXT catalogue rows added in V16 (pop_room_notes /
+    pop_design_notes) via each step's own id. */
+function notesKeyFor(step) {
+  return step.id === 'room_type' ? 'pop_room_notes' : 'pop_design_notes';
+}
+
+function FlowTopBar({ flow, onBack, plain }) {
+  return (
+    <div className={plain ? 'pnt-top' : 'wizard-top'}>
+      <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">
+        <Icon name="arrow-left" size={20} />
+      </button>
+      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.title}</h1>
+      <a
+        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.title}.`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={plain ? 'pnt-help' : 'wizard-help'}
+      >
+        Need help?
+      </a>
+    </div>
+  );
+}
+
+===== FILE: frontend/src/styles/pop-ceiling.css =====
+===== YOUR YASH VERSION =====
+/* POP Ceiling & Design */
+
+.pce-overview-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
+  color: var(--gold-deep);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+}
+
+/* Compact POP booking steps */
+
+.pop-modal-scope .container-narrow {
+  padding-bottom: 0;
+}
+
+.pop-modal-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pop-modal-progress span {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-step-card {
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pop-modal-scope .pnt-step-title {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+/* Two aligned image cards per row */
+
+.pop-modal-scope .pnt-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pop-image-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.pop-image-option:hover,
+.pop-image-option:focus-within,
+.pop-image-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-a40);
+}
+
+.pop-image-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pop-image-option img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.pop-image-option-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 12px;
+}
+
+.pop-image-option-content strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.pop-image-option-content small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pop-image-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  opacity: 0;
+}
+
+.pop-image-option.selected .pop-image-option-check {
+  opacity: 1;
+  background: var(--gold-deep);
+}
+
+/* Back and Continue stay below the scrolling cards */
+
+.pop-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pop-modal-actions .btn-back {
+  flex: 0 0 auto;
+  min-width: 90px;
+}
+
+.pop-modal-actions .btn-primary {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Heading and help link */
+
+.pop-modal-scope .pnt-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 8px 52px 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pop-modal-scope .pnt-back {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+}
+
+.pop-modal-scope .pnt-top-title {
+  min-width: 0;
+  color: var(--ink) !important;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+}
+
+.pop-modal-scope .pnt-help {
+  padding: 7px 10px;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  color: var(--gold-deep) !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pop-modal-scope .pnt-help:hover {
+  background: var(--gold-a08);
+}
+
+/* Validation popup */
+
+.pop-choice-toast {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 13px 14px;
+  transform: translateX(-50%);
+  border: 1px solid #f0a5a5;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #982121;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.pop-choice-toast span {
+  flex: 1;
+}
+
+.pop-choice-toast button {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 23px;
+  line-height: 1;
+}
+
+@media (max-width: 420px) {
+  .pop-modal-scope .pnt-step-card {
+    padding: 12px;
+  }
+
+  .pop-modal-scope .pnt-option-list {
+    gap: 8px;
+  }
+
+  .pop-image-option img {
+    height: 82px;
+  }
+
+  .pop-image-option-content {
+    padding: 8px;
+  }
+
+  .pop-image-option-content strong {
+    font-size: 13px;
+  }
+
+  .pop-modal-progress span {
+    display: none;
+  }
+
+  .pop-modal-scope .pnt-top {
+    padding-right: 38px;
+  }
+
+  .pop-modal-scope .pnt-top-title {
+    font-size: 0.9rem;
+  }
+
+  .pop-modal-scope .pnt-help {
+    padding: 6px;
+    font-size: 11px;
+  }
+}
+===== INCOMING MAIN VERSION =====
+/* POP Ceiling & Design */
+
+.pce-overview-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
+  color: var(--gold-deep);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+}
+
+/* Compact POP booking steps */
+
+.pop-modal-scope .container-narrow {
+  padding-bottom: 0;
+}
+
+.pop-modal-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pop-modal-progress span {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-step-card {
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pop-modal-scope .pnt-step-title {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+/* Two aligned image cards per row */
+
+.pop-modal-scope .pnt-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pop-image-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.pop-image-option:hover,
+.pop-image-option:focus-within,
+.pop-image-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-a40);
+}
+
+.pop-image-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pop-image-option img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.pop-image-option-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 12px;
+}
+
+.pop-image-option-content strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.pop-image-option-content small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pop-image-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  opacity: 0;
+}
+
+.pop-image-option.selected .pop-image-option-check {
+  opacity: 1;
+  background: var(--gold-deep);
+}
+
+/* Back and Continue stay below the scrolling cards */
+
+.pop-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pop-modal-actions .btn-back {
+  flex: 0 0 auto;
+  min-width: 90px;
+}
+
+.pop-modal-actions .btn-primary {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Heading and help link */
+
+/* The pop-up's own header is hidden inside a POP flow, so this bar sits at
+   the top ΓÇö it stops short of the pop-up's close button (40px, 20px in from
+   the corner) instead of running underneath it. */
+.pop-modal-scope .pnt-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 44px 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pop-modal-scope .pnt-back {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+}
+
+.pop-modal-scope .pnt-top-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink) !important;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-help {
+  padding: 7px 10px;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  color: var(--gold-deep) !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pop-modal-scope .pnt-help:hover {
+  background: var(--gold-a08);
+}
+
+/* Phones (after the rules above, so it wins over them) */
+@media (max-width: 480px) {
+  .pop-modal-scope .pnt-top {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .pop-modal-scope .pnt-top-title {
+    font-size: 0.92rem;
+  }
+
+  /* A round "?" instead of the "Need help?" words, so the flow's title
+     keeps one line; the words are still its accessible name. */
+  .pop-modal-scope .pnt-help {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+  }
+
+  .pop-modal-scope .pnt-help::before {
+    content: '?';
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+  }
+}
+
+/* Validation popup */
+
+.pop-choice-toast {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 13px 14px;
+  transform: translateX(-50%);
+  border: 1px solid #f0a5a5;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #982121;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.pop-choice-toast span {
+  flex: 1;
+}
+
+.pop-choice-toast button {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 23px;
+  line-height: 1;
+}
+
+@media (max-width: 420px) {
+  .pop-modal-scope .pnt-step-card {
+    padding: 12px;
+  }
+
+  .pop-modal-scope .pnt-option-list {
+    gap: 8px;
+  }
+
+  .pop-image-option img {
+    height: 82px;
+  }
+
+  .pop-image-option-content {
+    padding: 8px;
+  }
+
+  .pop-image-option-content strong {
+    font-size: 13px;
+  }
+
+  .pop-modal-progress span {
+    display: none;
+  }
+
+  /* The top bar's phone sizes are set with its desktop rules above; it no
+     longer needs right padding for the close button (it stops short of it). */
+}
+

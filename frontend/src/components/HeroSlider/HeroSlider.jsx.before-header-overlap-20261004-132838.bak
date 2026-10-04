@@ -1,31 +1,22 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import HomeHero from '../home/HomeHero';
 import './HeroSlider.css';
 
 const slides = [
   {
     src: '/assets/home-slider/1.jpeg',
-    mobileSrc: '/assets/home-slider/4.jpeg',
-    mobileWidth: 1455,
-    mobileHeight: 1081,
     width: 2048,
     height: 684,
     alt: 'SupplyBase painting services: Fresh Walls, Brighter Spaces. Get 5% off.',
   },
   {
-    src: '/assets/home-slider/2.png',
-    mobileSrc: '/assets/home-slider/5.jpeg',
-    mobileWidth: 1454,
-    mobileHeight: 1082,
-    width: 2170,
-    height: 725,
+    src: '/assets/home-slider/2.jpeg',
+    width: 2048,
+    height: 768,
     alt: 'SupplyBase POP and ceiling designs: Stylish Ceilings for Modern Homes. Get 5% off.',
   },
   {
     src: '/assets/home-slider/3.jpeg',
-    mobileSrc: '/assets/home-slider/6.jpeg',
-    mobileWidth: 1455,
-    mobileHeight: 1081,
     width: 2048,
     height: 684,
     alt: 'SupplyBase waterproofing services: Keep Your Home Safe from Water Damage. Get 5% off.',
@@ -54,49 +45,10 @@ export default function HeroSlider() {
       if (!document.hidden) {
         setActive((current) => (current + 1) % slides.length);
       }
-    }, 4000);
+    }, 6000);
 
     return () => window.clearInterval(timer);
   }, [active, reducedMotion, interacting, searchFocused]);
-
-  // Keep the full artwork below the site header.
-  useLayoutEffect(() => {
-    const banner = document.querySelector('.sb-final-banner');
-    const header = document.querySelector('header');
-
-    if (!banner || !header) return undefined;
-
-    const alignBanner = () => {
-      banner.style.setProperty('margin-top', '0px', 'important');
-
-      const headerRect = header.getBoundingClientRect();
-      const bannerRect = banner.getBoundingClientRect();
-
-      const overlap =
-        headerRect.top <= bannerRect.top &&
-        headerRect.bottom > bannerRect.top
-          ? headerRect.bottom - bannerRect.top
-          : 0;
-
-      banner.style.setProperty(
-        'margin-top',
-        `${Math.ceil(overlap)}px`,
-        'important'
-      );
-    };
-
-    alignBanner();
-
-    const observer = new ResizeObserver(alignBanner);
-    observer.observe(header);
-    window.addEventListener('resize', alignBanner);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', alignBanner);
-      banner.style.removeProperty('margin-top');
-    };
-  }, []);
 
   const current = slides[active];
 
@@ -104,10 +56,7 @@ export default function HeroSlider() {
     <section
       className="sb-home-banner sb-final-banner"
       aria-label="SupplyBase service offers"
-      style={{
-        '--banner-ratio': `${current.width} / ${current.height}`,
-        '--mobile-banner-ratio': `${current.mobileWidth} / ${current.mobileHeight}`,
-      }}
+      style={{ '--banner-ratio': `${current.width} / ${current.height}` }}
     >
       <div
         className="sb-final-banner__images"
@@ -141,37 +90,23 @@ export default function HeroSlider() {
           setInteracting(false);
         }}
       >
-        <div
-          className="sb-final-banner__track"
-          style={{ transform: `translateX(-${active * 100}%)` }}
-        >
         {slides.map((slide, index) => (
-          <picture
+          <img
             key={slide.src}
             className={`sb-final-banner__image ${
               active === index ? 'is-active' : ''
             }`}
+            src={slide.src}
+            alt={slide.alt}
+            width={slide.width}
+            height={slide.height}
             aria-hidden={active !== index}
-          >
-            <source
-              media="(max-width: 767px)"
-              srcSet={slide.mobileSrc}
-              width={slide.mobileWidth}
-              height={slide.mobileHeight}
-            />
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width={slide.width}
-              height={slide.height}
-              loading="eager"
-              fetchpriority={index === 0 ? 'high' : 'auto'}
-              decoding="async"
-              draggable={false}
-            />
-          </picture>
+            loading="eager"
+            fetchpriority={index === 0 ? 'high' : 'auto'}
+            decoding="async"
+            draggable={false}
+          />
         ))}
-        </div>
       </div>
 
       <div

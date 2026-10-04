@@ -1,0 +1,2813 @@
+﻿===== FILE: frontend\src\pages\ServiceBooking.jsx =====
+
+import { useEffect, useMemo, useState, useRef } from 'react';
+
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+
+import Icon from '../components/ui/Icon';
+
+import QuestionField from '../components/booking/QuestionField';
+
+import SlotPicker from '../components/booking/SlotPicker';
+
+import api, { friendlyError } from '../lib/api';
+
+import { useAuth } from '../context/AuthContext';
+
+import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+
+
+
+
+/**
+ * One booking page, four services.
+ *
+ * Nothing about the questions lives here. The page asks the API what to ask
+ * (GET /api/catalogue/services/{slug}/form) and renders whatever comes back,
+ * so adding an option is a database row rather than a release.
+ *
+ * Five stages:
+ * Service -> Property -> Details -> Schedule -> Confirm
+ */
+
+const STAGES = ['Service', 'Property', 'Details', 'Schedule', 'Confirm'];
+
+const SCHEDULE = 3;
+const CONFIRM = 4;
+
+// const DEDICATED_FLOW_PREFIXES = ['pop_', 'wp_'];
+const DEDICATED_FLOW_PREFIXES = ['wp_'];
+
+// POP's catalogue also holds the questions of its two detailed journeys
+// (Full Home POP, Room POP). Its design style question is kept here for its
+// pictures; these are left out — they repeat what this form already asks
+// (home type, room type, a second design style, two more notes boxes), and
+// the additional options are not offered when booking.
+const REPEATED_QUESTIONS = {
+  'pop-ceiling-design': [
+    'pop_home_type',
+    'pop_room_type',
+    'pop_room_design_style',
+    'pop_room_notes',
+    'pop_design_notes',
+    'pop_addon',
+  ],
+};
+
+// Services not offered for now. They stay in the catalogue and are only
+// hidden from the "What service do you need?" choices — delete a line here
+// to offer that service again.
+const HIDDEN_SERVICES = {
+  waterproofing: [
+    'Balcony Waterproofing',
+    'Toilet Waterproofing',
+    'Kitchen Waterproofing',
+    'Podium Waterproofing',
+    'Wall Waterproofing',
+    'Bathroom Corner & Joint Sealing',
+    'Bathroom Pipeline & Fixture Sealing',
+    'Bathroom Shower Area Waterproofing',
+    'Bathroom Tile Re-sealing',
+  ],
+};
+
+/** The question without any service that is not offered for now. */
+const withoutHiddenServices = (q, slug) => {
+  const hidden = HIDDEN_SERVICES[slug];
+  if (!hidden || q.key !== 'service_needed' || !Array.isArray(q.options)) {
+    return q;
+  }
+  return {
+    ...q,
+    options: q.options.filter((o) => !hidden.includes(o.value)),
+  };
+};
+
+/** Whether this general form asks a catalogue question. */
+const isAskedHere = (q, slug) =>
+  Boolean(q) &&
+  q.inputType !== 'FILE' &&
+  !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+    String(q.key || '').startsWith(prefix)
+  ) &&
+  !(REPEATED_QUESTIONS[slug] || []).includes(q.key);
+
+export default function ServiceBooking({
+  serviceSlug,
+  modal = false,
+  onStepChange,
+  onClose,
+}) {
+  const { slug: routeSlug } = useParams();
+
+  const slug = serviceSlug || routeSlug;
+
+  const { user } = useAuth();
+
+  // The visit location pinned on the map (with a Google Maps key), or null.
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+
+  const [searchParams] = useSearchParams();
+
+  const preselect = searchParams.get('preselect');
+
+  const [form, setForm] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:svc:${slug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+
+  const [details, setDetails] = useHistoryState(`${scope}:details`, emptyDetails);
+
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+
+  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+
+  const [busy, setBusy] = useState(false);
+
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  /**
+   * Notify parent modal about current step.
+   */
+  // Kept in a ref: a new callback from the parent is not a step change.
+  const onStepChangeRef = useRef(onStepChange);
+  onStepChangeRef.current = onStepChange;
+
+  useEffect(() => {
+    if (modal && onStepChangeRef.current) {
+      onStepChangeRef.current(stage, receipt);
+    }
+  }, [stage, receipt, modal]);
+
+  /**
+   * Load service form.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setLoadError('');
+
+    api
+      .serviceForm(slug)
+      .then((result) => {
+        if (cancelled) return;
+
+        if (!result || !Array.isArray(result.questions)) {
+          throw new Error('Invalid service form received from server.');
+        }
+
+        /*
+         * Debug information.
+         *
+         * This also helps identify duplicate question keys such as "notes".
+         */
+        console.log(
+          'SERVICE FORM QUESTIONS:',
+          result.questions.map((q, index) => ({
+            index,
+            key: q.key,
+            text: q.text,
+            inputType: q.inputType,
+          }))
+        );
+
+        setForm(result);
+
+        /*
+         * Each service keeps its own saved answers (the history-state keys
+         * include the slug), so switching service never carries answers
+         * over, and a refresh must not wipe what was restored. Only a fresh
+         * visit with ?preselect= starts with that option ticked.
+         */
+        const validPreselect =
+          preselect &&
+          result.questions.some(
+            (q) =>
+              q.key === 'service_needed' &&
+              q.options?.some((o) => o.value === preselect)
+          );
+
+        if (validPreselect && !hasHistoryState(`${scope}:answers`)) {
+          setAnswers({
+            service_needed: [preselect],
+          });
+        }
+
+        setErrors({});
+        setError('');
+      })
+      .catch((err) => {
+        console.error('SERVICE FORM ERROR:', err);
+
+        if (!cancelled) {
+          setLoadError(friendlyError(err));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, preselect]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Prefill details from signed-in account.
+   */
+  useEffect(() => {
+    if (user) {
+      setDetails((d) => ({
+        ...d,
+        name: d.name || user.fullName || '',
+        phone: d.phone || user.phone || '',
+        email: d.email || user.email || '',
+      }));
+    }
+  }, [user]);
+
+  /**
+   * Questions for each question stage.
+   *
+   * Service:
+   *   service_needed
+   *
+   * Property:
+   *   property_type
+   *
+   * Details:
+   *   everything else
+   *
+   * FILE questions are excluded.
+   *
+   * Dedicated flow questions beginning with pop_ or wp_ are excluded because
+   * those are handled by their dedicated flow pages.
+   */
+  // const stageQuestions = useMemo(() => {
+  //   if (!form || !Array.isArray(form.questions)) {
+  //     return [[], [], []];
+  //   }
+
+  //   const usable = form.questions.filter(
+  //     (q) =>
+  //       q &&
+  //       q.inputType !== 'FILE' &&
+  //       !DEDICATED_FLOW_PREFIXES.some((prefix) =>
+  //         String(q.key || '').startsWith(prefix)
+  //       )
+  //   );
+
+  //   const service = usable.filter(
+  //     (q) => q.key === 'service_needed'
+  //   );
+
+  //   const property = usable.filter(
+  //     (q) => q.key === 'property_type'
+  //   );
+
+  //   const detailsQuestions = usable.filter(
+  //     (q) =>
+  //       q.key !== 'service_needed' &&
+  //       q.key !== 'property_type'
+  //   );
+
+  //   return [service, property, detailsQuestions];
+  // }, [form]);
+const stageQuestions = useMemo(() => {
+  if (!form || !Array.isArray(form.questions)) {
+    return [[], [], []];
+  }
+
+  const usable = form.questions
+    .filter((q) => isAskedHere(q, slug))
+    // The catalogue can hold the same question twice (Waterproofing asks
+    // "Tell us anything else about your work." at step 3 and again at step 6,
+    // both answering the one `notes` key). Two questions with the same key
+    // fill the same answer, whatever their wording, so each key is asked
+    // once — the first one is kept.
+    .filter(
+      (question, index, questions) =>
+        index === questions.findIndex((q) => q.key === question.key)
+    )
+    .map((q, index) => ({
+      ...withoutHiddenServices(q, slug),
+      _questionId: `${q.key}-${index}`,
+    }));
+
+  const service = usable.filter(
+    (q) => q.key === 'service_needed'
+  );
+
+  const property = usable.filter(
+    (q) => q.key === 'property_type'
+  );
+
+  const detailsQuestions = usable.filter(
+    (q) =>
+      q.key !== 'service_needed' &&
+      q.key !== 'property_type'
+  );
+
+  // "Tell us anything else" reads best as the last question of the step.
+  const notesLast = [
+    ...detailsQuestions.filter((q) => q.key !== 'notes'),
+    ...detailsQuestions.filter((q) => q.key === 'notes'),
+  ];
+
+  return [
+    service,
+    property,
+    notesLast,
+  ];
+}, [form, slug]);
+  /**
+   * Set answer.
+   *
+   * QuestionField can send either:
+   *   - a direct value
+   *   - a functional updater
+   *
+   * Both are supported here.
+   */
+  const setAnswer = (key) => (next) => {
+    setAnswers((currentAnswers) => {
+      const nextValue =
+        typeof next === 'function'
+          ? next(currentAnswers[key])
+          : next;
+
+      return {
+        ...currentAnswers,
+        [key]: nextValue,
+      };
+    });
+
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [key]: undefined,
+    }));
+
+    setError('');
+  };
+
+  /**
+   * Set customer detail.
+   */
+  const setDetail = (key) => (e) => {
+    const value = e.target.value;
+
+    setDetails((currentDetails) => ({
+      ...currentDetails,
+      [key]: value,
+    }));
+
+    setErrors((currentErrors) => ({
+      ...currentErrors,
+      [key]: undefined,
+    }));
+
+    setError('');
+  };
+
+  /**
+   * Validate catalogue questions.
+   */
+  const validateQuestions = (list) => {
+    const nextErrors = {};
+
+    list.forEach((question) => {
+      if (!question.required) return;
+
+      const value = answers[question.key];
+
+      const empty = Array.isArray(value)
+        ? value.length === 0
+        : !value;
+
+      if (empty) {
+        nextErrors[question.key] = 'Please choose an option';
+      }
+    });
+
+    setErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  /**
+   * Validate customer details — the same checks as every booking flow
+   * (lib/bookingDetails), which also know about a map pin.
+   */
+  const validateDetails = () => {
+    const nextErrors = checkDetails(details, pickedLocation);
+
+    setErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  /**
+   * Check whether current stage can be left.
+   */
+  const canLeaveStage = () => {
+    if (stage < SCHEDULE) {
+      return validateQuestions(stageQuestions[stage]);
+    }
+
+    if (stage === SCHEDULE) {
+      if (!date || !time) {
+        setErrors({
+          slot: 'Please choose a date and a time',
+        });
+
+        return false;
+      }
+
+      return true;
+    }
+
+    return validateDetails();
+  };
+
+  /**
+   * Next stage.
+   */
+  const goNext = () => {
+    setError('');
+
+    if (!canLeaveStage()) {
+      return;
+    }
+
+    setStage((currentStage) =>
+      Math.min(currentStage + 1, CONFIRM)
+    );
+
+    if (!modal) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  /**
+   * Previous stage.
+   */
+  const goBack = () => {
+    setError('');
+
+    formBack(() =>
+      setStage((currentStage) =>
+        Math.max(currentStage - 1, 0)
+      )
+    );
+
+    if (!modal) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  /**
+   * Submit booking.
+   */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateDetails()) {
+      return;
+    }
+
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) {
+      return;
+    }
+
+    setBusy(true);
+    setError('');
+
+    try {
+      /*
+       * Flatten answers.
+       *
+       * MULTI questions become one row per selected option.
+       */
+      const flat = [];
+
+      Object.entries(answers).forEach(([key, value]) => {
+        const question = form.questions.find(
+          (q) => q.key === key
+        );
+
+        const values = Array.isArray(value)
+          ? value
+          : [value];
+
+        values
+          .filter(
+            (v) =>
+              v !== '' &&
+              v !== null &&
+              v !== undefined
+          )
+          .forEach((v) => {
+            const option = (
+              question?.options || []
+            ).find((o) => o.value === v);
+
+            flat.push({
+              key,
+              value: String(v),
+              label: option
+                ? option.label
+                : String(v),
+            });
+          });
+      });
+
+      const result = await api.createBooking({
+        serviceSlug: slug,
+
+        answers: flat,
+
+        preferredDate: date,
+
+        preferredTime: time,
+
+        name: details.name,
+
+        phone: details.phone,
+
+        whatsapp: details.whatsapp || null,
+
+        email: details.email || null,
+
+        // Building / room / floor, the pinned location, then anything typed.
+        address: composeAddress(details, pickedLocation),
+
+        city: details.city,
+
+        pincode: details.pincode || null,
+
+        areaSqft: answers.area_sqft
+          ? Number(answers.area_sqft)
+          : null,
+      });
+
+      setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('bk', result.bookingNumber, details.phone);
+
+      if (!modal) {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        });
+      }
+    } catch (err) {
+      console.error('BOOKING ERROR:', err);
+
+      if (err && err.fieldErrors) {
+        setErrors(err.fieldErrors);
+      }
+
+      setError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /* ----------------------------------------------------------
+     Loading
+  ---------------------------------------------------------- */
+
+  if (loading) {
+    return (
+      <div
+        className={
+          modal
+            ? 'w-full'
+            : 'wizard-shell'
+        }
+      >
+        <div
+          className={
+            modal
+              ? 'w-full'
+              : 'wizard-container'
+          }
+        >
+          <p
+            style={{
+              color: 'rgba(255,255,255,.6)',
+            }}
+          >
+            Loading…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ----------------------------------------------------------
+     Load error
+  ---------------------------------------------------------- */
+
+  if (loadError || !form) {
+    return (
+      <div
+        className={
+          modal
+            ? 'w-full'
+            : 'wizard-shell'
+        }
+      >
+        <div
+          className={
+            modal
+              ? 'w-full'
+              : 'wizard-container'
+          }
+        >
+          <div className="wizard-card">
+            <div
+              role="alert"
+              className="alert alert-error"
+            >
+              <Icon
+                name="info"
+                size={18}
+              />
+
+              <span>
+                {loadError ||
+                  'That service could not be found.'}
+              </span>
+            </div>
+
+            <Link
+              to="/services"
+              className="btn btn-primary btn-block"
+            >
+              SEE ALL SERVICES
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { category } = form;
+
+  /* ----------------------------------------------------------
+     Confirmation
+  ---------------------------------------------------------- */
+
+  if (receipt) {
+    return (
+      <Confirmation
+        receipt={receipt}
+        details={details}
+        modal={modal}
+      />
+    );
+  }
+
+  /* ----------------------------------------------------------
+     Main booking UI
+  ---------------------------------------------------------- */
+
+  return (
+    <div
+      className={
+        modal
+          ? 'w-full'
+          : 'wizard-shell'
+      }
+    >
+      <div
+        className={
+          modal
+            ? 'w-full'
+            : 'wizard-container'
+        }
+      >
+        {/* --------------------------------------------------
+            Top bar
+        -------------------------------------------------- */}
+
+        {!modal && (
+          <div className="wizard-top">
+            {stage > 0 ? (
+              <button
+                type="button"
+                className="wizard-back"
+                onClick={goBack}
+                aria-label="Go back"
+              >
+                <Icon
+                  name="arrow-left"
+                  size={20}
+                />
+              </button>
+            ) : (
+              <Link
+                to="/services"
+                className="wizard-back"
+                aria-label="Back to services"
+              >
+                <Icon
+                  name="arrow-left"
+                  size={20}
+                />
+              </Link>
+            )}
+
+            <h1 className="wizard-title">
+              Book a Service
+            </h1>
+
+            <a
+              href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+                `Hello Supplybase, I need help booking ${category.name}.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="wizard-help"
+            >
+              Need help?
+            </a>
+          </div>
+        )}
+
+        {/* --------------------------------------------------
+            Progress
+        -------------------------------------------------- */}
+
+        <ol
+          className={
+            modal
+              ? 'wizard-steps !mb-3'
+              : 'wizard-steps'
+          }
+        >
+          {STAGES.map((label, index) => (
+            <li
+              key={label}
+              className={`wstep ${
+                index === stage
+                  ? 'current'
+                  : ''
+              } ${
+                index < stage
+                  ? 'done'
+                  : ''
+              }`}
+              aria-current={
+                index === stage
+                  ? 'step'
+                  : undefined
+              }
+            >
+              <span className="wstep-num">
+                {index < stage ? (
+                  <Icon
+                    name="check"
+                    size={14}
+                    strokeWidth={3}
+                  />
+                ) : (
+                  index + 1
+                )}
+              </span>
+
+              <span className="wstep-label">
+                {label}
+              </span>
+            </li>
+          ))}
+        </ol>
+
+        {/* --------------------------------------------------
+            Form
+        -------------------------------------------------- */}
+
+        <form
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          <div
+            className={
+              modal
+                ? 'wizard-card !rounded-none !shadow-none !px-0 !pt-1 !pb-0'
+                : 'wizard-card'
+            }
+          >
+            {/* --------------------------------------------
+                Stages 1-3: Questions
+            -------------------------------------------- */}
+
+            {stage < SCHEDULE &&
+              stageQuestions[stage].map(
+                (question, index) => (
+              <QuestionField
+                key={question._questionId || `${question.key}-${index}`}
+                question={question}
+                value={answers[question.key]}
+                onChange={setAnswer(question.key)}
+                error={errors[question.key]}
+                serviceSlug={slug}
+              />
+                )
+              )}
+
+            {/* --------------------------------------------
+                Stage 4: Schedule
+            -------------------------------------------- */}
+
+            {stage === SCHEDULE && (
+              <>
+                <div className="wizard-card-head">
+                  <h2>
+                    Choose Date &amp; Time for
+                    Site Visit
+                  </h2>
+
+                  <p>
+                    Our team will visit your site.
+                  </p>
+                </div>
+
+                <SlotPicker
+                  serviceSlug={slug}
+                  date={date}
+                  time={time}
+                  onPick={(d, t) => {
+                    setDate(d);
+                    setTime(t);
+
+                    setErrors((currentErrors) => ({
+                      ...currentErrors,
+                      slot: undefined,
+                    }));
+                  }}
+                  error={errors.slot}
+                />
+              </>
+            )}
+
+            {/* --------------------------------------------
+                Stage 5: Customer details + Summary
+            -------------------------------------------- */}
+
+            {stage === CONFIRM && (
+              <>
+                <div className="wizard-card-head">
+                  <h2>
+                    Your Details
+                  </h2>
+
+                  <p>
+                    We will contact you to
+                    confirm the appointment.
+                  </p>
+                </div>
+
+                <CustomerDetailsFields
+                  details={details}
+                  setDetail={setDetail}
+                  errors={errors}
+                  idPrefix="bk"
+                />
+
+                <Summary
+                  category={category}
+                  form={form}
+                  answers={answers}
+                  date={date}
+                  time={time}
+                />
+              </>
+            )}
+
+            {/* --------------------------------------------
+                Error
+            -------------------------------------------- */}
+
+            {error && (
+              <div
+                role="alert"
+                className="alert alert-error"
+                style={{
+                  marginTop: 18,
+                }}
+              >
+                <Icon
+                  name="info"
+                  size={18}
+                />
+
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* --------------------------------------------
+                Footer
+            -------------------------------------------- */}
+
+            <ModalFoot
+              className={
+                modal
+                  ? 'wizard-foot modal-sticky-foot !flex !w-full !gap-3 !border-0'
+                  : 'wizard-foot'
+              }
+            >
+              {(stage > 0 || modal) && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-back btn-sm md:!flex-none md:!w-36 md:!me-auto"
+                  onClick={
+                    stage > 0
+                      ? goBack
+                      : onClose
+                  }
+                >
+                  BACK
+                </button>
+              )}
+
+              {stage === CONFIRM ? (
+                <button
+                  type="submit"
+                  className="
+                    btn btn-primary btn-sm
+                    md:!flex-none md:!w-56 md:!ms-auto
+                    max-md:!text-[11px]
+                    max-md:!px-3
+                    max-md:!whitespace-nowrap
+                    max-md:!ms-auto
+                  "
+                  disabled={busy}
+                >
+                  {busy
+                    ? 'BOOKING…'
+                    : 'BOOK NOW'}
+
+                  <Icon
+                    name="arrow-right"
+                    size={15}
+                  />
+                </button>
+              ) : (
+                (
+                  stage >= SCHEDULE ||
+                  (
+                    stageQuestions[stage]
+                      .length > 0 &&
+                    stageQuestions[stage].every(
+                      (question) => {
+                        if (
+                          !question.required
+                        ) {
+                          return true;
+                        }
+
+                        const value =
+                          answers[
+                            question.key
+                          ];
+
+                        return Array.isArray(
+                          value
+                        )
+                          ? value.length > 0
+                          : Boolean(value);
+                      }
+                    )
+                  )
+                ) && (
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm md:!flex-none md:!w-44 md:!ms-auto"
+                    onClick={goNext}
+                  >
+                    CONTINUE
+
+                    <Icon
+                      name="arrow-right"
+                      size={17}
+                    />
+                  </button>
+                )
+              )}
+            </ModalFoot>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  );
+}
+
+/* ==========================================================
+   Summary
+========================================================== */
+
+function Summary({
+  category,
+  form,
+  answers,
+  date,
+  time,
+}) {
+  /*
+   * Filter out FILE questions and dedicated-flow questions.
+   */
+  const rows = form.questions
+    .filter((q) => isAskedHere(q, category.slug))
+    .map((q, questionIndex) => {
+      const value = answers[q.key];
+
+      const values = Array.isArray(value)
+        ? value
+        : value
+          ? [value]
+          : [];
+
+      if (values.length === 0) {
+        return null;
+      }
+
+      const labels = values.map((v) => {
+        const option = (
+          q.options || []
+        ).find(
+          (o) => o.value === v
+        );
+
+        return option
+          ? option.label
+          : v;
+      });
+
+      return {
+        key: q.key,
+        index: questionIndex,
+        question: q.text,
+        answer: labels.join(', '),
+      };
+    })
+    .filter(Boolean);
+
+  return (
+    <div
+      style={{
+        marginTop: 26,
+      }}
+    >
+      <div className="wizard-card-head">
+        <h2>Booking Summary</h2>
+
+        <p>
+          Please check everything before
+          you pay.
+        </p>
+      </div>
+
+      <dl className="review-list">
+        <div>
+          <dt>Service</dt>
+
+          <dd>
+            {category.name}
+          </dd>
+        </div>
+
+        <div>
+          <dt>Site visit</dt>
+
+          <dd>
+            {formatVisit(date, time)}
+          </dd>
+        </div>
+
+        {rows.map((row) => (
+          /*
+           * Index is included because the API can return duplicate
+           * catalogue keys such as "notes".
+           */
+          <div
+            key={`${row.key}-${row.index}`}
+          >
+            <dt>
+              {row.question}
+            </dt>
+
+            <dd>
+              {row.answer}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="fee-panel">
+        <div className="fee-panel-top">
+          <strong>
+            Site Visit &amp; Quotation Fee
+          </strong>
+        </div>
+
+        <ul className="fee-includes">
+          {[
+            'Site visit',
+            'Assessment',
+            'Measurement where required',
+            'Quotation',
+          ].map((item) => (
+            <li key={item}>
+              <Icon
+                name="check"
+                size={13}
+                strokeWidth={3}
+              />
+
+              {item}
+            </li>
+          ))}
+        </ul>
+
+        <p className="fee-small">
+          This is a one-time fee.{' '}
+          <strong>
+            No advance payment is required
+            for the actual work.
+          </strong>{' '}
+          The final project cost will be
+          provided after site inspection.
+          Supplybase will provide the
+          required material according to the
+          approved quotation.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ==========================================================
+   Confirmation
+========================================================== */
+
+function Confirmation({
+  receipt,
+  details,
+  modal = false,
+}) {
+  const message = encodeURIComponent(
+    `Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`
+  );
+
+  return (
+    <div
+      className={
+        modal
+          ? 'w-full'
+          : 'wizard-shell'
+      }
+    >
+      <div
+        className={
+          modal
+            ? 'w-full'
+            : 'wizard-container'
+        }
+      >
+        <div
+          className={
+            modal
+              ? 'wizard-card !p-5 !rounded-xl !shadow-none'
+              : 'wizard-card'
+          }
+        >
+          <div className="confirmed">
+            <div className="confirmed-tick">
+              <Icon
+                name="check"
+                size={38}
+                strokeWidth={3}
+              />
+            </div>
+
+            <h2>
+              Your Site Visit is Booked!
+            </h2>
+
+            <p>
+              We have received your request.
+              Our team will contact you on
+              WhatsApp or phone to confirm the
+              appointment.
+            </p>
+
+            <dl className="confirmed-panel">
+              <div>
+                <dt>Booking ID</dt>
+
+                <dd className="booking-id">
+                  {receipt.bookingNumber}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Date &amp; Time</dt>
+
+                <dd>
+                  {formatVisit(receipt.date, receipt.time)}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Service</dt>
+
+                <dd>
+                  {receipt.serviceName}
+                </dd>
+              </div>
+
+              <div>
+                <dt>Location</dt>
+
+                <dd>
+                  {details.city}
+                </dd>
+              </div>
+            </dl>
+
+            <Link
+              to="/dashboard"
+              className="btn btn-primary w-full sm:w-auto sm:min-w-[250px]"
+            >
+              GO TO DASHBOARD
+            </Link>
+
+            <div
+              className="btn-row flex justify-center"
+              style={{
+                marginTop: 12,
+              }}
+            >
+              <a
+                href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-whatsapp"
+              >
+                <Icon
+                  name="whatsapp"
+                  size={17}
+                />
+
+                CHAT ON WHATSAPP
+              </a>
+
+              <Link
+                to="/"
+                className="btn btn-ghost btn-back"
+              >
+                BACK TO HOME
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\components\booking\CustomerDetailsFields.jsx =====
+import { useEffect, useState } from 'react';
+import Icon from '../ui/Icon';
+import GoogleLocationPicker, {
+  getCurrentLocation,
+  hasGoogleMaps,
+} from '../layout/GoogleLocationPicker';
+import {
+  useLocationContext,
+  usePickedLocation,
+} from '../../context/LocationContext';
+import {
+  getBookingPhotos,
+  setBookingPhotos,
+  MAX_BOOKING_PHOTOS,
+} from '../../lib/bookingPhotos';
+
+export function Field({ id, label, required, hint, error, ...rest }) {
+  return (
+    <div className={`field ${error ? 'error' : ''}`}>
+      <label htmlFor={id}>
+        {label} {required && <span className="req">*</span>}
+      </label>
+
+      <input id={id} {...rest} />
+
+      {error ? (
+        <span className="field-error">{error}</span>
+      ) : (
+        hint && <span className="field-hint">{hint}</span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The visit address.
+ *
+ * With a Google Maps key the customer can:
+ * - Pin the project location on a map
+ * - Use their current location
+ *
+ * Once a location is selected:
+ * - Building name is requested
+ * - Room number is optional
+ * - Floor is optional
+ *
+ * Without Google Maps:
+ * - Customer can enter the address manually.
+ */
+export function AddressFields({
+  details,
+  setDetail,
+  errors,
+  idPrefix = 'bk',
+}) {
+  const { setLocation } = useLocationContext();
+  const pickedLocation = usePickedLocation();
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState('');
+
+  const locateMe = async () => {
+    setLocating(true);
+    setLocateError('');
+
+    try {
+      const here = await getCurrentLocation();
+
+      setLocation({
+        address: here.address,
+        latitude: here.latitude,
+        longitude: here.longitude,
+      });
+
+      // Only fill values that the customer has not already entered.
+      const fill = (key, value) => {
+        if (
+          value &&
+          !String(details[key] || '').trim()
+        ) {
+          setDetail(key)({
+            target: {
+              value,
+            },
+          });
+        }
+      };
+
+      fill('city', here.city);
+      fill('pincode', here.pincode);
+    } catch (err) {
+      setLocateError(
+        err.message || 'Unable to get your current location.'
+      );
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  return (
+    <>
+      {/* =====================================================
+          GOOGLE MAP LOCATION
+          ===================================================== */}
+
+      {hasGoogleMaps && (
+        <div
+          className="field booking-address-field"
+          style={{ marginTop: 16 }}
+        >
+          <div className="booking-address-label-row">
+            <label>
+              Project Location <span className="req">*</span>
+            </label>
+
+            {pickedLocation && (
+              <button
+                type="button"
+                className="booking-use-location"
+                onClick={() => setPickerOpen(true)}
+              >
+                <Icon name="map-pin" size={14} />
+                Change on map
+              </button>
+            )}
+          </div>
+
+          {/* Selected location */}
+          {pickedLocation ? (
+            <div className="booking-selected-location">
+              <Icon name="map-pin" size={15} />
+
+              <div className="booking-location-text">
+                <span className="booking-location-label">
+                  Selected location
+                </span>
+
+                <span className="booking-location-address">
+                  {pickedLocation.address}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="booking-location-empty"
+              onClick={() => setPickerOpen(true)}
+            >
+              <Icon name="map-pin" size={15} />
+              Select your location on the map
+            </button>
+          )}
+
+          {/* Current location */}
+          <button
+            type="button"
+            className="booking-current-location"
+            onClick={locateMe}
+            disabled={locating}
+            aria-busy={locating}
+          >
+            <Icon
+              name="locate"
+              size={17}
+              className={locating ? 'spin-slow' : ''}
+            />
+
+            {locating
+              ? 'Finding your location…'
+              : 'Use my current location'}
+          </button>
+
+          {/* Location error */}
+          {locateError && (
+            <span
+              className="field-error booking-current-location-error"
+              role="alert"
+            >
+              {locateError}
+            </span>
+          )}
+
+          {/* Building / Room / Floor */}
+          {pickedLocation && (
+            <div className="booking-address-inputs">
+              <div className="field booking-building-field">
+                <label htmlFor={`${idPrefix}-building`}>
+                  Building Name <span className="req">*</span>
+                </label>
+
+                <input
+                  id={`${idPrefix}-building`}
+                  type="text"
+                  value={details.buildingName || ''}
+                  onChange={setDetail('buildingName')}
+                  placeholder="Enter building name"
+                />
+
+                {errors.buildingName && (
+                  <span className="field-error">
+                    {errors.buildingName}
+                  </span>
+                )}
+              </div>
+
+              <div className="booking-small-fields">
+                {/* Room */}
+                <div className="field">
+                  <label htmlFor={`${idPrefix}-room`}>
+                    Room No.
+                  </label>
+
+                  <input
+                    id={`${idPrefix}-room`}
+                    type="text"
+                    value={details.roomNo || ''}
+                    onChange={setDetail('roomNo')}
+                    placeholder="Room no."
+                  />
+                </div>
+
+                {/* Floor */}
+                <div className="field">
+                  <label htmlFor={`${idPrefix}-floor`}>
+                    Floor
+                  </label>
+
+                  <input
+                    id={`${idPrefix}-floor`}
+                    type="text"
+                    value={details.floorNo || ''}
+                    onChange={setDetail('floorNo')}
+                    placeholder="Floor"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* =====================================================
+          PROJECT ADDRESS
+          ===================================================== */}
+
+      <div
+        className="field"
+        style={{ marginTop: 16 }}
+      >
+        <label htmlFor={`${idPrefix}-address`}>
+          {pickedLocation
+            ? 'Address details (optional)'
+            : 'Project Address'}
+
+          {!pickedLocation && (
+            <>
+              {' '}
+              <span className="req">*</span>
+            </>
+          )}
+        </label>
+
+        <textarea
+          id={`${idPrefix}-address`}
+          rows={3}
+          value={details.address || ''}
+          onChange={setDetail('address')}
+          placeholder={
+            pickedLocation
+              ? 'Landmark or directions for our team'
+              : hasGoogleMaps
+                ? 'Or type your complete address'
+                : 'Enter complete address'
+          }
+        />
+
+        {errors.address && (
+          <span className="field-error">
+            {errors.address}
+          </span>
+        )}
+      </div>
+
+      {/* Google location picker */}
+      {hasGoogleMaps && (
+        <GoogleLocationPicker
+          open={pickerOpen}
+          onClose={() => setPickerOpen(false)}
+          onSelect={(selectedLocation) => {
+            setLocation(selectedLocation);
+            setPickerOpen(false);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * Customer details fields used by every booking flow.
+ *
+ * Includes:
+ * - Full Name
+ * - Mobile Number
+ * - WhatsApp Number
+ * - Email Address
+ * - Project Location
+ * - Project Address
+ * - Upload Images
+ * - City
+ * - Pincode
+ *
+ * Image upload:
+ * - Maximum 5 images
+ * - Image files only
+ * - Image previews
+ * - Remove individual images
+ *
+ * The selected files are kept in lib/bookingPhotos (per idPrefix), so they
+ * survive the customer moving on to the next step and back; the booking
+ * flow uploads them with uploadBookingPhotos() once the booking exists.
+ * The optional onImagesChange callback also receives them.
+ */
+export default function CustomerDetailsFields({
+  details,
+  setDetail,
+  errors,
+  idPrefix = 'bk',
+  onImagesChange,
+}) {
+  const value = (key) => details[key] || '';
+
+  /* =========================================================
+     IMAGE STATE
+     ========================================================= */
+
+  // Starts with any photos already picked in this form (coming Back to it).
+  const [images, setImages] = useState(() => getBookingPhotos(idPrefix));
+  const [imagePreviews, setImagePreviews] = useState([]);
+
+  /* =========================================================
+     CREATE IMAGE PREVIEWS
+     ========================================================= */
+
+  useEffect(() => {
+    const previews = images.map((file) =>
+      URL.createObjectURL(file)
+    );
+
+    setImagePreviews(previews);
+
+    return () => {
+      previews.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+    };
+  }, [images]);
+
+  /* =========================================================
+     SEND SELECTED FILES TO PARENT
+     ========================================================= */
+
+  useEffect(() => {
+    // Kept for the booking flow to upload once the booking is made.
+    setBookingPhotos(idPrefix, images);
+    if (typeof onImagesChange === 'function') {
+      onImagesChange(images);
+    }
+  }, [images, idPrefix, onImagesChange]);
+
+  /* =========================================================
+     IMAGE SELECT
+     ========================================================= */
+
+  const handleImageChange = (event) => {
+    const selectedFiles = Array.from(
+      event.target.files || []
+    );
+
+    if (!selectedFiles.length) {
+      return;
+    }
+
+    // Only allow image files.
+    const validImages = selectedFiles.filter((file) =>
+      file.type.startsWith('image/')
+    );
+
+    // Maximum 5 images.
+    const availableSlots = MAX_BOOKING_PHOTOS - images.length;
+
+    const filesToAdd = validImages.slice(
+      0,
+      availableSlots
+    );
+
+    if (filesToAdd.length > 0) {
+      setImages((previousImages) => [
+        ...previousImages,
+        ...filesToAdd,
+      ]);
+    }
+
+    // Reset the input.
+    //
+    // This allows the customer to select the same
+    // image again if they remove it and want to re-add it.
+    event.target.value = '';
+  };
+
+  /* =========================================================
+     REMOVE IMAGE
+     ========================================================= */
+
+  const removeImage = (indexToRemove) => {
+    setImages((previousImages) =>
+      previousImages.filter(
+        (_, index) => index !== indexToRemove
+      )
+    );
+  };
+
+  return (
+    <>
+      {/* =====================================================
+          CUSTOMER DETAILS
+          ===================================================== */}
+
+      <div className="form-grid">
+        {/* Full Name */}
+        <Field
+          id={`${idPrefix}-name`}
+          label="Full Name"
+          required
+          value={value('name')}
+          onChange={setDetail('name')}
+          error={errors.name}
+          placeholder="Enter your name"
+          autoComplete="name"
+        />
+
+        {/* Mobile */}
+        <Field
+          id={`${idPrefix}-phone`}
+          label="Mobile Number"
+          required
+          type="tel"
+          inputMode="numeric"
+          value={value('phone')}
+          onChange={setDetail('phone')}
+          error={errors.phone}
+          placeholder="Enter mobile number"
+          autoComplete="tel"
+        />
+
+        {/* WhatsApp */}
+        <Field
+          id={`${idPrefix}-whatsapp`}
+          label="WhatsApp Number (Optional)"
+          type="tel"
+          inputMode="numeric"
+          value={value('whatsapp')}
+          onChange={setDetail('whatsapp')}
+          error={errors.whatsapp}
+          placeholder="Enter WhatsApp number"
+          hint="Leave blank if it is the same as your mobile."
+        />
+
+        {/* Email */}
+        <Field
+          id={`${idPrefix}-email`}
+          label="Email Address (Optional)"
+          type="email"
+          value={value('email')}
+          onChange={setDetail('email')}
+          error={errors.email}
+          placeholder="Enter email address"
+          autoComplete="email"
+        />
+      </div>
+
+      {/* =====================================================
+          ADDRESS
+          ===================================================== */}
+
+      <AddressFields
+        details={details}
+        setDetail={setDetail}
+        errors={errors}
+        idPrefix={idPrefix}
+      />
+
+      {/* =====================================================
+          IMAGE UPLOAD
+          ===================================================== */}
+
+      <div className="booking-image-upload">
+        <label className="booking-image-upload-label">
+          Upload Images{' '}
+          <span className="booking-image-upload-optional">
+            (Optional)
+          </span>
+        </label>
+
+        <p className="booking-image-upload-hint">
+          Upload photos of your project or work area.
+          Maximum 5 images.
+        </p>
+
+        <div className="booking-image-upload-container">
+
+          {/* -------------------------------------------------
+              SELECTED IMAGE PREVIEWS
+              ------------------------------------------------- */}
+
+          {images.map((file, index) => (
+            <div
+              className="booking-image-preview"
+              key={`${file.name}-${file.lastModified}-${index}`}
+            >
+              <img
+                src={imagePreviews[index]}
+                alt={`Project image ${index + 1}`}
+              />
+
+              <button
+                type="button"
+                className="booking-image-remove"
+                onClick={() => removeImage(index)}
+                aria-label={`Remove ${file.name}`}
+                title="Remove image"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          {/* -------------------------------------------------
+              UPLOAD BUTTON
+              ------------------------------------------------- */}
+
+          {images.length < MAX_BOOKING_PHOTOS && (
+            <label
+              htmlFor={`${idPrefix}-project-images`}
+              className="booking-image-add"
+            >
+              <span className="booking-image-add-icon">
+                +
+              </span>
+
+              <span className="booking-image-add-text">
+                Upload Photos
+              </span>
+            </label>
+          )}
+
+          {/* Hidden file input */}
+          <input
+            id={`${idPrefix}-project-images`}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageChange}
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* File information */}
+        <span className="booking-image-upload-info">
+          JPG, JPEG, PNG • Maximum 5 images
+        </span>
+
+        {/* Selected count */}
+        {images.length > 0 && (
+          <span className="booking-image-count">
+            {images.length} / 5 images selected
+          </span>
+        )}
+      </div>
+
+      {/* =====================================================
+          CITY / PINCODE
+          ===================================================== */}
+
+      <div
+        className="form-grid"
+        style={{ marginTop: 16 }}
+      >
+        {/* City */}
+        <Field
+          id={`${idPrefix}-city`}
+          label="City"
+          required
+          value={value('city')}
+          onChange={setDetail('city')}
+          error={errors.city}
+          placeholder="Mumbai"
+          autoComplete="address-level2"
+        />
+
+        {/* Pincode */}
+        <Field
+          id={`${idPrefix}-pincode`}
+          label="Pincode"
+          required
+          value={value('pincode')}
+          inputMode="numeric"
+          onChange={setDetail('pincode')}
+          error={errors.pincode}
+          placeholder="400001"
+          autoComplete="postal-code"
+        />
+      </div>
+    </>
+  );
+}
+
+
+===== FILE: frontend\src\components\booking\SlotPicker.jsx =====
+import { useEffect, useMemo, useState } from 'react';
+import api, { friendlyError } from '../../lib/api';
+import Icon from '../ui/Icon';
+
+const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** How far ahead a customer may ask for their own date (matches the API). */
+const CUSTOM_DAYS_AHEAD = 90;
+/** Custom start times are on the quarter hour (matches the API). */
+const CUSTOM_STEP_MINUTES = 15;
+/** A visit needs arranging (matches the API's minimum notice). */
+const MIN_NOTICE_HOURS = 12;
+
+/** 2026-08-27 -> {day:'Thu', date:27, month:'Aug'} without a Date-parse timezone shift. */
+const parts = (iso) => {
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return { day: DAY[date.getDay()], date: d, month: MONTH[m - 1] };
+};
+
+/** Local calendar date as yyyy-mm-dd (not toISOString, which is UTC). */
+const isoDate = (date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+/** "14:45" or "14:45:00" -> minutes since midnight. */
+const toMinutes = (time) => {
+  const [h, m] = String(time).split(':').map(Number);
+  return h * 60 + m;
+};
+
+/** 885 -> "14:45" */
+const toHHMM = (minutes) =>
+  `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+
+/** "14:45" -> "2:45 PM" */
+const toLabel = (time) => {
+  const minutes = toMinutes(time);
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+};
+
+/** "2026-10-15" -> "Thu, 15 Oct" */
+const longDate = (iso) => {
+  const { day, date, month } = parts(iso);
+  return `${day}, ${date} ${month}`;
+};
+
+/**
+ * Date and time picker, driven by the backend (RULE 8).
+ *
+ * The listed days and times come from the API, so the office hours are an
+ * admin setting, not a release. For a customer none of those suit, "Choose
+ * your own date & time" lets them ask for any day up to 90 days ahead at any
+ * quarter-hour start inside the working hours (read from the same list); the
+ * API checks it again when the booking is made.
+ */
+export default function SlotPicker({ serviceSlug, date, time, onPick, error }) {
+  const [days, setDays] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [custom, setCustom] = useState(false);
+  const [customDate, setCustomDate] = useState('');
+  const [customTime, setCustomTime] = useState('');
+  const [customError, setCustomError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    api
+      .availableSlots(serviceSlug, null, 14)
+      .then((result) => {
+        if (!cancelled) setDays(result);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(friendlyError(err));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [serviceSlug]);
+
+  // Working hours, as the API lists them: the earliest and latest start
+  // across the fortnight (e.g. 9:00 AM and 8:00 PM), and how long a visit is.
+  const hours = useMemo(() => {
+    const starts = days.flatMap((d) => d.slots.map((s) => toMinutes(s.time)));
+    if (starts.length === 0) return null;
+    const sorted = [...new Set(starts)].sort((a, b) => a - b);
+    const step = sorted.length > 1 ? sorted[1] - sorted[0] : 60;
+    return { first: sorted[0], last: sorted[sorted.length - 1], step };
+  }, [days]);
+
+  // Coming back to this step with a time that is not in the list (a custom
+  // one): open the custom panel with it filled in.
+  useEffect(() => {
+    if (loading || !date || !time) return;
+    const listed = days.some((d) => d.date === date && d.slots.some((s) => s.time === time));
+    if (!listed) {
+      setCustom(true);
+      setCustomDate(date);
+      setCustomTime(toHHMM(toMinutes(time)));
+    }
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (loading) {
+    return <p className="question-hint">Checking available times…</p>;
+  }
+
+  if (loadError) {
+    return (
+      <div role="alert" className="alert alert-error">
+        <Icon name="info" size={18} />
+        <span>{loadError}</span>
+      </div>
+    );
+  }
+
+  const openDays = days.filter((d) => d.open);
+  const chosenDay = days.find((d) => d.date === date);
+
+  const today = new Date();
+  const minDate = isoDate(today);
+  const maxDate = isoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + CUSTOM_DAYS_AHEAD));
+
+  const hoursText = hours
+    ? `We visit every day between ${toLabel(toHHMM(hours.first))} and ${toLabel(toHHMM(hours.last + hours.step))}.`
+    : null;
+
+  /** Checks the custom date and time the way the API will, and passes them up if they are fine. */
+  const applyCustom = (nextDate, nextTime) => {
+    setCustomDate(nextDate);
+    setCustomTime(nextTime);
+    setCustomError('');
+
+    if (!nextDate || !nextTime) {
+      onPick(nextDate || '', '');
+      return;
+    }
+    if (nextDate < minDate || nextDate > maxDate) {
+      setCustomError(`Please choose a date between today and ${longDate(maxDate)}.`);
+      onPick(nextDate, '');
+      return;
+    }
+    const minutes = toMinutes(nextTime);
+    if (hours && (minutes < hours.first || minutes > hours.last)) {
+      setCustomError(
+        `Please choose a start time between ${toLabel(toHHMM(hours.first))} and ${toLabel(toHHMM(hours.last))}, so the visit finishes by ${toLabel(toHHMM(hours.last + hours.step))}.`
+      );
+      onPick(nextDate, '');
+      return;
+    }
+    if (minutes % CUSTOM_STEP_MINUTES !== 0) {
+      setCustomError('Please choose a time on the quarter hour, like 2:00, 2:15, 2:30 or 2:45.');
+      onPick(nextDate, '');
+      return;
+    }
+    const [y, m, d] = nextDate.split('-').map(Number);
+    const visit = new Date(y, m - 1, d, Math.floor(minutes / 60), minutes % 60);
+    if (visit.getTime() - Date.now() < MIN_NOTICE_HOURS * 3600 * 1000) {
+      setCustomError(`Please choose a time at least ${MIN_NOTICE_HOURS} hours from now, so we can arrange the visit.`);
+      onPick(nextDate, '');
+      return;
+    }
+    onPick(nextDate, `${nextTime}:00`);
+  };
+
+  const openCustom = () => {
+    setCustom(true);
+    setCustomError('');
+    const startDate = date || (openDays[0] && openDays[0].date) || '';
+    setCustomDate(startDate);
+    setCustomTime('');
+    onPick(startDate, '');
+  };
+
+  const closeCustom = () => {
+    setCustom(false);
+    setCustomError('');
+    onPick('', '');
+  };
+
+  if (custom) {
+    return (
+      <div className={`slot-picker slot-picker-custom ${error ? 'has-error' : ''}`}>
+        <div className="slot-custom-head">
+          <h3 className="question-text">
+            Your own date &amp; time <span className="req">*</span>
+          </h3>
+          <button type="button" className="slot-mode-link" onClick={closeCustom}>
+            <Icon name="arrow-left" size={15} /> Back to available times
+          </button>
+        </div>
+
+        {hoursText && <p className="slot-hours">{hoursText}</p>}
+
+        <div className="slot-custom-fields">
+          <label className="field">
+            <span className="form-label">Date</span>
+            <input
+              type="date"
+              className="input"
+              value={customDate}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => applyCustom(e.target.value, customTime)}
+            />
+          </label>
+          <label className="field">
+            <span className="form-label">Start time</span>
+            <input
+              type="time"
+              className="input"
+              value={customTime}
+              min={hours ? toHHMM(hours.first) : '09:00'}
+              max={hours ? toHHMM(hours.last) : '20:00'}
+              step={CUSTOM_STEP_MINUTES * 60}
+              onChange={(e) => applyCustom(customDate, e.target.value)}
+            />
+          </label>
+        </div>
+
+        {customError ? (
+          <p className="field-error" role="alert">
+            {customError}
+          </p>
+        ) : (
+          customDate &&
+          customTime && (
+            <p className="slot-custom-summary" role="status">
+              <Icon name="check-circle" size={17} />
+              {longDate(customDate)} at {toLabel(customTime)}. Our team will confirm the visit with you.
+            </p>
+          )
+        )}
+
+        {error && !customError && <span className="field-error">{error}</span>}
+      </div>
+    );
+  }
+
+  if (openDays.length === 0) {
+    return (
+      <div className="slot-picker">
+        <div role="alert" className="alert alert-info">
+          <Icon name="info" size={18} />
+          <span>No listed visit times are open in the next two weeks.</span>
+        </div>
+        <button type="button" className="btn btn-outline slot-custom-btn" onClick={openCustom}>
+          <Icon name="calendar" size={17} /> Choose your own date &amp; time
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`slot-picker ${error ? 'has-error' : ''}`}>
+      <h3 className="question-text">
+        Choose a date <span className="req">*</span>
+      </h3>
+      {hoursText && <p className="slot-hours">{hoursText}</p>}
+      <div className="day-strip" role="radiogroup" aria-label="Visit date">
+        {days.map((d) => {
+          const { day, date: dayNum, month } = parts(d.date);
+          const chosen = d.date === date;
+          return (
+            <button
+              key={d.date}
+              type="button"
+              role="radio"
+              aria-checked={chosen}
+              disabled={!d.open}
+              title={d.open ? undefined : d.closedReason}
+              className={`day-chip ${chosen ? 'chosen' : ''}`}
+              // Changing the date clears the time: the slot chosen yesterday
+              // may not exist tomorrow, and silently keeping it would submit
+              // a time the customer never actually picked.
+              onClick={() => onPick(d.date, '')}
+            >
+              <span className="day-name">{day}</span>
+              <span className="day-num">{dayNum}</span>
+              <span className="day-month">{month}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {chosenDay && (
+        <>
+          <h3 className="question-text" style={{ marginTop: 24 }}>
+            Choose a time <span className="req">*</span>
+          </h3>
+          <div className="slot-grid" role="radiogroup" aria-label="Visit time">
+            {chosenDay.slots.map((slot) => (
+              <button
+                key={slot.time}
+                type="button"
+                role="radio"
+                aria-checked={slot.time === time}
+                disabled={!slot.available}
+                className={`slot-chip ${slot.time === time ? 'chosen' : ''}`}
+                onClick={() => onPick(date, slot.time)}
+              >
+                {slot.label}
+              </button>
+            ))}
+          </div>
+          <p className="question-hint" style={{ marginTop: 12 }}>
+            Greyed-out times are already full or too soon to arrange.
+          </p>
+        </>
+      )}
+
+      <button type="button" className="slot-custom-link" onClick={openCustom}>
+        <Icon name="calendar" size={17} />
+        <span>
+          <strong>None of these suit you?</strong> Choose your own date &amp; time
+        </span>
+        <Icon name="chevron-right" size={16} />
+      </button>
+
+      {error && <span className="field-error">{error}</span>}
+    </div>
+  );
+}
+
+
+===== FILE: frontend\src\lib\api.js =====
+/**
+ * API CLIENT
+ * ----------
+ * Every call to the Supplybase backend goes through here.
+ *
+ * Tokens are kept in localStorage. That is readable by any script on the page,
+ * so it is a real trade-off: an httpOnly cookie could not be read by injected
+ * JavaScript, but would need CSRF protection and a shared parent domain
+ * between the site and the API. localStorage is the pragmatic choice for a
+ * separate API origin — the mitigation is not shipping XSS.
+ *
+ * The access token is short-lived (15 minutes). When it expires, `request`
+ * silently exchanges the refresh token for a new pair and retries once, so
+ * nothing above this file has to think about expiry.
+ */
+
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
+
+const ACCESS_KEY = 'sb.accessToken';
+const REFRESH_KEY = 'sb.refreshToken';
+
+/* ------------------------------------------------------------ token store */
+
+export const getAccessToken = () => localStorage.getItem(ACCESS_KEY);
+export const getRefreshToken = () => localStorage.getItem(REFRESH_KEY);
+
+export function storeTokens({ accessToken, refreshToken }) {
+  if (accessToken) localStorage.setItem(ACCESS_KEY, accessToken);
+  if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
+}
+
+export function clearTokens() {
+  localStorage.removeItem(ACCESS_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+}
+
+/* ---------------------------------------------------------------- errors */
+
+/**
+ * Carries the backend's error shape so callers can read `fieldErrors` without
+ * unpicking a response object.
+ */
+export class ApiError extends Error {
+  constructor(status, body) {
+    super((body && body.message) || 'Something went wrong. Please try again.');
+    this.name = 'ApiError';
+    this.status = status;
+    this.fieldErrors = (body && body.fieldErrors) || null;
+  }
+}
+
+/**
+ * The message to show a person. Network failures need their own wording.
+ *
+ * A blocked CORS preflight reaches fetch() as an ordinary TypeError, exactly
+ * like an offline connection, so in development the API address is appended.
+ * "Could not reach the server" while the server is plainly running sends you
+ * hunting the wrong problem; naming the URL it tried points straight at a
+ * wrong port or a wrong origin. Never shown in production.
+ */
+export const friendlyError = (error) => {
+  if (error instanceof ApiError) return error.message;
+  if (error && error.name === 'TypeError') {
+    const base = 'We could not reach the server. Check your connection and try again.';
+    return import.meta.env.DEV
+      ? `${base} (Tried ${BASE_URL} from ${window.location.origin} — if the server is running, ` +
+        `check the port and the CORS origins on the API.)`
+      : base;
+  }
+  return (error && error.message) || 'Something went wrong. Please try again.';
+};
+
+/* --------------------------------------------------------------- refresh */
+
+// One shared promise, so ten calls failing at once trigger one refresh rather
+// than ten — and nine of them do not race to invalidate the token the winner
+// just rotated to.
+let refreshInFlight = null;
+
+async function refreshTokens() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return false;
+
+  if (!refreshInFlight) {
+    refreshInFlight = fetch(`${BASE_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          clearTokens();
+          return false;
+        }
+        storeTokens(await response.json());
+        return true;
+      })
+      .catch(() => false)
+      .finally(() => {
+        refreshInFlight = null;
+      });
+  }
+  return refreshInFlight;
+}
+
+/* --------------------------------------------------------------- request */
+
+async function send(path, { method = 'GET', body, auth = true } = {}) {
+  const headers = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+
+  const token = getAccessToken();
+  if (auth && token) headers.Authorization = `Bearer ${token}`;
+
+  return fetch(`${BASE_URL}${path}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
+/**
+ * Multipart upload — separate from `request` because that always JSON-encodes
+ * its body. Used only for the booking wizard's own photo attachments, which
+ * are public like booking creation itself (see BookingService.uploadOwnFile
+ * on the backend for the phone-number check that stands in for a login).
+ */
+async function uploadFile(path, formData) {
+  const response = await fetch(`${BASE_URL}${path}`, { method: 'POST', body: formData });
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+  if (!response.ok) throw new ApiError(response.status, payload);
+  return payload;
+}
+
+export async function request(path, options = {}) {
+  let response = await send(path, options);
+
+  // 401 on an authenticated call means the access token aged out. Refresh and
+  // retry exactly once — a second 401 is a real rejection, not an expiry.
+  if (response.status === 401 && options.auth !== false && getRefreshToken()) {
+    const refreshed = await refreshTokens();
+    if (refreshed) response = await send(path, options);
+  }
+
+  if (response.status === 204) return null;
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) throw new ApiError(response.status, payload);
+  return payload;
+}
+
+/* ------------------------------------------------------------- endpoints */
+
+export const api = {
+  register: (fullName, email, password, phone) =>
+    request('/api/auth/register', {
+      method: 'POST',
+      auth: false,
+      body: { fullName, email, password, phone },
+    }),
+
+  /** `identifier` is an email address or a phone number — the API works out which. */
+  login: (identifier, password) =>
+    request('/api/auth/login', { method: 'POST', auth: false, body: { identifier, password } }),
+
+  loginWithGoogle: (credential) =>
+    request('/api/auth/google', { method: 'POST', auth: false, body: { credential } }),
+
+  logout: (refreshToken) =>
+    request('/api/auth/logout', { method: 'POST', auth: false, body: { refreshToken } }),
+
+  me: () => request('/api/auth/me'),
+
+  /** Self-service — name and phone only. */
+  /** Self-service profile update. */
+updateProfile: (profile) =>
+  request('/api/auth/me', {
+    method: 'PATCH',
+    body: {
+      fullName: profile.fullName.trim(),
+      phone: profile.phone.trim(),
+      gender: profile.gender,
+      addressLine1: profile.addressLine1.trim(),
+      addressLine2: profile.addressLine2.trim(),
+      city: profile.city.trim(),
+      pinCode: profile.pinCode.trim(),
+      landmark: profile.landmark.trim(),
+    },
+  }),
+
+  /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
+  forgotPassword: (identifier) =>
+    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+
+  /** Re-sends the sign-up verification email to the signed-in user's own address. */
+  sendVerificationEmail: () => request('/api/auth/send-verification', { method: 'POST' }),
+
+  myProjects: () => request('/api/projects/mine'),
+  myPayments: () => request('/api/payments/mine'),
+
+  createEnquiry: (payload) =>
+    request('/api/enquiries', { method: 'POST', auth: false, body: payload }),
+
+  /* ------------------------------------------------------- catalogue */
+
+  /** The four services. Public — the home page needs it before anyone signs in. */
+  services: () => request('/api/catalogue/services', { auth: false }),
+
+  /**
+   * One service's questions, in order. The form is drawn from this, so adding
+   * an option in the admin screen changes the form with no deploy.
+   */
+  serviceForm: (slug) => request(`/api/catalogue/services/${slug}/form`, { auth: false }),
+
+  /** Search across active main categories and sub-services. */
+  searchCatalogue: (q) =>
+    request(`/api/catalogue/search?q=${encodeURIComponent(q)}`, { auth: false }),
+
+  /* ----------------------------------------------------- appointments */
+
+  /** Availability comes from the backend, never from the browser. */
+  availableSlots: (slug, from, days = 14) => {
+    const query = new URLSearchParams({ service: slug, days: String(days) });
+    if (from) query.set('from', from);
+    return request(`/api/appointments/available-slots?${query}`, { auth: false });
+  },
+
+  /* --------------------------------------------------------- bookings */
+
+  /**
+   * auth is left ON deliberately. The endpoint is public, but sending the
+   * token when there is one lets the API attach the booking to that account.
+   */
+  createBooking: (payload) => request('/api/bookings', { method: 'POST', body: payload }),
+
+  /** One photo, attached to a booking that was just created in this session. */
+  uploadBookingFile: (bookingNumber, phone, file, kind = 'PHOTO') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const query = new URLSearchParams({ phone, kind });
+    return uploadFile(`/api/bookings/by-number/${bookingNumber}/files?${query}`, formData);
+  },
+
+  myBookings: () => request('/api/bookings/mine'),
+
+  /** One booking in full, including the real answers given in the wizard. */
+  booking: (id) => request(`/api/bookings/${id}`),
+
+  /** A customer editing their own booking's contact details or address. */
+  updateBooking: (id, details) =>
+    request(`/api/bookings/${id}`, {
+      method: 'PATCH',
+      body: {
+        name: details.name.trim(),
+        phone: details.phone.trim(),
+        whatsapp: details.whatsapp.trim(),
+        email: details.email.trim(),
+        address: details.address.trim(),
+        city: details.city.trim(),
+        pincode: details.pincode.trim(),
+      },
+    }),
+};
+
+export default api;
+
+
+===== FILE: frontend\src\lib\bookingDetails.js =====
+import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
+
+/** Shared customer-details shape + validation for every booking flow (they
+    all render components/booking/CustomerDetailsFields) — kept in one place
+    so the validation rules can't drift between them. */
+export const emptyDetails = {
+  name: '',
+  phone: '',
+  whatsapp: '',
+  email: '',
+  address: '',
+  buildingName: '',
+  roomNo: '',
+  floorNo: '',
+  city: '',
+  pincode: '',
+};
+
+// A form restored from history (see useHistoryState) may predate the
+// building / room / floor fields.
+const text = (v) => String(v || '').trim();
+
+/**
+ * Only strips a country-code prefix when the digit count actually implies
+ * one is there (12 digits = 91 + a 10-digit number, 11 = a leading 0) — a
+ * blind `.replace(/^91/, '')` mangles a real 10-digit number that happens
+ * to start with 91 (e.g. 9123456780) and rejects it.
+ */
+export const isValidPhone = (v) => {
+  let digits = String(v || '').replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
+  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+  return /^[6-9]\d{9}$/.test(digits);
+};
+
+/**
+ * `pickedLocation` is the customer's map pin (usePickedLocation), or null.
+ * With a pin the building name is required and the typed address is an
+ * optional extra; without one the typed address is required, as before.
+ */
+export function validateDetails(details, pickedLocation = null, { typedAddressOnly = false } = {}) {
+  const next = {};
+  if (!text(details.name)) next.name = 'Please enter your name';
+  if (!text(details.phone)) next.phone = 'Please enter your mobile number';
+  else if (!isValidPhone(details.phone)) next.phone = 'Enter a 10-digit mobile number';
+  if (text(details.whatsapp) && !isValidPhone(details.whatsapp)) {
+    next.whatsapp = 'Enter a 10-digit number, or leave it blank';
+  }
+  if (text(details.email) && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text(details.email))) {
+    next.email = 'That email address does not look right';
+  }
+  if (pickedLocation) {
+    if (!text(details.buildingName)) next.buildingName = 'Please enter the building name';
+  } else if (!text(details.address)) {
+    next.address = hasGoogleMaps && !typedAddressOnly
+      ? 'Select your location on the map, or type your address'
+      : 'Please enter your address';
+  }
+  if (!text(details.city)) next.city = 'Please enter your city';
+  if (!text(details.pincode)) next.pincode = 'Please enter your pincode';
+  else if (!/^[1-9][0-9]{5}$/.test(text(details.pincode))) {
+    next.pincode = 'Enter a 6-digit pincode';
+  }
+  return next;
+}
+
+/** The address a booking is sent with: building, room, floor, the map pin,
+    then anything typed. Without a pin it is just the typed address. */
+export function composeAddress(details, pickedLocation = null) {
+  return [
+    text(details.buildingName),
+    text(details.roomNo) ? `Room ${text(details.roomNo)}` : '',
+    text(details.floorNo) ? `Floor ${text(details.floorNo)}` : '',
+    pickedLocation?.address || '',
+    text(details.address),
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
+
+
+===== FILE: backend\src\main\java\in\supplybase\backend\booking\BookingController.java =====
+package in.supplybase.backend.booking;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import in.supplybase.backend.auth.CurrentUser;
+import in.supplybase.backend.booking.dto.AdvanceBookingStatusRequest;
+import in.supplybase.backend.booking.dto.AssignProfessionalRequest;
+import in.supplybase.backend.booking.dto.BookingFileResponse;
+import in.supplybase.backend.booking.dto.BookingReceipt;
+import in.supplybase.backend.booking.dto.BookingResponse;
+import in.supplybase.backend.booking.dto.CreateBookingRequest;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
+import in.supplybase.backend.booking.dto.PartnerPayoutResponse;
+import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
+import in.supplybase.backend.booking.dto.SetPartnerPayoutRequest;
+import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
+import jakarta.validation.Valid;
+
+@RestController
+public class BookingController {
+
+    private final BookingService service;
+    private final CurrentUser currentUser;
+
+    public BookingController(BookingService service, CurrentUser currentUser) {
+        this.service = service;
+        this.currentUser = currentUser;
+    }
+
+    /**
+     * The booking wizard posts here. Signing in is required (SecurityConfig):
+     * every booking belongs to an account, so it shows on that customer's
+     * dashboard and nobody can book anonymously. The website asks the
+     * customer to sign in at the last step, keeping what they typed.
+     */
+    @PostMapping("/api/bookings")
+    public ResponseEntity<BookingReceipt> create(
+            @Valid @RequestBody CreateBookingRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.create(request, currentUser.require().id()));
+    }
+
+    /** A signed-in client's own bookings, for the dashboard. */
+    @GetMapping("/api/bookings/mine")
+    public List<BookingResponse> mine() {
+        return service.myBookings(currentUser.require().id());
+    }
+
+    /**
+     * One booking in full — the dashboard's "view booking" page. Staff, or
+     * the client who made it; anyone else gets a 404 (see
+     * BookingService.checkAccess).
+     */
+    @GetMapping("/api/bookings/{id}")
+    public BookingResponse get(@PathVariable("id") Long id) {
+        return service.get(id, currentUser.require());
+    }
+
+    /**
+     * A customer editing their own booking's contact details or address —
+     * not the service items, which are locked in at booking time. Same
+     * owner-or-staff check as get() (see BookingService.checkAccess).
+     */
+    @PatchMapping("/api/bookings/{id}")
+    public BookingResponse updateMine(@PathVariable("id") Long id,
+            @Valid @RequestBody UpdateMyBookingRequest request) {
+        return service.updateMine(id, request, currentUser.require());
+    }
+
+    @GetMapping("/api/bookings/{id}/files")
+    public List<BookingFileResponse> files(@PathVariable("id") Long id) {
+        return service.listFiles(id, currentUser.require());
+    }
+
+    /**
+     * Public, like booking creation itself — keyed by the booking NUMBER
+     * (what BookingReceipt actually hands back), not the numeric id, and see
+     * {@link BookingService#uploadOwnFile} for why {@code phone} stands in
+     * for a signed-in owner check here.
+     */
+    @PostMapping(value = "/api/bookings/by-number/{bookingNumber}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookingFileResponse> uploadOwnFile(@PathVariable String bookingNumber,
+            @RequestParam String phone,
+            @RequestParam(defaultValue = "PHOTO") String kind,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.uploadOwnFile(bookingNumber, phone, kind, file));
+    }
+
+    @GetMapping("/api/bookings/{id}/files/{fileId}/download")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable("id") Long id,
+                                               @PathVariable("fileId") Long fileId) {
+        var file = service.downloadFile(id, fileId, currentUser.require());
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(
+                        file.contentType() != null ? file.contentType() : "application/octet-stream"))
+                .header("Content-Disposition", ContentDisposition.attachment()
+                        .filename(file.filename(), StandardCharsets.UTF_8).build().toString())
+                .body(file.content());
+    }
+
+    /* ----------------------------------------------------------- staff */
+
+    @GetMapping("/api/admin/bookings")
+    public Page<BookingResponse> list(@RequestParam(required = false) BookingStatus status,
+                                      @RequestParam(required = false) BookingType type,
+                                      @RequestParam(defaultValue = "0") int page,
+                                      @RequestParam(defaultValue = "20") int size) {
+        return service.list(status, type, PageRequest.of(page, Math.min(size, 100)));
+    }
+
+    /** The day sheet: every visit requested for one date, in slot order. */
+    @GetMapping("/api/admin/bookings/day")
+    public List<BookingResponse> forDate(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return service.forDate(date);
+    }
+
+    @PatchMapping("/api/admin/bookings/{id}")
+    public BookingResponse update(@PathVariable("id") Long id,
+                                  @Valid @RequestBody UpdateBookingRequest request) {
+        return service.update(id, request);
+    }
+
+    @PatchMapping("/api/admin/bookings/{id}/assign")
+    public BookingResponse assign(@PathVariable("id") Long id,
+                                  @Valid @RequestBody AssignProfessionalRequest request) {
+        return service.assignProfessional(id, request.professionalId());
+    }
+
+    /** What the assigned partner earns for this job and whether it has been paid. Admin only. */
+    @GetMapping("/api/admin/bookings/{id}/payout")
+    public PartnerPayoutResponse partnerPayout(@PathVariable("id") Long id) {
+        return service.partnerPayout(id);
+    }
+
+    @PatchMapping("/api/admin/bookings/{id}/payout")
+    public PartnerPayoutResponse setPartnerPayout(@PathVariable("id") Long id,
+                                                  @Valid @RequestBody SetPartnerPayoutRequest request) {
+        return service.setPartnerPayout(id, request.amountPaise(), request.paid());
+    }
+
+    @PostMapping(value = "/api/admin/bookings/{id}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BookingFileResponse> uploadFile(@PathVariable("id") Long id,
+            @RequestParam(defaultValue = "PHOTO") String kind,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.uploadFile(id, kind, file, currentUser.require().id()));
+    }
+
+    /* ------------------------------------------------------- professional */
+
+    @GetMapping("/api/professional/bookings/mine")
+    public List<ProfessionalBookingResponse> myAssignedBookings() {
+        return service.myAssignedBookings(currentUser.require().id());
+    }
+
+    /** The signed-in partner's own earnings: earned, paid, still owed, this month. */
+    @GetMapping("/api/professional/earnings")
+    public PartnerEarningsResponse myEarnings() {
+        return service.myEarnings(currentUser.require().id());
+    }
+
+    @PatchMapping("/api/professional/bookings/{id}/status")
+    public ProfessionalBookingResponse advanceStatus(@PathVariable("id") Long id,
+                                  @Valid @RequestBody AdvanceBookingStatusRequest request) {
+        return service.advanceOwnBookingStatus(id, request.status(), currentUser.require().id());
+    }
+}
+
+

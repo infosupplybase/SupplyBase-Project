@@ -1,4 +1,4 @@
-
+import HomeHero from '../components/home/HomeHero';
 import { Link } from 'react-router-dom';
 import HeroSlider from '../components/HeroSlider/HeroSlider';
 import PopularServices from '../components/home/PopularServices';
@@ -21,6 +21,7 @@ export default function Home() {
        see "full-width home page" in pages.css. Other pages stay centred. */
     <div className="page-home">
       <HeroSlider />
+      <HomeHero />
 
       <PopularServices />
 

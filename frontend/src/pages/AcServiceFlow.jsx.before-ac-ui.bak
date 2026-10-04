@@ -1,0 +1,355 @@
+import { useEffect, useRef, useState } from 'react';
+import Icon from '../components/ui/Icon';
+import AcServiceOptions from '../components/ac/AcServiceOptions';
+import ModalFoot from '../components/services/ModalFoot';
+import {
+  acCategories,
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../data/acContent';
+import {
+  useFormBack,
+  useHistoryState,
+} from '../hooks/useHistoryState';
+
+function contains(options, value) {
+  return options.some((option) => option.value === value);
+}
+
+function positiveInteger(value) {
+  return value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1;
+}
+
+export default function AcServiceFlow({
+  categorySlug,
+  onBackToCatalogue,
+  onContinue,
+  onStepChange,
+}) {
+  const category = acCategories.find(
+    (item) => item.slug === categorySlug
+  );
+
+  const services = acServicesByCategory[categorySlug] || [];
+  const addons = acAddonsByCategory[categorySlug] || [];
+
+  const steps = [
+    { key: 'service', title: 'Choose your service' },
+    { key: 'ac-details', title: 'Tell us about your AC' },
+    ...(addons.length
+      ? [{ key: 'addons', title: 'Additional services' }]
+      : []),
+  ];
+
+  const prefix = `f:ac:${categorySlug}`;
+
+  const [stepIndex, setStepIndex] = useHistoryState(
+    `${prefix}:step`,
+    0,
+    { push: true }
+  );
+
+  const [answers, setAnswers] = useHistoryState(
+    `${prefix}:answers`,
+    {
+      service: '',
+      acType: '',
+      capacity: '',
+      refrigerant: '',
+      units: 1,
+      addons: [],
+      addonQuantities: {},
+    }
+  );
+
+  const [error, setError] = useState('');
+  const errorRef = useRef(null);
+  const formBack = useFormBack();
+
+  const index = Math.min(
+    Math.max(Number(stepIndex) || 0, 0),
+    steps.length - 1
+  );
+
+  const step = steps[index];
+  const isLastStep = index === steps.length - 1;
+
+  useEffect(() => {
+    setError('');
+  }, [index]);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus({ preventScroll: true });
+    }
+  }, [error]);
+
+  function updateAnswer(key, value) {
+    setError('');
+    setAnswers((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  }
+
+  function validate(key) {
+    if (key === 'service') {
+      if (!contains(services, answers.service)) {
+        return 'Please select a service to continue.';
+      }
+    }
+
+    if (key === 'ac-details') {
+      if (!contains(acTypes, answers.acType)) {
+        return 'Please select your AC type.';
+      }
+
+      if (
+        categorySlug === 'installation' &&
+        !contains(acCapacities, answers.capacity)
+      ) {
+        return 'Please select your AC capacity.';
+      }
+
+      if (
+        categorySlug === 'gas-charging' &&
+        !contains(acRefrigerants, answers.refrigerant)
+      ) {
+        return 'Please select the refrigerant.';
+      }
+
+      if (!positiveInteger(answers.units)) {
+        return 'Please enter a whole number of AC units, starting from 1.';
+      }
+    }
+
+    if (key === 'addons') {
+      for (const value of answers.addons || []) {
+        const addon = addons.find((item) => item.value === value);
+
+        if (!addon) {
+          return 'Please review your additional service selections.';
+        }
+
+        if (
+          addon.unit &&
+          !positiveInteger(answers.addonQuantities?.[value] ?? 1)
+        ) {
+          return `Please enter a valid quantity for ${addon.label}.`;
+        }
+      }
+    }
+
+    return '';
+  }
+
+  function continueFlow() {
+    const message = validate(step.key);
+
+    if (message) {
+      setError(message);
+      return;
+    }
+
+    if (!isLastStep) {
+      setStepIndex(index + 1);
+      onStepChange?.();
+      return;
+    }
+
+    // Validate all selections before handing them to customer details.
+    for (let i = 0; i < steps.length; i += 1) {
+      const issue = validate(steps[i].key);
+
+      if (issue) {
+        setStepIndex(i, { push: false });
+        setError(issue);
+        onStepChange?.();
+        return;
+      }
+    }
+
+    const quantities = {};
+
+    for (const value of answers.addons || []) {
+      const addon = addons.find((item) => item.value === value);
+
+      if (addon?.unit) {
+        quantities[value] = Number(
+          answers.addonQuantities?.[value] ?? 1
+        );
+      }
+    }
+
+    onContinue({
+      category: categorySlug,
+      ...answers,
+      units: Number(answers.units),
+      addonQuantities: quantities,
+    });
+  }
+
+  function back() {
+    setError('');
+
+    if (index === 0) {
+      onBackToCatalogue?.();
+      return;
+    }
+
+    formBack(() => {
+      setStepIndex(index - 1, { push: false });
+    });
+
+    onStepChange?.();
+  }
+
+  if (!category) {
+    return (
+      <div className="pnt-step-card">
+        <p>This AC service is unavailable.</p>
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={onBackToCatalogue}
+        >
+          Back to AC Services
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pnt-flow-shell">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          marginBottom: 18,
+        }}
+      >
+        <h2 style={{ margin: 0 }}>{category.label}</h2>
+
+        <span
+          style={{
+            flexShrink: 0,
+            color: '#785a16',
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          Step {index + 1} of {steps.length}
+        </span>
+      </div>
+
+      <div
+        aria-label={`Step ${index + 1} of ${steps.length}`}
+        style={{
+          display: 'flex',
+          gap: 6,
+          marginBottom: 20,
+        }}
+      >
+        {steps.map((item, position) => (
+          <span
+            key={item.key}
+            aria-hidden="true"
+            style={{
+              flex: 1,
+              height: 5,
+              borderRadius: 5,
+              background: position <= index ? '#d9a624' : '#eeeeee',
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="pnt-step-card">
+        <h3 style={{ margin: '0 0 18px' }}>{step.title}</h3>
+
+        <AcServiceOptions
+          category={categorySlug}
+          step={step.key}
+          answers={answers}
+          onChange={updateAnswer}
+        />
+      </div>
+
+      {error && (
+        <div
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+          style={{
+            position: 'fixed',
+            bottom: 100,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'min(440px, calc(100vw - 32px))',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '14px 16px',
+            border: '1px solid #f1b7b7',
+            borderRadius: 12,
+            background: '#fff1f1',
+            color: '#b42318',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          }}
+        >
+          <span style={{ flex: 1 }}>{error}</span>
+
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => setError('')}
+            style={{
+              display: 'flex',
+              padding: 4,
+              border: 0,
+              background: 'transparent',
+              color: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            <Icon name="close" size={18} />
+          </button>
+        </div>
+      )}
+
+      <ModalFoot className="pnt-foot">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 12,
+            width: '100%',
+          }}
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={back}
+          >
+            Back
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={continueFlow}
+          >
+            Continue
+            <Icon name="chevron-right" size={16} />
+          </button>
+        </div>
+      </ModalFoot>
+    </div>
+  );
+}

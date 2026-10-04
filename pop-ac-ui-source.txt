@@ -1,0 +1,1891 @@
+﻿===== FILE: frontend\src\pages\PopCeilingFlow.jsx =====
+import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
+import Icon from '../components/ui/Icon';
+import PaintingHero from '../components/painting/PaintingHero';
+import StepIndicator from '../components/painting/StepIndicator';
+import OptionCard from '../components/painting/OptionCard';
+import EstimateSummary from '../components/painting/EstimateSummary';
+import AddonList from '../components/pop-ceiling/AddonList';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import SlotPicker from '../components/booking/SlotPicker';
+import usePopCeilingCatalogue from '../hooks/usePopCeilingCatalogue';
+import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import { useAuth } from '../context/AuthContext';
+import api, { friendlyError } from '../lib/api';
+import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
+
+/**
+ * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
+ * (see popCeilingContent.js) and the live catalogue
+ * (usePopCeilingCatalogue), same architecture as PaintingFlow. Stage 0 is
+ * the flow's intro; stages 1..N are the flow's configured steps (last is
+ * always "summary"); then Details, Schedule and Confirm, reusing the same
+ * shared components every other rebuilt category uses.
+ *
+ * No priced options exist anywhere in this category's new catalogue rows
+ * (see V16's migration comment — the reference's add-ons are all a rate
+ * PER SQ. FT. with no measured area to multiply by), so unlike
+ * PaintingFlow there is no client-side estimate total: itemsTotalPaise is
+ * always null, and EstimateSummary already renders "To be confirmed on
+ * site visit" whenever that's the case.
+ */
+
+// The Details / Schedule button bar in the booking pop-up — the same layout
+// as Painting's (a narrow BACK and a wide action on phones, right-aligned on
+// wider screens), drawn in the pop-up's footer by ModalFoot.
+const MODAL_FOOT =
+  'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3';
+const MODAL_BACK =
+  'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto';
+const MODAL_NEXT =
+  'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-auto md:!min-w-[170px] md:!flex-none md:!px-4';
+
+export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
+  const params = useParams();
+  const flowSlug = propFlowSlug || params.flowSlug;
+  const flow = popFlows[flowSlug];
+  const { user } = useAuth();
+  const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
+
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:pop:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
+    ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
+    : emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+  const [choiceError, setChoiceError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  const configSteps = useMemo(() => flow?.steps || [], [flow]);
+  const DETAILS = 1 + configSteps.length;
+  const SCHEDULE = DETAILS + 1;
+  const CONFIRM = SCHEDULE + 1;
+
+  const setAnswer = (key) => (value) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+    setChoiceError('');
+    setSubmitError('');
+  };
+
+  const toggleMulti = (key) => (value) => {
+    setAnswers((a) => {
+      const list = Array.isArray(a[key]) ? a[key] : [];
+      return {
+        ...a,
+        [key]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+      };
+    });
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const setDetail = (key) => (e) => {
+    setDetails((d) => ({ ...d, [key]: e.target.value }));
+    setErrors((err) => ({ ...err, [key]: undefined }));
+    setSubmitError('');
+  };
+
+  /** Every step's answer resolved to a label for the summary — never a
+      price (see the file header note: POP never computes one). */
+  const resolved = useMemo(() => {
+    if (!flow) return [];
+    return configSteps
+      .filter((s) => s.type !== 'summary')
+      .map((step, i) => {
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          const opts = optionsFor(step.questionKey).filter((o) => chosen.includes(o.value));
+          return {
+            stepIndex: i + 1,
+            label: step.title.replace(' (Optional)', '').replace(' (optional)', ''),
+            value: opts.map((o) => o.label).join(', '),
+          };
+        }
+        const opt = optionsFor(step.questionKey).find((o) => o.value === answers[step.questionKey]);
+        const notesKey = step.notesFor === opt?.value ? notesKeyFor(step) : null;
+        const note = notesKey ? answers[notesKey] : null;
+        return {
+          stepIndex: i + 1,
+          label: step.title.replace(/\?$/, ''),
+          value: note ? `${opt?.label} — ${note}` : opt?.label,
+        };
+      });
+  }, [flow, configSteps, answers, optionsFor]);
+
+  if (!flow) return modal ? null : <Navigate to="/services/pop-ceiling-design" replace />;
+
+  const jumpToStep = (i) => {
+    setStage(i);
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const validateStep = (step) => {
+    if ((step.type === 'option' || step.type === 'style') && !answers[step.questionKey]) {
+      setErrors({ [step.questionKey]: 'Please choose an option' });
+      if (modal) setChoiceError('Choose an option to continue.');
+      return false;
+    }
+    return true;
+  };
+
+  const goNext = () => {
+    setSubmitError('');
+    const step = configSteps[stage - 1];
+    if (step && !validateStep(step)) return;
+    setStage((s) => Math.min(s + 1, CONFIRM));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goBack = () => {
+    setSubmitError('');
+    if (modal && stage === 0) {
+      onBackToCategories?.();
+      return;
+    }
+    formBack(() => setStage((s) => Math.max(s - 1, 0)));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const canLeaveDetails = () => {
+    const next = validateDetails(details, pickedLocation);
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    if (!date || !time) {
+      setErrors({ slot: 'Please choose a date and a time' });
+      return;
+    }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
+
+    setBusy(true);
+    setSubmitError('');
+    try {
+      const flat = [];
+      configSteps.forEach((step) => {
+        if (step.type === 'summary') return;
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          chosen.forEach((v) => {
+            const opt = optionsFor(step.questionKey).find((o) => o.value === v);
+            flat.push({ key: step.questionKey, value: v, label: opt?.label || v });
+          });
+          return;
+        }
+        const value = answers[step.questionKey];
+        if (value === undefined || value === '' || value === null) return;
+        const opt = optionsFor(step.questionKey).find((o) => o.value === value);
+        flat.push({ key: step.questionKey, value, label: opt?.label || value });
+
+        if (step.notesFor === value) {
+          const notesKey = notesKeyFor(step);
+          const note = answers[notesKey];
+          if (note) flat.push({ key: notesKey, value: note, label: note });
+        }
+      });
+
+      const result = await api.createBooking({
+        serviceSlug: 'pop-ceiling-design',
+        answers: flat,
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name,
+        phone: details.phone,
+        whatsapp: details.whatsapp || null,
+        email: details.email || null,
+        address: composeAddress(details, pickedLocation),
+        city: details.city,
+        pincode: details.pincode || null,
+      });
+      setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pce', result.bookingNumber, details.phone);
+      setStage(CONFIRM);
+      if (modal) onStepChange?.();
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      setSubmitError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <p className="question-hint">Loading services…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{loadError}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------------- intro */
+  if (stage === 0) {
+    if (modal) {
+      return (
+        <div className="pop-modal-intro">
+          <img
+            src={flow.intro.image}
+            alt={`${flow.title} ceiling design`}
+            // 64px down: below the pop-up's close button, the header being hidden here.
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 64 }}
+          />
+          <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
+            {flow.intro.heading}
+          </h2>
+          <p style={{ color: 'var(--ink-muted)', fontSize: 14, marginBottom: 14 }}>
+            {flow.heroTagline}
+          </p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+            GET STARTED <Icon name="arrow-right" size={17} />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={onBackToCategories}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px auto 0' }}
+          >
+            <Icon name="arrow-left" size={15} /> BACK TO POP SERVICES
+          </button>
+          <div className="pnt-included" style={{ marginTop: 18 }}>
+            <h3>What&rsquo;s Included?</h3>
+            <ul>
+              {flow.whatsIncluded.map((item) => (
+                <li key={item}><Icon name="check" size={14} strokeWidth={3} />{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <>
+        {!modal && <PaintingHero
+          eyebrow={flow.intro.eyebrow}
+          title={flow.title}
+          tagline={flow.heroTagline}
+          image={flow.intro.image}
+          trustPoints={[]}
+        />}
+        <section className="pnt-section">
+          <div className="container container-narrow">
+            {modal && <button type="button" className="btn btn-ghost btn-sm" onClick={onBackToCategories}>BACK TO POP SERVICES</button>}
+            <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
+
+            <ul className="pnt-intro-trust">
+              {flow.intro.points.map((t) => (
+                <li key={t.label}>
+                  <Icon name={t.icon} size={22} />
+                  <span>{t.label}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="pnt-included">
+              <h3>What&rsquo;s Included?</h3>
+              <ul>
+                {flow.whatsIncluded.map((item) => (
+                  <li key={item}>
+                    <Icon name="check" size={14} strokeWidth={3} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+              Get Started <Icon name="arrow-right" size={17} />
+            </button>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  /* --------------------------------------------------------- confirmed */
+  if (stage === CONFIRM && receipt) {
+    const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <div className="wizard-card">
+            <div className="confirmed">
+              <div className="confirmed-tick">
+                <Icon name="check" size={38} strokeWidth={3} />
+              </div>
+              <h2>Booking Confirmed!</h2>
+              <p>Our expert will visit your home, measure your space and provide a detailed quotation.</p>
+
+              <dl className="confirmed-panel">
+                <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
+                <div><dt>Service</dt><dd>{flow.title}</dd></div>
+                <div><dt>Location</dt><dd>{details.city}</dd></div>
+              </dl>
+
+              <div className="pnt-fee-note">
+                <Icon name="info" size={17} />
+                <span>{receipt.message}</span>
+              </div>
+
+              <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
+              <div className="btn-row" style={{ marginTop: 12 }}>
+                <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+                  <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
+                </a>
+                {modal ? <button type="button" className="btn btn-ghost btn-back" onClick={onBackToCategories}>BACK TO POP CEILING</button> : <Link to="/services/pop-ceiling-design" className="btn btn-ghost btn-back">BACK TO POP CEILING</Link>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------------------------------------------ details */
+  if (stage === DETAILS) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Your Details</h2>
+                <p>We will contact you to confirm the appointment.</p>
+              </div>
+              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pce" />
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              {/* In the booking pop-up this bar goes in the pop-up's footer
+                  (ModalFoot), under the form rather than over its fields —
+                  the same as Painting's steps. */}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'}>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* ----------------------------------------------------------- schedule */
+  if (stage === SCHEDULE) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Book a Home Visit</h2>
+                <p>Our team will visit your site to measure and quote.</p>
+              </div>
+              <SlotPicker
+                serviceSlug="pop-ceiling-design"
+                date={date}
+                time={time}
+                onPick={(d, t) => { setDate(d); setTime(t); setErrors((e) => ({ ...e, slot: undefined })); }}
+                error={errors.slot}
+              />
+
+              <div className="pnt-fee-strip">
+                <span>{category ? category.visitFeeDisplay : '₹—'}</span>
+                <span>Adjustable in final bill</span>
+              </div>
+
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'} disabled={busy}>
+                  {busy ? 'BOOKING…' : 'BOOK HOME VISIT'} <Icon name="arrow-right" size={17} />
+                </button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------- config step */
+  const step = configSteps[stage - 1];
+  const selectedValue = answers[step?.questionKey];
+  const showNotes = step?.notesFor && step.notesFor === selectedValue;
+  const notesKey = showNotes ? notesKeyFor(step) : null;
+
+  return (
+    <div className={modal ? 'pnt-flow-shell pop-modal-scope' : 'pnt-flow-shell'}>
+      <div className="container container-narrow">
+        <FlowTopBar flow={flow} onBack={goBack} plain />
+        {modal ? (
+          <p className="pop-modal-progress" aria-live="polite">
+            STEP {stage} OF {configSteps.length} <span>{step.title}</span>
+          </p>
+        ) : (
+          <StepIndicator steps={configSteps} activeIndex={stage - 1} />
+        )}
+
+        <div className="pnt-step-card">
+          {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
+
+          {(step.type === 'option' || step.type === 'style') && (
+            <>
+              <div className="pnt-option-list">
+                {optionsFor(step.questionKey).map((opt) => (
+                  modal ? (
+                    <PopImageOption
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      image={getPopOptionImage(step.questionKey, opt, flow.intro.image)}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  ) : (
+                    <OptionCard
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      icon={step.type === 'style' ? (DESIGN_STYLE_ICONS[opt.value] || step.icon) : step.icon}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  )
+                ))}
+              </div>
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+
+              {showNotes && (
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label htmlFor={`pce-${notesKey}`}>{step.notesLabel}</label>
+                  <textarea
+                    id={`pce-${notesKey}`}
+                    rows={3}
+                    placeholder={step.notesPlaceholder}
+                    value={answers[notesKey] || ''}
+                    onChange={(e) => setAnswer(notesKey)(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {step.type === 'addon' && (
+            <AddonList
+              options={optionsFor(step.questionKey)}
+              selected={Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : []}
+              onToggle={toggleMulti(step.questionKey)}
+            />
+          )}
+
+          {step.type === 'summary' && (
+            <EstimateSummary
+              rows={resolved}
+              whatsIncluded={flow.whatsIncluded}
+              itemsTotalPaise={null}
+              onEditStep={jumpToStep}
+            />
+          )}
+
+          <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot pop-modal-actions' : 'pnt-step-actions'}>
+            {!modal && <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>}
+            <button type="button" className="btn btn-primary" onClick={goNext}>
+              {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
+            </button>
+          </ModalFoot>
+        </div>
+      </div>
+      {modal && choiceError && createPortal(
+        <div className="pop-choice-toast" role="alert">
+          <Icon name="info" size={20} />
+          <span>{choiceError}</span>
+          <button type="button" onClick={() => setChoiceError('')} aria-label="Dismiss message">×</button>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+function getPopOptionImage(questionKey, option, fallback) {
+  const images = questionKey === 'pop_home_type'
+    ? popHomeTypeImages
+    : questionKey === 'pop_room_type'
+      ? popRoomTypeImages
+      : popDesignStyleImages;
+  return images[option.value] || images[option.label] || fallback;
+}
+
+function PopImageOption({ option, name, image, checked, onSelect }) {
+  return (
+    <label className={`pop-image-option ${checked ? 'selected' : ''}`}>
+      <input type="radio" name={name} value={option.value} checked={checked} onChange={() => onSelect(option.value)} />
+      <img src={image} alt="" width={200} height={105} loading="lazy" />
+      <span className="pop-image-option-content">
+        <strong>{option.label}</strong>
+        {option.hint && <small>{option.hint}</small>}
+      </span>
+      <span className="pop-image-option-check" aria-hidden="true"><Icon name="check" size={14} /></span>
+    </label>
+  );
+}
+
+/** Local, non-catalogue answer key for a step's optional free-text
+    follow-up (Other Room's description, Custom Design's brief) — matched
+    to the real TEXT catalogue rows added in V16 (pop_room_notes /
+    pop_design_notes) via each step's own id. */
+function notesKeyFor(step) {
+  return step.id === 'room_type' ? 'pop_room_notes' : 'pop_design_notes';
+}
+
+function FlowTopBar({ flow, onBack, plain }) {
+  return (
+    <div className={plain ? 'pnt-top' : 'wizard-top'}>
+      <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">
+        <Icon name="arrow-left" size={20} />
+      </button>
+      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.title}</h1>
+      <a
+        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.title}.`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={plain ? 'pnt-help' : 'wizard-help'}
+      >
+        Need help?
+      </a>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\styles\pop-ceiling.css =====
+/* POP Ceiling & Design */
+
+.pce-overview-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
+  color: var(--gold-deep);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+}
+
+/* Compact POP booking steps */
+
+.pop-modal-scope .container-narrow {
+  padding-bottom: 0;
+}
+
+.pop-modal-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pop-modal-progress span {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-step-card {
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pop-modal-scope .pnt-step-title {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+/* Two aligned image cards per row */
+
+.pop-modal-scope .pnt-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pop-image-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.pop-image-option:hover,
+.pop-image-option:focus-within,
+.pop-image-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-a40);
+}
+
+.pop-image-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pop-image-option img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.pop-image-option-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 12px;
+}
+
+.pop-image-option-content strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.pop-image-option-content small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pop-image-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  opacity: 0;
+}
+
+.pop-image-option.selected .pop-image-option-check {
+  opacity: 1;
+  background: var(--gold-deep);
+}
+
+/* Back and Continue stay below the scrolling cards */
+
+.pop-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pop-modal-actions .btn-back {
+  flex: 0 0 auto;
+  min-width: 90px;
+}
+
+.pop-modal-actions .btn-primary {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Heading and help link */
+
+/* The pop-up's own header is hidden inside a POP flow, so this bar sits at
+   the top — it stops short of the pop-up's close button (40px, 20px in from
+   the corner) instead of running underneath it. */
+.pop-modal-scope .pnt-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 44px 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pop-modal-scope .pnt-back {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+}
+
+.pop-modal-scope .pnt-top-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink) !important;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-help {
+  padding: 7px 10px;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  color: var(--gold-deep) !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pop-modal-scope .pnt-help:hover {
+  background: var(--gold-a08);
+}
+
+/* Phones (after the rules above, so it wins over them) */
+@media (max-width: 480px) {
+  .pop-modal-scope .pnt-top {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .pop-modal-scope .pnt-top-title {
+    font-size: 0.92rem;
+  }
+
+  /* A round "?" instead of the "Need help?" words, so the flow's title
+     keeps one line; the words are still its accessible name. */
+  .pop-modal-scope .pnt-help {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+  }
+
+  .pop-modal-scope .pnt-help::before {
+    content: '?';
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+  }
+}
+
+/* Validation popup */
+
+.pop-choice-toast {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 13px 14px;
+  transform: translateX(-50%);
+  border: 1px solid #f0a5a5;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #982121;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.pop-choice-toast span {
+  flex: 1;
+}
+
+.pop-choice-toast button {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 23px;
+  line-height: 1;
+}
+
+@media (max-width: 420px) {
+  .pop-modal-scope .pnt-step-card {
+    padding: 12px;
+  }
+
+  .pop-modal-scope .pnt-option-list {
+    gap: 8px;
+  }
+
+  .pop-image-option img {
+    height: 82px;
+  }
+
+  .pop-image-option-content {
+    padding: 8px;
+  }
+
+  .pop-image-option-content strong {
+    font-size: 13px;
+  }
+
+  .pop-modal-progress span {
+    display: none;
+  }
+
+  /* The top bar's phone sizes are set with its desktop rules above; it no
+     longer needs right padding for the close button (it stops short of it). */
+}
+
+===== FILE: frontend\src\pages\AcServiceFlow.jsx =====
+import { useEffect, useRef, useState } from 'react';
+import Icon from '../components/ui/Icon';
+import AcServiceOptions from '../components/ac/AcServiceOptions';
+import ModalFoot from '../components/services/ModalFoot';
+import {
+  acCategories,
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../data/acContent';
+import {
+  useFormBack,
+  useHistoryState,
+} from '../hooks/useHistoryState';
+
+function contains(options, value) {
+  return options.some((option) => option.value === value);
+}
+
+function positiveInteger(value) {
+  return value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1;
+}
+
+export default function AcServiceFlow({
+  categorySlug,
+  onBackToCatalogue,
+  onContinue,
+  onStepChange,
+}) {
+  const category = acCategories.find(
+    (item) => item.slug === categorySlug
+  );
+
+  const services = acServicesByCategory[categorySlug] || [];
+  const addons = acAddonsByCategory[categorySlug] || [];
+
+  const steps = [
+    { key: 'service', title: 'Choose your service' },
+    { key: 'ac-details', title: 'Tell us about your AC' },
+    ...(addons.length
+      ? [{ key: 'addons', title: 'Additional services' }]
+      : []),
+  ];
+
+  const prefix = `f:ac:${categorySlug}`;
+
+  const [stepIndex, setStepIndex] = useHistoryState(
+    `${prefix}:step`,
+    0,
+    { push: true }
+  );
+
+  const [answers, setAnswers] = useHistoryState(
+    `${prefix}:answers`,
+    {
+      service: '',
+      acType: '',
+      capacity: '',
+      refrigerant: '',
+      units: 1,
+      addons: [],
+      addonQuantities: {},
+    }
+  );
+
+  const [error, setError] = useState('');
+  const errorRef = useRef(null);
+  const formBack = useFormBack();
+
+  const index = Math.min(
+    Math.max(Number(stepIndex) || 0, 0),
+    steps.length - 1
+  );
+
+  const step = steps[index];
+  const isLastStep = index === steps.length - 1;
+
+  useEffect(() => {
+    setError('');
+  }, [index]);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus({ preventScroll: true });
+    }
+  }, [error]);
+
+  function updateAnswer(key, value) {
+    setError('');
+    setAnswers((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  }
+
+  function validate(key) {
+    if (key === 'service') {
+      if (!contains(services, answers.service)) {
+        return 'Please select a service to continue.';
+      }
+    }
+
+    if (key === 'ac-details') {
+      if (!contains(acTypes, answers.acType)) {
+        return 'Please select your AC type.';
+      }
+
+      if (
+        categorySlug === 'installation' &&
+        !contains(acCapacities, answers.capacity)
+      ) {
+        return 'Please select your AC capacity.';
+      }
+
+      if (
+        categorySlug === 'gas-charging' &&
+        !contains(acRefrigerants, answers.refrigerant)
+      ) {
+        return 'Please select the refrigerant.';
+      }
+
+      if (!positiveInteger(answers.units)) {
+        return 'Please enter a whole number of AC units, starting from 1.';
+      }
+    }
+
+    if (key === 'addons') {
+      for (const value of answers.addons || []) {
+        const addon = addons.find((item) => item.value === value);
+
+        if (!addon) {
+          return 'Please review your additional service selections.';
+        }
+
+        if (
+          addon.unit &&
+          !positiveInteger(answers.addonQuantities?.[value] ?? 1)
+        ) {
+          return `Please enter a valid quantity for ${addon.label}.`;
+        }
+      }
+    }
+
+    return '';
+  }
+
+  function continueFlow() {
+    const message = validate(step.key);
+
+    if (message) {
+      setError(message);
+      return;
+    }
+
+    if (!isLastStep) {
+      setStepIndex(index + 1);
+      onStepChange?.();
+      return;
+    }
+
+    // Validate all selections before handing them to customer details.
+    for (let i = 0; i < steps.length; i += 1) {
+      const issue = validate(steps[i].key);
+
+      if (issue) {
+        setStepIndex(i, { push: false });
+        setError(issue);
+        onStepChange?.();
+        return;
+      }
+    }
+
+    const quantities = {};
+
+    for (const value of answers.addons || []) {
+      const addon = addons.find((item) => item.value === value);
+
+      if (addon?.unit) {
+        quantities[value] = Number(
+          answers.addonQuantities?.[value] ?? 1
+        );
+      }
+    }
+
+    onContinue({
+      category: categorySlug,
+      ...answers,
+      units: Number(answers.units),
+      addonQuantities: quantities,
+    });
+  }
+
+  function back() {
+    setError('');
+
+    if (index === 0) {
+      onBackToCatalogue?.();
+      return;
+    }
+
+    formBack(() => {
+      setStepIndex(index - 1, { push: false });
+    });
+
+    onStepChange?.();
+  }
+
+  if (!category) {
+    return (
+      <div className="pnt-step-card">
+        <p>This AC service is unavailable.</p>
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={onBackToCatalogue}
+        >
+          Back to AC Services
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pnt-flow-shell">
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          marginBottom: 18,
+        }}
+      >
+        <h2 style={{ margin: 0 }}>{category.label}</h2>
+
+        <span
+          style={{
+            flexShrink: 0,
+            color: '#785a16',
+            fontSize: 13,
+            fontWeight: 600,
+          }}
+        >
+          Step {index + 1} of {steps.length}
+        </span>
+      </div>
+
+      <div
+        aria-label={`Step ${index + 1} of ${steps.length}`}
+        style={{
+          display: 'flex',
+          gap: 6,
+          marginBottom: 20,
+        }}
+      >
+        {steps.map((item, position) => (
+          <span
+            key={item.key}
+            aria-hidden="true"
+            style={{
+              flex: 1,
+              height: 5,
+              borderRadius: 5,
+              background: position <= index ? '#d9a624' : '#eeeeee',
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="pnt-step-card">
+        <h3 style={{ margin: '0 0 18px' }}>{step.title}</h3>
+
+        <AcServiceOptions
+          category={categorySlug}
+          step={step.key}
+          answers={answers}
+          onChange={updateAnswer}
+        />
+      </div>
+
+      {error && (
+        <div
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+          style={{
+            position: 'fixed',
+            bottom: 100,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 'min(440px, calc(100vw - 32px))',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            padding: '14px 16px',
+            border: '1px solid #f1b7b7',
+            borderRadius: 12,
+            background: '#fff1f1',
+            color: '#b42318',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          }}
+        >
+          <span style={{ flex: 1 }}>{error}</span>
+
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => setError('')}
+            style={{
+              display: 'flex',
+              padding: 4,
+              border: 0,
+              background: 'transparent',
+              color: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            <Icon name="close" size={18} />
+          </button>
+        </div>
+      )}
+
+      <ModalFoot className="pnt-foot ac-booking-footer">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 12,
+            width: '100%',
+          }}
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={back}
+          >
+            Back
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={continueFlow}
+          >
+            Continue
+            <Icon name="chevron-right" size={16} />
+          </button>
+        </div>
+      </ModalFoot>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\components\ac\AcServiceOptions.jsx =====
+import { useId } from 'react';
+import Icon from '../ui/Icon';
+import {
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../../data/acContent';
+
+function Choice({ option, checked, multiple, name, onChange }) {
+  return (
+    <label
+      className={`pnt-option ${checked ? 'selected' : ''}`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: 16,
+        border: `2px solid ${checked ? '#d9a624' : '#e7e7e7'}`,
+        borderRadius: 12,
+        background: checked ? '#fff9e9' : '#ffffff',
+        cursor: 'pointer',
+        minWidth: 0,
+      }}
+    >
+      <input
+        type={multiple ? 'checkbox' : 'radio'}
+        name={name}
+        value={option.value}
+        checked={checked}
+        onChange={onChange}
+        style={{ accentColor: '#b58a20', flexShrink: 0 }}
+      />
+
+      <span
+        className="pnt-option-body"
+        style={{ display: 'flex', flexDirection: 'column', gap: 5 }}
+      >
+        <strong className="pnt-option-label">{option.label}</strong>
+
+        {option.hint && (
+          <span className="pnt-option-hint">{option.hint}</span>
+        )}
+
+        {option.price != null && (
+          <span className="pnt-option-price">
+            {option.inspection ? 'Inspection from ' : 'From '}
+            ₹{option.price.toLocaleString('en-IN')}
+            {option.unit ? ` / ${option.unit}` : ''}
+          </span>
+        )}
+      </span>
+
+      {checked && (
+        <span aria-hidden="true" style={{ marginLeft: 'auto', color: '#9a7317' }}>
+          <Icon name="check" size={18} />
+        </span>
+      )}
+    </label>
+  );
+}
+
+function Choices({ options, value, name, onChange }) {
+  return (
+    <div style={{ display: 'grid', gap: 12 }}>
+      {options.map((option) => (
+        <Choice
+          key={option.value}
+          option={option}
+          name={name}
+          checked={value === option.value}
+          onChange={() => onChange(option.value)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Quantity({ label, value, onChange }) {
+  const id = useId();
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: 16,
+        border: '1px solid #e7e7e7',
+        borderRadius: 12,
+      }}
+    >
+      <label htmlFor={id} style={{ fontWeight: 600 }}>{label}</label>
+
+      <input
+        id={id}
+        type="number"
+        min="1"
+        step="1"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: 80,
+          padding: 10,
+          border: '1px solid #d8d8d8',
+          borderRadius: 8,
+          textAlign: 'center',
+        }}
+      />
+    </div>
+  );
+}
+
+export default function AcServiceOptions({
+  category,
+  step,
+  answers = {},
+  onChange,
+}) {
+  const id = useId();
+  const services = acServicesByCategory[category] || [];
+  const addons = acAddonsByCategory[category] || [];
+  const selectedAddons = answers.addons || [];
+
+  if (step === 'service') {
+    return (
+      <div>
+        <Choices
+          options={services}
+          name={`${id}-service`}
+          value={answers.service}
+          onChange={(value) => onChange('service', value)}
+        />
+
+        {category === 'repair' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The technician will inspect your AC and confirm the repair cost.
+            The inspection fee is adjusted against the repair if you proceed.
+          </p>
+        )}
+
+        {category === 'installation' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The starting price shown applies to Split AC installation.
+            Pricing for other AC types will be confirmed.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (step === 'ac-details') {
+    return (
+      <div style={{ display: 'grid', gap: 22 }}>
+        <div>
+          <h3 style={{ marginBottom: 12 }}>Choose your AC type</h3>
+          <Choices
+            options={acTypes}
+            name={`${id}-type`}
+            value={answers.acType}
+            onChange={(value) => onChange('acType', value)}
+          />
+        </div>
+
+        {category === 'installation' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose AC capacity</h3>
+            <Choices
+              options={acCapacities}
+              name={`${id}-capacity`}
+              value={answers.capacity}
+              onChange={(value) => onChange('capacity', value)}
+            />
+          </div>
+        )}
+
+        {category === 'gas-charging' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose refrigerant</h3>
+            <Choices
+              options={acRefrigerants}
+              name={`${id}-refrigerant`}
+              value={answers.refrigerant}
+              onChange={(value) => onChange('refrigerant', value)}
+            />
+          </div>
+        )}
+
+        <Quantity
+          label="Number of AC units"
+          value={answers.units ?? 1}
+          onChange={(value) => onChange('units', value)}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'addons') {
+    return (
+      <div>
+        <p
+          className="question-hint"
+          style={{
+            padding: 14,
+            marginBottom: 18,
+            borderRadius: 10,
+            background: '#fff8e8',
+            color: '#785a16',
+          }}
+        >
+          Optional: select additional services if needed. You can continue
+          without selecting any.
+        </p>
+
+        <div style={{ display: 'grid', gap: 12 }}>
+          {addons.map((option) => {
+            const checked = selectedAddons.includes(option.value);
+
+            return (
+              <div key={option.value}>
+                <Choice
+                  option={option}
+                  multiple
+                  name={`${id}-addons`}
+                  checked={checked}
+                  onChange={() => {
+                    onChange(
+                      'addons',
+                      checked
+                        ? selectedAddons.filter((value) => value !== option.value)
+                        : [...selectedAddons, option.value]
+                    );
+                  }}
+                />
+
+                {checked && option.unit && (
+                  <div style={{ marginTop: 8 }}>
+                    <Quantity
+                      label={`Quantity (${option.unit})`}
+                      value={answers.addonQuantities?.[option.value] ?? 1}
+                      onChange={(value) =>
+                        onChange('addonQuantities', {
+                          ...answers.addonQuantities,
+                          [option.value]: value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {addons.length === 0 && (
+          <p className="question-hint">
+            No additional services are listed for this category.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+===== FILE: frontend\src\styles\ac-services.css =====
+/* AC booking layout */
+
+.ac-booking-ui {
+  width: 100%;
+  min-width: 0;
+  color: #242424;
+}
+
+.ac-booking-ui .pnt-flow-shell {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.ac-booking-ui .pnt-step-card {
+  padding: 20px;
+  border: 1px solid #eee5d4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.ac-booking-ui h2 {
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.ac-booking-ui h3 {
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+
+.ac-booking-ui .question-hint,
+.ac-booking-ui .pnt-option-hint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #777;
+}
+
+/* Category cards */
+
+.ac-booking-ui .plb-overview-grid {
+  gap: 14px !important;
+}
+
+.ac-booking-ui .plb-overview-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0 15px;
+  overflow: hidden;
+  border: 1px solid #e9e3d8;
+  border-radius: 14px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 4%);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ac-booking-ui .plb-overview-card:hover {
+  border-color: #d9a624;
+  box-shadow: 0 5px 16px rgb(0 0 0 / 7%);
+  transform: none;
+}
+
+.ac-booking-ui .plb-overview-card:focus-visible {
+  outline: 3px solid #e6c570;
+  outline-offset: 3px;
+}
+
+.ac-booking-ui .plb-overview-photo {
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
+.ac-booking-ui .plb-overview-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 13px 12px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.ac-booking-ui .plb-overview-name svg {
+  flex-shrink: 0;
+  color: #ac831c;
+}
+
+.ac-booking-ui .plb-overview-price-note {
+  display: block;
+  padding-right: 12px;
+  padding-left: 12px;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Option cards: no movement when selected */
+
+.ac-booking-ui .pnt-option {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  min-height: 76px;
+  transform: none !important;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.ac-booking-ui .pnt-option:hover {
+  transform: none !important;
+}
+
+.ac-booking-ui .pnt-option:focus-within {
+  outline: 2px solid #e6c570;
+  outline-offset: 2px;
+}
+
+.ac-booking-ui .pnt-option input {
+  position: static !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0;
+  opacity: 1 !important;
+  appearance: auto !important;
+  clip: auto !important;
+  clip-path: none !important;
+}
+
+.ac-booking-ui .pnt-option-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-booking-ui .pnt-option-label {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.ac-booking-ui .pnt-option-price {
+  color: #916c13;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ac-booking-ui input[type='number'] {
+  background: #fff;
+  color: #242424;
+  font: inherit;
+}
+
+.ac-booking-ui input[type='number']:focus {
+  border-color: #d9a624 !important;
+  outline: 2px solid #f5e8bf;
+}
+
+/* Modal footer is rendered outside the AC content. */
+
+.ac-booking-footer {
+  margin: 0;
+  padding: 12px 18px;
+  background: #fff;
+}
+
+.ac-booking-footer .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+  transform: none;
+}
+
+.ac-booking-footer .btn-primary {
+  border: 1px solid #d9a624;
+  background: #d9a624;
+  color: #fff;
+}
+
+.ac-booking-footer .btn-outline {
+  border: 1px solid #e5e0d6;
+  background: #fff;
+  color: #555;
+}
+
+.ac-booking-footer .btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .ac-booking-ui .pnt-step-card {
+    padding: 16px;
+    border-radius: 13px;
+  }
+
+  .ac-booking-ui h2 {
+    font-size: 19px;
+  }
+
+  .ac-booking-ui h3 {
+    font-size: 16px;
+  }
+
+  .ac-booking-ui .plb-overview-grid {
+    gap: 10px !important;
+  }
+
+  .ac-booking-ui .plb-overview-photo {
+    height: 110px !important;
+  }
+
+  .ac-booking-ui .plb-overview-name {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 13px;
+  }
+
+  .ac-booking-ui .plb-overview-price-note {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 11px;
+  }
+
+  .ac-booking-footer {
+    padding: 10px 14px;
+  }
+}
+/* AC layout correction */
+.ac-booking-ui {
+  background: #fff;
+  font-family: var(--font-body, Arial, sans-serif);
+}
+
+.ac-booking-ui .pnt-flow-shell {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 0 16px !important;
+  margin: 0 !important;
+  background: #fff !important;
+  color: #242424 !important;
+}
+
+.ac-booking-ui h2,
+.ac-booking-ui h3,
+.ac-booking-ui .plb-overview-name {
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  color: #242424 !important;
+}
+
+.ac-booking-ui h2 {
+  font-size: 20px !important;
+  line-height: 1.4 !important;
+  font-weight: 700 !important;
+}
+
+.ac-booking-ui h3 {
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 650 !important;
+}
+
+.ac-booking-ui .pnt-step-card {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-ui .pnt-option {
+  min-height: 82px !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+.ac-booking-ui .pnt-option.selected {
+  border-color: #d9a624 !important;
+  background: #fff9e9 !important;
+}
+
+.ac-booking-ui .pnt-option-label {
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.ac-booking-ui .pnt-option-hint {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.ac-booking-footer {
+  padding: 12px 18px !important;
+  margin: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-footer .btn {
+  min-height: 44px !important;
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-footer .btn-outline {
+  min-width: 95px;
+}
+
+.ac-booking-footer .btn-primary {
+  min-width: 135px;
+}
+
+@media (max-width: 600px) {
+  .ac-booking-ui h2 {
+    font-size: 18px !important;
+  }
+
+  .ac-booking-footer {
+    padding: 10px 14px !important;
+  }
+}
+

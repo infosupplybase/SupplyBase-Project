@@ -1,0 +1,4814 @@
+﻿===== FILE: frontend\src\components\services\ServiceBookingModal.jsx =====
+import { useCallback, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
+import Icon from '../ui/Icon';
+import { ModalFooterContext } from './ModalFoot';
+import ServiceBooking from '../../pages/ServiceBooking';
+import InteriorBooking from '../../pages/InteriorBooking';
+import {
+  interiorSpaces,
+  getDesignsBySpace,
+  getDesignBySlug,
+  HOME_VISIT_FEE,
+} from '../../data/interiorCatalog';
+import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
+import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
+import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
+import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
+import PaintingCategory from '../../pages/PaintingCategory';
+import PaintingFlow from '../../pages/PaintingFlow';
+import PopCeilingCategory from '../../pages/PopCeilingCategory';
+import PopCeilingFlow from '../../pages/PopCeilingFlow';
+import PlumbingCategory from '../../pages/PlumbingCategory';
+import PlumbingTab from '../../pages/PlumbingTab';
+import PlumbingCart from '../../pages/PlumbingCart';
+import PlumbingCheckout from '../../pages/PlumbingCheckout';
+import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
+import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
+import AcServices from '../../pages/AcServices';
+import ElectricalCategory from '../../pages/ElectricalCategory';
+import ElectricalTab from '../../pages/ElectricalTab';
+import ElectricalCart from '../../pages/ElectricalCart';
+import ElectricalCheckout from '../../pages/ElectricalCheckout';
+import { getElectricalGroup } from '../../data/electricalContent';
+
+/**
+ * Opens the "Book a service" modal, shared by every page that lets someone
+ * pick a service and book it: the Services page's own grid and the
+ * homepage's Popular Services tiles both render this component so the
+ * booking flow is identical (same catalogue, same steps) no matter which
+ * page you started from.
+ *
+ * Usage: const booking = useServiceBookingModal(); ... onClick={() =>
+ * booking.open(service)} ... {booking.service && <ServiceBookingModal
+ * key={booking.openToken} service={booking.service} onClose={booking.close}
+ * />}
+ *
+ * Which screen the booking is on lives in the browser's history (see
+ * hooks/useHistoryState): opening it and every screen inside it are history
+ * entries, so the browser's Back button goes back one screen (and closes the
+ * booking from its first screen) and a refresh reopens it where it was.
+ * `key={booking.openToken}` still remounts the modal fresh for each new
+ * booking, so a half-finished sub-flow never leaks into the next one.
+ */
+export function useServiceBookingModal() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const entry = (location.state && location.state.bookingModal) || null;
+
+  return {
+    service: entry ? entry.service : null,
+    // Stable for as long as this booking is open (every screen inside it
+    // shares the entry it was opened from), new for the next one.
+    openToken: entry ? entry.base : 0,
+    open: (nextService) => {
+      const base = (window.history.state && window.history.state.idx) || 0;
+      const usr = (window.history.state && window.history.state.usr) || {};
+      const { pathname, search, hash } = window.location;
+      // A history entry of its own: Back closes the booking instead of
+      // leaving the page, and a refresh reopens it where it was.
+      navigate(
+        { pathname, search, hash },
+        { state: { ...stripBooking(usr), bookingModal: { service: nextService, base }, __formPush: true } }
+      );
+    },
+    close: () => {
+      const idx = window.history.state && window.history.state.idx;
+      const base = entry && entry.base;
+      if (typeof idx === 'number' && typeof base === 'number' && idx > base) {
+        // Unwind every screen of this booking in one go, back to the page
+        // as it was before it opened.
+        navigate(base - idx);
+      } else {
+        const usr = (window.history.state && window.history.state.usr) || {};
+        const { pathname, search, hash } = window.location;
+        navigate({ pathname, search, hash }, { replace: true, state: stripBooking(usr) });
+      }
+    },
+  };
+}
+
+/** The history state with this booking's screens and forms removed. */
+function stripBooking(usr) {
+  const out = {};
+  Object.keys(usr).forEach((k) => {
+    if (k !== 'bookingModal' && k !== '__formPush' && !k.startsWith('bm:') && !k.startsWith('f:')) out[k] = usr[k];
+  });
+  return out;
+}
+
+export default function ServiceBookingModal({ service, onClose }) {
+  const [selectedInteriorSpace, setSelectedInteriorSpace] = useHistoryState('bm:interiorSpace', null, { push: true });
+  const [selectedInteriorDesign, setSelectedInteriorDesign] = useHistoryState('bm:interiorDesign', null, { push: true });
+  const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
+  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
+  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
+  // Interior Design -> "Custom": the requirements box, then details + schedule.
+  const [showCustomInteriorDesign, setShowCustomInteriorDesign] = useHistoryState('bm:idCustom', false, { push: true });
+  const [showCustomInteriorDetails, setShowCustomInteriorDetails] = useHistoryState('bm:idCustomDetails', false, { push: true });
+  const [customInteriorRequirements, setCustomInteriorRequirements] = useHistoryState('bm:idCustomRequirements', '');
+  const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
+  const [selectedPopFlow, setSelectedPopFlow] = useHistoryState('bm:popFlow', null, { push: true });
+  const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
+  const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
+  // Electrical: category -> service list -> cart -> checkout, like plumbing.
+  const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
+  const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
+  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
+
+  // Every in-app BACK goes back through history, exactly like the
+  // browser's Back button, so the two always agree.
+  const formBack = useFormBack();
+
+  const modalScrollRef = useRef(null);
+
+  // The pop-up's footer: the forms draw their Back / Continue bar here
+  // (see ModalFoot), below the scrolling area rather than over it.
+  const [footerNode, setFooterNode] = useState(null);
+
+  // One stable function: the forms scroll the pop-up to the top when their
+  // step changes, and a new function on every render (every tap saves the
+  // answer to history, which re-renders the pop-up) would look like a step
+  // change and throw the customer back to the top after each choice.
+  const scrollModalToTop = useCallback(() => {
+    requestAnimationFrame(() => {
+      modalScrollRef.current?.scrollTo({
+        top: 0,
+        behavior: 'auto',
+      });
+    });
+  }, []);
+
+  return (
+    <div
+      className="
+        fixed
+        inset-0
+        z-[2000]
+        flex
+        items-center
+        justify-center
+        bg-black/65
+        backdrop-blur-[3px]
+        p-4
+      "
+      onClick={onClose}
+    >
+      <div
+        className={`
+          relative
+          w-full
+
+         ${service.slug === 'interior-by-choice'
+  ? 'max-w-[800px]'
+  : service.slug === 'interior-design'
+    ? 'max-w-[800px]'
+    : service.slug === 'electrical'
+      ? 'max-w-[640px]'
+      : 'max-w-[550px]'
+}
+
+          flex
+          flex-col
+          max-h-[88vh]
+          h-auto
+          overflow-hidden
+          rounded-2xl
+          bg-white
+          shadow-2xl
+
+          max-sm:h-[92vh]
+          max-sm:max-h-[92vh]
+          max-sm:rounded-xl
+        `}
+        style={
+          (service.slug === 'painting' || service.slug === 'ac-services')
+            ? { height: '88dvh', maxHeight: '88dvh' }
+            : undefined
+        }
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* CLOSE BUTTON */}
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="
+            !absolute
+            !right-5
+            !top-5
+            !z-50
+
+            !flex
+            !h-10
+            !w-10
+            !items-center
+            !justify-center
+
+            !rounded-full
+            !border
+            !border-gray-200
+            !bg-white
+
+            !text-xl
+            !text-gray-700
+
+            !shadow-sm
+
+            transition
+
+            hover:!bg-gray-100
+          "
+          aria-label="Close booking modal"
+        >
+          ✕
+        </button>
+
+        {/* MODAL HEADER — hidden inside a POP flow, which shows its own
+            title and step count */}
+
+        {(
+          service.slug === 'ac-services' ||
+          (service.slug === 'painting' && selectedPaintingFlow)
+        ) && (
+          <div className="h-14 shrink-0" aria-hidden="true" />
+        )}
+
+        {service.slug !== 'ac-services' && !(
+          (service.slug === 'pop-ceiling-design' && selectedPopFlow) ||
+          (service.slug === 'painting' && selectedPaintingFlow)
+        ) && (
+        <>
+        <div className="shrink-0 px-6 pt-6 pr-16">
+          <p
+            className="
+              mb-1
+              text-sm
+              font-semibold
+              uppercase
+              tracking-[0.16em]
+              text-amber-500
+            "
+          >
+            Book a service
+          </p>
+
+          <h2
+            className="
+              text-2xl
+              font-bold
+              text-gray-950
+            "
+          >
+            {/* The cart names itself below ("Your Cart (3 items)"), like
+                plumbing's, so only the service list swaps in its category */}
+            {service.slug === 'electrical' && electricalView === 'tab'
+              ? getElectricalGroup(electricalTab)?.name || service.name
+              : service.name}
+          </h2>
+
+          {/* <p
+            className="
+              mt-2
+              text-sm
+              leading-6
+              text-gray-500
+            "
+          >
+            {service.description}
+          </p> */}
+        </div>
+
+        <div className="mt-1 mb-4 h-px shrink-0 bg-gray-200" />
+        </>
+        )}
+
+        {/* MODAL SCROLL AREA */}
+
+        <ModalFooterContext.Provider value={footerNode}>
+        <div
+          ref={modalScrollRef}
+          className="
+            bm-scroll
+            min-h-0
+            flex-auto
+            overflow-y-auto
+
+            px-6
+            pb-6
+
+            max-sm:flex-1
+
+            [scrollbar-width:none]
+            [&::-webkit-scrollbar]:hidden
+          "
+        >
+          {service.slug === 'interior-by-choice' ? (
+            <>
+              {/* ========================================= */}
+              {/* DESIGN DETAIL */}
+              {/* ========================================= */}
+
+              {showInteriorBooking ? (
+                <InteriorBooking
+                  modal={true}
+                  spaceSlug={selectedInteriorSpace}
+                  designSlug={selectedInteriorDesign}
+                  onBack={() => {
+                    formBack(() => setShowInteriorBooking(false));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : selectedInteriorSpace &&
+                selectedInteriorDesign ? (
+                <div className="pb-2 md:pb-8">
+                  {(() => {
+                    const design =
+                      getDesignBySlug(
+                        selectedInteriorSpace,
+                        selectedInteriorDesign
+                      );
+
+                    const space =
+                      interiorSpaces.find(
+                        (item) =>
+                          item.slug ===
+                          selectedInteriorSpace
+                      );
+
+                    if (!design) {
+                      return (
+                        <p className="ibc-empty">
+                          Design details could not be loaded.
+                        </p>
+                      );
+                    }
+
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm mb-4"
+                          onClick={() => {
+                            formBack(() => setSelectedInteriorDesign(null));
+
+                            scrollModalToTop();
+                          }}
+                        >
+                          {/* <Icon
+                            name="arrow-left"
+                            size={16}
+                          /> */}
+
+                          BACK
+                        </button>
+
+                        <div
+                          className="
+                            grid
+                            grid-cols-1
+                            gap-6
+                            md:grid-cols-2
+                          "
+                        >
+                          {/* DESIGN IMAGE */}
+
+                          <div
+                            className="
+                              overflow-hidden
+                              rounded-xl
+                            "
+                          >
+                            <img loading="lazy" decoding="async"
+                              src={design.image}
+                              alt={design.name}
+                              className="
+                                h-auto
+                                max-h-[420px]
+                                w-full
+                                object-cover
+                              "
+                            />
+                          </div>
+
+                          {/* DESIGN INFORMATION */}
+
+                          <div>
+                            <p
+                              className="
+                                mb-2
+                                text-sm
+                                font-semibold
+                                uppercase
+                                tracking-[0.14em]
+                                text-amber-500
+                              "
+                            >
+                              {space?.name}
+                            </p>
+
+                            <h3
+                              className="
+                                text-2xl
+                                font-bold
+                                text-gray-950
+                              "
+                            >
+                              {design.name}
+                            </h3>
+
+                            {design.tagline && (
+                              <p
+                                className="
+                                  mt-2
+                                  text-sm
+                                  leading-6
+                                  text-gray-500
+                                "
+                              >
+                                {design.tagline}
+                              </p>
+                            )}
+
+                            <p
+                              className="
+                                mt-3
+                                text-lg
+                                font-semibold
+                                text-gray-900
+                              "
+                            >
+                              ₹{design.pricePerSqft} / sq.ft.
+                            </p>
+
+                            {design.description && (
+                              <p
+                                className="
+                                  mt-4
+                                  text-sm
+                                  leading-6
+                                  text-gray-600
+                                "
+                              >
+                                {design.description}
+                              </p>
+                            )}
+
+                            <button
+                              type="button"
+                              className="
+    btn
+    btn-primary
+    mt-6
+    w-full
+    md:w-auto
+  "
+                              onClick={() => {
+                                setShowInteriorBooking(true);
+                                scrollModalToTop();
+                              }}
+                            >
+                              CUSTOMISE THIS DESIGN
+
+                              {/* <Icon
+                                name="arrow-right"
+                                size={17}
+                              /> */}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              ) : selectedInteriorSpace ? (
+                <>
+                  {/* ========================================= */}
+                  {/* DESIGN GALLERY */}
+                  {/* ========================================= */}
+
+                  <div className="pb-2 md:pb-8">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm mb-4"
+                      onClick={() => {
+                        formBack(() => {
+                          setSelectedInteriorSpace(null);
+                          setSelectedInteriorDesign(null);
+                        });
+
+                        scrollModalToTop();
+                      }}
+                    >
+                      {/* <Icon
+                        name="arrow-left"
+                        size={16}
+                      /> */}
+
+                      BACK
+                    </button>
+
+                    {/* SPACE FILTER */}
+
+                    <div className="ibc-filter-row">
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            className={`ibc-filter-chip ${space.slug ===
+                              selectedInteriorSpace
+                              ? 'active'
+                              : ''
+                              }`}
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
+
+                              setSelectedInteriorDesign(
+                                null
+                              );
+
+                              scrollModalToTop();
+                            }}
+                          >
+                            {space.name}
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                    {/* DESIGN CARDS */}
+
+                    {getDesignsBySpace(
+                      selectedInteriorSpace
+                    ).length === 0 ? (
+                      <p className="ibc-empty">
+                        More designs for this space
+                        are on the way. Book a home
+                        visit and our designer will
+                        bring options for you.
+                      </p>
+                    ) : (
+                      <div className="ibc-design-grid">
+                        {getDesignsBySpace(
+                          selectedInteriorSpace
+                        ).map((design) => (
+                          <div
+                            key={design.slug}
+                            className="ibc-design-card"
+                          >
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-media
+                                !block
+                                !w-full
+                                !border-0
+                                !p-0
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
+
+                                scrollModalToTop();
+                              }}
+                            >
+                              <img
+                                src={design.image}
+                                alt={design.name}
+                                loading="lazy"
+                              />
+                            </button>
+
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-body
+                                !w-full
+                                !border-0
+                                !text-left
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
+
+                                scrollModalToTop();
+                              }}
+                            >
+                              <span className="ibc-design-name">
+                                {design.name}
+                              </span>
+
+                              <span className="ibc-design-price">
+                                ₹{design.pricePerSqft}{' '}
+                                / sq.ft.
+                              </span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="
+    btn
+    btn-primary
+    ibc-customise-cta
+  "
+                      onClick={() => {
+                        setSelectedInteriorDesign(null);
+                        setShowInteriorBooking(true);
+                        scrollModalToTop();
+                      }}
+                    >
+                      Customise Your Design
+
+                      {/* <Icon
+                        name="arrow-right"
+                        size={17}
+                      /> */}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* ========================================= */}
+                  {/* CHOOSE SPACE */}
+                  {/* ========================================= */}
+
+                  <div className="pb-2 md:pb-8">
+                    {/* <div
+                      className="
+                        mb-5
+                        rounded-xl
+                        border
+                        border-amber-200
+                        bg-amber-50
+                        p-4
+                      "
+                    >
+                      <p
+                        className="
+                          text-sm
+                          font-semibold
+                          text-gray-900
+                        "
+                      >
+                        Book a Home Visit at just ₹
+                        {HOME_VISIT_FEE}
+                      </p>
+
+                      <p
+                        className="
+                          mt-1
+                          text-sm
+                          leading-6
+                          text-gray-600
+                        "
+                      >
+                        Get expert advice,
+                        measurement and a custom
+                        design as per your choice.
+                      </p>
+                    </div> */}
+
+                    <h3
+                      className="
+                        mb-4
+                        text-lg
+                        font-bold
+                        text-gray-950
+                      "
+                    >
+                      Choose Your Space
+                    </h3>
+
+                    <div
+                      className="
+                        grid
+                        grid-cols-1
+                        gap-4
+                        sm:grid-cols-2
+                      "
+                    >
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
+
+                              setSelectedInteriorDesign(
+                                null
+                              );
+
+                              scrollModalToTop();
+                            }}
+                            className="
+                              group
+                              relative
+                              overflow-hidden
+                              rounded-xl
+                              text-left
+                            "
+                          >
+                            <img loading="lazy" decoding="async"
+                              src={space.image}
+                              alt={space.name}
+                              className="
+                                h-36
+                                w-full
+                                object-cover
+
+                                transition
+                                duration-300
+
+                                group-hover:scale-105
+
+                                sm:h-44
+                              "
+                            />
+
+                            <div
+                              className="
+                                absolute
+                                inset-0
+                                bg-gradient-to-t
+                                from-black/70
+                                via-black/10
+                                to-transparent
+                              "
+                            />
+
+                            <span
+                              className="
+                                absolute
+                                bottom-3
+                                left-4
+                                text-base
+                                font-semibold
+                                text-white
+                              "
+                            >
+                              {space.name}
+                            </span>
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          ) : service.slug === 'interior-design' ? (
+            showCustomInteriorDesign ? (
+              <InteriorDesignCustomFlow
+                initialRequirements={customInteriorRequirements}
+                onDraftChange={setCustomInteriorRequirements}
+                onBack={() => {
+                  formBack(() => setShowCustomInteriorDesign(false));
+                  scrollModalToTop();
+                }}
+                onContinue={(requirements) => {
+                  setCustomInteriorRequirements(requirements);
+                  setShowCustomInteriorDesign(false);
+                  setShowCustomInteriorDetails(true);
+                  scrollModalToTop();
+                }}
+              />
+            ) : showCustomInteriorDetails ? (
+              <InteriorDesignFlow
+                modal={true}
+                startAtDetails={true}
+                customRequirements={customInteriorRequirements}
+                onBackToCatalogue={() => {
+                  formBack(() => {
+                    setShowCustomInteriorDetails(false);
+                    setShowCustomInteriorDesign(true);
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignProject ? (
+              <InteriorDesignFlow
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                projectSlug={selectedInteriorDesignProject}
+                onBackToCatalogue={() => {
+                  formBack(() => setSelectedInteriorDesignProject(null));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignCategory ? (
+              <InteriorDesignCatalogue
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                onSelectProject={(projectSlug) => {
+                  setSelectedInteriorDesignProject(projectSlug);
+                  scrollModalToTop();
+                }}
+                onBack={() => {
+                  formBack(() => {
+                    setSelectedInteriorDesignCategory(null);
+                    setSelectedInteriorDesignProject(null);
+                  });
+                  scrollModalToTop();
+                }}
+              />
+            ) : (
+              <InteriorDesignCategory
+                modal={true}
+                onSelectCategory={(categorySlug) => {
+                  setSelectedInteriorDesignCategory(categorySlug);
+                  setSelectedInteriorDesignProject(null);
+                  scrollModalToTop();
+                }}
+                onCustom={() => {
+                  setShowCustomInteriorDesign(true);
+                  scrollModalToTop();
+                }}
+              />
+            )
+          ) : service.slug === 'painting' ? (
+            selectedPaintingFlow ? (
+              <div className="painting-modal-scope">
+                <PaintingFlow
+                  modal={true}
+                  flowSlug={selectedPaintingFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPaintingFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              </div>
+            ) : (
+              <div className="painting-modal-scope">
+                <PaintingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPaintingFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              </div>
+            )
+          ) : service.slug === 'plumbing' ? (
+            <div className="plumbing-modal-scope">
+            {plumbingView === 'category' ? (
+              <PlumbingCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setSelectedPlumbingTab(tabSlug);
+                  setPlumbingView('tab');
+                  scrollModalToTop();
+                }}
+                onSelectConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'tab' ? (
+              <PlumbingTab
+                modal={true}
+                tabSlug={selectedPlumbingTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setSelectedPlumbingTab(null);
+                    setPlumbingView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onOpenConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setPlumbingView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'cart' ? (
+              <PlumbingCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setPlumbingView(selectedPlumbingTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setPlumbingView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'checkout' ? (
+              <PlumbingCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setPlumbingView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingTab(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultations' ? (
+              <PlumbingConsultationList
+                modal={true}
+                onBackToCategories={() => {
+                  formBack(() => setPlumbingView('category'));
+                  scrollModalToTop();
+                }}
+                onSelectConsultationType={(typeSlug) => {
+                  setSelectedPlumbingConsultation(typeSlug);
+                  setPlumbingView('consultation-book');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultation-book' ? (
+              <PlumbingConsultationBook
+                modal={true}
+                typeSlug={selectedPlumbingConsultation}
+                onBackToConsultations={() => {
+                  formBack(() => {
+                    setSelectedPlumbingConsultation(null);
+                    setPlumbingView('consultations');
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'pop-ceiling-design' ? (
+            <div className="painting-modal-scope">
+              {selectedPopFlow ? (
+                <PopCeilingFlow
+                  modal={true}
+                  flowSlug={selectedPopFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPopFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : (
+                <PopCeilingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPopFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              )}
+            </div>
+          ) : service.slug === 'electrical' ? (
+            <div className="electrical-modal-scope">
+            {electricalView === 'category' ? (
+              <ElectricalCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setElectricalTab(tabSlug);
+                  setElectricalView('tab');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'tab' ? (
+              <ElectricalTab
+                modal={true}
+                tabSlug={electricalTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setElectricalTab(null);
+                    setElectricalView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setElectricalView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'cart' ? (
+              <ElectricalCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setElectricalView(electricalTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setElectricalView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'checkout' ? (
+              <ElectricalCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setElectricalView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setElectricalTab(null);
+                  setElectricalView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'ac-services' ? (
+            <AcServices
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
+          ) : (
+            <ServiceBooking
+              serviceSlug={service.slug}
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
+          )}
+        </div>
+        </ModalFooterContext.Provider>
+
+        {/* MODAL FOOTER — filled by the current step's Back / Continue bar,
+            hidden while a step has none */}
+
+        <div ref={setFooterNode} className="bm-foot" />
+      </div>
+    </div>
+  );
+}
+
+
+===== FILE: frontend\src\pages\PopCeilingFlow.jsx =====
+import { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
+import Icon from '../components/ui/Icon';
+import PaintingHero from '../components/painting/PaintingHero';
+import StepIndicator from '../components/painting/StepIndicator';
+import OptionCard from '../components/painting/OptionCard';
+import EstimateSummary from '../components/painting/EstimateSummary';
+import AddonList from '../components/pop-ceiling/AddonList';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import SlotPicker from '../components/booking/SlotPicker';
+import usePopCeilingCatalogue from '../hooks/usePopCeilingCatalogue';
+import { popFlows, DESIGN_STYLE_ICONS } from '../data/popCeilingContent';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import { useAuth } from '../context/AuthContext';
+import api, { friendlyError } from '../lib/api';
+import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
+
+/**
+ * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
+ * (see popCeilingContent.js) and the live catalogue
+ * (usePopCeilingCatalogue), same architecture as PaintingFlow. Stage 0 is
+ * the flow's intro; stages 1..N are the flow's configured steps (last is
+ * always "summary"); then Details, Schedule and Confirm, reusing the same
+ * shared components every other rebuilt category uses.
+ *
+ * No priced options exist anywhere in this category's new catalogue rows
+ * (see V16's migration comment — the reference's add-ons are all a rate
+ * PER SQ. FT. with no measured area to multiply by), so unlike
+ * PaintingFlow there is no client-side estimate total: itemsTotalPaise is
+ * always null, and EstimateSummary already renders "To be confirmed on
+ * site visit" whenever that's the case.
+ */
+
+// The Details / Schedule button bar in the booking pop-up — the same layout
+// as Painting's (a narrow BACK and a wide action on phones, right-aligned on
+// wider screens), drawn in the pop-up's footer by ModalFoot.
+const MODAL_FOOT =
+  'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3';
+const MODAL_BACK =
+  'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto';
+const MODAL_NEXT =
+  'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-auto md:!min-w-[170px] md:!flex-none md:!px-4';
+
+export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
+  const params = useParams();
+  const flowSlug = propFlowSlug || params.flowSlug;
+  const flow = popFlows[flowSlug];
+  const { user } = useAuth();
+  const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
+
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:pop:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
+    ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
+    : emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+  const [choiceError, setChoiceError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  const configSteps = useMemo(() => flow?.steps || [], [flow]);
+  const DETAILS = 1 + configSteps.length;
+  const SCHEDULE = DETAILS + 1;
+  const CONFIRM = SCHEDULE + 1;
+
+  const setAnswer = (key) => (value) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+    setChoiceError('');
+    setSubmitError('');
+  };
+
+  const toggleMulti = (key) => (value) => {
+    setAnswers((a) => {
+      const list = Array.isArray(a[key]) ? a[key] : [];
+      return {
+        ...a,
+        [key]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+      };
+    });
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const setDetail = (key) => (e) => {
+    setDetails((d) => ({ ...d, [key]: e.target.value }));
+    setErrors((err) => ({ ...err, [key]: undefined }));
+    setSubmitError('');
+  };
+
+  /** Every step's answer resolved to a label for the summary — never a
+      price (see the file header note: POP never computes one). */
+  const resolved = useMemo(() => {
+    if (!flow) return [];
+    return configSteps
+      .filter((s) => s.type !== 'summary')
+      .map((step, i) => {
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          const opts = optionsFor(step.questionKey).filter((o) => chosen.includes(o.value));
+          return {
+            stepIndex: i + 1,
+            label: step.title.replace(' (Optional)', '').replace(' (optional)', ''),
+            value: opts.map((o) => o.label).join(', '),
+          };
+        }
+        const opt = optionsFor(step.questionKey).find((o) => o.value === answers[step.questionKey]);
+        const notesKey = step.notesFor === opt?.value ? notesKeyFor(step) : null;
+        const note = notesKey ? answers[notesKey] : null;
+        return {
+          stepIndex: i + 1,
+          label: step.title.replace(/\?$/, ''),
+          value: note ? `${opt?.label} — ${note}` : opt?.label,
+        };
+      });
+  }, [flow, configSteps, answers, optionsFor]);
+
+  if (!flow) return modal ? null : <Navigate to="/services/pop-ceiling-design" replace />;
+
+  const jumpToStep = (i) => {
+    setStage(i);
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const validateStep = (step) => {
+    if ((step.type === 'option' || step.type === 'style') && !answers[step.questionKey]) {
+      setErrors({ [step.questionKey]: 'Please choose an option' });
+      if (modal) setChoiceError('Choose an option to continue.');
+      return false;
+    }
+    return true;
+  };
+
+  const goNext = () => {
+    setSubmitError('');
+    const step = configSteps[stage - 1];
+    if (step && !validateStep(step)) return;
+    setStage((s) => Math.min(s + 1, CONFIRM));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const goBack = () => {
+    setSubmitError('');
+    if (modal && stage === 0) {
+      onBackToCategories?.();
+      return;
+    }
+    formBack(() => setStage((s) => Math.max(s - 1, 0)));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const canLeaveDetails = () => {
+    const next = validateDetails(details, pickedLocation);
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    if (!date || !time) {
+      setErrors({ slot: 'Please choose a date and a time' });
+      return;
+    }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
+
+    setBusy(true);
+    setSubmitError('');
+    try {
+      const flat = [];
+      configSteps.forEach((step) => {
+        if (step.type === 'summary') return;
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          chosen.forEach((v) => {
+            const opt = optionsFor(step.questionKey).find((o) => o.value === v);
+            flat.push({ key: step.questionKey, value: v, label: opt?.label || v });
+          });
+          return;
+        }
+        const value = answers[step.questionKey];
+        if (value === undefined || value === '' || value === null) return;
+        const opt = optionsFor(step.questionKey).find((o) => o.value === value);
+        flat.push({ key: step.questionKey, value, label: opt?.label || value });
+
+        if (step.notesFor === value) {
+          const notesKey = notesKeyFor(step);
+          const note = answers[notesKey];
+          if (note) flat.push({ key: notesKey, value: note, label: note });
+        }
+      });
+
+      const result = await api.createBooking({
+        serviceSlug: 'pop-ceiling-design',
+        answers: flat,
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name,
+        phone: details.phone,
+        whatsapp: details.whatsapp || null,
+        email: details.email || null,
+        address: composeAddress(details, pickedLocation),
+        city: details.city,
+        pincode: details.pincode || null,
+      });
+      setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pce', result.bookingNumber, details.phone);
+      setStage(CONFIRM);
+      if (modal) onStepChange?.();
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      setSubmitError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <p className="question-hint">Loading services…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{loadError}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------------- intro */
+  if (stage === 0) {
+    if (modal) {
+      return (
+        <div className="pop-modal-intro">
+          <img
+            src={flow.intro.image}
+            alt={`${flow.title} ceiling design`}
+            // 64px down: below the pop-up's close button, the header being hidden here.
+            style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, marginTop: 64 }}
+          />
+          <h2 className="pnt-intro-heading" style={{ fontSize: 'clamp(1.3rem, 4vw, 1.8rem)', lineHeight: 1.15, margin: '14px 0 8px' }}>
+            {flow.intro.heading}
+          </h2>
+          <p style={{ color: 'var(--ink-muted)', fontSize: 14, marginBottom: 14 }}>
+            {flow.heroTagline}
+          </p>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+            GET STARTED <Icon name="arrow-right" size={17} />
+          </button>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={onBackToCategories}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px auto 0' }}
+          >
+            <Icon name="arrow-left" size={15} /> BACK TO POP SERVICES
+          </button>
+          <div className="pnt-included" style={{ marginTop: 18 }}>
+            <h3>What&rsquo;s Included?</h3>
+            <ul>
+              {flow.whatsIncluded.map((item) => (
+                <li key={item}><Icon name="check" size={14} strokeWidth={3} />{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <>
+        {!modal && <PaintingHero
+          eyebrow={flow.intro.eyebrow}
+          title={flow.title}
+          tagline={flow.heroTagline}
+          image={flow.intro.image}
+          trustPoints={[]}
+        />}
+        <section className="pnt-section">
+          <div className="container container-narrow">
+            {modal && <button type="button" className="btn btn-ghost btn-sm" onClick={onBackToCategories}>BACK TO POP SERVICES</button>}
+            <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
+
+            <ul className="pnt-intro-trust">
+              {flow.intro.points.map((t) => (
+                <li key={t.label}>
+                  <Icon name={t.icon} size={22} />
+                  <span>{t.label}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="pnt-included">
+              <h3>What&rsquo;s Included?</h3>
+              <ul>
+                {flow.whatsIncluded.map((item) => (
+                  <li key={item}>
+                    <Icon name="check" size={14} strokeWidth={3} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
+              Get Started <Icon name="arrow-right" size={17} />
+            </button>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  /* --------------------------------------------------------- confirmed */
+  if (stage === CONFIRM && receipt) {
+    const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <div className="wizard-card">
+            <div className="confirmed">
+              <div className="confirmed-tick">
+                <Icon name="check" size={38} strokeWidth={3} />
+              </div>
+              <h2>Booking Confirmed!</h2>
+              <p>Our expert will visit your home, measure your space and provide a detailed quotation.</p>
+
+              <dl className="confirmed-panel">
+                <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
+                <div><dt>Service</dt><dd>{flow.title}</dd></div>
+                <div><dt>Location</dt><dd>{details.city}</dd></div>
+              </dl>
+
+              <div className="pnt-fee-note">
+                <Icon name="info" size={17} />
+                <span>{receipt.message}</span>
+              </div>
+
+              <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
+              <div className="btn-row" style={{ marginTop: 12 }}>
+                <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+                  <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
+                </a>
+                {modal ? <button type="button" className="btn btn-ghost btn-back" onClick={onBackToCategories}>BACK TO POP CEILING</button> : <Link to="/services/pop-ceiling-design" className="btn btn-ghost btn-back">BACK TO POP CEILING</Link>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------------------------------------------ details */
+  if (stage === DETAILS) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Your Details</h2>
+                <p>We will contact you to confirm the appointment.</p>
+              </div>
+              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pce" />
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              {/* In the booking pop-up this bar goes in the pop-up's footer
+                  (ModalFoot), under the form rather than over its fields —
+                  the same as Painting's steps. */}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'}>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* ----------------------------------------------------------- schedule */
+  if (stage === SCHEDULE) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Book a Home Visit</h2>
+                <p>Our team will visit your site to measure and quote.</p>
+              </div>
+              <SlotPicker
+                serviceSlug="pop-ceiling-design"
+                date={date}
+                time={time}
+                onPick={(d, t) => { setDate(d); setTime(t); setErrors((e) => ({ ...e, slot: undefined })); }}
+                error={errors.slot}
+              />
+
+              <div className="pnt-fee-strip">
+                <span>{category ? category.visitFeeDisplay : '₹—'}</span>
+                <span>Adjustable in final bill</span>
+              </div>
+
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <ModalFoot className={modal ? MODAL_FOOT : 'wizard-foot'}>
+                <button type="button" className={modal ? MODAL_BACK : 'btn btn-ghost btn-back'} onClick={goBack}>BACK</button>
+                <button type="submit" className={modal ? MODAL_NEXT : 'btn btn-primary'} disabled={busy}>
+                  {busy ? 'BOOKING…' : 'BOOK HOME VISIT'} <Icon name="arrow-right" size={17} />
+                </button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------- config step */
+  const step = configSteps[stage - 1];
+  const selectedValue = answers[step?.questionKey];
+  const showNotes = step?.notesFor && step.notesFor === selectedValue;
+  const notesKey = showNotes ? notesKeyFor(step) : null;
+
+  return (
+    <div className={modal ? 'pnt-flow-shell pop-modal-scope' : 'pnt-flow-shell'}>
+      <div className="container container-narrow">
+        <FlowTopBar flow={flow} onBack={goBack} plain />
+        {modal ? (
+          <p className="pop-modal-progress" aria-live="polite">
+            STEP {stage} OF {configSteps.length} <span>{step.title}</span>
+          </p>
+        ) : (
+          <StepIndicator steps={configSteps} activeIndex={stage - 1} />
+        )}
+
+        <div className="pnt-step-card">
+          {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
+
+          {(step.type === 'option' || step.type === 'style') && (
+            <>
+              <div className="pnt-option-list">
+                {optionsFor(step.questionKey).map((opt) => (
+                  modal ? (
+                    <PopImageOption
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      image={getPopOptionImage(step.questionKey, opt, flow.intro.image)}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  ) : (
+                    <OptionCard
+                      key={opt.value}
+                      option={opt}
+                      name={step.questionKey}
+                      icon={step.type === 'style' ? (DESIGN_STYLE_ICONS[opt.value] || step.icon) : step.icon}
+                      checked={answers[step.questionKey] === opt.value}
+                      onSelect={setAnswer(step.questionKey)}
+                    />
+                  )
+                ))}
+              </div>
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+
+              {showNotes && (
+                <div className="field" style={{ marginTop: 16 }}>
+                  <label htmlFor={`pce-${notesKey}`}>{step.notesLabel}</label>
+                  <textarea
+                    id={`pce-${notesKey}`}
+                    rows={3}
+                    placeholder={step.notesPlaceholder}
+                    value={answers[notesKey] || ''}
+                    onChange={(e) => setAnswer(notesKey)(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {step.type === 'addon' && (
+            <AddonList
+              options={optionsFor(step.questionKey)}
+              selected={Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : []}
+              onToggle={toggleMulti(step.questionKey)}
+            />
+          )}
+
+          {step.type === 'summary' && (
+            <EstimateSummary
+              rows={resolved}
+              whatsIncluded={flow.whatsIncluded}
+              itemsTotalPaise={null}
+              onEditStep={jumpToStep}
+            />
+          )}
+
+          <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot pop-modal-actions' : 'pnt-step-actions'}>
+            {!modal && <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>}
+            <button type="button" className="btn btn-primary" onClick={goNext}>
+              {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
+            </button>
+          </ModalFoot>
+        </div>
+      </div>
+      {modal && choiceError && createPortal(
+        <div className="pop-choice-toast" role="alert">
+          <Icon name="info" size={20} />
+          <span>{choiceError}</span>
+          <button type="button" onClick={() => setChoiceError('')} aria-label="Dismiss message">×</button>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+function getPopOptionImage(questionKey, option, fallback) {
+  const images = questionKey === 'pop_home_type'
+    ? popHomeTypeImages
+    : questionKey === 'pop_room_type'
+      ? popRoomTypeImages
+      : popDesignStyleImages;
+  return images[option.value] || images[option.label] || fallback;
+}
+
+function PopImageOption({ option, name, image, checked, onSelect }) {
+  return (
+    <label className={`pop-image-option ${checked ? 'selected' : ''}`}>
+      <input type="radio" name={name} value={option.value} checked={checked} onChange={() => onSelect(option.value)} />
+      <img src={image} alt="" width={200} height={105} loading="lazy" />
+      <span className="pop-image-option-content">
+        <strong>{option.label}</strong>
+        {option.hint && <small>{option.hint}</small>}
+      </span>
+      <span className="pop-image-option-check" aria-hidden="true"><Icon name="check" size={14} /></span>
+    </label>
+  );
+}
+
+/** Local, non-catalogue answer key for a step's optional free-text
+    follow-up (Other Room's description, Custom Design's brief) — matched
+    to the real TEXT catalogue rows added in V16 (pop_room_notes /
+    pop_design_notes) via each step's own id. */
+function notesKeyFor(step) {
+  return step.id === 'room_type' ? 'pop_room_notes' : 'pop_design_notes';
+}
+
+function FlowTopBar({ flow, onBack, plain }) {
+  return (
+    <div className={plain ? 'pnt-top' : 'wizard-top'}>
+      <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">
+        <Icon name="arrow-left" size={20} />
+      </button>
+      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.title}</h1>
+      <a
+        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.title}.`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={plain ? 'pnt-help' : 'wizard-help'}
+      >
+        Need help?
+      </a>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\pages\AcServiceFlow.jsx =====
+import { contact } from '../data/siteConfig';
+import { useEffect, useRef, useState } from 'react';
+import Icon from '../components/ui/Icon';
+import AcServiceOptions from '../components/ac/AcServiceOptions';
+import ModalFoot from '../components/services/ModalFoot';
+import {
+  acCategories,
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../data/acContent';
+import {
+  useFormBack,
+  useHistoryState,
+} from '../hooks/useHistoryState';
+
+function contains(options, value) {
+  return options.some((option) => option.value === value);
+}
+
+function positiveInteger(value) {
+  return value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1;
+}
+
+export default function AcServiceFlow({
+  categorySlug,
+  onBackToCatalogue,
+  onContinue,
+  onStepChange,
+}) {
+  const category = acCategories.find(
+    (item) => item.slug === categorySlug
+  );
+
+  const services = acServicesByCategory[categorySlug] || [];
+  const addons = acAddonsByCategory[categorySlug] || [];
+
+  const steps = [
+    { key: 'service', title: 'Choose your service' },
+    { key: 'ac-details', title: 'Tell us about your AC' },
+    ...(addons.length
+      ? [{ key: 'addons', title: 'Additional services' }]
+      : []),
+  ];
+
+  const prefix = `f:ac:${categorySlug}`;
+
+  const [stepIndex, setStepIndex] = useHistoryState(
+    `${prefix}:step`,
+    0,
+    { push: true }
+  );
+
+  const [answers, setAnswers] = useHistoryState(
+    `${prefix}:answers`,
+    {
+      service: '',
+      acType: '',
+      capacity: '',
+      refrigerant: '',
+      units: 1,
+      addons: [],
+      addonQuantities: {},
+    }
+  );
+
+  const [error, setError] = useState('');
+  const errorRef = useRef(null);
+  const formBack = useFormBack();
+
+  const index = Math.min(
+    Math.max(Number(stepIndex) || 0, 0),
+    steps.length - 1
+  );
+
+  const step = steps[index];
+  const isLastStep = index === steps.length - 1;
+
+  useEffect(() => {
+    setError('');
+  }, [index]);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus({ preventScroll: true });
+    }
+  }, [error]);
+
+  function updateAnswer(key, value) {
+    setError('');
+    setAnswers((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  }
+
+  function validate(key) {
+    if (key === 'service') {
+      if (!contains(services, answers.service)) {
+        return 'Please select a service to continue.';
+      }
+    }
+
+    if (key === 'ac-details') {
+      if (!contains(acTypes, answers.acType)) {
+        return 'Please select your AC type.';
+      }
+
+      if (
+        categorySlug === 'installation' &&
+        !contains(acCapacities, answers.capacity)
+      ) {
+        return 'Please select your AC capacity.';
+      }
+
+      if (
+        categorySlug === 'gas-charging' &&
+        !contains(acRefrigerants, answers.refrigerant)
+      ) {
+        return 'Please select the refrigerant.';
+      }
+
+      if (!positiveInteger(answers.units)) {
+        return 'Please enter a whole number of AC units, starting from 1.';
+      }
+    }
+
+    if (key === 'addons') {
+      for (const value of answers.addons || []) {
+        const addon = addons.find((item) => item.value === value);
+
+        if (!addon) {
+          return 'Please review your additional service selections.';
+        }
+
+        if (
+          addon.unit &&
+          !positiveInteger(answers.addonQuantities?.[value] ?? 1)
+        ) {
+          return `Please enter a valid quantity for ${addon.label}.`;
+        }
+      }
+    }
+
+    return '';
+  }
+
+  function continueFlow() {
+    const message = validate(step.key);
+
+    if (message) {
+      setError(message);
+      return;
+    }
+
+    if (!isLastStep) {
+      setStepIndex(index + 1);
+      onStepChange?.();
+      return;
+    }
+
+    // Validate all selections before handing them to customer details.
+    for (let i = 0; i < steps.length; i += 1) {
+      const issue = validate(steps[i].key);
+
+      if (issue) {
+        setStepIndex(i, { push: false });
+        setError(issue);
+        onStepChange?.();
+        return;
+      }
+    }
+
+    const quantities = {};
+
+    for (const value of answers.addons || []) {
+      const addon = addons.find((item) => item.value === value);
+
+      if (addon?.unit) {
+        quantities[value] = Number(
+          answers.addonQuantities?.[value] ?? 1
+        );
+      }
+    }
+
+    onContinue({
+      category: categorySlug,
+      ...answers,
+      units: Number(answers.units),
+      addonQuantities: quantities,
+    });
+  }
+
+  function back() {
+    setError('');
+
+    if (index === 0) {
+      onBackToCatalogue?.();
+      return;
+    }
+
+    formBack(() => {
+      setStepIndex(index - 1, { push: false });
+    });
+
+    onStepChange?.();
+  }
+
+  if (!category) {
+    return (
+      <div className="pnt-step-card">
+        <p>This AC service is unavailable.</p>
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={onBackToCatalogue}
+        >
+          Back to AC Services
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pnt-flow-shell ac-pop-flow">
+      <div className="ac-pop-top">
+        <button
+          type="button"
+          className="ac-pop-back"
+          onClick={back}
+          aria-label="Go back"
+        >
+          <Icon name="arrow-left" size={20} />
+        </button>
+
+        <h2 className="ac-pop-title">{category.label}</h2>
+
+        <a
+          className="ac-pop-help"
+          href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+            `Hello Supplybase, I need help booking ${category.label}.`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Need help?
+        </a>
+      </div>
+
+      <p className="ac-pop-progress" aria-live="polite">
+        STEP {index + 1} OF {steps.length}
+        <span>{step.title}</span>
+      </p>
+
+      <div className="pnt-step-card ac-pop-step">
+        <h3 className="ac-pop-step-title">{step.title}</h3>
+
+        <AcServiceOptions
+          category={categorySlug}
+          step={step.key}
+          answers={answers}
+          onChange={updateAnswer}
+        />
+      </div>
+
+      {error && (
+        <div
+          className="ac-pop-alert"
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+        >
+          <Icon name="info" size={20} />
+          <span>{error}</span>
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => setError('')}
+          >
+            <Icon name="close" size={18} />
+          </button>
+        </div>
+      )}
+
+      <ModalFoot className="ac-pop-actions">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={continueFlow}
+        >
+          Continue
+          <Icon name="arrow-right" size={17} />
+        </button>
+      </ModalFoot>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\pages\AcServices.jsx =====
+import '../styles/ac-services.css';
+import { useNavigate, useParams } from 'react-router-dom';
+import AcServicesCategory from './AcServicesCategory';
+import AcServiceFlow from './AcServiceFlow';
+import AcCheckout from './AcCheckout';
+import { acCategories } from '../data/acContent';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+
+function AcServicesContent({
+  modal = false,
+  onClose,
+  onStepChange,
+}) {
+  const { acCategory } = useParams();
+  const navigate = useNavigate();
+  const formBack = useFormBack();
+
+  const [selectedCategory, setSelectedCategory] = useHistoryState(
+    'f:ac:selected-category',
+    null,
+    { push: true }
+  );
+
+  const [view, setView] = useHistoryState(
+    'f:ac:view',
+    'options',
+    { push: true }
+  );
+
+  const [selection, setSelection] = useHistoryState(
+    'f:ac:selection',
+    null
+  );
+
+  const categorySlug = modal ? selectedCategory : acCategory;
+
+  const validCategory = acCategories.some(
+    (category) => category.slug === categorySlug
+  );
+
+  function openCategory(slug) {
+    setView('options', { push: false });
+    setSelection(null);
+
+    if (modal) {
+      setSelectedCategory(slug);
+    } else {
+      navigate(`/services/ac-services/${slug}`);
+    }
+
+    onStepChange?.();
+  }
+
+  function backToCategories() {
+    if (modal) {
+      formBack(() => {
+        setSelectedCategory(null, { push: false });
+        setView('options', { push: false });
+      });
+    } else {
+      navigate('/services/ac-services');
+    }
+
+    onStepChange?.();
+  }
+
+  if (!categorySlug || !validCategory) {
+    return (
+      <AcServicesCategory
+        modal={modal}
+        onSelectFlow={openCategory}
+      />
+    );
+  }
+
+  if (
+    view === 'checkout' &&
+    selection?.category === categorySlug
+  ) {
+    return (
+      <AcCheckout
+        key={`checkout-${categorySlug}`}
+        selection={selection}
+        onBack={() => {
+          formBack(() => setView('options', { push: false }));
+          onStepChange?.();
+        }}
+        onClose={
+          onClose || (() => navigate('/services'))
+        }
+        onStepChange={onStepChange}
+      />
+    );
+  }
+
+  return (
+    <AcServiceFlow
+      key={categorySlug}
+      categorySlug={categorySlug}
+      onBackToCatalogue={backToCategories}
+      onStepChange={onStepChange}
+      onContinue={(answers) => {
+        setSelection(answers);
+        setView('checkout');
+        onStepChange?.();
+      }}
+    />
+  );
+}
+export default function AcServices(props) {
+  return (
+    <div className="ac-booking-ui">
+      <AcServicesContent {...props} />
+    </div>
+  );
+}
+
+===== FILE: frontend\src\components\ac\AcServiceOptions.jsx =====
+import { useId } from 'react';
+import Icon from '../ui/Icon';
+import {
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../../data/acContent';
+
+const acOptionImages = {
+  'general-service': '/assets/ac-services/regular-service.png',
+  'jet-service': '/assets/ac-services/regular-service.png',
+  'deep-cleaning': '/assets/ac-services/regular-service.png',
+  'filter-cleaning': '/assets/ac-services/regular-service.png',
+  'cooling-check': '/assets/ac-services/repair.jpg',
+  'water-leakage-check': '/assets/ac-services/repair.jpg',
+  'drain-pipe-cleaning': '/assets/ac-services/regular-service.png',
+  'outdoor-unit-cleaning': '/assets/ac-services/maintenance.jpg',
+  'not-cooling': '/assets/ac-services/repair.jpg',
+  'water-leakage': '/assets/ac-services/repair.jpg',
+  'not-starting': '/assets/ac-services/repair.jpg',
+  'unusual-noise': '/assets/ac-services/repair.jpg',
+  'bad-smell': '/assets/ac-services/repair.jpg',
+  'electrical-fault': '/assets/ac-services/repair.jpg',
+  'ac-installation': '/assets/ac-services/installation.png',
+  'ac-uninstallation': '/assets/ac-services/uninstallation.jpeg',
+  'gas-charging': '/assets/ac-services/gas-charging.jpg',
+  'amc-2-services': '/assets/ac-services/maintenance.jpg',
+  'amc-3-services': '/assets/ac-services/maintenance.jpg',
+  'amc-4-services': '/assets/ac-services/maintenance.jpg',
+};
+
+function Choice({ option, checked, multiple, name, onChange }) {
+  const image = !multiple ? acOptionImages[option.value] : null;
+
+  return (
+    <label
+      className={`ac-pop-option ${multiple ? 'ac-pop-addon' : ''} ${
+        checked ? 'selected' : ''
+      }`}
+    >
+      <input
+        type={multiple ? 'checkbox' : 'radio'}
+        name={name}
+        value={option.value}
+        checked={checked}
+        onChange={onChange}
+      />
+
+      {image && (
+        <img
+          className="ac-pop-option-image"
+          src={image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      )}
+
+      <span className="ac-pop-option-body">
+        <strong>{option.label}</strong>
+
+        {option.hint && <small>{option.hint}</small>}
+
+        {option.price != null && (
+          <span className="ac-pop-option-price">
+            {option.inspection ? 'Inspection from ' : 'From '}
+            ₹{Number(option.price).toLocaleString('en-IN')}
+            {option.unit ? ` / ${option.unit}` : ''}
+          </span>
+        )}
+      </span>
+
+      <span className="ac-pop-option-check" aria-hidden="true">
+        <Icon name="check" size={14} />
+      </span>
+    </label>
+  );
+}
+function Choices({ options, value, name, onChange }) {
+  return (
+    <div className="ac-pop-option-grid">
+      {options.map((option) => (
+        <Choice
+          key={option.value}
+          option={option}
+          name={name}
+          checked={value === option.value}
+          onChange={() => onChange(option.value)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Quantity({ label, value, onChange }) {
+  const id = useId();
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: 16,
+        border: '1px solid #e7e7e7',
+        borderRadius: 12,
+      }}
+    >
+      <label htmlFor={id} style={{ fontWeight: 600 }}>{label}</label>
+
+      <input
+        id={id}
+        type="number"
+        min="1"
+        step="1"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: 80,
+          padding: 10,
+          border: '1px solid #d8d8d8',
+          borderRadius: 8,
+          textAlign: 'center',
+        }}
+      />
+    </div>
+  );
+}
+
+export default function AcServiceOptions({
+  category,
+  step,
+  answers = {},
+  onChange,
+}) {
+  const id = useId();
+  const services = acServicesByCategory[category] || [];
+  const addons = acAddonsByCategory[category] || [];
+  const selectedAddons = answers.addons || [];
+
+  if (step === 'service') {
+    return (
+      <div>
+        <Choices
+          options={services}
+          name={`${id}-service`}
+          value={answers.service}
+          onChange={(value) => onChange('service', value)}
+        />
+
+        {category === 'repair' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The technician will inspect your AC and confirm the repair cost.
+            The inspection fee is adjusted against the repair if you proceed.
+          </p>
+        )}
+
+        {category === 'installation' && (
+          <p className="question-hint" style={{ marginTop: 16 }}>
+            The starting price shown applies to Split AC installation.
+            Pricing for other AC types will be confirmed.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (step === 'ac-details') {
+    return (
+      <div style={{ display: 'grid', gap: 22 }}>
+        <div>
+          <h3 style={{ marginBottom: 12 }}>Choose your AC type</h3>
+          <Choices
+            options={acTypes}
+            name={`${id}-type`}
+            value={answers.acType}
+            onChange={(value) => onChange('acType', value)}
+          />
+        </div>
+
+        {category === 'installation' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose AC capacity</h3>
+            <Choices
+              options={acCapacities}
+              name={`${id}-capacity`}
+              value={answers.capacity}
+              onChange={(value) => onChange('capacity', value)}
+            />
+          </div>
+        )}
+
+        {category === 'gas-charging' && (
+          <div>
+            <h3 style={{ marginBottom: 12 }}>Choose refrigerant</h3>
+            <Choices
+              options={acRefrigerants}
+              name={`${id}-refrigerant`}
+              value={answers.refrigerant}
+              onChange={(value) => onChange('refrigerant', value)}
+            />
+          </div>
+        )}
+
+        <Quantity
+          label="Number of AC units"
+          value={answers.units ?? 1}
+          onChange={(value) => onChange('units', value)}
+        />
+      </div>
+    );
+  }
+
+  if (step === 'addons') {
+    return (
+      <div>
+        <p
+          className="question-hint"
+          style={{
+            padding: 14,
+            marginBottom: 18,
+            borderRadius: 10,
+            background: '#fff8e8',
+            color: '#785a16',
+          }}
+        >
+          Optional: select additional services if needed. You can continue
+          without selecting any.
+        </p>
+
+        <div className="ac-pop-option-grid">
+          {addons.map((option) => {
+            const checked = selectedAddons.includes(option.value);
+
+            return (
+              <div key={option.value}>
+                <Choice
+                  option={option}
+                  multiple
+                  name={`${id}-addons`}
+                  checked={checked}
+                  onChange={() => {
+                    onChange(
+                      'addons',
+                      checked
+                        ? selectedAddons.filter((value) => value !== option.value)
+                        : [...selectedAddons, option.value]
+                    );
+                  }}
+                />
+
+                {checked && option.unit && (
+                  <div style={{ marginTop: 8 }}>
+                    <Quantity
+                      label={`Quantity (${option.unit})`}
+                      value={answers.addonQuantities?.[option.value] ?? 1}
+                      onChange={(value) =>
+                        onChange('addonQuantities', {
+                          ...answers.addonQuantities,
+                          [option.value]: value,
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {addons.length === 0 && (
+          <p className="question-hint">
+            No additional services are listed for this category.
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+===== FILE: frontend\src\styles\pop-ceiling.css =====
+/* POP Ceiling & Design */
+
+.pce-overview-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    160deg,
+    #fffdf6 0%,
+    #fbeecb 60%,
+    #f2dda3 100%
+  );
+  color: var(--gold-deep);
+  box-shadow:
+    var(--depth-inset-top),
+    inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+}
+
+/* Compact POP booking steps */
+
+.pop-modal-scope .container-narrow {
+  padding-bottom: 0;
+}
+
+.pop-modal-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.pop-modal-progress span {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-step-card {
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.pop-modal-scope .pnt-step-title {
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+/* Two aligned image cards per row */
+
+.pop-modal-scope .pnt-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pop-image-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.pop-image-option:hover,
+.pop-image-option:focus-within,
+.pop-image-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-a40);
+}
+
+.pop-image-option input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.pop-image-option img {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.pop-image-option-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 12px;
+}
+
+.pop-image-option-content strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.pop-image-option-content small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pop-image-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  opacity: 0;
+}
+
+.pop-image-option.selected .pop-image-option-check {
+  opacity: 1;
+  background: var(--gold-deep);
+}
+
+/* Back and Continue stay below the scrolling cards */
+
+.pop-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pop-modal-actions .btn-back {
+  flex: 0 0 auto;
+  min-width: 90px;
+}
+
+.pop-modal-actions .btn-primary {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Heading and help link */
+
+/* The pop-up's own header is hidden inside a POP flow, so this bar sits at
+   the top — it stops short of the pop-up's close button (40px, 20px in from
+   the corner) instead of running underneath it. */
+.pop-modal-scope .pnt-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 44px 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.pop-modal-scope .pnt-back {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--ink);
+}
+
+.pop-modal-scope .pnt-top-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink) !important;
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pop-modal-scope .pnt-help {
+  padding: 7px 10px;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  color: var(--gold-deep) !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.pop-modal-scope .pnt-help:hover {
+  background: var(--gold-a08);
+}
+
+/* Phones (after the rules above, so it wins over them) */
+@media (max-width: 480px) {
+  .pop-modal-scope .pnt-top {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .pop-modal-scope .pnt-top-title {
+    font-size: 0.92rem;
+  }
+
+  /* A round "?" instead of the "Need help?" words, so the flow's title
+     keeps one line; the words are still its accessible name. */
+  .pop-modal-scope .pnt-help {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+  }
+
+  .pop-modal-scope .pnt-help::before {
+    content: '?';
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+  }
+}
+
+/* Validation popup */
+
+.pop-choice-toast {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 13px 14px;
+  transform: translateX(-50%);
+  border: 1px solid #f0a5a5;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #982121;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.pop-choice-toast span {
+  flex: 1;
+}
+
+.pop-choice-toast button {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 23px;
+  line-height: 1;
+}
+
+@media (max-width: 420px) {
+  .pop-modal-scope .pnt-step-card {
+    padding: 12px;
+  }
+
+  .pop-modal-scope .pnt-option-list {
+    gap: 8px;
+  }
+
+  .pop-image-option img {
+    height: 82px;
+  }
+
+  .pop-image-option-content {
+    padding: 8px;
+  }
+
+  .pop-image-option-content strong {
+    font-size: 13px;
+  }
+
+  .pop-modal-progress span {
+    display: none;
+  }
+
+  /* The top bar's phone sizes are set with its desktop rules above; it no
+     longer needs right padding for the close button (it stops short of it). */
+}
+
+===== FILE: frontend\src\styles\ac-services.css =====
+/* AC booking layout */
+
+.ac-booking-ui {
+  width: 100%;
+  min-width: 0;
+  color: #242424;
+}
+
+.ac-booking-ui .pnt-flow-shell {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.ac-booking-ui .pnt-step-card {
+  padding: 20px;
+  border: 1px solid #eee5d4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.ac-booking-ui h2 {
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.ac-booking-ui h3 {
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+
+.ac-booking-ui .question-hint,
+.ac-booking-ui .pnt-option-hint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #777;
+}
+
+/* Category cards */
+
+.ac-booking-ui .plb-overview-grid {
+  gap: 14px !important;
+}
+
+.ac-booking-ui .plb-overview-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0 15px;
+  overflow: hidden;
+  border: 1px solid #e9e3d8;
+  border-radius: 14px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 4%);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ac-booking-ui .plb-overview-card:hover {
+  border-color: #d9a624;
+  box-shadow: 0 5px 16px rgb(0 0 0 / 7%);
+  transform: none;
+}
+
+.ac-booking-ui .plb-overview-card:focus-visible {
+  outline: 3px solid #e6c570;
+  outline-offset: 3px;
+}
+
+.ac-booking-ui .plb-overview-photo {
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
+.ac-booking-ui .plb-overview-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 13px 12px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.ac-booking-ui .plb-overview-name svg {
+  flex-shrink: 0;
+  color: #ac831c;
+}
+
+.ac-booking-ui .plb-overview-price-note {
+  display: block;
+  padding-right: 12px;
+  padding-left: 12px;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Option cards: no movement when selected */
+
+.ac-booking-ui .pnt-option {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  min-height: 76px;
+  transform: none !important;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.ac-booking-ui .pnt-option:hover {
+  transform: none !important;
+}
+
+.ac-booking-ui .pnt-option:focus-within {
+  outline: 2px solid #e6c570;
+  outline-offset: 2px;
+}
+
+.ac-booking-ui .pnt-option input {
+  position: static !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0;
+  opacity: 1 !important;
+  appearance: auto !important;
+  clip: auto !important;
+  clip-path: none !important;
+}
+
+.ac-booking-ui .pnt-option-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-booking-ui .pnt-option-label {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.ac-booking-ui .pnt-option-price {
+  color: #916c13;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ac-booking-ui input[type='number'] {
+  background: #fff;
+  color: #242424;
+  font: inherit;
+}
+
+.ac-booking-ui input[type='number']:focus {
+  border-color: #d9a624 !important;
+  outline: 2px solid #f5e8bf;
+}
+
+/* Modal footer is rendered outside the AC content. */
+
+.ac-booking-footer {
+  margin: 0;
+  padding: 12px 18px;
+  background: #fff;
+}
+
+.ac-booking-footer .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+  transform: none;
+}
+
+.ac-booking-footer .btn-primary {
+  border: 1px solid #d9a624;
+  background: #d9a624;
+  color: #fff;
+}
+
+.ac-booking-footer .btn-outline {
+  border: 1px solid #e5e0d6;
+  background: #fff;
+  color: #555;
+}
+
+.ac-booking-footer .btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .ac-booking-ui .pnt-step-card {
+    padding: 16px;
+    border-radius: 13px;
+  }
+
+  .ac-booking-ui h2 {
+    font-size: 19px;
+  }
+
+  .ac-booking-ui h3 {
+    font-size: 16px;
+  }
+
+  .ac-booking-ui .plb-overview-grid {
+    gap: 10px !important;
+  }
+
+  .ac-booking-ui .plb-overview-photo {
+    height: 110px !important;
+  }
+
+  .ac-booking-ui .plb-overview-name {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 13px;
+  }
+
+  .ac-booking-ui .plb-overview-price-note {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 11px;
+  }
+
+  .ac-booking-footer {
+    padding: 10px 14px;
+  }
+}
+/* AC layout correction */
+.ac-booking-ui {
+  background: #fff;
+  font-family: var(--font-body, Arial, sans-serif);
+}
+
+.ac-booking-ui .pnt-flow-shell {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 0 16px !important;
+  margin: 0 !important;
+  background: #fff !important;
+  color: #242424 !important;
+}
+
+.ac-booking-ui h2,
+.ac-booking-ui h3,
+.ac-booking-ui .plb-overview-name {
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  color: #242424 !important;
+}
+
+.ac-booking-ui h2 {
+  font-size: 20px !important;
+  line-height: 1.4 !important;
+  font-weight: 700 !important;
+}
+
+.ac-booking-ui h3 {
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 650 !important;
+}
+
+.ac-booking-ui .pnt-step-card {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-ui .pnt-option {
+  min-height: 82px !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+.ac-booking-ui .pnt-option.selected {
+  border-color: #d9a624 !important;
+  background: #fff9e9 !important;
+}
+
+.ac-booking-ui .pnt-option-label {
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.ac-booking-ui .pnt-option-hint {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.ac-booking-footer {
+  padding: 12px 18px !important;
+  margin: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-footer .btn {
+  min-height: 44px !important;
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-footer .btn-outline {
+  min-width: 95px;
+}
+
+.ac-booking-footer .btn-primary {
+  min-width: 135px;
+}
+
+@media (max-width: 600px) {
+  .ac-booking-ui h2 {
+    font-size: 18px !important;
+  }
+
+  .ac-booking-footer {
+    padding: 10px 14px !important;
+  }
+}
+/* AC layout matched to POP */
+
+.ac-booking-ui .ac-pop-flow {
+  min-height: 0 !important;
+  padding: 0 !important;
+  background: #fff !important;
+  color: var(--ink);
+}
+
+.ac-booking-ui .ac-pop-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 44px 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.ac-pop-back {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.ac-booking-ui .ac-pop-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+  overflow: hidden;
+  font-family: var(--font-heading) !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink) !important;
+}
+
+.ac-pop-help {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ac-pop-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.ac-pop-progress span {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-booking-ui .pnt-step-card.ac-pop-step {
+  padding: 16px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.ac-booking-ui .ac-pop-step-title {
+  margin: 0 0 12px !important;
+  color: var(--ink) !important;
+  font-family: var(--font-heading) !important;
+  font-size: 1rem !important;
+  text-transform: uppercase;
+}
+
+.ac-pop-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ac-pop-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.ac-pop-option:hover,
+.ac-pop-option:focus-within,
+.ac-pop-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-a40);
+}
+
+.ac-pop-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.ac-pop-option-image {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.ac-pop-option-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.ac-pop-option-body strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.ac-pop-option-body small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ac-pop-option-price {
+  margin-top: 4px;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ac-pop-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--gold-deep);
+  color: #fff;
+  opacity: 0;
+}
+
+.ac-pop-option.selected .ac-pop-option-check {
+  opacity: 1;
+}
+
+.ac-pop-option:not(:has(.ac-pop-option-image)) .ac-pop-option-body {
+  padding-right: 38px;
+}
+
+.ac-pop-addon {
+  box-shadow: none;
+}
+
+.ac-pop-actions {
+  display: flex !important;
+  width: 100%;
+  gap: 12px;
+}
+
+.ac-pop-actions .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+.ac-pop-alert {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 13px 14px;
+  transform: translateX(-50%);
+  border: 1px solid #f0a5a5;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #982121;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.ac-pop-alert > span {
+  flex: 1;
+}
+
+.ac-pop-alert button {
+  display: flex;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .ac-booking-ui .ac-pop-top {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .ac-booking-ui .ac-pop-title {
+    font-size: .92rem !important;
+  }
+
+  .ac-pop-help {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .ac-pop-help::before {
+    content: '?';
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ac-booking-ui .pnt-step-card.ac-pop-step {
+    padding: 12px !important;
+  }
+
+  .ac-pop-option-grid {
+    gap: 8px;
+  }
+
+  .ac-pop-option-image {
+    height: 82px;
+  }
+
+  .ac-pop-option-body {
+    padding: 10px;
+  }
+
+  .ac-pop-progress span {
+    display: none;
+  }
+}
+
+===== FILE: frontend\src\styles\painting.css =====
+/* SUPPLYBASE — shared painting styles and Painting modal UI */
+
+/* Page and hero */
+
+.pnt-section {
+  padding: var(--section-y) 0 calc(var(--section-y) + 40px);
+}
+
+.pnt-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  min-height: 420px;
+  overflow: hidden;
+  background: var(--black);
+}
+
+.pnt-hero > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.75;
+}
+
+.pnt-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 5, 0.1),
+    rgba(5, 5, 5, 0.72) 70%,
+    rgba(5, 5, 5, 0.95)
+  );
+}
+
+.pnt-hero-inner {
+  position: relative;
+  z-index: 1;
+  padding-top: calc(var(--header-h) + var(--space-5));
+  padding-bottom: var(--space-6);
+}
+
+.pnt-hero-eyebrow {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--gold-light);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pnt-hero-inner h1 {
+  max-width: 700px;
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4vw, 3rem);
+}
+
+.pnt-hero-inner > p {
+  max-width: 560px;
+  color: var(--on-dark-muted);
+  font-size: 1rem;
+}
+
+.pnt-hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pnt-hero-trust li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--on-dark);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.pnt-hero-trust svg {
+  flex-shrink: 0;
+  color: var(--gold-light);
+}
+
+.pnt-hero-logo {
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--header-h) + var(--space-4));
+  right: var(--gutter);
+  width: 84px;
+  height: auto;
+}
+
+/* Trust points */
+
+.pnt-trust-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pnt-trust-row li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, #fff, var(--light-bg));
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pnt-trust-row svg {
+  color: var(--gold-deep);
+}
+
+/* Shared category cards */
+
+.pnt-overview-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.pnt-overview-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #fff, #faf9f6);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.pnt-overview-card:hover,
+.pnt-overview-card:focus-visible {
+  border-color: var(--gold-a40);
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  transform: translateY(-4px);
+}
+
+.pnt-overview-photo {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--light-bg);
+}
+
+.pnt-overview-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pnt-overview-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pnt-overview-name {
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pnt-overview-tagline {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
+.pnt-overview-arrow {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+/* Intro and included services */
+
+.pnt-intro-heading {
+  margin-top: var(--space-2);
+  font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+}
+
+.pnt-intro-text {
+  margin-bottom: var(--space-5);
+  color: var(--ink-soft);
+  font-size: 0.98rem;
+}
+
+.pnt-intro-trust {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.pnt-intro-trust li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pnt-intro-trust svg,
+.pnt-problem-card svg {
+  color: var(--gold-deep);
+}
+
+.pnt-problems {
+  margin-bottom: var(--space-6);
+}
+
+.pnt-problems h3 {
+  margin-bottom: var(--space-3);
+  font-size: 1rem;
+}
+
+.pnt-problems-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.pnt-problem-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, #fff, var(--light-bg));
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pnt-included {
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #fff, #faf9f6);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+}
+
+.pnt-included h3 {
+  margin-bottom: var(--space-3);
+  font-size: 1rem;
+}
+
+.pnt-included ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pnt-included li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.pnt-included li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--success);
+}
+
+/* Shared flow shell */
+
+.pnt-flow-shell {
+  min-height: 100vh;
+  padding: var(--space-6) 0 calc(var(--space-9) + 40px);
+  background: var(--dark);
+}
+
+.pnt-flow-shell .container-narrow {
+  max-width: 780px;
+}
+
+.pnt-top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.pnt-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+  color: var(--white);
+}
+
+.pnt-top-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pnt-help {
+  color: var(--on-dark-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+/* Shared progress */
+
+.pnt-step-caption {
+  margin: 0 0 12px;
+  color: var(--on-dark-muted);
+  font-size: 0.82rem;
+}
+
+.pnt-step-caption {
+  margin: 0 0 30px !important;
+}
+
+.pnt-steps {
+  display: flex;
+  align-items: center;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  list-style: none;
+}
+
+.pnt-step {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+}
+
+.pnt-step:last-child {
+  flex: 0 0 auto;
+}
+
+.pnt-step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--on-dark-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.pnt-step.current .pnt-step-num {
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  color: var(--on-gold);
+}
+
+.pnt-step.done .pnt-step-num {
+  background: var(--gold-a40);
+  color: var(--white);
+}
+
+.pnt-step-line {
+  flex: 1;
+  height: 2px;
+  margin: 0 4px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pnt-step.done .pnt-step-line {
+  background: var(--gold-a40);
+}
+
+/* Shared step panel */
+
+.pnt-step-card {
+  padding: clamp(20px, 3vw, 28px);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #fff, #fbfaf8);
+  box-shadow: var(--depth-inset-top), 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.pnt-step-title {
+  margin-bottom: var(--space-4);
+  font-size: 1.15rem;
+}
+
+.pnt-step-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.pnt-step-actions .btn-primary {
+  flex: 1;
+}
+
+/* Shared option, product, and add-on rows */
+
+.pnt-option-list,
+.pnt-list,
+.pnt-addon-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pnt-option,
+.pnt-product,
+.pnt-addon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.pnt-option:hover,
+.pnt-product:hover,
+.pnt-addon:hover {
+  box-shadow: var(--shadow);
+}
+
+.pnt-option input,
+.pnt-product input,
+.pnt-addon input,
+.pnt-brand-card input,
+.pnt-swatch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.pnt-option.selected,
+.pnt-product.selected {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.pnt-addon.selected {
+  border-color: var(--gold);
+  background: var(--gold-a08);
+}
+
+.pnt-option-icon,
+.pnt-product-swatch,
+.pnt-addon-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(160deg, #fffdf6, #fbeecb 60%, #f2dda3);
+  box-shadow: var(--depth-inset-top), inset 0 -3px 6px rgba(180, 130, 20, 0.14);
+  color: var(--gold-deep);
+}
+
+.pnt-addon-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.pnt-option-body,
+.pnt-product-body,
+.pnt-addon-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pnt-option-label,
+.pnt-product-label,
+.pnt-addon-label {
+  color: var(--ink);
+  font-size: 0.94rem;
+  font-weight: 600;
+}
+
+.pnt-option-hint,
+.pnt-product-hint,
+.pnt-addon-hint {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.pnt-option-price,
+.pnt-product-price,
+.pnt-addon-price {
+  color: var(--gold-deep);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.pnt-product-price {
+  margin-right: 22px;
+}
+
+.pnt-option-radio {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+}
+
+.pnt-option.selected .pnt-option-radio,
+.pnt-product.selected .pnt-option-radio {
+  border-color: var(--gold);
+  background: radial-gradient(circle, var(--gold) 0 40%, transparent 42%);
+}
+
+.pnt-addon-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  color: transparent;
+}
+
+.pnt-addon.selected .pnt-addon-check {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+/* Brands */
+
+.pnt-brand-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.pnt-brand-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88px;
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pnt-brand-card:hover {
+  box-shadow: var(--shadow);
+}
+
+.pnt-brand-card.selected {
+  border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+.pnt-brand-card img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.pnt-brand-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.pnt-brand-why {
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--light-bg);
+}
+
+.pnt-brand-why h3 {
+  margin-bottom: var(--space-2);
+  font-size: 0.95rem;
+}
+
+.pnt-brand-why ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.pnt-brand-why li::before {
+  content: "✓ ";
+  color: var(--success);
+  font-weight: 700;
+}
+
+/* Tabs and product empty state */
+
+.pnt-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: var(--space-4);
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.pnt-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.pnt-tab {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--light-bg);
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pnt-tab.active {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.pnt-product-gap {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: var(--space-4);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.88rem;
+}
+
+.pnt-product-gap svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Colours */
+
+.pnt-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.pnt-swatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.pnt-swatch-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.pnt-swatch.selected .pnt-swatch-chip {
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--gold);
+  transform: scale(0.94);
+}
+
+.pnt-swatch-name {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pnt-gallery-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: var(--space-3);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--light-bg);
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.pnt-gallery-link svg:last-child {
+  margin-left: auto;
+}
+
+.pnt-colour-disclaimer {
+  margin-bottom: var(--space-3);
+  color: var(--ink-muted);
+  font-size: 0.76rem;
+}
+
+.pnt-colour-selected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius-sm);
+  background: var(--gold-a08);
+  color: var(--ink);
+  font-size: 0.88rem;
+}
+
+.pnt-colour-selected .pnt-swatch-chip {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  aspect-ratio: unset;
+}
+
+/* Gallery and package comparison dialog */
+
+.pnt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-drawer);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.pnt-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--white);
+}
+
+.pnt-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.pnt-modal-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.pnt-modal-head button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--light-bg);
+  color: var(--ink);
+}
+
+.pnt-gallery-group {
+  margin-bottom: var(--space-5);
+}
+
+.pnt-gallery-group h4 {
+  margin-bottom: var(--space-3);
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+}
+
+.pnt-compare-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pnt-compare-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--light-bg);
+}
+
+.pnt-compare-col p {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.84rem;
+}
+
+.pnt-compare-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--gold-deep);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+/* Summary */
+
+.pnt-summary h2 {
+  margin-bottom: var(--space-4);
+  font-size: 1.25rem;
+}
+
+.pnt-summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 var(--space-5);
+}
+
+.pnt-summary-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pnt-summary-row dt {
+  flex-shrink: 0;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+}
+
+.pnt-summary-row dd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.pnt-summary-edit {
+  flex-shrink: 0;
+  color: var(--gold-deep);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.pnt-summary-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #fffdf5, var(--gold-a08));
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+}
+
+.pnt-summary-total span {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.pnt-summary-total strong {
+  color: var(--gold-deep);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+}
+
+.pnt-summary-includes {
+  margin-bottom: var(--space-4);
+}
+
+.pnt-summary-includes h3 {
+  margin-bottom: var(--space-2);
+  font-size: 0.92rem;
+}
+
+.pnt-summary-includes ul {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pnt-summary-includes li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.pnt-summary-includes li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--success);
+}
+
+.pnt-summary-note {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+}
+
+/* Visit fee and confirmation */
+
+.pnt-fee-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: var(--space-5);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #262626, var(--black));
+  box-shadow: var(--shadow-sm);
+  color: var(--white);
+}
+
+.pnt-fee-strip span:first-child {
+  color: var(--gold-light);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.pnt-fee-strip span:last-child {
+  color: var(--on-dark-muted);
+  font-size: 0.76rem;
+}
+
+.pnt-fee-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius-sm);
+  background: var(--gold-a08);
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+  text-align: left;
+}
+
+.pnt-fee-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--gold-deep);
+}
+
+.pnt-closing {
+  position: relative;
+  overflow: hidden;
+  margin-top: var(--space-6);
+  padding: var(--space-7) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--black) url("/assets/projects/modern-interior.webp") center/cover;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.pnt-closing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(5, 5, 5, 0.75),
+    rgba(5, 5, 5, 0.9)
+  );
+}
+
+.pnt-closing-eyebrow,
+.pnt-closing h2,
+.pnt-closing .btn {
+  position: relative;
+  z-index: 1;
+}
+
+.pnt-closing-eyebrow {
+  display: block;
+  margin-bottom: var(--space-3);
+  color: var(--gold-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.pnt-closing h2 {
+  margin-bottom: var(--space-5);
+  color: var(--white);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+}
+
+/* Shared responsive layout */
+
+@media (min-width: 640px) {
+  .pnt-modal-overlay {
+    align-items: center;
+  }
+
+  .pnt-modal {
+    border-radius: var(--radius-lg);
+  }
+
+  .pnt-compare-table {
+    flex-direction: row;
+  }
+
+  .pnt-compare-col {
+    flex: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .pnt-hero {
+    min-height: 340px;
+  }
+
+  .pnt-hero-logo {
+    top: calc(var(--header-h-mobile) + var(--space-3));
+    width: 64px;
+  }
+
+  .pnt-hero-inner.container {
+    padding-top: calc(var(--header-h-mobile) + var(--space-5));
+    padding-right: calc(var(--gutter) + 84px);
+  }
+
+  .pnt-brand-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pnt-swatch-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Painting popup shell */
+
+.painting-modal-scope .pnt-section {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 12px !important;
+}
+
+.painting-modal-scope .pnt-flow-shell,
+.painting-modal-scope .wizard-shell {
+  min-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  background: transparent !important;
+}
+
+.painting-modal-scope .pnt-flow-shell .container,
+.painting-modal-scope .pnt-flow-shell .container-narrow,
+.painting-modal-scope .wizard-container {
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  padding-top: 0 !important;
+  background: transparent !important;
+}
+
+/* POP-style heading and progress strip */
+
+.painting-modal-scope .pnt-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.painting-modal-scope .pnt-back {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  color: #202020;
+}
+
+.painting-modal-scope .pnt-top-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: #202020 !important;
+  font-size: 17px;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+.painting-modal-scope .pnt-help {
+  flex-shrink: 0;
+  padding: 7px 9px;
+  border: 1px solid #ead7a1;
+  border-radius: 8px;
+  color: #8a650b !important;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.painting-modal-scope .pnt-help:hover {
+  background: #fff9e9;
+}
+
+.painting-modal-scope .pnt-step-caption {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: #8a650b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.painting-modal-scope .pnt-steps {
+  display: none;
+}
+
+.painting-modal-scope .pnt-step-card {
+  padding: 16px !important;
+  box-shadow: var(--shadow-sm);
+}
+
+.painting-modal-scope .pnt-step-title {
+  margin: 0 0 16px;
+  color: #202020;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+/* Two image options per row */
+
+.painting-modal-scope .pnt-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.painting-modal-scope .pnt-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid #e7e7e7;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+}
+
+.painting-modal-scope .pnt-option:hover,
+.painting-modal-scope .pnt-option:focus-within {
+  border-color: #d9a624;
+  box-shadow: 0 0 0 3px rgba(217, 166, 36, 0.12);
+}
+
+.painting-modal-scope .pnt-option.selected {
+  border-color: #d9a624;
+  background: #fff9e9;
+  box-shadow: none;
+}
+
+/* OptionCard currently sets thumbnail dimensions inline */
+
+.painting-modal-scope .pnt-option > span:first-of-type {
+  width: 100% !important;
+  height: 115px !important;
+  padding: 0;
+  border-radius: 0 !important;
+}
+
+.painting-modal-scope .pnt-option > span:first-of-type img {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.painting-modal-scope .pnt-option > .pnt-option-icon {
+  display: grid;
+  place-items: center;
+  background: #fbf5e7;
+  color: #8a650b;
+}
+
+.painting-modal-scope .pnt-option-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.painting-modal-scope .pnt-option-label {
+  color: #202020;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.painting-modal-scope .pnt-option-hint {
+  color: #737373;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.painting-modal-scope .pnt-option-price {
+  margin-top: auto;
+  padding-top: 5px;
+  color: #8a650b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Selection check over the option image */
+
+.painting-modal-scope .pnt-option > .pnt-option-radio {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+}
+
+.painting-modal-scope .pnt-option.selected > .pnt-option-radio {
+  background: #a77a12;
+}
+
+.painting-modal-scope .pnt-option.selected > .pnt-option-radio::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  border-radius: 0;
+  background: transparent;
+  transform: rotate(45deg);
+}
+
+/* Updated brand, product, and colour components */
+
+.painting-modal-scope .pnt-brand-why ul {
+  grid-template-columns: 1fr;
+}
+
+.painting-modal-scope .pnt-brand-why li::before {
+  content: none;
+}
+
+.painting-modal-scope .pnt-product-gap {
+  display: block;
+}
+
+.painting-modal-scope .pnt-product {
+  min-width: 0;
+}
+
+.painting-modal-scope .pnt-product-body {
+  min-width: 0;
+}
+
+.painting-modal-scope .pnt-product-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.painting-modal-scope .pnt-product-price {
+  margin-right: 0;
+}
+
+.painting-modal-scope .pnt-swatch.selected .pnt-swatch-chip {
+  transform: none;
+  box-shadow: none;
+}
+
+.painting-modal-scope .pnt-brand-card:focus-within,
+.painting-modal-scope .pnt-product:focus-within,
+.painting-modal-scope .pnt-addon:focus-within,
+.painting-modal-scope .pnt-swatch:focus-within {
+  outline: 2px solid #a77a12;
+  outline-offset: 3px;
+}
+
+/* Compact phone layout */
+
+@media (max-width: 420px) {
+  .painting-modal-scope .pnt-step-card {
+    padding: 12px !important;
+  }
+
+  .painting-modal-scope .pnt-option-list {
+    gap: 8px;
+  }
+
+  .painting-modal-scope .pnt-option > span:first-of-type {
+    height: 90px !important;
+  }
+
+  .painting-modal-scope .pnt-option-body {
+    padding: 9px;
+  }
+
+  .painting-modal-scope .pnt-option-label {
+    font-size: 13px;
+  }
+
+  .painting-modal-scope .pnt-top-title {
+    font-size: 14px;
+  }
+
+  .painting-modal-scope .pnt-help {
+    padding: 6px;
+    font-size: 11px;
+  }
+
+  .painting-modal-scope .pnt-summary-row {
+    gap: 10px;
+  }
+
+  .painting-modal-scope .pnt-summary-row dt {
+    flex-shrink: 1;
+  }
+
+  .painting-modal-scope .pnt-summary-row dd {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    overflow-wrap: anywhere;
+  }
+}
+/* Stable booking card selection */
+.painting-modal-scope .pnt-option input,
+.painting-modal-scope .pnt-product input,
+.painting-modal-scope .pnt-addon input,
+.painting-modal-scope .pnt-brand-card input,
+.painting-modal-scope .pnt-swatch input {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%);
+}
+
+.painting-modal-scope .pnt-option,
+.painting-modal-scope .pnt-product,
+.painting-modal-scope .pnt-addon,
+.painting-modal-scope .pnt-brand-card,
+.painting-modal-scope .pnt-swatch {
+  position: relative;
+  transform: none !important;
+  transition-property: border-color, background-color, box-shadow !important;
+  transition-duration: 120ms !important;
+}
+
+.painting-modal-scope .pnt-option:hover,
+.painting-modal-scope .pnt-product:hover,
+.painting-modal-scope .pnt-addon:hover,
+.painting-modal-scope .pnt-brand-card:hover,
+.painting-modal-scope .pnt-swatch:hover {
+  transform: none !important;
+}
+

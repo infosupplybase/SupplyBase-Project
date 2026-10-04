@@ -1,0 +1,2606 @@
+﻿===== FILE: frontend\src\App.jsx =====
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/layout/Layout';
+import ProtectedRoute from './components/layout/ProtectedRoute';
+import Home from './pages/Home';
+import Services from './pages/Services';
+import ServiceBooking from './pages/ServiceBooking';
+// Projects and Materials sections are disabled sitewide — see the commented
+// routes below. Imports kept (not deleted) so re-enabling is a two-line diff.
+// import Projects from './pages/Projects';
+// import Materials from './pages/Materials';
+import InteriorByChoice from './pages/InteriorByChoice';
+import InteriorSpaceGallery from './pages/InteriorSpaceGallery';
+import InteriorDesignDetail from './pages/InteriorDesignDetail';
+import InteriorBooking from './pages/InteriorBooking';
+import ElectricalCategory from './pages/ElectricalCategory';
+import ElectricalCart from './pages/ElectricalCart';
+import ElectricalCheckout, { ElectricalSubPage } from './pages/ElectricalCheckout';
+import OtherServicesCategory from './pages/OtherServicesCategory';
+import PlumbingCategory from './pages/PlumbingCategory';
+import PlumbingTab from './pages/PlumbingTab';
+import PlumbingConsultationList from './pages/PlumbingConsultationList';
+import PlumbingConsultationBook from './pages/PlumbingConsultationBook';
+import PlumbingCart from './pages/PlumbingCart';
+import PlumbingCheckout from './pages/PlumbingCheckout';
+import PaintingCategory from './pages/PaintingCategory';
+import PaintingFlow from './pages/PaintingFlow';
+import PopCeilingCategory from './pages/PopCeilingCategory';
+import PopCeilingFlow from './pages/PopCeilingFlow';
+import WaterproofingCategory from './pages/WaterproofingCategory';
+import WaterproofingBathroom from './pages/WaterproofingBathroom';
+import WaterproofingFlow from './pages/WaterproofingFlow';
+import InteriorDesignCategory from './pages/InteriorDesignCategory';
+import InteriorDesignCatalogue from './pages/InteriorDesignCatalogue';
+import InteriorDesignFlow from './pages/InteriorDesignFlow';
+// import ProjectDetail from './pages/ProjectDetail';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Quote from './pages/Quote';
+import Login from './pages/Login';
+import MyBookings from './pages/MyBookings';
+import BookingDetail from './pages/BookingDetail';
+import Profile from './pages/Profile';
+import PartnerRedirect from './pages/PartnerRedirect';
+import NotFound from './pages/NotFound';
+import { PrivacyPolicy, Terms } from './pages/Legal';
+
+/**
+ * ROUTES
+ * /                       Home
+ * /services               All services
+ * /services/:slug         Book a site visit for one service
+ * /services/electrical    Electrical Services category list
+ * /services/electrical/:subSlug  A cart category's service list (fan-services…), or
+ *                                one of the seven detailed electrician booking journeys
+ * /services/electrical/cart, /checkout  The electrical cart and its checkout
+ * /services/plumbing      Plumbing Services overview grid (8 categories + consultation)
+ * /services/plumbing/cart, /checkout  The item cart and its checkout flow
+ * /services/plumbing/consultation, /consultation/:typeSlug  Consultation list + booking
+ * /services/plumbing/:tabSlug  One plumbing category's itemised service list
+ * /services/painting      Painting Services overview grid (Full Home / Few Walls / Room / Renovation)
+ * /services/painting/:flowSlug  One painting journey (full-home | few-walls | renovation)
+ * /services/pop-ceiling-design  POP Ceiling & Design overview list (six subservices)
+ * /services/pop-ceiling-design/:flowSlug  One of the two detailed POP journeys (full-home | room)
+ * /services/waterproofing       Waterproofing overview list (six subservices)
+ * /services/waterproofing/bathroom  Bathroom's own six-row list (only Floor Waterproofing is detailed)
+ * /services/waterproofing/:flowSlug  One of six detailed journeys (terrace | exterior-wall |
+ *                                 bathroom-floor | interior-wall | water-tank | basement)
+ * /services/interior-design      Category grid (1 BHK / 2 BHK / 3 BHK / Villa) — separate
+ *                                 from /interior-by-choice below, which is untouched
+ * /services/interior-design/:categorySlug  Project grid for one category
+ * /services/interior-design/:categorySlug/:projectSlug  One project's full flow
+ * /booking/:slug          Same booking page, reached from the hero banners — also where
+ *                          POP's four non-detailed subservices land, via ?preselect=<value>
+ *                          (see ServiceBooking.jsx)
+ * /projects, /projects/:slug, /materials   DISABLED sitewide — see the commented-out routes below
+ * /book                   Redirects to /services (old standalone booking page, removed)
+ * /interior-by-choice      Design catalogue: browse by space, pick a design, book a ₹99 home visit
+ * /about                  About us
+ * /contact                Contact
+ * /quote                  Get a quote  (?service=<slug> pre-selects a service)
+ * /login                  Sign in       (no header/footer)
+ * /register               Create account (same page, other tab)
+ * /dashboard              Redirects to /dashboard/bookings
+ * /dashboard/bookings     Every booking the signed-in client has made, with real status
+ * /dashboard/profile      Edit name/phone, verify email, reset password, sign out
+ * /partner/*              Forwards to the separate partners app (see partners/)
+ * /privacy-policy, /terms Legal pages
+ */
+export default function App() {
+  return (
+    <Routes>
+      {/* the account page sits outside the main layout — full-screen split page.
+          both paths render it; the tab that opens is taken from the URL. */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Login />} />
+      {/* Professionals have their own app now (partners/). Old /partner links
+          forward there once VITE_PARTNERS_URL is set; until then they go home. */}
+      <Route path="/partner/*" element={<PartnerRedirect />} />
+
+      <Route element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="services" element={<Services />} />
+
+        {/* Old catalogue slugs, renamed when the backend categories were
+            aligned with the marketing site (see V9 migration). Kept as
+            redirects so any bookmarked or previously-shared link still
+            lands on the real page instead of "service not found". */}
+        <Route path="services/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
+        <Route path="services/electrician" element={<Navigate to="/services/electrical" replace />} />
+        <Route path="services/interior-work" element={<Navigate to="/services/interior-design" replace />} />
+        <Route path="services/pop-false-ceiling" element={<Navigate to="/services/pop-ceiling-design" replace />} />
+        <Route path="booking/painting-waterproofing" element={<Navigate to="/services/painting" replace />} />
+        <Route path="booking/electrician" element={<Navigate to="/services/electrical" replace />} />
+        <Route path="booking/interior-work" element={<Navigate to="/services/interior-design" replace />} />
+
+        {/* Interior by Choice has its own richer browse-then-book page at
+            /interior-by-choice; a link generated from the catalogue
+            (mega menu, search results, the seven-card grid) points at
+            /services/interior-by-choice like every other category, so it
+            redirects there instead of opening the generic booking wizard. */}
+        <Route path="services/interior-by-choice" element={<Navigate to="/interior-by-choice" replace />} />
+
+        {/* Electrical Services: a category list (matching the approved
+            journey's step 2) in front of the generic wizard, with seven of
+            its eight tiles opening their own richer, catalogue-driven
+            booking flow instead. Declared ahead of services/:slug so these
+            exact paths win over that wildcard. */}
+        {/* services/electrician already redirects to services/electrical
+            above, so only that exact path needs to render the category
+            list here. */}
+        <Route path="services/electrical" element={<ElectricalCategory />} />
+        <Route path="services/electric" element={<ElectricalCategory />} />
+        <Route path="services/electrical/cart" element={<ElectricalCart />} />
+        <Route path="services/electrical/checkout" element={<ElectricalCheckout />} />
+        <Route path="services/electrical/:subSlug" element={<ElectricalSubPage />} />
+
+        {/* Other Services: the catch-all eighth tile, reactivated on
+            request. A category list in front of five existing generic
+            wizard pages, same shape as the electrical category list. */}
+        <Route path="services/other-services" element={<OtherServicesCategory />} />
+
+        {/* Plumbing Services: an itemised cart catalogue (V14 migration)
+            replacing the old generic wizard for this one category. Exact
+            child paths declared ahead of services/:slug so they win over
+            that wildcard, same precedent as services/electrical above. */}
+        <Route path="services/plumbing" element={<PlumbingCategory />} />
+        <Route path="services/plumbing/cart" element={<PlumbingCart />} />
+        <Route path="services/plumbing/checkout" element={<PlumbingCheckout />} />
+        <Route path="services/plumbing/consultation" element={<PlumbingConsultationList />} />
+        <Route path="services/plumbing/consultation/:typeSlug" element={<PlumbingConsultationBook />} />
+        <Route path="services/plumbing/:tabSlug" element={<PlumbingTab />} />
+
+        {/* Painting Services: three itemised booking journeys (V15
+            migration) replacing the old generic wizard for this one
+            category — same precedent as plumbing above. One page component
+            (PaintingFlow) driven by the :flowSlug param and paintingContent.js's
+            flow config, rather than one file per journey. */}
+        <Route path="services/painting" element={<PaintingCategory />} />
+        <Route path="services/painting/:flowSlug" element={<PaintingFlow />} />
+
+        {/* POP Ceiling & Design: only two of its six subservices have a
+            detailed reference journey (V16 migration) — Full Home POP and
+            Room POP get their own dedicated flow here; the other four
+            (False Ceiling, POP Design Work, POP TV Wall, POP Repair &
+            Renovation) link to /booking/pop-ceiling-design?preselect=...,
+            the existing generic wizard below, with their subservice
+            preselected (see ServiceBooking.jsx). */}
+        <Route path="services/pop-ceiling-design" element={<PopCeilingCategory />} />
+        <Route path="services/pop-ceiling-design/:flowSlug" element={<PopCeilingFlow />} />
+
+        {/* Waterproofing: six subservices, in the reference's own order.
+            Five open WaterproofingFlow directly; Bathroom opens its own
+            six-row sub-list first (WaterproofingBathroom), where only
+            Floor Waterproofing has a detailed flow of its own — the other
+            five link to /booking/waterproofing?preselect=..., same
+            fallback pattern as POP Ceiling's non-detailed subservices. */}
+        <Route path="services/waterproofing" element={<WaterproofingCategory />} />
+        <Route path="services/waterproofing/bathroom" element={<WaterproofingBathroom />} />
+        <Route path="services/waterproofing/:flowSlug" element={<WaterproofingFlow />} />
+
+        {/* Interior Design: separate from Interior by Choice (its own
+            routes below, untouched) — a category grid (1/2/3 BHK + Villa),
+            each opening a project grid, each project opening one
+            config-driven flow (package -> details -> customise ->
+            consultation -> confirm). */}
+        <Route path="services/interior-design" element={<InteriorDesignCategory />} />
+        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignCatalogue />} />
+        <Route path="services/interior-design/:categorySlug/:projectSlug" element={<InteriorDesignFlow />} />
+
+        <Route path="services/:slug" element={<ServiceBooking />} />
+        {/* The hero banners link to /booking/<slug>; same page, second door. */}
+        <Route path="booking/:slug" element={<ServiceBooking />} />
+        {/* Projects and Materials sections — disabled sitewide on request.
+            Routes commented out rather than removed so this is a quick
+            revert; every Link that pointed here is also commented out
+            (siteConfig.js's mainNav/quickLinks, Home.jsx, About.jsx,
+            AccountSidebar.jsx). */}
+        {/* <Route path="projects" element={<Projects />} /> */}
+        {/* <Route path="projects/:slug" element={<ProjectDetail />} /> */}
+        {/* <Route path="materials" element={<Materials />} /> */}
+        {/* The old standalone /book page had its own hard-coded list of
+            services that had drifted from the real ones. Every booking now
+            starts from a service, so old links go to the services page. */}
+        <Route path="book" element={<Navigate to="/services" replace />} />
+
+        {/* Interior by Choice — the ready-made design catalogue. Its own
+            small route tree, separate from the generic /services/:slug
+            wizard, since it's a browse-then-book flow rather than a
+            question-at-a-time site visit request. */}
+        <Route path="interior-by-choice" element={<InteriorByChoice />} />
+        <Route path="interior-by-choice/book" element={<InteriorBooking />} />
+        <Route path="interior-by-choice/:spaceSlug" element={<InteriorSpaceGallery />} />
+        <Route path="interior-by-choice/:spaceSlug/:designSlug" element={<InteriorDesignDetail />} />
+        <Route path="interior-by-choice/:spaceSlug/:designSlug/book" element={<InteriorBooking />} />
+        <Route path="about" element={<About />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="quote" element={<Quote />} />
+        {/* /dashboard has no page of its own — Bookings and Profile are
+            separate pages (own routes, own content), each reachable directly
+            from the bottom nav; a bare /dashboard visit (the desktop header's
+            "MY ACCOUNT" link) lands on Bookings, the more actionable of the
+            two. */}
+        <Route path="dashboard" element={<Navigate to="/dashboard/bookings" replace />} />
+        <Route
+          path="dashboard/bookings"
+          element={
+            <ProtectedRoute>
+              <MyBookings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="dashboard/bookings/:id"
+          element={
+            <ProtectedRoute>
+              <BookingDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="dashboard/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="terms" element={<Terms />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
+}
+
+
+===== FILE: frontend\src\components\services\ServiceBookingModal.jsx =====
+import { useCallback, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
+import Icon from '../ui/Icon';
+import { ModalFooterContext } from './ModalFoot';
+import ServiceBooking from '../../pages/ServiceBooking';
+import InteriorBooking from '../../pages/InteriorBooking';
+import {
+  interiorSpaces,
+  getDesignsBySpace,
+  getDesignBySlug,
+  HOME_VISIT_FEE,
+} from '../../data/interiorCatalog';
+import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
+import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
+import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
+import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
+import PaintingCategory from '../../pages/PaintingCategory';
+import PaintingFlow from '../../pages/PaintingFlow';
+import PopCeilingCategory from '../../pages/PopCeilingCategory';
+import PopCeilingFlow from '../../pages/PopCeilingFlow';
+import PlumbingCategory from '../../pages/PlumbingCategory';
+import PlumbingTab from '../../pages/PlumbingTab';
+import PlumbingCart from '../../pages/PlumbingCart';
+import PlumbingCheckout from '../../pages/PlumbingCheckout';
+import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
+import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
+import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import ElectricalCategory from '../../pages/ElectricalCategory';
+import ElectricalTab from '../../pages/ElectricalTab';
+import ElectricalCart from '../../pages/ElectricalCart';
+import ElectricalCheckout from '../../pages/ElectricalCheckout';
+import { getElectricalGroup } from '../../data/electricalContent';
+
+/**
+ * Opens the "Book a service" modal, shared by every page that lets someone
+ * pick a service and book it: the Services page's own grid and the
+ * homepage's Popular Services tiles both render this component so the
+ * booking flow is identical (same catalogue, same steps) no matter which
+ * page you started from.
+ *
+ * Usage: const booking = useServiceBookingModal(); ... onClick={() =>
+ * booking.open(service)} ... {booking.service && <ServiceBookingModal
+ * key={booking.openToken} service={booking.service} onClose={booking.close}
+ * />}
+ *
+ * Which screen the booking is on lives in the browser's history (see
+ * hooks/useHistoryState): opening it and every screen inside it are history
+ * entries, so the browser's Back button goes back one screen (and closes the
+ * booking from its first screen) and a refresh reopens it where it was.
+ * `key={booking.openToken}` still remounts the modal fresh for each new
+ * booking, so a half-finished sub-flow never leaks into the next one.
+ */
+export function useServiceBookingModal() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const entry = (location.state && location.state.bookingModal) || null;
+
+  return {
+    service: entry ? entry.service : null,
+    // Stable for as long as this booking is open (every screen inside it
+    // shares the entry it was opened from), new for the next one.
+    openToken: entry ? entry.base : 0,
+    open: (nextService) => {
+      const base = (window.history.state && window.history.state.idx) || 0;
+      const usr = (window.history.state && window.history.state.usr) || {};
+      const { pathname, search, hash } = window.location;
+      // A history entry of its own: Back closes the booking instead of
+      // leaving the page, and a refresh reopens it where it was.
+      navigate(
+        { pathname, search, hash },
+        { state: { ...stripBooking(usr), bookingModal: { service: nextService, base }, __formPush: true } }
+      );
+    },
+    close: () => {
+      const idx = window.history.state && window.history.state.idx;
+      const base = entry && entry.base;
+      if (typeof idx === 'number' && typeof base === 'number' && idx > base) {
+        // Unwind every screen of this booking in one go, back to the page
+        // as it was before it opened.
+        navigate(base - idx);
+      } else {
+        const usr = (window.history.state && window.history.state.usr) || {};
+        const { pathname, search, hash } = window.location;
+        navigate({ pathname, search, hash }, { replace: true, state: stripBooking(usr) });
+      }
+    },
+  };
+}
+
+/** The history state with this booking's screens and forms removed. */
+function stripBooking(usr) {
+  const out = {};
+  Object.keys(usr).forEach((k) => {
+    if (k !== 'bookingModal' && k !== '__formPush' && !k.startsWith('bm:') && !k.startsWith('f:')) out[k] = usr[k];
+  });
+  return out;
+}
+
+export default function ServiceBookingModal({ service, onClose }) {
+  const [selectedInteriorSpace, setSelectedInteriorSpace] = useHistoryState('bm:interiorSpace', null, { push: true });
+  const [selectedInteriorDesign, setSelectedInteriorDesign] = useHistoryState('bm:interiorDesign', null, { push: true });
+  const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
+  const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
+  const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
+  // Interior Design -> "Custom": the requirements box, then details + schedule.
+  const [showCustomInteriorDesign, setShowCustomInteriorDesign] = useHistoryState('bm:idCustom', false, { push: true });
+  const [showCustomInteriorDetails, setShowCustomInteriorDetails] = useHistoryState('bm:idCustomDetails', false, { push: true });
+  const [customInteriorRequirements, setCustomInteriorRequirements] = useHistoryState('bm:idCustomRequirements', '');
+  const [selectedPaintingFlow, setSelectedPaintingFlow] = useHistoryState('bm:paintingFlow', null, { push: true });
+  const [selectedPopFlow, setSelectedPopFlow] = useHistoryState('bm:popFlow', null, { push: true });
+  const [selectedPlumbingTab, setSelectedPlumbingTab] = useHistoryState('bm:plumbingTab', null, { push: true });
+  const [plumbingView, setPlumbingView] = useHistoryState('bm:plumbingView', 'category', { push: true });
+  // Electrical: category -> service list -> cart -> checkout, like plumbing.
+  const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
+  const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
+  const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
+  const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
+
+  // Every in-app BACK goes back through history, exactly like the
+  // browser's Back button, so the two always agree.
+  const formBack = useFormBack();
+
+  const modalScrollRef = useRef(null);
+
+  // The pop-up's footer: the forms draw their Back / Continue bar here
+  // (see ModalFoot), below the scrolling area rather than over it.
+  const [footerNode, setFooterNode] = useState(null);
+
+  // One stable function: the forms scroll the pop-up to the top when their
+  // step changes, and a new function on every render (every tap saves the
+  // answer to history, which re-renders the pop-up) would look like a step
+  // change and throw the customer back to the top after each choice.
+  const scrollModalToTop = useCallback(() => {
+    requestAnimationFrame(() => {
+      modalScrollRef.current?.scrollTo({
+        top: 0,
+        behavior: 'auto',
+      });
+    });
+  }, []);
+
+  return (
+    <div
+      className="
+        fixed
+        inset-0
+        z-[2000]
+        flex
+        items-center
+        justify-center
+        bg-black/65
+        backdrop-blur-[3px]
+        p-4
+      "
+      onClick={onClose}
+    >
+      <div
+        className={`
+          relative
+          w-full
+
+         ${service.slug === 'interior-by-choice'
+  ? 'max-w-[800px]'
+  : service.slug === 'interior-design'
+    ? 'max-w-[800px]'
+    : service.slug === 'electrical'
+      ? 'max-w-[640px]'
+      : 'max-w-[550px]'
+}
+
+          flex
+          flex-col
+          max-h-[88vh]
+          h-auto
+          overflow-hidden
+          rounded-2xl
+          bg-white
+          shadow-2xl
+
+          max-sm:h-[92vh]
+          max-sm:max-h-[92vh]
+          max-sm:rounded-xl
+        `}
+        style={
+          service.slug === 'painting'
+            ? { height: '88dvh', maxHeight: '88dvh' }
+            : undefined
+        }
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* CLOSE BUTTON */}
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="
+            !absolute
+            !right-5
+            !top-5
+            !z-50
+
+            !flex
+            !h-10
+            !w-10
+            !items-center
+            !justify-center
+
+            !rounded-full
+            !border
+            !border-gray-200
+            !bg-white
+
+            !text-xl
+            !text-gray-700
+
+            !shadow-sm
+
+            transition
+
+            hover:!bg-gray-100
+          "
+          aria-label="Close booking modal"
+        >
+          ✕
+        </button>
+
+        {/* MODAL HEADER — hidden inside a POP flow, which shows its own
+            title and step count */}
+
+        {service.slug === 'painting' && selectedPaintingFlow && (
+          <div className="h-14 shrink-0" aria-hidden="true" />
+        )}
+
+        {!(
+          (service.slug === 'pop-ceiling-design' && selectedPopFlow) ||
+          (service.slug === 'painting' && selectedPaintingFlow)
+        ) && (
+        <>
+        <div className="shrink-0 px-6 pt-6 pr-16">
+          <p
+            className="
+              mb-1
+              text-sm
+              font-semibold
+              uppercase
+              tracking-[0.16em]
+              text-amber-500
+            "
+          >
+            Book a service
+          </p>
+
+          <h2
+            className="
+              text-2xl
+              font-bold
+              text-gray-950
+            "
+          >
+            {/* The cart names itself below ("Your Cart (3 items)"), like
+                plumbing's, so only the service list swaps in its category */}
+            {service.slug === 'electrical' && electricalView === 'tab'
+              ? getElectricalGroup(electricalTab)?.name || service.name
+              : service.name}
+          </h2>
+
+          {/* <p
+            className="
+              mt-2
+              text-sm
+              leading-6
+              text-gray-500
+            "
+          >
+            {service.description}
+          </p> */}
+        </div>
+
+        <div className="mt-1 mb-4 h-px shrink-0 bg-gray-200" />
+        </>
+        )}
+
+        {/* MODAL SCROLL AREA */}
+
+        <ModalFooterContext.Provider value={footerNode}>
+        <div
+          ref={modalScrollRef}
+          className="
+            bm-scroll
+            min-h-0
+            flex-auto
+            overflow-y-auto
+
+            px-6
+            pb-6
+
+            max-sm:flex-1
+
+            [scrollbar-width:none]
+            [&::-webkit-scrollbar]:hidden
+          "
+        >
+          {service.slug === 'interior-by-choice' ? (
+            <>
+              {/* ========================================= */}
+              {/* DESIGN DETAIL */}
+              {/* ========================================= */}
+
+              {showInteriorBooking ? (
+                <InteriorBooking
+                  modal={true}
+                  spaceSlug={selectedInteriorSpace}
+                  designSlug={selectedInteriorDesign}
+                  onBack={() => {
+                    formBack(() => setShowInteriorBooking(false));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : selectedInteriorSpace &&
+                selectedInteriorDesign ? (
+                <div className="pb-2 md:pb-8">
+                  {(() => {
+                    const design =
+                      getDesignBySlug(
+                        selectedInteriorSpace,
+                        selectedInteriorDesign
+                      );
+
+                    const space =
+                      interiorSpaces.find(
+                        (item) =>
+                          item.slug ===
+                          selectedInteriorSpace
+                      );
+
+                    if (!design) {
+                      return (
+                        <p className="ibc-empty">
+                          Design details could not be loaded.
+                        </p>
+                      );
+                    }
+
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm mb-4"
+                          onClick={() => {
+                            formBack(() => setSelectedInteriorDesign(null));
+
+                            scrollModalToTop();
+                          }}
+                        >
+                          {/* <Icon
+                            name="arrow-left"
+                            size={16}
+                          /> */}
+
+                          BACK
+                        </button>
+
+                        <div
+                          className="
+                            grid
+                            grid-cols-1
+                            gap-6
+                            md:grid-cols-2
+                          "
+                        >
+                          {/* DESIGN IMAGE */}
+
+                          <div
+                            className="
+                              overflow-hidden
+                              rounded-xl
+                            "
+                          >
+                            <img loading="lazy" decoding="async"
+                              src={design.image}
+                              alt={design.name}
+                              className="
+                                h-auto
+                                max-h-[420px]
+                                w-full
+                                object-cover
+                              "
+                            />
+                          </div>
+
+                          {/* DESIGN INFORMATION */}
+
+                          <div>
+                            <p
+                              className="
+                                mb-2
+                                text-sm
+                                font-semibold
+                                uppercase
+                                tracking-[0.14em]
+                                text-amber-500
+                              "
+                            >
+                              {space?.name}
+                            </p>
+
+                            <h3
+                              className="
+                                text-2xl
+                                font-bold
+                                text-gray-950
+                              "
+                            >
+                              {design.name}
+                            </h3>
+
+                            {design.tagline && (
+                              <p
+                                className="
+                                  mt-2
+                                  text-sm
+                                  leading-6
+                                  text-gray-500
+                                "
+                              >
+                                {design.tagline}
+                              </p>
+                            )}
+
+                            <p
+                              className="
+                                mt-3
+                                text-lg
+                                font-semibold
+                                text-gray-900
+                              "
+                            >
+                              ₹{design.pricePerSqft} / sq.ft.
+                            </p>
+
+                            {design.description && (
+                              <p
+                                className="
+                                  mt-4
+                                  text-sm
+                                  leading-6
+                                  text-gray-600
+                                "
+                              >
+                                {design.description}
+                              </p>
+                            )}
+
+                            <button
+                              type="button"
+                              className="
+    btn
+    btn-primary
+    mt-6
+    w-full
+    md:w-auto
+  "
+                              onClick={() => {
+                                setShowInteriorBooking(true);
+                                scrollModalToTop();
+                              }}
+                            >
+                              CUSTOMISE THIS DESIGN
+
+                              {/* <Icon
+                                name="arrow-right"
+                                size={17}
+                              /> */}
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              ) : selectedInteriorSpace ? (
+                <>
+                  {/* ========================================= */}
+                  {/* DESIGN GALLERY */}
+                  {/* ========================================= */}
+
+                  <div className="pb-2 md:pb-8">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm mb-4"
+                      onClick={() => {
+                        formBack(() => {
+                          setSelectedInteriorSpace(null);
+                          setSelectedInteriorDesign(null);
+                        });
+
+                        scrollModalToTop();
+                      }}
+                    >
+                      {/* <Icon
+                        name="arrow-left"
+                        size={16}
+                      /> */}
+
+                      BACK
+                    </button>
+
+                    {/* SPACE FILTER */}
+
+                    <div className="ibc-filter-row">
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            className={`ibc-filter-chip ${space.slug ===
+                              selectedInteriorSpace
+                              ? 'active'
+                              : ''
+                              }`}
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
+
+                              setSelectedInteriorDesign(
+                                null
+                              );
+
+                              scrollModalToTop();
+                            }}
+                          >
+                            {space.name}
+                          </button>
+                        )
+                      )}
+                    </div>
+
+                    {/* DESIGN CARDS */}
+
+                    {getDesignsBySpace(
+                      selectedInteriorSpace
+                    ).length === 0 ? (
+                      <p className="ibc-empty">
+                        More designs for this space
+                        are on the way. Book a home
+                        visit and our designer will
+                        bring options for you.
+                      </p>
+                    ) : (
+                      <div className="ibc-design-grid">
+                        {getDesignsBySpace(
+                          selectedInteriorSpace
+                        ).map((design) => (
+                          <div
+                            key={design.slug}
+                            className="ibc-design-card"
+                          >
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-media
+                                !block
+                                !w-full
+                                !border-0
+                                !p-0
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
+
+                                scrollModalToTop();
+                              }}
+                            >
+                              <img
+                                src={design.image}
+                                alt={design.name}
+                                loading="lazy"
+                              />
+                            </button>
+
+                            <button
+                              type="button"
+                              className="
+                                ibc-design-body
+                                !w-full
+                                !border-0
+                                !text-left
+                              "
+                              onClick={() => {
+                                setSelectedInteriorDesign(
+                                  design.slug
+                                );
+
+                                scrollModalToTop();
+                              }}
+                            >
+                              <span className="ibc-design-name">
+                                {design.name}
+                              </span>
+
+                              <span className="ibc-design-price">
+                                ₹{design.pricePerSqft}{' '}
+                                / sq.ft.
+                              </span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      className="
+    btn
+    btn-primary
+    ibc-customise-cta
+  "
+                      onClick={() => {
+                        setSelectedInteriorDesign(null);
+                        setShowInteriorBooking(true);
+                        scrollModalToTop();
+                      }}
+                    >
+                      Customise Your Design
+
+                      {/* <Icon
+                        name="arrow-right"
+                        size={17}
+                      /> */}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* ========================================= */}
+                  {/* CHOOSE SPACE */}
+                  {/* ========================================= */}
+
+                  <div className="pb-2 md:pb-8">
+                    {/* <div
+                      className="
+                        mb-5
+                        rounded-xl
+                        border
+                        border-amber-200
+                        bg-amber-50
+                        p-4
+                      "
+                    >
+                      <p
+                        className="
+                          text-sm
+                          font-semibold
+                          text-gray-900
+                        "
+                      >
+                        Book a Home Visit at just ₹
+                        {HOME_VISIT_FEE}
+                      </p>
+
+                      <p
+                        className="
+                          mt-1
+                          text-sm
+                          leading-6
+                          text-gray-600
+                        "
+                      >
+                        Get expert advice,
+                        measurement and a custom
+                        design as per your choice.
+                      </p>
+                    </div> */}
+
+                    <h3
+                      className="
+                        mb-4
+                        text-lg
+                        font-bold
+                        text-gray-950
+                      "
+                    >
+                      Choose Your Space
+                    </h3>
+
+                    <div
+                      className="
+                        grid
+                        grid-cols-1
+                        gap-4
+                        sm:grid-cols-2
+                      "
+                    >
+                      {interiorSpaces.map(
+                        (space) => (
+                          <button
+                            key={space.slug}
+                            type="button"
+                            onClick={() => {
+                              setSelectedInteriorSpace(
+                                space.slug
+                              );
+
+                              setSelectedInteriorDesign(
+                                null
+                              );
+
+                              scrollModalToTop();
+                            }}
+                            className="
+                              group
+                              relative
+                              overflow-hidden
+                              rounded-xl
+                              text-left
+                            "
+                          >
+                            <img loading="lazy" decoding="async"
+                              src={space.image}
+                              alt={space.name}
+                              className="
+                                h-36
+                                w-full
+                                object-cover
+
+                                transition
+                                duration-300
+
+                                group-hover:scale-105
+
+                                sm:h-44
+                              "
+                            />
+
+                            <div
+                              className="
+                                absolute
+                                inset-0
+                                bg-gradient-to-t
+                                from-black/70
+                                via-black/10
+                                to-transparent
+                              "
+                            />
+
+                            <span
+                              className="
+                                absolute
+                                bottom-3
+                                left-4
+                                text-base
+                                font-semibold
+                                text-white
+                              "
+                            >
+                              {space.name}
+                            </span>
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          ) : service.slug === 'interior-design' ? (
+            showCustomInteriorDesign ? (
+              <InteriorDesignCustomFlow
+                initialRequirements={customInteriorRequirements}
+                onDraftChange={setCustomInteriorRequirements}
+                onBack={() => {
+                  formBack(() => setShowCustomInteriorDesign(false));
+                  scrollModalToTop();
+                }}
+                onContinue={(requirements) => {
+                  setCustomInteriorRequirements(requirements);
+                  setShowCustomInteriorDesign(false);
+                  setShowCustomInteriorDetails(true);
+                  scrollModalToTop();
+                }}
+              />
+            ) : showCustomInteriorDetails ? (
+              <InteriorDesignFlow
+                modal={true}
+                startAtDetails={true}
+                customRequirements={customInteriorRequirements}
+                onBackToCatalogue={() => {
+                  formBack(() => {
+                    setShowCustomInteriorDetails(false);
+                    setShowCustomInteriorDesign(true);
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignProject ? (
+              <InteriorDesignFlow
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                projectSlug={selectedInteriorDesignProject}
+                onBackToCatalogue={() => {
+                  formBack(() => setSelectedInteriorDesignProject(null));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+              />
+            ) : selectedInteriorDesignCategory ? (
+              <InteriorDesignCatalogue
+                modal={true}
+                categorySlug={selectedInteriorDesignCategory}
+                onSelectProject={(projectSlug) => {
+                  setSelectedInteriorDesignProject(projectSlug);
+                  scrollModalToTop();
+                }}
+                onBack={() => {
+                  formBack(() => {
+                    setSelectedInteriorDesignCategory(null);
+                    setSelectedInteriorDesignProject(null);
+                  });
+                  scrollModalToTop();
+                }}
+              />
+            ) : (
+              <InteriorDesignCategory
+                modal={true}
+                onSelectCategory={(categorySlug) => {
+                  setSelectedInteriorDesignCategory(categorySlug);
+                  setSelectedInteriorDesignProject(null);
+                  scrollModalToTop();
+                }}
+                onCustom={() => {
+                  setShowCustomInteriorDesign(true);
+                  scrollModalToTop();
+                }}
+              />
+            )
+          ) : service.slug === 'painting' ? (
+            selectedPaintingFlow ? (
+              <div className="painting-modal-scope">
+                <PaintingFlow
+                  modal={true}
+                  flowSlug={selectedPaintingFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPaintingFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              </div>
+            ) : (
+              <div className="painting-modal-scope">
+                <PaintingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPaintingFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              </div>
+            )
+          ) : service.slug === 'plumbing' ? (
+            <div className="plumbing-modal-scope">
+            {plumbingView === 'category' ? (
+              <PlumbingCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setSelectedPlumbingTab(tabSlug);
+                  setPlumbingView('tab');
+                  scrollModalToTop();
+                }}
+                onSelectConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'tab' ? (
+              <PlumbingTab
+                modal={true}
+                tabSlug={selectedPlumbingTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setSelectedPlumbingTab(null);
+                    setPlumbingView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onOpenConsultation={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('consultations');
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setPlumbingView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'cart' ? (
+              <PlumbingCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setPlumbingView(selectedPlumbingTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setPlumbingView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'checkout' ? (
+              <PlumbingCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setPlumbingView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingTab(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultations' ? (
+              <PlumbingConsultationList
+                modal={true}
+                onBackToCategories={() => {
+                  formBack(() => setPlumbingView('category'));
+                  scrollModalToTop();
+                }}
+                onSelectConsultationType={(typeSlug) => {
+                  setSelectedPlumbingConsultation(typeSlug);
+                  setPlumbingView('consultation-book');
+                  scrollModalToTop();
+                }}
+              />
+            ) : plumbingView === 'consultation-book' ? (
+              <PlumbingConsultationBook
+                modal={true}
+                typeSlug={selectedPlumbingConsultation}
+                onBackToConsultations={() => {
+                  formBack(() => {
+                    setSelectedPlumbingConsultation(null);
+                    setPlumbingView('consultations');
+                  });
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setSelectedPlumbingConsultation(null);
+                  setPlumbingView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'pop-ceiling-design' ? (
+            <div className="painting-modal-scope">
+              {selectedPopFlow ? (
+                <PopCeilingFlow
+                  modal={true}
+                  flowSlug={selectedPopFlow}
+                  onBackToCategories={() => {
+                    formBack(() => setSelectedPopFlow(null));
+                    scrollModalToTop();
+                  }}
+                  onStepChange={scrollModalToTop}
+                />
+              ) : (
+                <PopCeilingCategory
+                  modal={true}
+                  onSelectFlow={(flowSlug) => {
+                    setSelectedPopFlow(flowSlug);
+                    scrollModalToTop();
+                  }}
+                />
+              )}
+            </div>
+          ) : service.slug === 'electrical' ? (
+            <div className="electrical-modal-scope">
+            {electricalView === 'category' ? (
+              <ElectricalCategory
+                modal={true}
+                onSelectTab={(tabSlug) => {
+                  setElectricalTab(tabSlug);
+                  setElectricalView('tab');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'tab' ? (
+              <ElectricalTab
+                modal={true}
+                tabSlug={electricalTab}
+                onBackToCategories={() => {
+                  formBack(() => {
+                    setElectricalTab(null);
+                    setElectricalView('category');
+                  });
+                  scrollModalToTop();
+                }}
+                onViewCart={() => {
+                  setElectricalView('cart');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'cart' ? (
+              <ElectricalCart
+                modal={true}
+                onBackToServices={() => {
+                  formBack(() => setElectricalView(electricalTab ? 'tab' : 'category'));
+                  scrollModalToTop();
+                }}
+                onCheckout={() => {
+                  setElectricalView('checkout');
+                  scrollModalToTop();
+                }}
+              />
+            ) : electricalView === 'checkout' ? (
+              <ElectricalCheckout
+                modal={true}
+                onBackToCart={() => {
+                  formBack(() => setElectricalView('cart'));
+                  scrollModalToTop();
+                }}
+                onStepChange={scrollModalToTop}
+                onBackToServices={() => {
+                  setElectricalTab(null);
+                  setElectricalView('category');
+                  scrollModalToTop();
+                }}
+              />
+            ) : null}
+            </div>
+          ) : service.slug === 'other-services' ? (
+            selectedOtherService ? (
+              <ServiceBooking
+                serviceSlug={selectedOtherService}
+                modal={true}
+                onClose={onClose}
+                onStepChange={scrollModalToTop}
+              />
+            ) : (
+              <OtherServicesCategory
+                modal={true}
+                onSelectService={(serviceSlug) => {
+                  setSelectedOtherService(serviceSlug);
+                  scrollModalToTop();
+                }}
+              />
+            )
+          ) : (
+            <ServiceBooking
+              serviceSlug={service.slug}
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
+          )}
+        </div>
+        </ModalFooterContext.Provider>
+
+        {/* MODAL FOOTER — filled by the current step's Back / Continue bar,
+            hidden while a step has none */}
+
+        <div ref={setFooterNode} className="bm-foot" />
+      </div>
+    </div>
+  );
+}
+
+
+===== FILE: frontend\src\components\home\PopularServices.jsx =====
+import Icon from '../ui/Icon';
+import useServiceCatalogue from '../../hooks/useServiceCatalogue';
+import optimizedImage from '../../lib/optimizedImage';
+import ServiceBookingModal, {
+  useServiceBookingModal,
+} from '../services/ServiceBookingModal';
+
+const ICON_BY_SLUG = {
+  'interior-design': 'sofa',
+  'interior-by-choice': 'layers',
+  painting: 'roller',
+  waterproofing: 'droplet',
+  'pop-ceiling-design': 'ceiling',
+  plumbing: 'tap',
+  electrical: 'bolt',
+  'other-services': 'settings',
+};
+
+const LABEL_OVERRIDES = {
+  waterproofing: 'Water­proofing',
+  electrical: 'Electri­cian',
+};
+
+const displayName = (category) =>
+  LABEL_OVERRIDES[category.slug] || category.name;
+
+export default function PopularServices() {
+  const { services: categories, error } = useServiceCatalogue();
+  const booking = useServiceBookingModal();
+
+  return (
+    <section className="popular-services">
+      <div className="container">
+        <div className="popular-services-head">
+          <h2 className="popular-services-title">Popular Services</h2>
+          <p className="popular-services-hint">
+            Tap a service to see its options and book a visit.
+          </p>
+        </div>
+
+        {error && (
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {!error && !categories && (
+          <div className="service-tile-grid" aria-hidden="true">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="service-tile service-tile-skeleton"
+              />
+            ))}
+          </div>
+        )}
+
+        {!error && categories && (
+          <div className="service-tile-grid">
+            {categories.map((category, index) => (
+              <button
+                key={category.slug}
+                type="button"
+                className="service-tile"
+                onClick={() => booking.open(category)}
+              >
+                <span className="service-tile-photo">
+                  {category.heroImage ? (
+                    <img
+                      src={optimizedImage(category.heroImage)}
+                      alt=""
+                      width={200}
+                      height={200}
+                      loading={index < 4 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="service-tile-placeholder">
+                      <Icon
+                        name={
+                          ICON_BY_SLUG[category.slug] ||
+                          category.icon
+                        }
+                        size={34}
+                      />
+                    </span>
+                  )}
+                </span>
+
+                <span className="service-tile-name">
+                  {displayName(category)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {booking.service && (
+        <ServiceBookingModal
+          key={booking.openToken}
+          service={booking.service}
+          onClose={booking.close}
+        />
+      )}
+    </section>
+  );
+}
+
+===== FILE: frontend\src\pages\Services.jsx =====
+import PageHero from '../components/ui/PageHero';
+import Icon from '../components/ui/Icon';
+import Reveal from '../components/ui/Reveal';
+import CtaBand from '../components/ui/CtaBand';
+import useServiceCatalogue from '../hooks/useServiceCatalogue';
+import ServiceBookingModal, { useServiceBookingModal } from '../components/services/ServiceBookingModal';
+import optimizedImage from '../lib/optimizedImage';
+
+/**
+ * Every service we offer.
+ *
+ * Fetched, not hard-coded: the home tiles, footer, menus and quote form read
+ * the same catalogue (see useServiceCatalogue), so they cannot drift apart.
+ */
+
+const serviceImages = {
+  'interior-design': '/assets/services/interior-design.webp',
+  'interior-by-choice': '/assets/services/interior-by-choice.webp',
+  painting: '/assets/services/painting.webp',
+  waterproofing: '/assets/services/waterproofing.avif',
+  'pop-ceiling-design': '/assets/services/pop-ceiling-design.webp',
+  plumbing: '/assets/services/plumber.webp',
+  electrical: '/assets/services/electrician.avif',
+  'other-services': '/assets/services/other-services.webp',
+};
+
+export default function Services() {
+  const { services, loading, error } = useServiceCatalogue([]);
+
+  const booking = useServiceBookingModal();
+
+  return (
+    <>
+      <PageHero
+        eyebrow="OUR SERVICES"
+        title="WHAT WE DO"
+        text="One accountable team for every job. Book a site visit and we will assess the work and send you a written quotation."
+        image="/assets/services/service-hero.webp"
+        breadcrumbs={[{ label: 'Services' }]}
+      />
+
+      <section className="section">
+        <div className="container">
+          {loading && (
+            <p className="question-hint">
+              Loading services…
+            </p>
+          )}
+
+          {error && (
+            <div
+              role="alert"
+              className="alert alert-error"
+            >
+              <Icon
+                name="info"
+                size={18}
+              />
+
+              <span>
+                {error}
+              </span>
+            </div>
+          )}
+
+          <div className="svc-grid">
+            {services.map((service, i) => (
+              <Reveal
+                key={service.slug}
+                delay={i * 70}
+              >
+                <article
+                  className="svc-card"
+                  data-service={service.slug}
+                  onClick={() => booking.open(service)}
+                >
+                  <div className="svc-card-media">
+                    <img loading="lazy" decoding="async"
+                      src={serviceImages[service.slug] || optimizedImage(service.heroImage)}
+                      alt={service.name}
+                    />
+                  </div>
+
+                  <div className="svc-card-body">
+                    {/* <div className="svc-card-icon">
+                      <Icon
+                        name={service.icon || 'tools'}
+                        size={22}
+                        strokeWidth={1.4}
+                      />
+                    </div> */}
+
+                    <h3>
+                      {service.name}
+                    </h3>
+{/* 
+                    <p>
+                      {service.description}
+                    </p> */}
+
+                    <div className="svc-card-foot">
+                      {/* No onClick here — the click bubbles up to the card's own
+                          handler above (a real <button>'s keyboard activation
+                          dispatches a bubbling click too, so Tab+Enter still works). */}
+                      <button type="button" className="btn btn-primary btn-sm">
+                        BOOK NOW
+
+                        <Icon
+                          name="arrow-right"
+                          size={15}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <CtaBand />
+
+      {booking.service && (
+        <ServiceBookingModal
+          key={booking.openToken}
+          service={booking.service}
+          onClose={booking.close}
+        />
+      )}
+    </>
+  );
+}
+
+
+===== FILE: frontend\src\pages\OtherServicesCategory.jsx =====
+import { Link } from 'react-router-dom';
+import PageHero from '../components/ui/PageHero';
+import Icon from '../components/ui/Icon';
+import Reveal from '../components/ui/Reveal';
+import { otherServiceTiles } from '../data/otherServices';
+
+/**
+ * /services/other-services — the "Other Services" catch-all category list,
+ * mirroring ElectricalCategory's tile-list pattern. Each tile opens the
+ * existing generic site-visit wizard at its own slug (all five kept their
+ * full question sets in the database while deactivated).
+ */
+export default function OtherServicesCategory({
+  modal = false,
+  onSelectService,
+}) {
+  return (
+    <>
+      {!modal && (
+  <PageHero
+    eyebrow="OTHER SERVICES"
+    title="Other Services"
+    text="Everything else we do — architectural design, civil construction, furniture, fabrication and finishing work."
+    image="/assets/hero-house.svg"
+    breadcrumbs={[
+      { label: 'Services', to: '/services' },
+      { label: 'Other Services' },
+    ]}
+  />
+)}
+
+      <section
+  className={
+    modal
+      ? 'elc-section !py-0'
+      : 'elc-section'
+  }
+>
+  <div
+    className={
+      modal
+        ? 'container container-narrow !max-w-none !px-0'
+        : 'container container-narrow'
+    }
+  >
+          <div className="elc-list">
+            {otherServiceTiles.map((tile, i) => (
+              <Reveal key={tile.slug} delay={i * 30}>
+                <Link
+  to={`/services/${tile.slug}`}
+  className="elc-tile"
+  onClick={(e) => {
+    if (modal) {
+      e.preventDefault();
+      onSelectService?.(tile.slug);
+    }
+  }}
+>
+                  <span className="elc-tile-image">
+                    <img src={tile.image} alt={tile.name} loading="lazy" />
+                  </span>
+                  <span className="elc-tile-icon">
+                    <Icon name={tile.icon} size={22} />
+                  </span>
+                  <span className="elc-tile-body">
+                    <strong>{tile.name}</strong>
+                    <span>{tile.blurb}</span>
+                  </span>
+                  <Icon name="chevron-right" size={18} className="elc-tile-arrow" />
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+
+===== FILE: frontend\src\data\otherServices.js =====
+/**
+ * SUPPLYBASE — OTHER SERVICES
+ * ---------------------------
+ * The category list shown at /services/other-services: everything outside
+ * the seven main services, reactivated on request after being scoped out
+ * earlier. Each tile opens the existing generic site-visit wizard at its
+ * own slug — these five categories kept their full question sets in the
+ * database the whole time; only their `active` flag changed.
+ */
+export const otherServiceTiles = [
+  {
+    slug: 'architectural-design',
+    name: 'Architectural & Design',
+    blurb: '2D drawings and 3D architectural visualisation',
+    icon: 'building',
+    image: '/assets/services/architectural-design.webp',
+  },
+  {
+    slug: 'civil-construction',
+    name: 'Civil Construction',
+    blurb: 'New construction, RCC work, brickwork and plaster',
+    icon: 'crane',
+    image: '/assets/services/construction.webp',
+  },
+  {
+    slug: 'furniture',
+    name: 'Furniture Work',
+    blurb: 'Modular kitchens, wardrobes, TV units and beds',
+    icon: 'wardrobe',
+    image: '/assets/services/otherservicesimage/furniture.webp',
+  },
+  {
+    slug: 'fabrication',
+    name: 'Fabrication',
+    blurb: 'MS and SS gates, railings, grills and staircases',
+    icon: 'welding',
+    image: '/assets/services/otherservicesimage/fabrication.webp',
+  },
+  {
+    slug: 'finishing',
+    name: 'Finishing Work',
+    blurb: 'Flooring, marble and granite, tiling and touch-up',
+    icon: 'trowel',
+    image: '/assets/services/otherservicesimage/finishing.webp',
+  },
+];
+
+
+===== FILE: frontend\src\data\services.js =====
+/**
+ * SUPPLYBASE PROJECTS — SERVICES DATA
+ * ----------------------------------
+ * The live list of services is the catalogue API (see hooks/useServiceCatalogue).
+ * This file is the static copy of it: the fallback the footer, mobile menu and
+ * quote form show until the API answers (or if it can't be reached), and the
+ * lookup for names by slug (getServiceBySlug). Keep it in step with the
+ * catalogue — same services, same order (featuredServiceSlugs).
+ *
+ * megaMenuGroup: DESIGN | CONSTRUCTION | FINISHING | MEP | SPECIALIZED
+ *
+ * Scoped to the seven main services plus one catch-all: Interior Design,
+ * Interior by Choice, Painting, Waterproofing, POP Ceiling & Design,
+ * Plumber, Electrician, and Other Services — the same eight the backend's
+ * service_categories table now serves at GET /api/catalogue/services (see
+ * backend/.../V13__seven_main_service_categories.sql). "Other Services" is
+ * a single tile, same as Electrician; it opens a category list of the five
+ * services that don't fit the main seven (architectural-design,
+ * civil-construction, furniture, fabrication, finishing) rather than
+ * showing five more top-level tiles.
+ * The five services that live under Other Services stay `active: false`
+ * here rather than deleted — they are not top-level services, so they must
+ * not appear in any list built from this file.
+ * Every helper below (and every component that lists services) filters on
+ * that flag; a service object with no `active` field is active by default.
+ */
+
+export const megaMenuGroups = ['DESIGN', 'CONSTRUCTION', 'FINISHING', 'MEP', 'SPECIALIZED'];
+
+/**
+ * The seven main services, in the approved order. Reorder or swap these
+ * slugs and the home page follows — no component needs editing.
+ */
+export const featuredServiceSlugs = [
+  'interior-design',
+  'interior-by-choice',
+  'painting',
+  'waterproofing',
+  'pop-ceiling-design',
+  'plumbing',
+  'electrical',
+  'other-services',
+];
+
+export const services = [
+  /* ------------------------------------------------------------------ 01 */
+  {
+    slug: 'architectural-design',
+    active: false,
+    number: '01',
+    name: 'Architectural & Design',
+    shortName: 'Architectural & Design',
+    icon: 'building',
+    megaMenuGroup: 'DESIGN',
+    tagline: 'Plan it properly before you build it.',
+    cardText: 'Complete architectural planning, 2D drawings and photo-real 3D visualisation.',
+    summary:
+      'Every good project starts on paper. We prepare the architectural plan, the working drawings your site team actually builds from, and 3D exterior and interior views so you can see the finished building before construction starts. Design is where mistakes are cheap — we make sure they happen here and not on site.',
+    heroImage: '/assets/services/architectural-design.svg',
+    gallery: ['/assets/hero-house.svg', '/assets/services/architectural-design.svg'],
+    subServices: [
+      { name: 'Architectural Planning', text: 'Space planning, site analysis and layout development suited to your plot and budget.' },
+      { name: '2D Floor Plans', text: 'Dimensioned floor plans showing every room, wall, door and window position.' },
+      { name: '3D Architectural Design', text: 'Photo-realistic 3D models so you can walk through the design before it is built.' },
+      { name: '3D Exterior Design', text: 'Exterior views with materials, textures, landscaping and lighting.' },
+      { name: '3D Interior Design', text: 'Room-by-room 3D interior views with furniture, finishes and colour schemes.' },
+      { name: 'Elevation Design', text: 'Front, side and rear elevations that give the building its character.' },
+      { name: 'Structural Drawings', text: 'Column, beam, slab and foundation drawings prepared for safe execution.' },
+      { name: 'Working Drawings', text: 'Detailed construction drawings your site team can build directly from.' },
+    ],
+    highlights: [
+      'Design, drawings and execution handled by the same company — nothing gets lost between architect and contractor',
+      'Photo-real 3D views before construction, so there are no surprises at handover',
+      'Drawings prepared with buildability and budget in mind, not just aesthetics',
+      'Unlimited coordination between design and site team throughout the project',
+    ],
+    process: [
+      { title: 'Requirement Study', text: 'We understand your plot, family or business needs, budget and timeline.' },
+      { title: 'Concept & 2D Plan', text: 'Layout options are prepared and refined with you until the plan is right.' },
+      { title: '3D Visualisation', text: 'Exterior and interior 3D views are produced from the approved plan.' },
+      { title: 'Working Drawings', text: 'Structural and construction drawings are issued for execution.' },
+    ],
+    faqs: [
+      { q: 'Can you design only, without doing the construction?', a: 'Yes. Design is offered as a standalone service, though most clients continue with us for execution because it keeps everything under one accountable team.' },
+      { q: 'How long does the design stage take?', a: 'A typical residential design runs two to four weeks from requirement study to working drawings, depending on the size of the project and how quickly approvals come back.' },
+      { q: 'Do you provide 3D views before I commit to construction?', a: 'Yes. 3D exterior and interior views are part of the design package so you can see and approve the result before building starts.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 02 */
+  {
+    slug: 'civil-construction',
+    active: false,
+    number: '02',
+    name: 'Civil Construction',
+    shortName: 'Civil Construction',
+    icon: 'crane',
+    megaMenuGroup: 'CONSTRUCTION',
+    tagline: 'Structure built to last.',
+    cardText: 'New construction, RCC work, brickwork, plaster, flooring and waterproofing.',
+    summary:
+      'The structure is the part of a building nobody sees and everybody depends on. We take on new construction from foundation to finished shell — RCC framing, blockwork, plastering, flooring, tiling and waterproofing — with supervised workmanship and standard-grade materials at every stage.',
+    heroImage: '/assets/services/civil-construction.svg',
+    gallery: ['/assets/services/civil-construction.svg', '/assets/projects/ongoing-construction.svg'],
+    subServices: [
+      { name: 'New Construction', text: 'Complete construction from foundation to structure for homes and commercial buildings.' },
+      { name: 'RCC Work', text: 'Footings, columns, beams and slabs executed to structural drawings.' },
+      { name: 'Brickwork', text: 'Brick and block masonry in line, level and plumb.' },
+      { name: 'Plaster Work', text: 'Internal and external plastering with a true, crack-resistant finish.' },
+      { name: 'Flooring', text: 'Base preparation and laying of tile, marble, granite and other flooring.' },
+      { name: 'Tiling', text: 'Wall and floor tiling for bathrooms, kitchens, balconies and common areas.' },
+      { name: 'Waterproofing', text: 'Terrace, bathroom, tank and basement waterproofing treatments.' },
+      { name: 'Repair & Renovation', text: 'Structural repairs, extensions and full renovation of existing buildings.' },
+    ],
+    highlights: [
+      'Material and labour supplied together under one rate',
+      'Stage-wise quality checks — foundation, structure, masonry, plaster and finishing',
+      'Site supervision by experienced engineers and foremen',
+      'Clear schedules with progress reported to you at every stage',
+    ],
+    process: [
+      { title: 'Site Survey & Estimate', text: 'We visit the site, measure and issue an itemised estimate.' },
+      { title: 'Layout & Foundation', text: 'Setting out, excavation and foundation work as per structural drawings.' },
+      { title: 'Structure & Masonry', text: 'RCC framing, blockwork and plastering carried out in sequence.' },
+      { title: 'Finishing Handover', text: 'Flooring, waterproofing and surface preparation ready for finishing trades.' },
+    ],
+    faqs: [
+      { q: 'Do you supply material as well as labour?', a: 'Yes. Most clients choose our labour + material package, where we procure everything and quote one rate. Labour-only contracts are also possible if you prefer to buy the material.' },
+      { q: 'Do you take renovation work or only new construction?', a: 'Both. We handle renovations, extensions and structural repairs as well as new builds.' },
+      { q: 'How do you handle payments?', a: 'Payments are linked to completed stages of work, agreed in writing before the project starts.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 03 */
+  {
+    slug: 'interior-design',
+    number: '03',
+    name: 'Interior Design',
+    shortName: 'Interior Design',
+    icon: 'sofa',
+    megaMenuGroup: 'DESIGN',
+    tagline: 'Interiors designed, built and installed.',
+    cardText: 'Residential and commercial interiors, modular kitchens, wardrobes and turnkey fit-outs.',
+    summary:
+      'We design interiors and then actually build them — the same team draws the 3D view, makes the furniture, does the ceiling, the electrical and the painting. Residential homes, offices, showrooms and complete turnkey interior fit-outs delivered ready to move into.',
+    heroImage: '/assets/services/interior-design.svg',
+    gallery: ['/assets/projects/modern-interior.svg', '/assets/services/interior-design.svg'],
+    subServices: [
+      { name: 'Residential Interior', text: 'Full home interiors — living, dining, bedrooms, kitchen and balconies.' },
+      { name: 'Commercial Interior', text: 'Showrooms, retail spaces, clinics and hospitality interiors.' },
+      { name: 'Modular Kitchen', text: 'Made-to-measure modular kitchens with quality hardware and finishes.' },
+      { name: 'Wardrobe', text: 'Sliding and openable wardrobes built to your room dimensions.' },
+      { name: 'Living Room', text: 'TV units, feature walls, false ceiling, lighting and seating layouts.' },
+      { name: 'Bedroom', text: 'Beds, storage, headboard panelling, wardrobes and lighting.' },
+      { name: 'Office Interior', text: 'Workstations, cabins, reception areas, meeting rooms and storage.' },
+      { name: 'Turnkey Interior', text: 'Design to installation, including civil, electrical, ceiling and painting work.' },
+    ],
+    highlights: [
+      '3D interior views approved before any material is cut',
+      'In-house furniture work — no third-party carpenter coordination',
+      'Ceiling, electrical, painting and furniture scheduled as one job',
+      'Fixed quotation with a clear material specification',
+    ],
+    process: [
+      { title: 'Site Measurement', text: 'Accurate measurement of every room and existing service point.' },
+      { title: '3D Design & Selection', text: 'Layouts, 3D views and finish selection finalised with you.' },
+      { title: 'Production & Site Work', text: 'Furniture production runs in parallel with ceiling, electrical and painting.' },
+      { title: 'Installation & Handover', text: 'Installation, snag list, deep clean and handover.' },
+    ],
+    faqs: [
+      { q: 'How long does a full home interior take?', a: 'A 2BHK turnkey interior typically takes 45 to 60 days from design approval, depending on the scope and material availability.' },
+      { q: 'Can I choose my own materials and brands?', a: 'Yes. We work to a written material specification and you can upgrade or change any item before production starts.' },
+      { q: 'Do you handle the electrical and false ceiling too?', a: 'Yes — those are our own services, so the whole fit-out is delivered by one team on one schedule.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 03b */
+  {
+    slug: 'interior-by-choice',
+    number: '03b',
+    name: 'Interior by Choice',
+    shortName: 'Interior by Choice',
+    icon: 'layers',
+    megaMenuGroup: 'DESIGN',
+    tagline: 'Browse ready-made designs, pick one, book a home visit.',
+    cardText: 'A catalogue of ready interior designs by space — pick one and book a ₹99 home visit.',
+    summary:
+      'Not every project starts from a blank page. Browse finished designs by space, pick the one closest to what you want, and book a paid home visit — the fee is adjusted into your final project cost if you go ahead.',
+    heroImage: '/assets/projects/modern-interior.webp',
+    gallery: ['/assets/projects/modern-interior.webp'],
+    subServices: [],
+    highlights: [],
+    process: [],
+    faqs: [],
+  },
+
+  /* ------------------------------------------------------------------ 04 */
+  {
+    slug: 'painting',
+    number: '04',
+    name: 'Painting',
+    shortName: 'Painting',
+    icon: 'roller',
+    megaMenuGroup: 'FINISHING',
+    tagline: 'A finish that holds up.',
+    cardText: 'Interior, exterior, texture and waterproof painting for homes and commercial spaces.',
+    summary:
+      'Paint is judged on preparation, not on the brand of the tin. We putty, sand, prime and then paint — interior and exterior, texture finishes, waterproof coatings, and wood and metal painting — with proper surface treatment and clean masking so the result lasts.',
+    heroImage: '/assets/services/painting.svg',
+    gallery: ['/assets/services/painting.svg'],
+    subServices: [
+      { name: 'Interior Painting', text: 'Emulsion and premium interior finishes with full surface preparation.' },
+      { name: 'Exterior Painting', text: 'Weather-resistant exterior coatings for facades and compound walls.' },
+      { name: 'Texture Painting', text: 'Feature-wall textures, metallic and designer finishes.' },
+      { name: 'Waterproof Paint', text: 'Waterproof and anti-damp coatings for problem walls and terraces.' },
+      { name: 'Wood & Metal Painting', text: 'Enamel, PU and Duco finishes for doors, grills, railings and furniture.' },
+      { name: 'Repainting', text: 'Repainting of occupied homes and offices with minimal disruption.' },
+      { name: 'Commercial Painting', text: 'Offices, showrooms, societies and industrial units.' },
+    ],
+    highlights: [
+      'Proper putty, sanding and priming before the first coat',
+      'Furniture covered and floors masked — the site is left clean daily',
+      'Branded paints with the shade and product written into the quotation',
+      'Damp and crack treatment carried out before painting, not painted over',
+    ],
+    process: [
+      { title: 'Surface Inspection', text: 'Cracks, damp patches and old loose paint are identified first.' },
+      { title: 'Preparation', text: 'Scraping, crack filling, putty, sanding and priming.' },
+      { title: 'Painting', text: 'Coats applied as per the agreed product and shade schedule.' },
+      { title: 'Cleaning & Check', text: 'Masking removed, site cleaned and finish inspected with you.' },
+    ],
+    faqs: [
+      { q: 'Can you paint while we are living in the house?', a: 'Yes. We work room by room, cover your furniture and clean up at the end of each day.' },
+      { q: 'Which paint brands do you use?', a: 'We use standard branded paints and write the exact product and shade into the quotation so there is no substitution.' },
+      { q: 'Do you fix damp walls before painting?', a: 'Yes. Painting over damp is a waste of money — the source is treated and waterproofed first.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 04b */
+  {
+    slug: 'waterproofing',
+    number: '04b',
+    name: 'Waterproofing',
+    shortName: 'Waterproofing',
+    icon: 'droplet',
+    megaMenuGroup: 'FINISHING',
+    tagline: 'Stop the leak at the source.',
+    cardText: 'Terrace, bathroom, balcony, basement, wall and water tank waterproofing.',
+    summary:
+      'Water finds every gap preparation misses. We treat terraces, bathrooms, balconies, basements, walls and water tanks with the right membrane and slope for the surface, tested before anything is covered over.',
+    heroImage: '/assets/services/civil-construction.svg',
+    gallery: ['/assets/services/civil-construction.svg'],
+    subServices: [
+      { name: 'Terrace Waterproofing', text: 'Membrane and slope treatment for exposed roof decks.' },
+      { name: 'Bathroom & Toilet Waterproofing', text: 'Floor and wall treatment before tiling, sealed at every junction.' },
+      { name: 'Balcony Waterproofing', text: 'Weather-exposed balcony and utility area treatment.' },
+      { name: 'Basement Waterproofing', text: 'Below-grade treatment against seepage and rising damp.' },
+      { name: 'Water Tank Waterproofing', text: 'Overhead and underground tank lining and sealing.' },
+      { name: 'Wall & External Waterproofing', text: 'Facade and compound wall damp-proofing.' },
+    ],
+    highlights: [
+      'Correct membrane chosen for the surface, not one product for everything',
+      'Slope and drainage checked before any coat goes on',
+      'Every treated area tested for leaks before it is covered',
+      'Workmanship terms written into the quotation',
+    ],
+    process: [
+      { title: 'Site Inspection', text: 'Source of the leak or the area at risk is identified.' },
+      { title: 'Surface Preparation', text: 'Cleaning, crack filling and priming of the treated area.' },
+      { title: 'Membrane Application', text: 'Waterproofing coat or membrane applied to the agreed system.' },
+      { title: 'Testing & Handover', text: 'Water/flood test before the area is covered or tiled.' },
+    ],
+    faqs: [
+      { q: 'How long does terrace waterproofing last?', a: 'A properly applied system typically holds for five to ten years depending on exposure and maintenance.' },
+      { q: 'Can you waterproof without removing the existing tiles?', a: 'For most leak repairs, yes — we assess this on site and tell you honestly if removal is actually needed.' },
+      { q: 'Do you test before covering the work?', a: 'Yes, a water test is carried out in front of you before the area is tiled or covered.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 05 */
+  {
+    slug: 'pop-ceiling-design',
+    number: '05',
+    name: 'POP Ceiling & Design',
+    shortName: 'POP Ceiling & Design',
+    icon: 'ceiling',
+    megaMenuGroup: 'FINISHING',
+    tagline: 'Ceilings that carry the lighting design.',
+    cardText: 'POP, gypsum and designer false ceilings with cove and LED lighting.',
+    summary:
+      'A false ceiling does more than hide wiring — it sets the lighting and the proportion of the room. We execute POP and gypsum ceilings, designer profiles, wall moulding, cornice and partition work, with the LED cove and light points planned into the design from the start.',
+    heroImage: '/assets/pop-ceiling/hero/living-room-cove.webp',
+    gallery: ['/assets/pop-ceiling/hero/living-room-cove.webp', '/assets/pop-ceiling/full-home/ceiling-design.webp'],
+    subServices: [
+      { name: 'POP Ceiling', text: 'Traditional plaster of Paris ceilings with a smooth, paint-ready finish.' },
+      { name: 'Gypsum Ceiling', text: 'Gypsum board ceilings on GI framing — fast, clean and stable.' },
+      { name: 'False Ceiling', text: 'Full and peripheral false ceilings for homes, offices and showrooms.' },
+      { name: 'Designer Ceiling', text: 'Multi-level, curved and feature ceiling designs.' },
+      { name: 'Wall Moulding', text: 'Panelling and moulding detail for feature walls.' },
+      { name: 'Cornice', text: 'Classic and contemporary cornice profiles.' },
+      { name: 'Partition Work', text: 'Gypsum and glass partitions for offices and rooms.' },
+      { name: 'LED Cove & Lighting', text: 'Cove lighting, spot and profile lighting planned into the ceiling design.' },
+    ],
+    highlights: [
+      'Ceiling and electrical planned together so light points land where they should',
+      'GI framing at correct spacing — no sagging over time',
+      'Clean, sharp edges and level surfaces ready for paint',
+      'Access provision kept for AC drains, wiring and fittings',
+    ],
+    process: [
+      { title: 'Design & Light Plan', text: 'Ceiling design finalised along with the lighting layout.' },
+      { title: 'Framing', text: 'GI channel framing set out to level.' },
+      { title: 'Boarding & Finishing', text: 'Boarding, jointing, taping and finishing to a paint-ready surface.' },
+      { title: 'Lighting & Handover', text: 'Light fittings installed, tested and handed over.' },
+    ],
+    faqs: [
+      { q: 'POP or gypsum — which should I choose?', a: 'Gypsum is faster, cleaner to install and more dimensionally stable; POP allows more curved and custom detail. We recommend based on your design and timeline.' },
+      { q: 'Will the ceiling reduce my room height?', a: 'A peripheral ceiling usually costs about four to six inches at the edges and none in the centre, so the room still feels open.' },
+      { q: 'Do you supply the lights as well?', a: 'Yes, lights can be included in the quotation or you can supply your own fittings for us to install.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 06 */
+  {
+    slug: 'electrical',
+    number: '06',
+    name: 'Electrician',
+    shortName: 'Electrician',
+    icon: 'bolt',
+    megaMenuGroup: 'MEP',
+    tagline: 'Safe wiring, planned properly.',
+    cardText: 'Complete wiring, DB and panel work, lighting, switches and commercial electrical.',
+    summary:
+      'Electrical work is a safety job first and a convenience job second. We carry out complete concealed wiring, new installations, DB and panel work, lighting circuits and switch points — planned around how you will actually use the space, and executed with proper earthing and protection.',
+    heroImage: '/assets/services/electrician/hero.webp',
+    gallery: ['/assets/services/electrician/home-electrical-services.webp', '/assets/services/electrician/fan-installation.webp', '/assets/services/electrician/light-installation.webp', '/assets/services/electrician/switch-socket-installation.webp', '/assets/services/electrician/wiring-rewiring-services.webp', '/assets/services/electrician/mcb-db-installation.webp'],
+    subServices: [
+      { name: 'Complete Wiring', text: 'Full concealed wiring for new homes, offices and shops.' },
+      { name: 'New Installation', text: 'New points, circuits and load planning for renovations and extensions.' },
+      { name: 'Lighting', text: 'Lighting circuits, cove lighting, spots, profiles and outdoor lighting.' },
+      { name: 'Switches & Sockets', text: 'Switch and socket points positioned to your furniture layout.' },
+      { name: 'DB & Panel Work', text: 'Distribution boards, MCB and RCCB protection, and panel wiring.' },
+      { name: 'Ceiling Lighting', text: 'Light points coordinated with the false ceiling design.' },
+      { name: 'Commercial Electrical', text: 'Offices, showrooms, restaurants and small industrial units.' },
+    ],
+    highlights: [
+      'Point layout planned against your furniture plan, not guessed',
+      'ISI-marked wire and branded switchgear specified in writing',
+      'Proper earthing, MCB and RCCB protection on every circuit',
+      'Coordinated with our own ceiling, furniture and painting teams',
+    ],
+    process: [
+      { title: 'Load & Point Planning', text: 'Points, circuits and load requirement worked out with you.' },
+      { title: 'Conduiting', text: 'Concealed conduits and boxes laid before plaster.' },
+      { title: 'Wiring & DB', text: 'Wire pulling, DB installation and circuit termination.' },
+      { title: 'Fitting & Testing', text: 'Switches, sockets and fittings installed, tested and handed over.' },
+    ],
+    faqs: [
+      { q: 'Can you rewire an old flat?', a: 'Yes. Rewiring an occupied flat is normally done room by room with chasing, conduiting and making good included.' },
+      { q: 'Do you handle the meter and load application?', a: 'We prepare the internal installation and can guide you through the utility application, though the connection is issued by the supply company.' },
+      { q: 'Is the wiring done to a proper plan?', a: 'Yes — you get a point layout drawing showing every switch, socket and light position before conduiting starts.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 07 */
+  {
+    slug: 'plumbing',
+    number: '07',
+    name: 'Plumber',
+    shortName: 'Plumber',
+    icon: 'tap',
+    megaMenuGroup: 'MEP',
+    tagline: 'Lines laid right the first time.',
+    cardText: 'New plumbing, bathroom and kitchen lines, drainage and sanitary installation.',
+    summary:
+      'Plumbing problems are expensive because they are hidden. We lay new water lines and drainage with correct slopes, pressure-test before concealing, and install sanitary ware and fittings cleanly — for new construction, bathroom renovation and kitchen work.',
+    heroImage: '/assets/services/plumbing.svg',
+    gallery: ['/assets/services/plumbing.svg'],
+    subServices: [
+      { name: 'New Plumbing', text: 'Complete water supply and drainage systems for new buildings.' },
+      { name: 'Bathroom Plumbing', text: 'Bathroom lines, concealed valves, shower and WC connections.' },
+      { name: 'Kitchen Plumbing', text: 'Sink, purifier, dishwasher and washing machine points.' },
+      { name: 'Water Lines', text: 'CPVC and PPR supply lines, tank connections and pump lines.' },
+      { name: 'Drainage', text: 'Waste and soil lines laid to correct fall with proper venting.' },
+      { name: 'Sanitary Installation', text: 'WC, basin, shower, mixer and accessory installation.' },
+      { name: 'Repair & Maintenance', text: 'Leak tracing, blockage clearing and fitting replacement.' },
+    ],
+    highlights: [
+      'Every concealed line pressure-tested before it is covered',
+      'Branded CPVC pipe and fittings specified in the quotation',
+      'Drainage laid to correct slope — no standing water or slow drains',
+      'Sanitary ware installed level, sealed and cleaned',
+    ],
+    process: [
+      { title: 'Layout Planning', text: 'Fixture positions and line routing agreed before work starts.' },
+      { title: 'Line Laying', text: 'Supply and drainage lines installed and supported.' },
+      { title: 'Pressure Testing', text: 'Lines tested and inspected before concealing or tiling.' },
+      { title: 'Fixture Installation', text: 'Sanitary ware and fittings installed and checked for leaks.' },
+    ],
+    faqs: [
+      { q: 'Can you renovate one bathroom without disturbing the rest of the flat?', a: 'Yes. Single-bathroom renovations are common work for us and normally take one to two weeks including tiling.' },
+      { q: 'Do you supply the sanitary ware?', a: 'We can supply it as part of the package or install fittings that you have purchased yourself.' },
+      { q: 'Do you give any assurance on concealed work?', a: 'Concealed lines are pressure-tested in front of you before covering, and workmanship terms are written into the quotation.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 07b */
+  {
+    slug: 'other-services',
+    number: '07b',
+    name: 'Other Services',
+    shortName: 'Other Services',
+    icon: 'settings',
+    megaMenuGroup: 'SPECIALIZED',
+    tagline: 'Everything else we do.',
+    cardText: 'Architectural design, civil construction, furniture, fabrication and finishing work.',
+    summary:
+      'Beyond the seven main services, we also handle architectural design, civil construction, custom furniture, MS/SS fabrication and finishing work — the same accountable team, the same one-partner model.',
+    heroImage: '/assets/hero-house.svg',
+    gallery: [],
+    subServices: [],
+    highlights: [],
+    process: [],
+    faqs: [],
+  },
+
+  /* ------------------------------------------------------------------ 08 */
+  {
+    slug: 'furniture',
+    active: false,
+    number: '08',
+    name: 'Furniture Work',
+    shortName: 'Furniture Work',
+    icon: 'wardrobe',
+    megaMenuGroup: 'SPECIALIZED',
+    tagline: 'Built to your dimensions.',
+    cardText: 'Modular kitchens, wardrobes, TV units, beds and custom office furniture.',
+    summary:
+      'Ready-made furniture rarely fits an Indian floor plan. We make furniture to your exact dimensions — modular kitchens, wardrobes, TV units, beds, storage and office furniture — in plywood or MDF with branded hardware and the finish written into the quotation.',
+    heroImage: '/assets/services/furniture.svg',
+    gallery: ['/assets/services/furniture.svg', '/assets/projects/modern-interior.svg'],
+    subServices: [
+      { name: 'Modular Furniture', text: 'Factory-finished modular units assembled on site.' },
+      { name: 'Modular Kitchen', text: 'Base and wall units, tall units, accessories and counters.' },
+      { name: 'Wardrobes', text: 'Sliding and openable wardrobes with internal storage planning.' },
+      { name: 'TV Units', text: 'TV panelling, storage and feature wall units.' },
+      { name: 'Beds', text: 'Beds with hydraulic or box storage and headboard detailing.' },
+      { name: 'Office Furniture', text: 'Workstations, reception desks, cabins and storage.' },
+      { name: 'Custom Furniture', text: 'Study tables, crockery units, shoe racks, bars and pooja units.' },
+    ],
+    highlights: [
+      'Made to your site measurements — no wasted gaps or fillers',
+      'Branded hinges, channels and locks specified by name',
+      'Material grade — plywood, MDF, laminate or acrylic — agreed upfront',
+      'Made in workshop, installed on site with minimal dust and disruption',
+    ],
+    process: [
+      { title: 'Measurement & Design', text: 'Site measurement and 3D views of each unit.' },
+      { title: 'Material Selection', text: 'Core material, laminate, hardware and finish selected and quoted.' },
+      { title: 'Production', text: 'Units manufactured in workshop with machine-cut accuracy.' },
+      { title: 'Installation', text: 'On-site assembly, alignment, hardware fitting and cleaning.' },
+    ],
+    faqs: [
+      { q: 'Plywood or MDF — what do you recommend?', a: 'Marine or BWP plywood for kitchens, wardrobes and anything near water; MDF is fine for low-moisture decorative units. We will tell you where each makes sense.' },
+      { q: 'Is the furniture made on site or in a workshop?', a: 'Mostly in the workshop, which gives cleaner cuts and far less dust in your home. On-site work is limited to assembly and fitting.' },
+      { q: 'Can you match furniture to an existing design?', a: 'Yes — send us photos or samples and we will match the finish as closely as the material allows.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 09 */
+  {
+    slug: 'fabrication',
+    active: false,
+    number: '09',
+    name: 'Fabrication',
+    shortName: 'Fabrication',
+    icon: 'welding',
+    megaMenuGroup: 'SPECIALIZED',
+    tagline: 'Steel work, measured and made.',
+    cardText: 'MS and SS fabrication — gates, railings, grills, staircases, sheds and structures.',
+    summary:
+      'Mild steel and stainless steel fabrication made to site measurement — main gates, balcony and staircase railings, window grills, spiral and straight staircases, roofing sheds and structural steel work, finished with proper primer and paint so it survives the weather.',
+    heroImage: '/assets/services/fabrication.svg',
+    gallery: ['/assets/services/fabrication.svg'],
+    subServices: [
+      { name: 'MS Fabrication', text: 'Mild steel gates, frames, grills and structural members.' },
+      { name: 'SS Fabrication', text: 'Stainless steel railings, handrails and decorative work.' },
+      { name: 'Gates', text: 'Main gates, sliding gates and wicket gates.' },
+      { name: 'Railings', text: 'Balcony, terrace and staircase railings in MS, SS and glass.' },
+      { name: 'Grills', text: 'Window and safety grills in standard and designer profiles.' },
+      { name: 'Staircase', text: 'Straight, L-shaped and spiral steel staircases.' },
+      { name: 'Shed & Roofing', text: 'Parking sheds, terrace sheds and industrial roofing.' },
+      { name: 'Structural Fabrication', text: 'Mezzanine floors, platforms, trusses and support structures.' },
+    ],
+    highlights: [
+      'Fabricated to measured site dimensions, not standard sizes',
+      'Proper welding, grinding and finishing at every joint',
+      'Red-oxide primer and enamel or PU finish for weather protection',
+      'Safety-critical heights and spacings kept to code',
+    ],
+    process: [
+      { title: 'Site Measurement', text: 'Openings and levels measured and design agreed.' },
+      { title: 'Section Selection', text: 'Steel sections and gauge selected for the load and span.' },
+      { title: 'Fabrication', text: 'Cutting, welding, grinding and priming in workshop.' },
+      { title: 'Installation & Finish', text: 'Fixed on site, aligned, and finish-painted.' },
+    ],
+    faqs: [
+      { q: 'Do you do glass and steel railings?', a: 'Yes — SS with toughened glass, MS with glass, and full steel designs are all available.' },
+      { q: 'How long does a main gate take?', a: 'Typically seven to ten days from measurement to installation, depending on the design and finish.' },
+      { q: 'What protects the steel from rusting?', a: 'Surfaces are ground clean, treated with red-oxide primer and then finished with enamel or PU paint.' },
+    ],
+  },
+
+  /* ------------------------------------------------------------------ 10 */
+  {
+    slug: 'finishing',
+    active: false,
+    number: '10',
+    name: 'Finishing Work',
+    shortName: 'Finishing Work',
+    icon: 'trowel',
+    megaMenuGroup: 'FINISHING',
+    tagline: 'The details people actually notice.',
+    cardText: 'Flooring, marble and granite, tile work, doors, windows and final touch-up.',
+    summary:
+      'Finishing is what a client sees on handover day. Flooring and tile work, marble and granite, wall finishes, doors and windows, sanitary fixtures and a proper final touch-up — done carefully, because this is the stage that decides whether the whole project looks well built.',
+    heroImage: '/assets/services/finishing.svg',
+    gallery: ['/assets/services/finishing.svg'],
+    subServices: [
+      { name: 'Flooring', text: 'Vitrified, ceramic, wooden and vinyl flooring with proper levelling.' },
+      { name: 'Wall Finishing', text: 'Putty, texture, cladding and decorative wall treatments.' },
+      { name: 'Tile Work', text: 'Bathroom, kitchen, balcony and facade tiling with clean joints.' },
+      { name: 'Marble & Granite', text: 'Flooring, counters, sills, steps and staircase cladding.' },
+      { name: 'Doors & Windows', text: 'Door frames, shutters, hardware and aluminium or UPVC windows.' },
+      { name: 'Sanitary Fixtures', text: 'Final fixing of sanitary ware, mixers and bathroom accessories.' },
+      { name: 'Final Touch-up', text: 'Snag list, corrections, deep clean and handover-ready finish.' },
+    ],
+    highlights: [
+      'Levels and slopes checked before laying, not after',
+      'Consistent joint width and clean grouting throughout',
+      'Material lots checked for shade variation before installation',
+      'Full snag list closed with you before handover',
+    ],
+    process: [
+      { title: 'Surface Preparation', text: 'Base levelling, cleaning and slope setting.' },
+      { title: 'Material Layout', text: 'Dry layout to fix joint lines and minimise cuts.' },
+      { title: 'Installation', text: 'Laying, fixing, grouting and curing.' },
+      { title: 'Snag & Handover', text: 'Joint inspection, touch-up, deep clean and handover.' },
+    ],
+    faqs: [
+      { q: 'Can you do finishing work if another contractor built the structure?', a: 'Yes. We regularly take on finishing packages on structures built by others after inspecting the site.' },
+      { q: 'Do you supply the tiles and marble?', a: 'Either way — we can procure to your selection or install material you have already bought.' },
+      { q: 'What is included in the final touch-up?', a: 'A joint snag inspection, correction of every listed item, and a full deep clean so the space is ready to use.' },
+    ],
+  },
+];
+
+/* ---------------------------------------------------------------- helpers */
+
+/* Looks up by slug across every service, active or not — a project or a
+   quote referencing an inactive service (e.g. a past furniture job) should
+   still show its name and details, not "unknown service". */
+export const getServiceBySlug = (slug) => services.find((s) => s.slug === slug);
+
+/* The list any current, live navigation or picker should render from, in the
+   same order as featuredServiceSlugs (and the live catalogue) — services[]
+   itself lists Electrician before Plumber, which used to make the footer,
+   menu and quote form disagree with the home page. Anything not featured
+   sorts last. */
+const featuredRank = (slug) => {
+  const index = featuredServiceSlugs.indexOf(slug);
+  return index === -1 ? featuredServiceSlugs.length : index;
+};
+
+export const activeServices = services
+  .filter((s) => s.active !== false)
+  .sort((a, b) => featuredRank(a.slug) - featuredRank(b.slug));
+
+/* Kept in featuredServiceSlugs order, not in services[] order, so the list
+   above controls which service leads. A slug that no longer exists, or is
+   inactive, is dropped rather than rendering a hole. */
+export const getFeaturedServices = () =>
+  featuredServiceSlugs.map(getServiceBySlug).filter((s) => s && s.active !== false);
+
+/* Empty groups are dropped rather than rendered as a heading with nothing
+   under it — with only four active services spread across five groups,
+   most groups are empty now. */
+export const getServicesByGroup = () =>
+  megaMenuGroups
+    .map((group) => ({
+      group,
+      items: activeServices.filter((s) => s.megaMenuGroup === group),
+    }))
+    .filter(({ items }) => items.length > 0);
+
+export default services;
+
+
+===== FILE: frontend\src\lib\serviceSearch.js =====
+import api from './api';
+import { paintingCategories } from '../data/paintingContent';
+import { wpCategories, wpBathroomServices } from '../data/waterproofingContent';
+import { popCategories } from '../data/popCeilingContent';
+import { plumbingTabs } from '../data/plumbingContent';
+import { dedupeItems } from '../hooks/usePlumbingCatalogue';
+
+/**
+ * Search for the things inside a service.
+ *
+ * The catalogue search (GET /api/catalogue/search) finds top-level services
+ * and the electrician's sub-services, but not the jobs listed inside the
+ * other services — so "toilet", "tap", "drain", "terrace" or "false ceiling"
+ * found nothing even though we do them. This covers those: the painting,
+ * waterproofing and POP options and every plumbing job, each with the page
+ * that opens it. Results have the same shape as the catalogue's, plus a
+ * `route`.
+ */
+
+const fromContent = (items, icon) =>
+  items.map((item) => ({
+    slug: item.route,
+    name: item.name,
+    tagline: item.tagline,
+    icon: item.icon || icon,
+    route: item.route,
+  }));
+
+// Static, so it costs nothing to build once.
+const staticEntries = [
+  ...fromContent(paintingCategories, 'roller'),
+  ...fromContent(wpCategories, 'droplet'),
+  ...fromContent(wpBathroomServices, 'droplet'),
+  ...fromContent(popCategories, 'ceiling'),
+  ...plumbingTabs.map((tab) => ({
+    slug: `/services/plumbing/${tab.slug}`,
+    name: tab.name,
+    tagline: tab.heroTagline,
+    icon: tab.icon,
+    route: `/services/plumbing/${tab.slug}`,
+  })),
+];
+
+// The plumbing jobs are priced items in the catalogue, fetched once.
+let plumbingEntries = null;
+let plumbingRequest = null;
+
+function loadPlumbingEntries() {
+  if (plumbingEntries) return Promise.resolve(plumbingEntries);
+
+  if (!plumbingRequest) {
+    plumbingRequest = api
+      .serviceForm('plumbing')
+      .then((form) => {
+        const question = form?.questions?.find((q) => q.key === 'cart_item');
+        plumbingEntries = dedupeItems(question?.options || []).map((option) => {
+          const tab = plumbingTabs.find((t) => t.group === option.group);
+          return {
+            slug: `plumbing-item-${option.value}`,
+            name: option.label,
+            tagline: `Plumber · ${tab?.name || option.group}`,
+            icon: tab?.icon || 'tap',
+            route: tab ? `/services/plumbing/${tab.slug}` : '/services/plumbing',
+          };
+        });
+        return plumbingEntries;
+      })
+      .catch(() => {
+        // Search still works without them; try again on the next query.
+        plumbingRequest = null;
+        return [];
+      });
+  }
+
+  return plumbingRequest;
+}
+
+/** Every word typed must appear in the entry's name or description. */
+const matches = (entry, words) => {
+  const haystack = `${entry.name} ${entry.tagline || ''}`.toLowerCase();
+  return words.every((word) => haystack.includes(word));
+};
+
+/** Matching sub-service and job entries for a query, best (name) matches first. */
+export async function searchSubServices(query, limit = 6) {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+
+  const plumbing = await loadPlumbingEntries();
+  const hits = [...staticEntries, ...plumbing].filter((entry) => matches(entry, words));
+
+  const inName = (entry) => words.every((word) => entry.name.toLowerCase().includes(word));
+  hits.sort((a, b) => Number(inName(b)) - Number(inName(a)));
+
+  return hits.slice(0, limit);
+}
+
+
+===== FILE: backend\src\main\resources\db\migration\V13__seven_main_service_categories.sql =====
+-- ---------------------------------------------------------------------------
+-- SEVEN MAIN SERVICE CATEGORIES, PLUS ONE CATCH-ALL
+--
+-- The public catalogue shows eight main-level tiles, in this order:
+-- Interior Design, Interior by Choice, Painting, Waterproofing,
+-- POP Ceiling & Design, Plumber, Electrician, and Other Services — the
+-- eighth reactivating five categories that were scoped out earlier (see the
+-- OTHER SERVICES block near the end of this file) behind one catch-all tile,
+-- the same shape as Electrician's.
+--
+-- Four things happen here:
+--
+--   1. `parent_slug` is added so a category can be a sub-service of another
+--      one. Today only the seven detailed electrician journeys use it (they
+--      point at 'electrical') — they stay fully bookable at their own slug,
+--      but drop out of the main catalogue listing, which now filters on
+--      parent_slug IS NULL. Nothing about their questions or pricing
+--      changes.
+--
+--   2. "Painting & Waterproofing" (slug `painting`) splits into two real
+--      categories. Painting keeps its row, its id and every booking that
+--      already references it; Waterproofing is new, with its own questions
+--      copied over from the combined form and renumbered into their own
+--      step sequence. The waterproofing-flavoured rows are then removed
+--      from `painting`, which keeps only its own questions.
+--
+--   3. `pop-false-ceiling`, deactivated in V11 as one of the six categories
+--      outside the approved flow, turns out to belong after all — it is
+--      reactivated and renamed to `pop-ceiling-design`. The other five V11
+--      deactivated (architectural-design, civil-construction, furniture,
+--      fabrication, finishing) stay deactivated; they are not part of the
+--      seven.
+--
+--   4. `interior-by-choice` gets a real row. It was frontend-only content
+--      with no backend representation, and its booking step faked its own
+--      confirmation client-side rather than calling the real API (see
+--      InteriorBooking.jsx) — this row is what that fix now books against.
+--
+-- Soft delete throughout: nothing referenced by an existing booking is
+-- dropped, only deactivated, renamed or reparented.
+-- ---------------------------------------------------------------------------
+
+ALTER TABLE service_categories
+    ADD COLUMN parent_slug VARCHAR(60) DEFAULT NULL AFTER slug;
+
+UPDATE service_categories
+SET parent_slug = 'electrical'
+WHERE slug IN (
+    'home-electrical-services',
+    'fan-installation',
+    'switch-socket-installation',
+    'wiring-rewiring-services',
+    'electrical-repair-services',
+    'mcb-db-installation',
+    'appliance-installation-services'
+);
+
+-- ===========================================================================
+-- PAINTING keeps its row; becomes painting-only.
+-- ===========================================================================
+-- hero_image below points at /assets/popular-services/<slug>.png — real,
+-- client-supplied photographs with no baked-in text, one per category
+-- (plus a matching <slug>-icon.png the frontend resolves by the same slug;
+-- see PopularServices.jsx). These replace the interim choices (cropped
+-- hero-banner photos, SVG illustrations, icon-only placeholders) used
+-- before real photography existed for every category.
+UPDATE service_categories
+SET name = 'Painting',
+    tagline = 'A finish that holds up.',
+    description = 'Interior and exterior painting, putty and primer work, texture finishes, and repainting.',
+    icon = 'roller',
+    hero_image = '/assets/popular-services/painting.png',
+    sort_order = 3
+WHERE slug = 'painting';
+
+-- ===========================================================================
+-- WATERPROOFING: new category, questions copied from the combined form.
+-- ===========================================================================
+INSERT INTO service_categories (slug, name, tagline, description, icon, hero_image, visit_fee_paise, sort_order, active)
+VALUES ('waterproofing', 'Waterproofing',
+        'Stop the leak at the source.',
+        'Terrace, bathroom, balcony, basement, wall and water tank waterproofing.',
+        'droplet', '/assets/popular-services/waterproofing.png', 2500, 4, TRUE);
+
+-- service_needed: only the options that were grouped 'Waterproofing'.
+INSERT INTO service_options
+    (category_id, step_no, question_key, question_text, input_type, required,
+     option_value, option_label, option_hint, option_group, sort_order, active)
+SELECT (SELECT id FROM service_categories WHERE slug = 'waterproofing'),
+       1, 'service_needed', 'What waterproofing service do you need?', 'MULTI', TRUE,
+       option_value, option_label, option_hint, NULL, sort_order, TRUE
+FROM service_options
+WHERE category_id = (SELECT id FROM service_categories WHERE slug = 'painting')
+  AND question_key = 'service_needed' AND option_group = 'Waterproofing';
+
+-- property_type: the same question painting asks, copied rather than
+-- shared — the two are independent categories from here on.
+INSERT INTO service_options
+    (category_id, step_no, question_key, question_text, input_type, required,
+     option_value, option_label, option_hint, option_group, sort_order, active)
+SELECT (SELECT id FROM service_categories WHERE slug = 'waterproofing'),
+       2, question_key, question_text, input_type, required,
+       option_value, option_label, option_hint, option_group, sort_order, TRUE
+FROM service_options
+WHERE category_id = (SELECT id FROM service_categories WHERE slug = 'painting')
+  AND question_key = 'property_type';
+
+-- step 6 (problem_type, problem_location, previous_waterproofing,
+-- previous_when) was already waterproofing-only in the combined form.
+INSERT INTO service_options
+    (category_id, step_no, question_key, question_text, input_type, required,
+     option_value, option_label, option_hint, option_group, sort_order, active)
+SELECT (SELECT id FROM service_categories WHERE slug = 'waterproofing'),
+       3, question_key, question_text, input_type, required,
+       option_value, option_label, option_hint, option_group, sort_order, TRUE
+FROM service_options
+WHERE category_id = (SELECT id FROM service_categories WHERE slug = 'painting')
+  AND step_no = 6;
+
+INSERT INTO service_options
+    (category_id, step_no, question_key, question_text, input_type, required, sort_order, active)
+VALUES
+    ((SELECT id FROM service_categories WHERE slug = 'waterproofing'), 4, 'area_sqft', 'Approximate area (sq. ft.)', 'NUMBER', FALSE, 1, TRUE),
+    ((SELECT id FROM service_categories WHERE slug = 'waterproofing'), 5, 'files', 'Upload photos or video', 'FILE', FALSE, 1, TRUE),
+    ((SELECT id FROM service_categories WHERE slug = 'waterproofing'), 6, 'notes', 'Tell us anything else about your work.', 'TEXT', FALSE, 1, TRUE);
+
+-- Now drop the waterproofing-only rows from `painting`: half of
+-- service_needed, and the whole of step 6 — none of it is a painting
+-- question.
+DELETE FROM service_options
+WHERE category_id = (SELECT id FROM service_categories WHERE slug = 'painting')
+  AND ((question_key = 'service_needed' AND option_group = 'Waterproofing')
+       OR step_no = 6);
+
+-- ===========================================================================
+-- POP CEILING & DESIGN: reactivate + rename.
+-- ===========================================================================
+UPDATE service_categories
+SET slug = 'pop-ceiling-design',
+    name = 'POP Ceiling & Design',
+    icon = 'ceiling',
+    hero_image = '/assets/popular-services/pop-ceiling-design.png',
+    sort_order = 5,
+    active = TRUE
+WHERE slug = 'pop-false-ceiling';
+
+-- ===========================================================================
+-- INTERIOR BY CHOICE: first backend row for a previously frontend-only flow.
+-- ===========================================================================
+INSERT INTO service_categories (slug, name, tagline, description, icon, hero_image, visit_fee_paise, sort_order, active)
+VALUES ('interior-by-choice', 'Interior by Choice',
+        'Browse ready-made designs, pick one, book a home visit.',
+        'A catalogue of ready interior designs by space. Pick one and book a paid home visit; the fee is adjusted into your final project cost.',
+        'layers', '/assets/popular-services/interior-by-choice.png', 9900, 2, TRUE);
+
+INSERT INTO service_options
+    (category_id, step_no, question_key, question_text, input_type, required, sort_order, active)
+VALUES ((SELECT id FROM service_categories WHERE slug = 'interior-by-choice'),
+        1, 'notes', 'Selected design and requirements', 'TEXT', FALSE, 1, TRUE);
+
+-- ===========================================================================
+-- The remaining three: display name, imagery and final sort order.
+-- ===========================================================================
+-- icon here is corrected to match components/ui/Icon.jsx's actual key names
+-- (the original V5/V8 seed used the slug itself as the icon value, which
+-- never matched a real icon key — nothing rendered for these three).
+UPDATE service_categories SET sort_order = 1, icon = 'sofa', hero_image = '/assets/popular-services/interior-design.png', name = 'Interior Design' WHERE slug = 'interior-design';
+UPDATE service_categories SET sort_order = 6, icon = 'tap', hero_image = '/assets/popular-services/plumbing.png', name = 'Plumber' WHERE slug = 'plumbing';
+UPDATE service_categories SET sort_order = 7, icon = 'bolt', hero_image = '/assets/popular-services/electrical.png' WHERE slug = 'electrical';
+
+-- ===========================================================================
+-- OTHER SERVICES: an eighth catch-all tile, added back on request after
+-- being scoped out. Same shape as "electrical" — one tile in the main
+-- catalogue, a category-list page in front of what were, until now, five
+-- deactivated categories. Reactivating them changes only `active` and
+-- `parent_slug`; every question and price they had under V8 is untouched.
+-- ===========================================================================
+INSERT INTO service_categories (slug, name, tagline, description, icon, hero_image, visit_fee_paise, sort_order, active)
+VALUES ('other-services', 'Other Services',
+        'Everything else we do.',
+        'Architectural design, civil construction, furniture, fabrication and finishing work.',
+        'settings', '/assets/popular-services/other-services.png', 2500, 8, TRUE);
+
+UPDATE service_categories
+SET active = TRUE,
+    parent_slug = 'other-services'
+WHERE slug IN ('architectural-design', 'civil-construction', 'furniture', 'fabrication', 'finishing');
+
+-- Same icon-key correction as the main seven: V8's seed used the slug
+-- itself as the icon value, which never matched a real Icon.jsx key.
+UPDATE service_categories SET icon = 'building' WHERE slug = 'architectural-design';
+UPDATE service_categories SET icon = 'crane' WHERE slug = 'civil-construction';
+UPDATE service_categories SET icon = 'wardrobe' WHERE slug = 'furniture';
+UPDATE service_categories SET icon = 'welding' WHERE slug = 'fabrication';
+UPDATE service_categories SET icon = 'trowel' WHERE slug = 'finishing';
+
+

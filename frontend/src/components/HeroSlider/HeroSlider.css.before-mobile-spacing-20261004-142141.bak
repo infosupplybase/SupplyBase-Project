@@ -363,13 +363,3 @@ picture.sb-final-banner__image {
     transition: none;
   }
 }
-/* Final mobile banner spacing */
-@media (max-width: 767px) {
-  .page-home .sb-final-banner__dots {
-    display: none !important;
-  }
-
-  .page-home .sb-final-banner__search {
-    bottom: 7% !important;
-  }
-}

@@ -1,0 +1,1849 @@
+﻿===== FILE: frontend\src\pages\AcCheckout.jsx =====
+import { useEffect, useRef, useState } from 'react';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import SlotPicker from '../components/booking/SlotPicker';
+import ModalFoot from '../components/services/ModalFoot';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { usePickedLocation } from '../context/LocationContext';
+import { useHistoryState } from '../hooks/useHistoryState';
+import {
+  composeAddress,
+  emptyDetails,
+  validateDetails,
+} from '../lib/bookingDetails';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import api, { friendlyError } from '../lib/api';
+import {
+  acCategories,
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../data/acContent';
+
+function labelFor(options, value) {
+  return options.find((option) => option.value === value)?.label || value;
+}
+
+function bookingAnswers(selection) {
+  const category = selection.category;
+  const rows = [];
+
+  function add(key, value, label) {
+    if (value !== undefined && value !== null && value !== '') {
+      rows.push({
+        key,
+        value: String(value),
+        label: String(label ?? value),
+      });
+    }
+  }
+
+  add('ac_category', category, labelFor(acCategories.map((item) => ({
+    value: item.slug,
+    label: item.label,
+  })), category));
+
+  add(
+    'ac_service',
+    selection.service,
+    labelFor(acServicesByCategory[category] || [], selection.service)
+  );
+
+  add('ac_type', selection.acType, labelFor(acTypes, selection.acType));
+  add('ac_units', selection.units, `${selection.units} AC unit(s)`);
+
+  if (category === 'installation') {
+    add(
+      'ac_capacity',
+      selection.capacity,
+      labelFor(acCapacities, selection.capacity)
+    );
+  }
+
+  if (category === 'gas-charging') {
+    add(
+      'ac_refrigerant',
+      selection.refrigerant,
+      labelFor(acRefrigerants, selection.refrigerant)
+    );
+  }
+
+  for (const value of selection.addons || []) {
+    const addon = (acAddonsByCategory[category] || []).find(
+      (item) => item.value === value
+    );
+
+    if (!addon) continue;
+
+    add('ac_addons', value, addon.label);
+
+    if (addon.unit) {
+      const quantity = selection.addonQuantities?.[value] ?? 1;
+
+      add(
+        `ac_qty_${value.replaceAll('-', '_')}`,
+        quantity,
+        `${quantity} ${addon.unit}`
+      );
+    }
+  }
+
+  return rows;
+}
+
+export default function AcCheckout({
+  selection,
+  onBack,
+  onClose,
+  onStepChange,
+}) {
+  const scope = `f:ac:${selection.category}:checkout`;
+  const photoPrefix = `ac-${selection.category}`;
+
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+
+  const [stage, setStage] = useHistoryState(
+    `${scope}:stage`,
+    0,
+    { push: true }
+  );
+
+  const [details, setDetails] = useHistoryState(
+    `${scope}:details`,
+    emptyDetails
+  );
+
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [category, setCategory] = useState(null);
+  const [catalogueError, setCatalogueError] = useState('');
+  const [photoWarning, setPhotoWarning] = useState('');
+  const submitting = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    api.serviceForm('ac-services')
+      .then((form) => {
+        if (!cancelled) setCategory(form.category);
+      })
+      .catch((err) => {
+        if (!cancelled) setCatalogueError(friendlyError(err));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function setDetail(key) {
+    return (event) => {
+      const value = event.target.value;
+
+      setDetails((previous) => ({
+        ...previous,
+        [key]: value,
+      }));
+
+      setErrors((previous) => ({
+        ...previous,
+        [key]: undefined,
+      }));
+
+      setError('');
+    };
+  }
+
+  function continueSchedule() {
+    if (!date || !time) {
+      setErrors({ slot: 'Please select a date and time.' });
+      return;
+    }
+
+    setErrors({});
+    setError('');
+    setStage(1);
+    onStepChange?.();
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+
+    if (submitting.current || receipt) return;
+
+    const nextErrors = validateDetails(details, pickedLocation);
+
+    if (!date || !time) {
+      nextErrors.slot = 'Please select a date and time.';
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length) {
+      setError('Please complete the required details.');
+
+      if (nextErrors.slot) {
+        setStage(0, { push: false });
+        onStepChange?.();
+      }
+
+      return;
+    }
+
+    if (!category || catalogueError) {
+      setError(catalogueError || 'Please wait for the booking details to load.');
+      return;
+    }
+
+    submitting.current = true;
+    setBusy(true);
+    setError('');
+
+    try {
+      if (!(await ensureLogin(details))) return;
+
+      const result = await api.createBooking({
+        serviceSlug: 'ac-services',
+        answers: bookingAnswers(selection),
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name.trim(),
+        phone: details.phone.trim(),
+        whatsapp: details.whatsapp?.trim() || null,
+        email: details.email?.trim() || null,
+        address: composeAddress(details, pickedLocation),
+        city: details.city.trim(),
+        pincode: details.pincode.trim(),
+        areaSqft: null,
+      });
+
+      setReceipt(result);
+      onStepChange?.();
+
+      try {
+        await uploadBookingPhotos(
+          photoPrefix,
+          result.bookingNumber,
+          details.phone
+        );
+      } catch {
+        setPhotoWarning(
+          'Your booking was saved, but the photos could not be uploaded.'
+        );
+      }
+    } catch (err) {
+      if (err?.fieldErrors) {
+        setErrors(err.fieldErrors);
+      }
+
+      setError(friendlyError(err));
+    } finally {
+      submitting.current = false;
+      setBusy(false);
+    }
+  }
+
+  if (receipt) {
+    return (
+      <div className="pnt-step-card">
+        <h2>Booking request received</h2>
+
+        <p>
+          Booking number: <strong>{receipt.bookingNumber}</strong>
+        </p>
+
+        <p>Our team will contact you to confirm the service.</p>
+
+        {photoWarning && <p role="status">{photoWarning}</p>}
+
+        {onClose && (
+          <ModalFoot className="pnt-foot ac-booking-footer">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={onClose}
+            >
+              Done
+            </button>
+          </ModalFoot>
+        )}
+      </div>
+    );
+  }
+
+  const summary = bookingAnswers(selection).filter(
+    (row) => !row.key.startsWith('ac_qty_')
+  );
+
+  return (
+    <form onSubmit={submit} noValidate className="pnt-flow-shell">
+      <div className="pnt-step-card">
+        <h2 style={{ marginBottom: 18 }}>
+          {stage === 0 ? 'Choose date and time' : 'Your details'}
+        </h2>
+
+        {stage === 0 ? (
+          <SlotPicker
+            serviceSlug="ac-services"
+            date={date}
+            time={time}
+            onPick={(nextDate, nextTime) => {
+              setDate(nextDate);
+              setTime(nextTime);
+              setErrors({});
+              setError('');
+            }}
+            error={errors.slot}
+          />
+        ) : (
+          <>
+            <CustomerDetailsFields
+              details={details}
+              setDetail={setDetail}
+              errors={errors}
+              idPrefix={photoPrefix}
+            />
+
+            <div
+              style={{
+                marginTop: 22,
+                padding: 16,
+                background: '#fff8e8',
+                borderRadius: 12,
+              }}
+            >
+              <h3 style={{ margin: '0 0 12px' }}>Your AC service</h3>
+
+              {summary.map((row, index) => (
+                <p key={`${row.key}-${index}`} style={{ margin: '6px 0' }}>
+                  {row.label}
+                </p>
+              ))}
+
+              {Object.entries(selection.addonQuantities || {}).map(
+                ([value, quantity]) => {
+                  const addon = (
+                    acAddonsByCategory[selection.category] || []
+                  ).find((item) => item.value === value);
+
+                  if (!addon || !selection.addons?.includes(value)) {
+                    return null;
+                  }
+
+                  return (
+                    <p key={value} style={{ margin: '6px 0' }}>
+                      {addon.label}: {quantity} {addon.unit}
+                    </p>
+                  );
+                }
+              )}
+
+              <p style={{ margin: '12px 0 6px' }}>
+                Appointment: {date} at {time}
+              </p>
+
+              {category?.visitFee != null && (
+                <p style={{ margin: '6px 0' }}>
+                  Visit fee: ₹{Number(category.visitFee).toLocaleString('en-IN')}
+                </p>
+              )}
+
+              <p className="question-hint" style={{ marginTop: 12 }}>
+                Service prices shown earlier are starting prices.
+                The final scope and cost will be confirmed before work begins.
+              </p>
+            </div>
+          </>
+        )}
+
+        {(error || catalogueError) && (
+          <p
+            role="alert"
+            style={{
+              marginTop: 16,
+              padding: 14,
+              borderRadius: 10,
+              background: '#fff1f1',
+              color: '#b42318',
+            }}
+          >
+            {error || catalogueError}
+          </p>
+        )}
+      </div>
+
+      <ModalFoot className="pnt-foot ac-booking-footer">
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 12,
+            width: '100%',
+          }}
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            disabled={busy}
+            onClick={() => {
+              setError('');
+              setErrors({});
+
+              if (stage === 0) {
+                onBack?.();
+              } else {
+                setStage(0, { push: false });
+                onStepChange?.();
+              }
+            }}
+          >
+            Back
+          </button>
+
+          {stage === 0 ? (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={continueSchedule}
+            >
+              Continue
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={busy || !category || Boolean(catalogueError)}
+            >
+              {busy ? 'Submitting...' : 'Confirm Booking'}
+            </button>
+          )}
+        </div>
+      </ModalFoot>
+    </form>
+  );
+}
+
+===== FILE: frontend\src\pages\AcServiceFlow.jsx =====
+import { contact } from '../data/siteConfig';
+import { useEffect, useRef, useState } from 'react';
+import Icon from '../components/ui/Icon';
+import AcServiceOptions from '../components/ac/AcServiceOptions';
+import ModalFoot from '../components/services/ModalFoot';
+import {
+  acCategories,
+  acTypes,
+  acCapacities,
+  acRefrigerants,
+  acServicesByCategory,
+  acAddonsByCategory,
+} from '../data/acContent';
+import {
+  useFormBack,
+  useHistoryState,
+} from '../hooks/useHistoryState';
+
+function contains(options, value) {
+  return options.some((option) => option.value === value);
+}
+
+function positiveInteger(value) {
+  return value !== '' && Number.isInteger(Number(value)) && Number(value) >= 1;
+}
+
+export default function AcServiceFlow({
+  categorySlug,
+  onBackToCatalogue,
+  onContinue,
+  onStepChange,
+}) {
+  const category = acCategories.find(
+    (item) => item.slug === categorySlug
+  );
+
+  const services = acServicesByCategory[categorySlug] || [];
+  const addons = acAddonsByCategory[categorySlug] || [];
+
+  const steps = [
+    { key: 'service', title: 'Choose your service' },
+    { key: 'ac-details', title: 'Choose AC type' },
+    ...(addons.length
+      ? [{ key: 'addons', title: 'Additional services' }]
+      : []),
+  ];
+
+  const prefix = `f:ac:${categorySlug}`;
+
+  const [stepIndex, setStepIndex] = useHistoryState(
+    `${prefix}:step`,
+    0,
+    { push: true }
+  );
+
+  const [answers, setAnswers] = useHistoryState(
+    `${prefix}:answers`,
+    {
+      service: '',
+      acType: '',
+      capacity: '',
+      refrigerant: '',
+      units: 1,
+      addons: [],
+      addonQuantities: {},
+    }
+  );
+
+  const [error, setError] = useState('');
+  const errorRef = useRef(null);
+  const formBack = useFormBack();
+
+  const index = Math.min(
+    Math.max(Number(stepIndex) || 0, 0),
+    steps.length - 1
+  );
+
+  const step = steps[index];
+  const isLastStep = index === steps.length - 1;
+
+  useEffect(() => {
+    setError('');
+  }, [index]);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus({ preventScroll: true });
+    }
+  }, [error]);
+
+  function updateAnswer(key, value) {
+    setError('');
+    setAnswers((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  }
+
+  function validate(key) {
+    if (key === 'service') {
+      if (!contains(services, answers.service)) {
+        return 'Please select a service to continue.';
+      }
+    }
+
+    if (key === 'ac-details') {
+      if (!contains(acTypes, answers.acType)) {
+        return 'Please select your AC type.';
+      }
+
+      if (
+        categorySlug === 'installation' &&
+        !contains(acCapacities, answers.capacity)
+      ) {
+        return 'Please select your AC capacity.';
+      }
+
+      if (
+        categorySlug === 'gas-charging' &&
+        !contains(acRefrigerants, answers.refrigerant)
+      ) {
+        return 'Please select the refrigerant.';
+      }
+
+      if (!positiveInteger(answers.units)) {
+        return 'Please enter a whole number of AC units, starting from 1.';
+      }
+    }
+
+    if (key === 'addons') {
+      for (const value of answers.addons || []) {
+        const addon = addons.find((item) => item.value === value);
+
+        if (!addon) {
+          return 'Please review your additional service selections.';
+        }
+
+        if (
+          addon.unit &&
+          !positiveInteger(answers.addonQuantities?.[value] ?? 1)
+        ) {
+          return `Please enter a valid quantity for ${addon.label}.`;
+        }
+      }
+    }
+
+    return '';
+  }
+
+  function continueFlow() {
+    const message = validate(step.key);
+
+    if (message) {
+      setError(message);
+      return;
+    }
+
+    if (!isLastStep) {
+      setStepIndex(index + 1);
+      onStepChange?.();
+      return;
+    }
+
+    // Validate all selections before handing them to customer details.
+    for (let i = 0; i < steps.length; i += 1) {
+      const issue = validate(steps[i].key);
+
+      if (issue) {
+        setStepIndex(i, { push: false });
+        setError(issue);
+        onStepChange?.();
+        return;
+      }
+    }
+
+    const quantities = {};
+
+    for (const value of answers.addons || []) {
+      const addon = addons.find((item) => item.value === value);
+
+      if (addon?.unit) {
+        quantities[value] = Number(
+          answers.addonQuantities?.[value] ?? 1
+        );
+      }
+    }
+
+    onContinue({
+      category: categorySlug,
+      ...answers,
+      units: Number(answers.units),
+      addonQuantities: quantities,
+    });
+  }
+
+  function back() {
+    setError('');
+
+    if (index === 0) {
+      onBackToCatalogue?.();
+      return;
+    }
+
+    formBack(() => {
+      setStepIndex(index - 1, { push: false });
+    });
+
+    onStepChange?.();
+  }
+
+  if (!category) {
+    return (
+      <div className="pnt-step-card">
+        <p>This AC service is unavailable.</p>
+        <button
+          type="button"
+          className="btn btn-outline"
+          onClick={onBackToCatalogue}
+        >
+          Back to AC Services
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pnt-flow-shell ac-pop-flow">
+      <div className="ac-pop-top">
+        <button
+          type="button"
+          className="ac-pop-back"
+          onClick={back}
+          aria-label="Go back"
+        >
+          <Icon name="arrow-left" size={20} />
+        </button>
+
+        <h2 className="ac-pop-title">{category.label}</h2>
+
+        <a
+          className="ac-pop-help"
+          href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+            `Hello Supplybase, I need help booking ${category.label}.`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Need help?
+        </a>
+      </div>
+
+      <p className="ac-pop-progress" aria-live="polite">
+        STEP {index + 1} OF {steps.length}
+        <span>{step.title}</span>
+      </p>
+
+      <div className="pnt-step-card ac-pop-step">
+        <h3 className="ac-pop-step-title">{step.title}</h3>
+
+        <AcServiceOptions
+          category={categorySlug}
+          step={step.key}
+          answers={answers}
+          onChange={updateAnswer}
+        />
+      </div>
+
+      {error && (
+        <div
+          className="ac-pop-alert"
+          ref={errorRef}
+          role="alert"
+          tabIndex={-1}
+        >
+          <Icon name="info" size={20} />
+          <span>{error}</span>
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={() => setError('')}
+          >
+            <Icon name="close" size={18} />
+          </button>
+        </div>
+      )}
+
+      <ModalFoot className="ac-pop-actions">
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={continueFlow}
+        >
+          Continue
+          <Icon name="arrow-right" size={17} />
+        </button>
+      </ModalFoot>
+    </div>
+  );
+}
+
+===== FILE: frontend\src\pages\AcServices.jsx =====
+import '../styles/ac-services.css';
+import { useNavigate, useParams } from 'react-router-dom';
+import AcServicesCategory from './AcServicesCategory';
+import AcServiceFlow from './AcServiceFlow';
+import AcCheckout from './AcCheckout';
+import { acCategories } from '../data/acContent';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+
+function AcServicesContent({
+  modal = false,
+  onClose,
+  onStepChange,
+}) {
+  const { acCategory } = useParams();
+  const navigate = useNavigate();
+  const formBack = useFormBack();
+
+  const [selectedCategory, setSelectedCategory] = useHistoryState(
+    'f:ac:selected-category',
+    null,
+    { push: true }
+  );
+
+  const [view, setView] = useHistoryState(
+    'f:ac:view',
+    'options',
+    { push: true }
+  );
+
+  const [selection, setSelection] = useHistoryState(
+    'f:ac:selection',
+    null
+  );
+
+  const categorySlug = modal ? selectedCategory : acCategory;
+
+  const validCategory = acCategories.some(
+    (category) => category.slug === categorySlug
+  );
+
+  function openCategory(slug) {
+    setView('options', { push: false });
+    setSelection(null);
+
+    if (modal) {
+      setSelectedCategory(slug);
+    } else {
+      navigate(`/services/ac-services/${slug}`);
+    }
+
+    onStepChange?.();
+  }
+
+  function backToCategories() {
+    if (modal) {
+      formBack(() => {
+        setSelectedCategory(null, { push: false });
+        setView('options', { push: false });
+      });
+    } else {
+      navigate('/services/ac-services');
+    }
+
+    onStepChange?.();
+  }
+
+  if (!categorySlug || !validCategory) {
+    return (
+      <AcServicesCategory
+        modal={modal}
+        onSelectFlow={openCategory}
+      />
+    );
+  }
+
+  if (
+    view === 'checkout' &&
+    selection?.category === categorySlug
+  ) {
+    return (
+      <AcCheckout
+        key={`checkout-${categorySlug}`}
+        selection={selection}
+        onBack={() => {
+          formBack(() => setView('options', { push: false }));
+          onStepChange?.();
+        }}
+        onClose={
+          onClose || (() => navigate('/services'))
+        }
+        onStepChange={onStepChange}
+      />
+    );
+  }
+
+  return (
+    <AcServiceFlow
+      key={categorySlug}
+      categorySlug={categorySlug}
+      onBackToCatalogue={backToCategories}
+      onStepChange={onStepChange}
+      onContinue={(answers) => {
+        setSelection(answers);
+        setView('checkout');
+        onStepChange?.();
+      }}
+    />
+  );
+}
+export default function AcServices(props) {
+  return (
+    <div className="ac-booking-ui">
+      <AcServicesContent {...props} />
+    </div>
+  );
+}
+
+===== FILE: frontend\src\components\painting\EstimateSummary.jsx =====
+import Icon from '../ui/Icon';
+import { formatRupees } from '../../lib/money';
+
+/**
+ * Editable summary — every selection made across the flow, each with an
+ * "Edit" link back to the step that set it (per the brief: "allow users to
+ * edit earlier steps from the summary"). Colours and add-ons are always
+ * included here even for flows where the reference's own summary screen
+ * was placed before those steps (see paintingContent.js / V15's notes on
+ * the Few Walls reference's own numbering bug) — this summary always
+ * reflects every selection, in the flow's real order.
+ */
+export default function EstimateSummary({ rows, whatsIncluded, itemsTotalPaise, onEditStep }) {
+  const total = itemsTotalPaise != null ? itemsTotalPaise / 100 : null;
+
+  return (
+    <div className="pnt-summary">
+      <dl className="pnt-summary-rows">
+        {rows.map((row) => (
+  <div
+    key={row.stepIndex}
+    className="
+      pnt-summary-row
+      !grid
+      !grid-cols-1
+      !gap-1
+
+      md:!flex
+      md:!items-baseline
+      md:!justify-between
+      md:!gap-3
+    "
+  >
+    <dt className="!w-full md:!w-auto">
+      {row.label}
+    </dt>
+
+    <dd
+      className="
+        !flex
+        !w-full
+        !min-w-0
+        !items-center
+        !justify-between
+        !gap-2
+        !text-left
+
+        md:!w-auto
+        md:!justify-end
+        md:!text-right
+      "
+    >
+      <span className="!min-w-0 !flex-1 !break-normal">
+        {row.value || '—'}
+      </span>
+
+      <button
+        type="button"
+        className="pnt-summary-edit !shrink-0"
+        onClick={() => onEditStep(row.stepIndex)}
+      >
+        Edit
+      </button>
+    </dd>
+  </div>
+))}
+      </dl>
+
+      <div className="pnt-summary-total">
+        <span>Estimated Price</span>
+        <strong>{total != null ? formatRupees(total) : 'To be confirmed on site visit'}</strong>
+      </div>
+
+      {whatsIncluded && whatsIncluded.length > 0 && (
+        <div className="pnt-summary-includes">
+          <h3>Includes</h3>
+          <ul>
+            {whatsIncluded.map((item) => (
+              <li key={item}>
+                <Icon name="check" size={13} strokeWidth={3.5} />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p className="pnt-summary-note">
+        This is an estimate. Final scope and price are confirmed after our team inspects the site.
+      </p>
+    </div>
+  );
+}
+
+
+===== FILE: frontend\src\styles\ac-services.css =====
+/* AC booking layout */
+
+.ac-booking-ui {
+  width: 100%;
+  min-width: 0;
+  color: #242424;
+}
+
+.ac-booking-ui .pnt-flow-shell {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.ac-booking-ui .pnt-step-card {
+  padding: 20px;
+  border: 1px solid #eee5d4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.ac-booking-ui h2 {
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.ac-booking-ui h3 {
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+
+.ac-booking-ui .question-hint,
+.ac-booking-ui .pnt-option-hint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #777;
+}
+
+/* Category cards */
+
+.ac-booking-ui .plb-overview-grid {
+  gap: 14px !important;
+}
+
+.ac-booking-ui .plb-overview-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0 15px;
+  overflow: hidden;
+  border: 1px solid #e9e3d8;
+  border-radius: 14px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 3px 12px rgb(0 0 0 / 4%);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.ac-booking-ui .plb-overview-card:hover {
+  border-color: #d9a624;
+  box-shadow: 0 5px 16px rgb(0 0 0 / 7%);
+  transform: none;
+}
+
+.ac-booking-ui .plb-overview-card:focus-visible {
+  outline: 3px solid #e6c570;
+  outline-offset: 3px;
+}
+
+.ac-booking-ui .plb-overview-photo {
+  flex-shrink: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
+.ac-booking-ui .plb-overview-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 13px 12px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.ac-booking-ui .plb-overview-name svg {
+  flex-shrink: 0;
+  color: #ac831c;
+}
+
+.ac-booking-ui .plb-overview-price-note {
+  display: block;
+  padding-right: 12px;
+  padding-left: 12px;
+  color: #777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Option cards: no movement when selected */
+
+.ac-booking-ui .pnt-option {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  min-height: 76px;
+  transform: none !important;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.ac-booking-ui .pnt-option:hover {
+  transform: none !important;
+}
+
+.ac-booking-ui .pnt-option:focus-within {
+  outline: 2px solid #e6c570;
+  outline-offset: 2px;
+}
+
+.ac-booking-ui .pnt-option input {
+  position: static !important;
+  width: 18px !important;
+  height: 18px !important;
+  margin: 0;
+  opacity: 1 !important;
+  appearance: auto !important;
+  clip: auto !important;
+  clip-path: none !important;
+}
+
+.ac-booking-ui .pnt-option-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ac-booking-ui .pnt-option-label {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.ac-booking-ui .pnt-option-price {
+  color: #916c13;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ac-booking-ui input[type='number'] {
+  background: #fff;
+  color: #242424;
+  font: inherit;
+}
+
+.ac-booking-ui input[type='number']:focus {
+  border-color: #d9a624 !important;
+  outline: 2px solid #f5e8bf;
+}
+
+/* Modal footer is rendered outside the AC content. */
+
+.ac-booking-footer {
+  margin: 0;
+  padding: 12px 18px;
+  background: #fff;
+}
+
+.ac-booking-footer .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+  transform: none;
+}
+
+.ac-booking-footer .btn-primary {
+  border: 1px solid #d9a624;
+  background: #d9a624;
+  color: #fff;
+}
+
+.ac-booking-footer .btn-outline {
+  border: 1px solid #e5e0d6;
+  background: #fff;
+  color: #555;
+}
+
+.ac-booking-footer .btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .ac-booking-ui .pnt-step-card {
+    padding: 16px;
+    border-radius: 13px;
+  }
+
+  .ac-booking-ui h2 {
+    font-size: 19px;
+  }
+
+  .ac-booking-ui h3 {
+    font-size: 16px;
+  }
+
+  .ac-booking-ui .plb-overview-grid {
+    gap: 10px !important;
+  }
+
+  .ac-booking-ui .plb-overview-photo {
+    height: 110px !important;
+  }
+
+  .ac-booking-ui .plb-overview-name {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 13px;
+  }
+
+  .ac-booking-ui .plb-overview-price-note {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 11px;
+  }
+
+  .ac-booking-footer {
+    padding: 10px 14px;
+  }
+}
+/* AC layout correction */
+.ac-booking-ui {
+  background: #fff;
+  font-family: var(--font-body, Arial, sans-serif);
+}
+
+.ac-booking-ui .pnt-flow-shell {
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 0 16px !important;
+  margin: 0 !important;
+  background: #fff !important;
+  color: #242424 !important;
+}
+
+.ac-booking-ui h2,
+.ac-booking-ui h3,
+.ac-booking-ui .plb-overview-name {
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  color: #242424 !important;
+}
+
+.ac-booking-ui h2 {
+  font-size: 20px !important;
+  line-height: 1.4 !important;
+  font-weight: 700 !important;
+}
+
+.ac-booking-ui h3 {
+  font-size: 16px !important;
+  line-height: 1.45 !important;
+  font-weight: 650 !important;
+}
+
+.ac-booking-ui .pnt-step-card {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-ui .pnt-option {
+  min-height: 82px !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+.ac-booking-ui .pnt-option.selected {
+  border-color: #d9a624 !important;
+  background: #fff9e9 !important;
+}
+
+.ac-booking-ui .pnt-option-label {
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+.ac-booking-ui .pnt-option-hint {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+}
+
+.ac-booking-footer {
+  padding: 12px 18px !important;
+  margin: 0 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-footer .btn {
+  min-height: 44px !important;
+  font-family: var(--font-body, Arial, sans-serif) !important;
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.ac-booking-footer .btn-outline {
+  min-width: 95px;
+}
+
+.ac-booking-footer .btn-primary {
+  min-width: 135px;
+}
+
+@media (max-width: 600px) {
+  .ac-booking-ui h2 {
+    font-size: 18px !important;
+  }
+
+  .ac-booking-footer {
+    padding: 10px 14px !important;
+  }
+}
+/* AC layout matched to POP */
+
+.ac-booking-ui .ac-pop-flow {
+  min-height: 0 !important;
+  padding: 0 !important;
+  background: #fff !important;
+  color: var(--ink);
+}
+
+.ac-booking-ui .ac-pop-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 44px 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.ac-pop-back {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.ac-booking-ui .ac-pop-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+  overflow: hidden;
+  font-family: var(--font-heading) !important;
+  font-size: 1.05rem !important;
+  line-height: 1.2;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink) !important;
+}
+
+.ac-pop-help {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ac-pop-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.ac-pop-progress span {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ac-booking-ui .pnt-step-card.ac-pop-step {
+  padding: 16px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.ac-booking-ui .ac-pop-step-title {
+  margin: 0 0 12px !important;
+  color: var(--ink) !important;
+  font-family: var(--font-heading) !important;
+  font-size: 1rem !important;
+  text-transform: uppercase;
+}
+
+.ac-pop-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ac-pop-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.ac-pop-option:hover,
+.ac-pop-option:focus-within,
+.ac-pop-option.selected {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-a40);
+}
+
+.ac-pop-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.ac-pop-option-image {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.ac-pop-option-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+}
+
+.ac-pop-option-body strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.ac-pop-option-body small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.ac-pop-option-price {
+  margin-top: 4px;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ac-pop-option-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--gold-deep);
+  color: #fff;
+  opacity: 0;
+}
+
+.ac-pop-option.selected .ac-pop-option-check {
+  opacity: 1;
+}
+
+.ac-pop-option:not(:has(.ac-pop-option-image)) .ac-pop-option-body {
+  padding-right: 38px;
+}
+
+.ac-pop-addon {
+  box-shadow: none;
+}
+
+.ac-pop-actions {
+  display: flex !important;
+  width: 100%;
+  gap: 12px;
+}
+
+.ac-pop-actions .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+}
+
+.ac-pop-alert {
+  position: fixed;
+  top: max(24px, env(safe-area-inset-top));
+  left: 50%;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(420px, calc(100vw - 32px));
+  padding: 13px 14px;
+  transform: translateX(-50%);
+  border: 1px solid #f0a5a5;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #982121;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.ac-pop-alert > span {
+  flex: 1;
+}
+
+.ac-pop-alert button {
+  display: flex;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .ac-booking-ui .ac-pop-top {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .ac-booking-ui .ac-pop-title {
+    font-size: .92rem !important;
+  }
+
+  .ac-pop-help {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .ac-pop-help::before {
+    content: '?';
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 420px) {
+  .ac-booking-ui .pnt-step-card.ac-pop-step {
+    padding: 12px !important;
+  }
+
+  .ac-pop-option-grid {
+    gap: 8px;
+  }
+
+  .ac-pop-option-image {
+    height: 82px;
+  }
+
+  .ac-pop-option-body {
+    padding: 10px;
+  }
+
+  .ac-pop-progress span {
+    display: none;
+  }
+}
+/* Unified POP and AC reference layout */
+
+.booking-pop-ac-layout {
+  height: 88dvh !important;
+  max-height: 88dvh !important;
+}
+
+/* Leave room for the close button above the flow header. */
+.booking-pop-ac-layout .bm-scroll {
+  padding: 56px 24px 24px !important;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: auto;
+}
+
+.booking-pop-ac-layout .pop-modal-scope,
+.booking-pop-ac-layout .ac-booking-ui .ac-pop-flow {
+  display: block !important;
+  width: 100% !important;
+  max-width: 422px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  background: #fff !important;
+  box-sizing: border-box;
+}
+
+.booking-pop-ac-layout .pop-modal-scope > .container {
+  width: 100% !important;
+  max-width: 422px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Matching compact header */
+.booking-pop-ac-layout .pop-modal-scope .pnt-top,
+.booking-pop-ac-layout .ac-booking-ui .ac-pop-top {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 12px !important;
+  padding: 8px 10px !important;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.booking-pop-ac-layout .pnt-back,
+.booking-pop-ac-layout .ac-pop-back {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+
+.booking-pop-ac-layout .pop-modal-scope .pnt-top-title,
+.booking-pop-ac-layout .ac-booking-ui .ac-pop-title {
+  flex: 1;
+  min-width: 0;
+  margin: 0 !important;
+  overflow: hidden;
+  font-family: var(--font-display) !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  letter-spacing: .03em !important;
+  text-transform: uppercase !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink) !important;
+}
+
+.booking-pop-ac-layout .pnt-help,
+.booking-pop-ac-layout .ac-pop-help {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  flex-shrink: 0;
+  padding: 7px 10px !important;
+  border: 1px solid var(--gold-a40);
+  border-radius: 8px;
+  font-size: 12px !important;
+  font-weight: 700;
+  color: var(--gold-deep) !important;
+  text-decoration: none;
+}
+
+.booking-pop-ac-layout .pnt-help::before,
+.booking-pop-ac-layout .ac-pop-help::before {
+  content: none !important;
+}
+
+/* Matching cream progress strip */
+.booking-pop-ac-layout .pop-modal-progress,
+.booking-pop-ac-layout .ac-pop-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0 0 12px !important;
+  padding: 8px 12px !important;
+  border-radius: 8px;
+  background: #fbf5e7;
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  box-sizing: border-box;
+}
+
+/* Matching white step card */
+.booking-pop-ac-layout .pop-modal-scope .pnt-step-card,
+.booking-pop-ac-layout .ac-booking-ui .pnt-step-card.ac-pop-step {
+  width: 100%;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: var(--shadow-sm) !important;
+  box-sizing: border-box;
+}
+
+.booking-pop-ac-layout .pop-modal-scope .pnt-step-title,
+.booking-pop-ac-layout .ac-booking-ui .ac-pop-step-title {
+  margin: 0 0 12px !important;
+  font-family: var(--font-display) !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+  color: var(--ink) !important;
+}
+
+/* Two cards per row */
+.booking-pop-ac-layout .pop-modal-scope .pnt-option-list,
+.booking-pop-ac-layout .ac-pop-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+}
+
+.booking-pop-ac-layout .pop-image-option,
+.booking-pop-ac-layout .ac-pop-option {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.booking-pop-ac-layout .pop-image-option img,
+.booking-pop-ac-layout .ac-pop-option-image {
+  display: block;
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.booking-pop-ac-layout .pop-image-option-content,
+.booking-pop-ac-layout .ac-pop-option-body {
+  padding: 10px 12px 12px;
+}
+
+.booking-pop-ac-layout .pop-image-option-content strong,
+.booking-pop-ac-layout .ac-pop-option-body strong {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.booking-pop-ac-layout .pop-image-option-content small,
+.booking-pop-ac-layout .ac-pop-option-body small {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Full-width gold button outside the scrolling area */
+.booking-pop-ac-layout .bm-foot {
+  flex-shrink: 0;
+}
+
+.booking-pop-ac-layout .pop-modal-actions,
+.booking-pop-ac-layout .ac-pop-actions {
+  display: flex !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+.booking-pop-ac-layout .pop-modal-actions > .btn-primary,
+.booking-pop-ac-layout .ac-pop-actions > .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1 !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 50px;
+  margin: 0 !important;
+}
+
+@media (max-width: 420px) {
+  .booking-pop-ac-layout .bm-scroll {
+    padding: 56px 16px 20px !important;
+  }
+
+  .booking-pop-ac-layout .pop-modal-scope .pnt-step-card,
+  .booking-pop-ac-layout .ac-booking-ui .pnt-step-card.ac-pop-step {
+    padding: 12px !important;
+  }
+
+  .booking-pop-ac-layout .pop-modal-scope .pnt-option-list,
+  .booking-pop-ac-layout .ac-pop-option-grid {
+    gap: 8px;
+  }
+
+  .booking-pop-ac-layout .pop-image-option img,
+  .booking-pop-ac-layout .ac-pop-option-image {
+    height: 82px;
+  }
+
+  .booking-pop-ac-layout .pop-modal-scope .pnt-top-title,
+  .booking-pop-ac-layout .ac-booking-ui .ac-pop-title {
+    font-size: .9rem !important;
+  }
+}
+/* AC category close-button clearance */
+.ac-booking-ui .plb-overview-grid {
+  padding-top: 20px !important;
+}
+/* AC type product images */
+.ac-booking-ui .ac-pop-option-image.ac-pop-type-image {
+  width: 100%;
+  height: 110px;
+  padding: 10px;
+  box-sizing: border-box;
+  object-fit: contain;
+  background: #fff;
+}
+
+@media (max-width: 420px) {
+  .ac-booking-ui .ac-pop-option-image.ac-pop-type-image {
+    height: 90px;
+    padding: 8px;
+  }
+}
+

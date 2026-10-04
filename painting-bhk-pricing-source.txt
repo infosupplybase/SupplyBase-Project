@@ -1,0 +1,1626 @@
+﻿===== FILE: frontend\src\hooks\usePaintingCatalogue.js =====
+import { useEffect, useMemo, useState } from 'react';
+import api, { friendlyError } from '../lib/api';
+
+let cachedForm = null;
+let pendingRequest = null;
+
+function loadPaintingForm() {
+  if (cachedForm) {
+    return Promise.resolve(cachedForm);
+  }
+
+  if (!pendingRequest) {
+    pendingRequest = api.serviceForm('painting')
+      .then((result) => {
+        cachedForm = result;
+        return result;
+      })
+      .finally(() => {
+        pendingRequest = null;
+      });
+  }
+
+  return pendingRequest;
+}
+
+export default function usePaintingCatalogue() {
+  const [form, setForm] = useState(() => cachedForm);
+  const [loading, setLoading] = useState(() => !cachedForm);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadPaintingForm()
+      .then((result) => {
+        if (cancelled) return;
+        setForm(result);
+        setError('');
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(friendlyError(err));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const byKey = useMemo(() => {
+    const map = new Map();
+
+    (form?.questions || []).forEach((question) => {
+      map.set(question.key, question);
+    });
+
+    return map;
+  }, [form]);
+
+  const optionsFor = (questionKey) =>
+    byKey.get(questionKey)?.options || [];
+
+  const productsByTier = (questionKey) => {
+    const byTier = new Map();
+    const sharedQuestions = [
+      'full_home_product',
+      'few_walls_product',
+    ];
+
+    const options = sharedQuestions.includes(questionKey)
+      ? sharedQuestions.flatMap((key) => optionsFor(key))
+      : optionsFor(questionKey);
+
+    const seen = new Set();
+
+    options.forEach((option) => {
+      if (seen.has(option.value)) return;
+      seen.add(option.value);
+
+      const tier = option.group || 'Premium';
+
+      if (!byTier.has(tier)) {
+        byTier.set(tier, []);
+      }
+
+      byTier.get(tier).push(option);
+    });
+
+    return byTier;
+  };
+
+  const coloursByTab = (questionKey) => {
+    const byTab = new Map();
+
+    optionsFor(questionKey).forEach((option) => {
+      const tab = option.group || 'Popular';
+
+      if (!byTab.has(tab)) {
+        byTab.set(tab, []);
+      }
+
+      byTab.get(tab).push({
+        ...option,
+        hex: option.hint || '#E5E5E5',
+      });
+    });
+
+    return byTab;
+  };
+
+  return {
+    category: form?.category,
+    loading,
+    error,
+    optionsFor,
+    productsByTier,
+    coloursByTab,
+  };
+}
+
+===== FILE: frontend\src\pages\PaintingFlow.jsx =====
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import Icon from '../components/ui/Icon';
+import StepIndicator from '../components/painting/StepIndicator';
+import OptionCard from '../components/painting/OptionCard';
+import BrandPicker from '../components/painting/BrandPicker';
+import ProductPicker from '../components/painting/ProductPicker';
+import ColourPicker from '../components/painting/ColourPicker';
+import AddonList from '../components/painting/AddonList';
+import EstimateSummary from '../components/painting/EstimateSummary';
+import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
+import SlotPicker from '../components/booking/SlotPicker';
+import usePaintingCatalogue from '../hooks/usePaintingCatalogue';
+import { paintingFlows } from '../data/paintingContent';
+import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
+import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import { formatRupees } from '../lib/money';
+import { useAuth } from '../context/AuthContext';
+import api, { friendlyError } from '../lib/api';
+import { contact } from '../data/siteConfig';
+import { formatVisit } from '../lib/visitTime';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import ModalFoot from '../components/services/ModalFoot';
+
+/**
+ * One page, three journeys (Full Home / Few Walls / Renovation) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â driven
+ * entirely by paintingFlows[flowSlug] (see paintingContent.js) and the live
+ * catalogue (usePaintingCatalogue). Stages 1..N are the flow's configured
+ * steps (the last of which is always "summary"), starting straight on the
+ * first question rather than an intro splash; then Details, Schedule and
+ * Confirm, the same three-stage tail ServiceBooking.jsx already uses for
+ * every other category.
+ */
+export default function PaintingFlow({
+  modal = false,
+  flowSlug: propFlowSlug,
+  onBackToCategories,
+  onStepChange,
+}) {
+  const params = useParams();
+  const navigate = useNavigate();
+
+  const flowSlug = propFlowSlug || params.flowSlug;
+  const flow = paintingFlows[flowSlug];
+  const { user } = useAuth();
+  const { category, loading, error: loadError, optionsFor, productsByTier, coloursByTab } =
+    usePaintingCatalogue();
+
+  // This form's step and answers live in the browser's history (see
+  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
+  const scope = `f:paint:${flowSlug}`;
+  const formBack = useFormBack();
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
+  const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+  const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
+  const [details, setDetails] = useHistoryState(`${scope}:details`, user
+    ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
+    : emptyDetails);
+  const [date, setDate] = useHistoryState(`${scope}:date`, '');
+  const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [choiceError, setChoiceError] = useState('');
+
+  useEffect(() => {
+    setChoiceError('');
+  }, [answers, stage]);
+
+  useEffect(() => {
+    if (!choiceError) return;
+    const timer = window.setTimeout(() => setChoiceError(''), 4000);
+    return () => window.clearTimeout(timer);
+  }, [choiceError]);
+
+  const configSteps = useMemo(() => flow?.steps || [], [flow]);
+  const DETAILS = 1 + configSteps.length;
+  const SCHEDULE = DETAILS + 1;
+  const CONFIRM = SCHEDULE + 1;
+
+  const setAnswer = (key) => (value) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: undefined }));
+    setSubmitError('');
+  };
+
+  const toggleMulti = (key) => (value) => {
+    setAnswers((a) => {
+      const list = Array.isArray(a[key]) ? a[key] : [];
+      return {
+        ...a,
+        [key]: list.includes(value) ? list.filter((v) => v !== value) : [...list, value],
+      };
+    });
+    setErrors((e) => ({ ...e, [key]: undefined }));
+  };
+
+  const setDetail = (key) => (e) => {
+    setDetails((d) => ({ ...d, [key]: e.target.value }));
+    setErrors((err) => ({ ...err, [key]: undefined }));
+    setSubmitError('');
+  };
+
+  /** Every step's answer, resolved to a label + a client-side estimate
+      (display only ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â the server recomputes the real total from the
+      catalogue on submit, never trusting this number). */
+  const resolved = useMemo(() => {
+    if (!flow) return [];
+    return configSteps
+      .filter((s) => s.type !== 'summary')
+      .map((step, i) => {
+        if (step.type === 'brand') {
+          const opt = optionsFor('paint_brand').find((o) => o.value === answers.paint_brand);
+          return { stepIndex: i + 1, label: 'Brand', value: opt?.label, priceRupees: null };
+        }
+        if (step.type === 'option') {
+          const opt = optionsFor(step.questionKey).find((o) => o.value === answers[step.questionKey]);
+          return { stepIndex: i + 1, label: step.title.replace(/\?$/, ''), value: opt?.label, priceRupees: opt?.price ?? null };
+        }
+        if (step.type === 'product') {
+          const tiers = productsByTier(step.questionKey);
+          const opt = [...tiers.values()].flat().find((o) => o.value === answers[step.questionKey]);
+          return { stepIndex: i + 1, label: 'Product', value: opt?.label, priceRupees: opt?.price ?? null };
+        }
+        if (step.type === 'colour') {
+          const tabs = coloursByTab(step.questionKey);
+          const opt = [...tabs.values()].flat().find((o) => o.value === answers[step.questionKey]);
+          return { stepIndex: i + 1, label: step.title.replace('Choose Your ', ''), value: opt?.label, priceRupees: null };
+        }
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          const opts = optionsFor(step.questionKey).filter((o) => chosen.includes(o.value));
+          const total = opts.reduce((sum, o) => sum + (o.price || 0), 0);
+          return {
+            stepIndex: i + 1,
+            label: step.title.replace(' (optional)', '').replace(' (Optional)', ''),
+            value: opts.map((o) => o.label).join(', '),
+            priceRupees: opts.length ? total : null,
+          };
+        }
+        return { stepIndex: i + 1, label: step.title, value: '', priceRupees: null };
+      });
+  }, [flow, configSteps, answers, optionsFor, productsByTier, coloursByTab]);
+
+  const requiresPaintingSiteQuote =
+    ['4bhk-villa', 'independent-house'].includes(answers.home_type) &&
+    answers.full_home_painting_type === 'unfurnished-home';
+
+  const itemsTotalPaise = useMemo(
+    () => resolved.reduce((sum, r) => sum + Math.round((r.priceRupees || 0) * 100), 0),
+    [resolved]
+  );
+
+  if (!flow) {
+  if (modal) return null;
+
+  return <Navigate to="/services/painting" replace />;
+}
+
+  const jumpToStep = (i) => {
+  setStage(i);
+
+  if (modal) {
+    onStepChange?.();
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+  const validateStep = (step) => {
+    const reject = (key, message) => {
+      setErrors({ [key]: message });
+      if (modal) setChoiceError(message);
+      return false;
+    };
+
+    if (step.type === 'option') {
+      const options = optionsFor(step.questionKey);
+      const valid = options.some(
+        (option) => option.value === answers[step.questionKey]
+      );
+
+      if (options.length > 0 && !valid) {
+        return reject(
+          step.questionKey,
+          'Choose an option to continue.'
+        );
+      }
+    }
+
+    if (step.type === 'brand') {
+      const valid = optionsFor('paint_brand').some(
+        (option) => option.value === answers.paint_brand
+      );
+
+      if (!valid) {
+        return reject(
+          'paint_brand',
+          'Choose a paint brand to continue.'
+        );
+      }
+    }
+
+    if (step.type === 'product') {
+      const products = answers.paint_brand === 'asian-paints'
+        ? [...productsByTier(step.questionKey).values()].flat()
+        : [];
+
+      const valid = products.some(
+        (product) => product.value === answers[step.questionKey]
+      );
+
+      if (products.length > 0 && !valid) {
+        return reject(
+          step.questionKey,
+          'Choose a paint product to continue.'
+        );
+      }
+    }
+
+    if (step.type === 'addon' && step.required) {
+      const chosen = Array.isArray(answers[step.questionKey])
+        ? answers[step.questionKey]
+        : [];
+
+      const valid = optionsFor(step.questionKey).some(
+        (option) => chosen.includes(option.value)
+      );
+
+      if (!valid) {
+        return reject(
+          step.questionKey,
+          'Choose at least one service to continue.'
+        );
+      }
+    }
+
+    setErrors({});
+    setChoiceError('');
+    return true;
+  };
+
+  const goNext = () => {
+  setSubmitError('');
+
+  const step = configSteps[stage - 1];
+
+  if (step && !validateStep(step)) return;
+
+  setStage((s) => Math.min(s + 1, CONFIRM));
+
+  if (modal) {
+    onStepChange?.();
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+  const goBack = () => {
+  setSubmitError('');
+
+  if (stage === 1) {
+    if (modal) {
+      onBackToCategories?.();
+    } else {
+      navigate('/services/painting');
+    }
+    return;
+  }
+
+  formBack(() => setStage((s) => Math.max(s - 1, 1)));
+
+  if (modal) {
+    onStepChange?.();
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+  const canLeaveDetails = () => {
+    const next = validateDetails(details, pickedLocation);
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (busy) return; // duplicate-submit guard
+    if (!date || !time) {
+      setErrors({ slot: 'Please choose a date and a time' });
+      return;
+    }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
+
+    setBusy(true);
+    setSubmitError('');
+    try {
+      const flat = [];
+      configSteps.forEach((step) => {
+        if (step.type === 'summary') return;
+        if (step.type === 'brand') {
+          if (answers.paint_brand) {
+            const opt = optionsFor('paint_brand').find((o) => o.value === answers.paint_brand);
+            flat.push({ key: 'paint_brand', value: answers.paint_brand, label: opt?.label || answers.paint_brand });
+          }
+          return;
+        }
+        if (step.type === 'addon') {
+          const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
+          chosen.forEach((v) => {
+            const opt = optionsFor(step.questionKey).find((o) => o.value === v);
+            flat.push({ key: step.questionKey, value: v, label: opt?.label || v });
+          });
+          return;
+        }
+        const value = answers[step.questionKey];
+        if (value === undefined || value === '' || value === null) return;
+        let opt;
+        if (step.type === 'product') opt = [...productsByTier(step.questionKey).values()].flat().find((o) => o.value === value);
+        else if (step.type === 'colour') opt = [...coloursByTab(step.questionKey).values()].flat().find((o) => o.value === value);
+        else opt = optionsFor(step.questionKey).find((o) => o.value === value);
+        flat.push({ key: step.questionKey, value, label: opt?.label || value });
+      });
+
+      const result = await api.createBooking({
+        serviceSlug: 'painting',
+        answers: flat,
+        preferredDate: date,
+        preferredTime: time,
+        name: details.name,
+        phone: details.phone,
+        whatsapp: details.whatsapp || null,
+        email: details.email || null,
+        address: composeAddress(details, pickedLocation),
+        city: details.city,
+        pincode: details.pincode || null,
+      });
+      setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pnt', result.bookingNumber, details.phone);
+setStage(CONFIRM);
+
+if (modal) {
+  onStepChange?.();
+} else {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+    } catch (err) {
+      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      setSubmitError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <p className="question-hint" role="status">Loading painting options...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="pnt-section">
+        <div className="container container-narrow">
+          <div role="alert" className="alert alert-error">
+            <Icon name="info" size={18} />
+            <span>{loadError}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* --------------------------------------------------------- confirmed */
+  if (stage === CONFIRM && receipt) {
+    const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
+    return (
+      <div
+  className={
+    modal
+      ? 'wizard-shell pnt-modal-flow !min-h-0 !pb-0'
+      : 'wizard-shell'
+  }
+>
+        <div
+  className={
+    modal
+      ? 'wizard-container !min-h-0 !pb-0'
+      : 'wizard-container'
+  }
+>
+          <div className="wizard-card">
+            <div className="confirmed">
+              <div className="confirmed-tick">
+                <Icon name="check" size={38} strokeWidth={3} />
+              </div>
+              <h2>Booking Confirmed!</h2>
+              <p>Our expert will visit your home. We&rsquo;ll inspect the walls, suggest the best solution and give you a final quotation.</p>
+
+              <dl className="confirmed-panel">
+                <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
+                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
+                <div><dt>Service</dt><dd>{flow.name}</dd></div>
+                <div><dt>Location</dt><dd>{details.city}</dd></div>
+              </dl>
+
+              <div className="pnt-fee-note">
+                <Icon name="info" size={17} />
+                <span>{receipt.message}</span>
+              </div>
+
+              <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
+              <div
+  className={
+    modal
+      ? 'btn-row !mt-3 !flex !w-full !flex-wrap !items-center !justify-center !gap-3'
+      : 'btn-row'
+  }
+>
+  <a
+    href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={
+      modal
+        ? 'btn btn-whatsapp !w-auto !min-w-[190px] !justify-center'
+        : 'btn btn-whatsapp'
+    }
+  >
+    <Icon name="whatsapp" size={17} />
+    CHAT ON WHATSAPP
+  </a>
+
+  <Link
+    to="/services/painting"
+    className={
+      modal
+        ? 'btn btn-ghost btn-back !w-auto !min-w-[190px] !justify-center'
+        : 'btn btn-ghost btn-back'
+    }
+  >
+    BACK TO PAINTING
+  </Link>
+</div>
+            </div>
+          </div>
+
+          {!modal && flow.closing && (
+  <div className="pnt-closing">
+    <span className="pnt-closing-eyebrow">
+      RENOVATION PAINTING BY SUPPLYBASE
+    </span>
+
+    <h2>{flow.closing.heading}</h2>
+
+    <Link to="/services/painting" className="btn btn-primary">
+      {flow.closing.cta}
+      <Icon name="arrow-right" size={17} />
+    </Link>
+  </div>
+)}
+        </div>
+      </div>
+    );
+  }
+
+  /* ------------------------------------------------------------ details */
+  if (stage === DETAILS) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Your Details</h2>
+                <p>We will contact you to confirm the appointment.</p>
+              </div>
+              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="pnt" />
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <ModalFoot
+  className={
+    modal
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
+                <button
+  type="button"
+  className={
+    modal
+  ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
+  : 'btn btn-ghost btn-back'
+  }
+  onClick={goBack}
+>BACK</button>
+                <button
+  type="submit"
+  className={
+    modal
+  ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[150px] md:!min-w-[150px] md:!flex-none md:!px-4'
+  : 'btn btn-primary'
+  }
+>CONTINUE <Icon name="arrow-right" size={17} /></button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* ----------------------------------------------------------- schedule */
+  if (stage === SCHEDULE) {
+    return (
+      <div className="wizard-shell">
+        <div className="wizard-container">
+          <FlowTopBar flow={flow} onBack={goBack} />
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="wizard-card">
+              <div className="wizard-card-head">
+                <h2>Book a Home Visit</h2>
+                <p>Our team will visit your site.</p>
+              </div>
+              <SlotPicker
+                serviceSlug="painting"
+                date={date}
+                time={time}
+                onPick={(d, t) => { setDate(d); setTime(t); setErrors((e) => ({ ...e, slot: undefined })); }}
+                error={errors.slot}
+              />
+
+              <div className="pnt-fee-strip">
+                <span>{category ? category.visitFeeDisplay : 'ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¹ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â'}</span>
+                <span>Adjustable in final bill</span>
+              </div>
+
+              {submitError && (
+                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
+                  <Icon name="info" size={18} /><span>{submitError}</span>
+                </div>
+              )}
+              <ModalFoot
+  className={
+    modal
+      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[84px_minmax(0,1fr)] !items-stretch !gap-3 !border-0 md:!flex md:!items-center md:!justify-end md:!gap-3'
+      : 'wizard-foot'
+  }
+>
+                <button
+  type="button"
+  className={
+  modal
+    ? 'btn btn-ghost btn-back !w-full !min-w-0 !px-2 md:!w-auto md:!min-w-[90px] md:!flex-none md:!px-4 md:!me-auto'
+    : 'btn btn-ghost btn-back'
+}
+  onClick={goBack}
+>BACK</button>
+                <button
+  type="submit"
+ className={
+  modal
+    ? 'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-[190px] md:!min-w-[190px] md:!flex-none md:!px-4'
+    : 'btn btn-primary'
+}
+  disabled={busy}
+>
+                  {busy ? 'BOOKINGÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦' : 'BOOK NOW'} <Icon name="arrow-right" size={17} />
+                </button>
+              </ModalFoot>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------------------------------- config step */
+  const step = configSteps[stage - 1];
+
+  return (
+    <div
+  className={
+    modal
+      ? 'pnt-flow-shell pnt-modal-flow'
+      : 'pnt-flow-shell'
+  }
+>
+      <div
+  className={
+    modal
+      ? 'container container-narrow !w-full !max-w-none !px-0'
+      : 'container container-narrow'
+  }
+>
+        <FlowTopBar flow={flow} onBack={goBack} plain />
+        <StepIndicator steps={configSteps} activeIndex={stage - 1} />
+
+        <div
+  className={
+    modal
+      ? 'pnt-step-card !w-full !max-w-none !px-3 sm:!px-5'
+      : 'pnt-step-card'
+  }
+>
+          {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
+
+          {(step.type === 'colour' ||
+            (step.type === 'addon' && !step.required)) && (
+            <div
+              className="painting-optional-note"
+              style={{
+                marginBottom: 18,
+                padding: '12px 14px',
+                border: '1px solid #eee3c4',
+                borderRadius: 10,
+                background: '#fffaf0',
+                color: '#5e543e',
+                fontSize: 13,
+                lineHeight: 1.6,
+              }}
+            >
+              <strong style={{ display: 'block', marginBottom: 4 }}>
+                Optional
+              </strong>
+              {step.type === 'colour'
+                ? 'Have a preferred colour? Select it here. You can also continue without choosing and discuss colours with our team during your home visit.'
+                : 'Add extra services if you need them. If you do not need any add-ons, simply click Continue.'}
+            </div>
+          )}
+
+
+          {step.type === 'option' && (
+            <>
+              <div className="pnt-option-list">
+                {optionsFor(step.questionKey).map((opt) => (
+                  <OptionCard
+                    key={opt.value}
+                    option={opt}
+                    name={step.questionKey}
+                    icon={step.showThumb ? undefined : step.icon}
+                    checked={answers[step.questionKey] === opt.value}
+                    onSelect={setAnswer(step.questionKey)}
+                  />
+                ))}
+              </div>
+              {step.id === 'painting_type' && (
+                <button type="button" className="pnt-compare-link" onClick={() => setCompareOpen(true)}>
+                  <Icon name="layers" size={16} /> Compare Packages <Icon name="chevron-right" size={15} />
+                </button>
+              )}
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+            </>
+          )}
+
+          {step.type === 'brand' && (
+            <>
+              <BrandPicker options={optionsFor('paint_brand')} value={answers.paint_brand} onSelect={setAnswer('paint_brand')} />
+              {!modal && errors.paint_brand && <span className="field-error">{errors.paint_brand}</span>}
+            </>
+          )}
+
+          {step.type === 'product' && (
+            <ProductPicker
+              productsByTier={productsByTier(step.questionKey)}
+              hidePrices={requiresPaintingSiteQuote}
+              brand={answers.paint_brand}
+              value={answers[step.questionKey]}
+              onSelect={setAnswer(step.questionKey)}
+            />
+          )}
+
+          {step.type === 'colour' && (
+            <ColourPicker
+              coloursByTab={coloursByTab(step.questionKey)}
+              tabSet={flow.colourTabSet}
+              value={answers[step.questionKey]}
+              onSelect={setAnswer(step.questionKey)}
+            />
+          )}
+
+          {step.type === 'addon' && (
+            <>
+              <AddonList
+                options={optionsFor(step.questionKey)}
+                selected={Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : []}
+                onToggle={toggleMulti(step.questionKey)}
+              />
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+            </>
+          )}
+
+          {step.type === 'summary' && (
+            <EstimateSummary
+              rows={resolved}
+              whatsIncluded={flow.whatsIncluded}
+              itemsTotalPaise={requiresPaintingSiteQuote ? null : itemsTotalPaise}
+              siteVisitQuote={requiresPaintingSiteQuote}
+              onEditStep={jumpToStep}
+            />
+          )}
+
+          <ModalFoot
+  className={
+    modal
+      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[80px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
+      : 'pnt-step-actions'
+  }
+>
+            <button type="button" className={
+  modal
+    ? 'btn btn-ghost btn-back !w-[80px] !min-w-[80px] !px-2 md:!w-auto md:!min-w-0 md:!px-4'
+    : 'btn btn-ghost btn-back'
+} onClick={goBack}>BACK</button>
+            <button type="button" className={
+  modal
+    ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-3 !text-[11px] !whitespace-nowrap md:!ml-auto md:!w-[190px] md:!max-w-[190px] md:!flex-none md:!px-4 md:!text-sm'
+    : 'btn btn-primary'
+} onClick={goNext}>
+              {step.type === 'summary' ? 'Book a Home Visit' : 'Continue'} <Icon name="arrow-right" size={17} />
+            </button>
+          </ModalFoot>
+        </div>
+      </div>
+
+      {modal && choiceError && createPortal(
+        <div
+          className="pop-choice-toast painting-choice-toast"
+          role="alert"
+          style={{
+            position: 'fixed',
+            top: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 3000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            width: 'min(420px, calc(100vw - 32px))',
+            padding: '13px 16px',
+            border: '1px solid #e7ca7c',
+            borderRadius: 12,
+            background: '#fff9e9',
+            color: '#78580d',
+            boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
+          }}
+        >
+          <Icon name="info" size={20} />
+          <span style={{ flex: 1 }}>{choiceError}</span>
+          <button
+            type="button"
+            onClick={() => setChoiceError('')}
+            aria-label="Dismiss message"
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: 'inherit',
+              fontSize: 23,
+              cursor: 'pointer',
+            }}
+          >{'\u00D7'}</button>
+        </div>,
+        document.body
+      )}
+
+      {compareOpen && (
+        <div className="pnt-modal-overlay" onClick={() => setCompareOpen(false)}>
+          <div className="pnt-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="pnt-modal-head">
+              <h3>Compare Packages</h3>
+              <button type="button" onClick={() => setCompareOpen(false)} aria-label="Close">
+                <Icon name="close" size={18} />
+              </button>
+            </div>
+            <div className="pnt-modal-body pnt-compare-table">
+              {optionsFor(step.questionKey).map((opt) => (
+                <div key={opt.value} className="pnt-compare-col">
+                  <strong>{opt.label}</strong>
+                  {opt.price != null && <span className="pnt-option-price">From {formatRupees(opt.price)}</span>}
+                  <p>{opt.hint}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FlowTopBar({ flow, onBack, plain }) {
+  return (
+    <div className={plain ? 'pnt-top' : 'wizard-top'}>
+      <button type="button" className={plain ? 'pnt-back' : 'wizard-back'} onClick={onBack} aria-label="Go back">
+        <Icon name="arrow-left" size={20} />
+      </button>
+      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.name}</h1>
+      <a
+        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.name}.`)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={plain ? 'pnt-help' : 'wizard-help'}
+      >
+        Need help?
+      </a>
+    </div>
+  );
+}
+
+
+===== FILE: backend\src\main\java\in\supplybase\backend\booking\BookingService.java =====
+package in.supplybase.backend.booking;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import in.supplybase.backend.appointment.AppointmentService;
+import in.supplybase.backend.appointment.AppointmentSlot;
+import in.supplybase.backend.auth.AuthenticatedUser;
+import in.supplybase.backend.auth.Role;
+import in.supplybase.backend.auth.User;
+import in.supplybase.backend.auth.UserRepository;
+import in.supplybase.backend.booking.dto.BookingAnswerResponse;
+import in.supplybase.backend.booking.dto.BookingFileResponse;
+import in.supplybase.backend.booking.dto.BookingReceipt;
+import in.supplybase.backend.booking.dto.BookingResponse;
+import in.supplybase.backend.booking.dto.CreateBookingRequest;
+import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
+import in.supplybase.backend.booking.dto.PartnerPayoutResponse;
+import in.supplybase.backend.booking.dto.ProfessionalBookingResponse;
+import in.supplybase.backend.booking.dto.UpdateBookingRequest;
+import in.supplybase.backend.booking.dto.UpdateMyBookingRequest;
+import in.supplybase.backend.catalogue.CatalogueService;
+import in.supplybase.backend.catalogue.ServiceCategory;
+import in.supplybase.backend.catalogue.ServiceOption;
+import in.supplybase.backend.catalogue.ServiceOptionRepository;
+import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.FileStorageService;
+import in.supplybase.backend.common.PhoneNumbers;
+import in.supplybase.backend.common.Reference;
+import in.supplybase.backend.config.AppProperties;
+
+@Service
+public class BookingService {
+
+    private static final Logger log = LoggerFactory.getLogger(BookingService.class);
+
+    /** A real person does not book six site visits in an hour; a bot does. */
+    private static final int MAX_PER_PHONE_PER_HOUR = 5;
+
+    /**
+     * The plumbing cart's pricing rule (from the approved rate card): actual
+     * itemised pricing up to ₹5,000, a flat ₹99 home-visit/assessment fee
+     * above that (adjusted into the final bill if the customer proceeds).
+     * Scoped narrowly to the 'plumbing' category slug (checked in create()
+     * below) and its 'cart_item'/'consultation_type' question keys (see
+     * V14) — every other category's pricing, including painting's own
+     * itemised total and the electrician add-ons' priced options, is
+     * untouched by this.
+     */
+    private static final String PLUMBING_SLUG = "plumbing";
+    private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
+    private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+
+    /**
+     * Painting's itemised answer keys (see V15) — priced the same way
+     * plumbing's 'cart_item' is (matched catalogue price × quantity, summed
+     * into itemsTotalPaise), but WITHOUT plumbing's ₹5,000/₹99 threshold
+     * override: painting's visitFeePaise stays exactly the category's own
+     * configured fee (see V15's pricing-conflict notes — the reference's
+     * ₹99 is not applied here pending confirmation). 'paint_brand' and every
+     * *_area/*_colour key are deliberately excluded — they carry no price in
+     * the reference, they are recorded as plain answers only.
+     */
+    private static final Set<String> PAINTING_PRICED_KEYS = Set.of(
+            "home_type", "full_home_painting_type", "full_home_product", "full_home_addon",
+            "few_walls_painting_type", "few_walls_product", "few_walls_addon",
+            "renovation_repair", "renovation_addon");
+
+    private final BookingRepository bookings;
+    private final BookingAnswerRepository answers;
+    private final UserRepository users;
+    private final CatalogueService catalogue;
+    private final ServiceOptionRepository options;
+    private final AppointmentService appointments;
+    private final BookingNumbers bookingNumbers;
+    private final AppProperties props;
+    private final ObjectProvider<JavaMailSender> mailSender;
+    private final BookingFileRepository files;
+    private final FileStorageService storage;
+
+    public BookingService(BookingRepository bookings, BookingAnswerRepository answers,
+                          UserRepository users, CatalogueService catalogue,
+                          ServiceOptionRepository options, AppointmentService appointments,
+                          BookingNumbers bookingNumbers, AppProperties props,
+                          ObjectProvider<JavaMailSender> mailSender,
+                          BookingFileRepository files, FileStorageService storage) {
+        this.bookings = bookings;
+        this.answers = answers;
+        this.users = users;
+        this.catalogue = catalogue;
+        this.options = options;
+        this.appointments = appointments;
+        this.bookingNumbers = bookingNumbers;
+        this.props = props;
+        this.mailSender = mailSender;
+        this.files = files;
+        this.storage = storage;
+    }
+
+    /**
+     * Creates a booking in PAYMENT_PENDING and takes the appointment seat.
+     *
+     * The seat is taken now, not after payment. Holding it means a customer
+     * who has committed to a time is not beaten to it while typing their card
+     * details — and an unpaid booking that expires releases it again.
+     */
+    @Transactional
+    public BookingReceipt create(CreateBookingRequest request, Long signedInUserId) {
+        ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
+        String phone = PhoneNumbers.normalise(request.phone());
+
+        long recent = bookings.countByPhoneAndCreatedAtAfter(
+                phone, Instant.now().minus(Duration.ofHours(1)));
+        if (recent >= MAX_PER_PHONE_PER_HOUR) {
+            throw ApiException.badRequest(
+                    "We already have your booking. Please call us if it is urgent.");
+        }
+
+        // Reserving before saving means a full slot fails the whole request
+        // rather than leaving a booking pointing at a time nobody can attend.
+        AppointmentSlot slot = appointments.reserve(
+                category.getId(), request.preferredDate(), request.preferredTime());
+
+        Booking booking = Booking.builder()
+                .reference(Reference.forBooking())
+                .bookingNumber(bookingNumbers.next())
+                .bookingType(BookingType.SERVICE)
+                .category(category)
+                .serviceSlug(category.getSlug())
+                .serviceLabel(category.getName())
+                .preferredDate(request.preferredDate())
+                .appointmentSlot(slot)
+                .areaSqft(request.areaSqft())
+                .name(request.name().trim())
+                .phone(phone)
+                .whatsapp(request.whatsapp() == null || request.whatsapp().isBlank()
+                        ? phone : PhoneNumbers.normalise(request.whatsapp()))
+                .email(blankToNull(request.email()))
+                .address(request.address().trim())
+                .city(request.city().trim())
+                .pincode(blankToNull(request.pincode()))
+                .location(request.city().trim())
+                .visitFeePaise(category.getVisitFeePaise())
+                // RULE 7: nothing is confirmed until the fee is verified.
+                .status(BookingStatus.PAYMENT_PENDING)
+                .build();
+
+        if (signedInUserId != null) {
+            users.findById(signedInUserId).ifPresent(booking::setUser);
+        }
+
+        Booking saved = bookings.save(booking);
+        CartPricing pricing = storeAnswers(saved, category, request.answers());
+
+        // Cart/consultation pricing rule — scoped to the 'cart_item' and
+        // 'consultation_type' answer keys only (see the constants' Javadoc).
+        // Every other booking keeps the category's flat visitFeePaise exactly
+        // as before.
+        if (pricing.itemsTotalPaise() > 0) {
+            saved.setItemsTotalPaise(pricing.itemsTotalPaise());
+            // Plumbing's ₹5,000/₹99 threshold is plumbing-only — painting
+            // (and anything else with a non-zero itemsTotalPaise) keeps the
+            // category's own flat visitFeePaise, already set above.
+            if (PLUMBING_SLUG.equals(category.getSlug())) {
+                saved.setVisitFeePaise(pricing.itemsTotalPaise() <= ACTUAL_PRICING_THRESHOLD_PAISE
+                        ? pricing.itemsTotalPaise()
+                        : HOME_VISIT_FEE_PAISE);
+            }
+            saved = bookings.save(saved);
+        } else if (pricing.hasConsultationAnswer()) {
+            saved.setVisitFeePaise(HOME_VISIT_FEE_PAISE);
+            saved = bookings.save(saved);
+        }
+
+        notifyStaff(saved);
+        return BookingReceipt.from(saved);
+    }
+
+    private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
+    }
+
+    /**
+     * Stores the form answers, checking each against the catalogue first.
+     *
+     * The request shape is open — questions are data — but that must not mean
+     * anything can be written. A key the service never asks about is dropped,
+     * and a choice that is not one of the offered options is refused outright.
+     *
+     * Also computes the cart pricing total: for a 'cart_item' answer whose
+     * matched catalogue option carries a price, the line's unit price and
+     * quantity are copied from the catalogue/request — quantity from the
+     * request (client-chosen, capped at 1 minimum by validation), price
+     * always from the catalogue, never from the request — and multiplied
+     * into a running total. This is what create() uses to decide the real
+     * amount payable, so a manipulated client-side total can never be
+     * charged.
+     */
+    private CartPricing storeAnswers(Booking booking, ServiceCategory category,
+                              List<CreateBookingRequest.AnswerInput> submitted) {
+        if (submitted == null || submitted.isEmpty()) {
+            return new CartPricing(0L, false);
+        }
+
+        Map<String, ServiceOption> questionByKey = new HashMap<>();
+        Map<String, Set<String>> allowedByKey = new HashMap<>();
+        Map<String, ServiceOption> optionByKeyAndValue = new HashMap<>();
+        for (ServiceOption option : options
+                .findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(category.getId())) {
+            questionByKey.putIfAbsent(option.getQuestionKey(), option);
+            if (option.getOptionValue() != null) {
+                allowedByKey.computeIfAbsent(option.getQuestionKey(), k -> new HashSet<>())
+                        .add(option.getOptionValue());
+                optionByKeyAndValue.put(option.getQuestionKey() + " " + option.getOptionValue(), option);
+            }
+        }
+
+        List<BookingAnswer> rows = new ArrayList<>();
+        long itemsTotalPaise = 0L;
+        boolean hasConsultationAnswer = false;
+        for (CreateBookingRequest.AnswerInput input : submitted) {
+            ServiceOption question = questionByKey.get(input.key());
+            if (question == null) {
+                log.debug("Ignoring answer to unknown question {} on {}",
+                        input.key(), category.getSlug());
+                continue;
+            }
+
+            Set<String> allowed = allowedByKey.get(input.key());
+            // Only choice questions have a fixed answer set. TEXT and NUMBER
+            // are free-form by definition and are length-capped by validation.
+            if (allowed != null && !allowed.contains(input.value())) {
+                throw ApiException.badRequest(
+                        "\"" + input.value() + "\" is not an option for that question.");
+            }
+
+            BookingAnswer.BookingAnswerBuilder row = BookingAnswer.builder()
+                    .bookingId(booking.getId())
+                    .questionKey(input.key())
+                    // Copied from the catalogue, not from the request — the
+                    // browser does not get to decide what it was asked.
+                    .questionText(question.getQuestionText())
+                    .answerValue(input.value())
+                    .answerLabel(input.label());
+
+            if ("cart_item".equals(input.key()) || PAINTING_PRICED_KEYS.contains(input.key())) {
+                ServiceOption matched = optionByKeyAndValue.get(input.key() + " " + input.value());
+                if (matched != null && matched.getPricePaise() != null) {
+                    int quantity = input.quantity() == null ? 1 : Math.max(1, input.quantity());
+                    long lineTotal = matched.getPricePaise() * quantity;
+                    row.quantity(quantity).unitPricePaise(matched.getPricePaise()).lineTotalPaise(lineTotal);
+                    itemsTotalPaise += lineTotal;
+                }
+            } else if ("consultation_type".equals(input.key())) {
+                hasConsultationAnswer = true;
+            }
+
+            rows.add(row.build());
+        }
+        answers.saveAll(rows);
+        return new CartPricing(itemsTotalPaise, hasConsultationAnswer);
+    }
+
+    /* ------------------------------------------------------------- reads */
+
+    @Transactional(readOnly = true)
+    public Page<BookingResponse> list(BookingStatus status, BookingType type, Pageable pageable) {
+        Page<Booking> page;
+        if (status != null) {
+            page = bookings.findByStatusOrderByCreatedAtDesc(status, pageable);
+        } else if (type != null) {
+            page = bookings.findByBookingTypeOrderByCreatedAtDesc(type, pageable);
+        } else {
+            page = bookings.findAllByOrderByCreatedAtDesc(pageable);
+        }
+        return page.map(BookingResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> forDate(LocalDate date) {
+        return bookings.findByPreferredDateOrderByPreferredSlotAsc(date).stream()
+                .map(BookingResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> myBookings(Long userId) {
+        return bookings.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(BookingResponse::from)
+                .toList();
+    }
+
+    /**
+     * One booking in full, including the answers actually given in the
+     * booking wizard — the /mine list above deliberately skips these (an
+     * extra query per row nobody's looking at yet), so this is the only
+     * place they're fetched.
+     */
+    @Transactional(readOnly = true)
+    public BookingResponse get(Long id, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(booking, answerResponses);
+    }
+
+    /**
+     * A customer's own edit to their booking — contact details and the visit
+     * address only. The service items and price are locked in at booking
+     * time (see storeAnswers); changing those here would leave a reserved or
+     * paid amount out of sync with the cart, so that stays a "call us" change.
+     *
+     * Same 404-not-403 access check as get(): a booking that isn't the
+     * caller's own does not confirm its existence, let alone let them edit it.
+     */
+    @Transactional
+    public BookingResponse updateMine(Long id, UpdateMyBookingRequest request, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+        if (booking.getStatus().isFinal()) {
+            throw ApiException.badRequest(
+                    "That booking is already " + booking.getStatus().name().toLowerCase()
+                            + " and can no longer be edited.");
+        }
+
+        String phone = PhoneNumbers.normalise(request.phone());
+        booking.setName(request.name().trim());
+        booking.setPhone(phone);
+        booking.setWhatsapp(request.whatsapp() == null || request.whatsapp().isBlank()
+                ? phone : PhoneNumbers.normalise(request.whatsapp()));
+        booking.setEmail(blankToNull(request.email()));
+        booking.setAddress(request.address().trim());
+        booking.setCity(request.city().trim());
+        booking.setPincode(blankToNull(request.pincode()));
+        booking.setLocation(request.city().trim());
+
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(bookings.save(booking), answerResponses);
+    }
+
+    @Transactional
+    public BookingResponse update(Long id, UpdateBookingRequest request) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        if (booking.getStatus().isFinal()) {
+            throw ApiException.badRequest(
+                    "That booking is already " + booking.getStatus().name().toLowerCase()
+                            + " and cannot be changed.");
+        }
+        // isFinal() above guarantees a booking can only ever reach CANCELLED
+        // once, so the seat is released exactly once — no extra guard needed.
+        if (request.status() == BookingStatus.CANCELLED && booking.getAppointmentSlot() != null) {
+            appointments.release(booking.getAppointmentSlot());
+        }
+        booking.setStatus(request.status());
+        if (request.adminNotes() != null) {
+            booking.setAdminNotes(request.adminNotes());
+        }
+        return BookingResponse.from(bookings.save(booking));
+    }
+
+    /* ----------------------------------------------------------- staff */
+
+    /**
+     * Hands a booking to a professional.
+     *
+     * Only allowed once the office has actually confirmed the visit
+     * (CONFIRMED) or has already decided assignment is next
+     * (ASSIGNMENT_PENDING) — assigning a still-unpaid or already-finished
+     * booking would be a state-machine violation, not a not-found or a bad
+     * input, hence the 409.
+     */
+    @Transactional
+    public BookingResponse assignProfessional(Long bookingId, Long professionalId) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        if (booking.getStatus() != BookingStatus.CONFIRMED
+                && booking.getStatus() != BookingStatus.ASSIGNMENT_PENDING) {
+            throw ApiException.conflict(
+                    "A booking can only be assigned from CONFIRMED or ASSIGNMENT_PENDING status.");
+        }
+
+        User professional = users.findById(professionalId)
+                .orElseThrow(() -> ApiException.badRequest("That account does not exist."));
+        if (professional.getRole() != Role.PROFESSIONAL) {
+            throw ApiException.badRequest("That account is not a professional.");
+        }
+
+        // A payout was agreed with the previous partner, not this one.
+        if (booking.getAssignedProfessional() != null
+                && !booking.getAssignedProfessional().getId().equals(professional.getId())) {
+            booking.setPartnerPayoutPaise(null);
+        }
+        booking.setAssignedProfessional(professional);
+        booking.setStatus(BookingStatus.PROFESSIONAL_ASSIGNED);
+        return BookingResponse.from(bookings.save(booking));
+    }
+
+    /* ------------------------------------------------------- professional */
+
+    @Transactional(readOnly = true)
+    public List<ProfessionalBookingResponse> myAssignedBookings(Long professionalId) {
+        List<Booking> jobs = bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(professionalId);
+        Map<Long, List<ProfessionalBookingResponse.Requirement>> requirements = requirementsFor(
+                jobs.stream().map(Booking::getId).toList());
+        return jobs.stream()
+                .map(b -> ProfessionalBookingResponse.from(b, requirements.getOrDefault(b.getId(), List.of())))
+                .toList();
+    }
+
+    /** What the customer asked for on each job, grouped by booking — one query for all of them. */
+    private Map<Long, List<ProfessionalBookingResponse.Requirement>> requirementsFor(List<Long> bookingIds) {
+        Map<Long, List<ProfessionalBookingResponse.Requirement>> byBooking = new HashMap<>();
+        if (bookingIds.isEmpty()) {
+            return byBooking;
+        }
+        for (BookingAnswer answer : answers.findByBookingIdInOrderByIdAsc(bookingIds)) {
+            byBooking.computeIfAbsent(answer.getBookingId(), k -> new ArrayList<>())
+                    .add(ProfessionalBookingResponse.Requirement.from(answer));
+        }
+        return byBooking;
+    }
+
+    /** What the signed-in partner has earned, is still owed, and how many jobs are done. */
+    @Transactional(readOnly = true)
+    public PartnerEarningsResponse myEarnings(Long professionalId) {
+        return PartnerEarningsResponse.from(
+                bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(professionalId), Instant.now());
+    }
+
+    /* ---------------------------------------------------- partner payouts */
+
+    @Transactional(readOnly = true)
+    public PartnerPayoutResponse partnerPayout(Long bookingId) {
+        return PartnerPayoutResponse.from(bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking")));
+    }
+
+    /**
+     * Sets what the assigned partner earns for a job and whether it has been
+     * paid out. The admin sends the state they want it to end up in.
+     *
+     * Money rules, so a payout can't be quietly wrong: it needs an assigned
+     * partner; a cancelled job has none; "paid" needs a real amount and a
+     * completed job; and a payout already marked paid can't have its amount
+     * changed until it is marked unpaid first (so a paid figure never moves
+     * without someone deliberately reopening it).
+     */
+    @Transactional
+    public PartnerPayoutResponse setPartnerPayout(Long bookingId, Long amountPaise, boolean paid) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        if (booking.getAssignedProfessional() == null) {
+            throw ApiException.conflict("Assign a partner to this job before setting a payout.");
+        }
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw ApiException.conflict("A cancelled job has no payout.");
+        }
+        if (paid) {
+            if (amountPaise == null || amountPaise <= 0) {
+                throw ApiException.badRequest("Enter the payout amount before marking it paid.");
+            }
+            if (booking.getStatus() != BookingStatus.WORK_COMPLETED) {
+                throw ApiException.conflict("A payout can be marked paid once the work is completed.");
+            }
+        }
+
+        boolean wasPaid = booking.getPartnerPaidAt() != null;
+        if (wasPaid && paid && !java.util.Objects.equals(amountPaise, booking.getPartnerPayoutPaise())) {
+            throw ApiException.conflict(
+                    "This payout is already marked paid. Mark it unpaid before changing the amount.");
+        }
+
+        booking.setPartnerPayoutPaise(amountPaise);
+        booking.setPartnerPaidAt(paid ? (wasPaid ? booking.getPartnerPaidAt() : Instant.now()) : null);
+        return PartnerPayoutResponse.from(bookings.save(booking));
+    }
+
+    /**
+     * A narrow, forward-only set of transitions a professional may make on
+     * their own job — progressing a visit or a job already scheduled by the
+     * office. Anything else (cancelling, jumping stages, touching payment or
+     * assignment) stays with staff.
+     */
+    private static final Map<BookingStatus, Set<BookingStatus>> SELF_SERVICE_TRANSITIONS = Map.of(
+            BookingStatus.SITE_VISIT_SCHEDULED, Set.of(BookingStatus.SITE_VISIT_COMPLETED),
+            BookingStatus.WORK_SCHEDULED, Set.of(BookingStatus.WORK_IN_PROGRESS),
+            BookingStatus.WORK_IN_PROGRESS, Set.of(BookingStatus.WORK_COMPLETED));
+
+    @Transactional
+    public ProfessionalBookingResponse advanceOwnBookingStatus(
+            Long bookingId, BookingStatus newStatus, Long callerId) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        // Not theirs (or unassigned) gets 404, not 403 — same reasoning as
+        // ProjectService.get: revealing that the booking exists is itself
+        // information a stranger to it is not entitled to.
+        if (booking.getAssignedProfessional() == null
+                || !booking.getAssignedProfessional().getId().equals(callerId)) {
+            throw ApiException.notFound("That booking");
+        }
+
+        Set<BookingStatus> allowed = SELF_SERVICE_TRANSITIONS.get(booking.getStatus());
+        if (allowed == null || !allowed.contains(newStatus)) {
+            throw ApiException.badRequest("That status change is not available to you.");
+        }
+
+        booking.setStatus(newStatus);
+        Booking saved = bookings.save(booking);
+        return ProfessionalBookingResponse.from(saved,
+                requirementsFor(List.of(saved.getId())).getOrDefault(saved.getId(), List.of()));
+    }
+
+    /* ---------------------------------------------------------------- files */
+
+    public record DownloadedFile(byte[] content, String filename, String contentType) {
+    }
+
+    @Transactional
+    public BookingFileResponse uploadFile(Long bookingId, String kind, MultipartFile file, Long uploaderId) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        FileStorageService.StoredFile stored = storage.store(file, "bookings/" + bookingId);
+
+        BookingFile.BookingFileBuilder builder = BookingFile.builder()
+                .booking(booking)
+                .storageKey(stored.storageKey())
+                .originalName(stored.originalName())
+                .contentType(stored.contentType() != null ? stored.contentType() : "application/octet-stream")
+                .sizeBytes(stored.sizeBytes())
+                .kind(kind == null || kind.isBlank() ? "PHOTO" : kind);
+
+        if (uploaderId != null) {
+            users.findById(uploaderId).ifPresent(builder::uploadedBy);
+        }
+
+        return BookingFileResponse.from(files.save(builder.build()));
+    }
+
+    /**
+     * The booking wizard's own upload call, for the two services that collect
+     * photos of the problem or the appliance. Booking creation is public and
+     * usually anonymous, so this cannot require a signed-in owner the way
+     * {@link #listFiles} does — instead it trusts whoever holds both the
+     * booking number (BookingReceipt deliberately withholds the numeric id —
+     * see its own javadoc — so this takes the human-readable number instead)
+     * and the phone number on the booking, the same proof-of-ownership shape
+     * the create endpoint's own rate limit already relies on.
+     */
+    @Transactional
+    public BookingFileResponse uploadOwnFile(String bookingNumber, String phone, String kind, MultipartFile file) {
+        Booking booking = bookings.findByBookingNumber(bookingNumber)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        if (!booking.getPhone().equals(PhoneNumbers.normalise(phone))) {
+            throw ApiException.notFound("That booking");
+        }
+        Long uploaderId = booking.getUser() != null ? booking.getUser().getId() : null;
+        return uploadFile(booking.getId(), kind, file, uploaderId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingFileResponse> listFiles(Long bookingId, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        return files.findByBookingIdOrderByCreatedAtDesc(bookingId).stream()
+                .map(BookingFileResponse::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public DownloadedFile downloadFile(Long bookingId, Long fileId, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(bookingId)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+
+        BookingFile file = files.findById(fileId)
+                .filter(f -> f.getBooking().getId().equals(bookingId))
+                .orElseThrow(() -> ApiException.notFound("That file"));
+
+        byte[] content = storage.load(file.getStorageKey());
+        return new DownloadedFile(content, file.getOriginalName(), file.getContentType());
+    }
+
+    /**
+     * Staff sees any booking; the booking's own signed-in user (most
+     * bookings are from visitors and have none) sees only their own. Anyone
+     * else gets 404, not 403 — same reasoning as ProjectService.get. Shared
+     * by get() and the file endpoints below — a booking's files are never
+     * visible to someone who can't see the booking itself.
+     */
+    private void checkAccess(Booking booking, AuthenticatedUser viewer) {
+        if (!viewer.isStaff()
+                && (booking.getUser() == null || !booking.getUser().getId().equals(viewer.id()))) {
+            throw ApiException.notFound("That booking");
+        }
+    }
+
+    /* ------------------------------------------------------------ email */
+
+    private void notifyStaff(Booking booking) {
+        if (!props.notifications().emailEnabled()) {
+            return;
+        }
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(props.notifications().enquiryRecipient());
+            message.setSubject("New booking %s — %s (%s)".formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel(), booking.getName()));
+            message.setText((
+                    "A site visit has been requested through the website.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Date:      %s\n"
+                    + "Name:      %s\n"
+                    + "Mobile:    %s\n"
+                    + "Address:   %s, %s %s\n"
+                    + "Status:    %s (fee not yet paid)\n").formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel(),
+                    booking.getPreferredDate(), booking.getName(), booking.getPhone(),
+                    orDash(booking.getAddress()), orDash(booking.getCity()),
+                    orDash(booking.getPincode()), booking.getStatus()));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email booking {} — it is saved regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private static String orDash(String value) {
+        return value == null || value.isBlank() ? "—" : value;
+    }
+}
+
+
