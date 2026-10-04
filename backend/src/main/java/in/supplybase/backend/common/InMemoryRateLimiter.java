@@ -50,6 +50,11 @@ public class InMemoryRateLimiter {
         }
     }
 
+    /** Forgets every attempt recorded under {@code key}. */
+    public void reset(String key) {
+        hits.remove(key);
+    }
+
     /**
      * Removes keys nobody has touched in a long while.
      *
