@@ -29,6 +29,7 @@ import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
 import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
+import in.supplybase.backend.partner.dto.ApplyWithAccountRequest;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.partner.dto.PartnerJobResponse;
 import in.supplybase.backend.partner.dto.PartnerProfileResponse;
@@ -86,33 +87,75 @@ public class PartnerService {
      */
     @Transactional
     public AuthResponse apply(ApplyAsPartnerRequest request, PartnerDocuments documents, String clientIp) {
-        String trade = request.primaryTrade().trim();
+        String trade = requireTrade(request.primaryTrade());
         // Checked before the account is created so a bad trade, or a file
         // that is not a photo, never costs anyone a sign-up attempt.
-        categories.findBySlugAndActiveTrue(trade)
-                .filter(category -> category.getParentSlug() == null)
-                .orElseThrow(() -> ApiException.badRequest("Please choose one of the listed trades."));
         documents.requirePhotos();
 
         AuthResponse auth = authService.register(
                 new RegisterRequest(request.fullName(), request.email(), request.phone(), request.password()),
                 clientIp);
 
-        User user = users.getReferenceById(auth.user().id());
-        String folder = "partners/" + auth.user().id() + "/documents";
-        partners.save(PartnerProfile.builder()
+        saveApplication(users.getReferenceById(auth.user().id()), trade, request.experienceYears(),
+                request.city(), request.serviceAreas(), request.languages(), documents);
+        return auth;
+    }
+
+    /**
+     * A signed-in customer applying on the account they already have. Applying
+     * through {@link #apply} would try to create a second account with the same
+     * email and phone and be refused, so this attaches a PENDING application to
+     * the existing login instead. The role stays CUSTOMER until an admin
+     * approves it, exactly as for a new applicant.
+     */
+    @Transactional
+    public PartnerProfileResponse applyWithAccount(Long userId, ApplyWithAccountRequest request,
+                                                   PartnerDocuments documents) {
+        String trade = requireTrade(request.primaryTrade());
+        documents.requirePhotos();
+
+        User user = users.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("That account"));
+        if (user.getRole() != Role.CUSTOMER) {
+            throw ApiException.badRequest("This account cannot apply as a partner.");
+        }
+        if (partners.findByUserId(userId).isPresent()) {
+            throw ApiException.conflict("You have already applied. Your application is on your dashboard.");
+        }
+
+        PartnerProfile profile = saveApplication(user, trade, request.experienceYears(), request.city(),
+                request.serviceAreas(), request.languages(), documents);
+        return PartnerProfileResponse.from(profile, tradeLabels().get(profile.getPrimaryTrade()));
+    }
+
+    /** The trade slug, if it is one of the top-level services customers can book. */
+    private String requireTrade(String primaryTrade) {
+        String trade = primaryTrade.trim();
+        categories.findBySlugAndActiveTrue(trade)
+                .filter(category -> category.getParentSlug() == null)
+                .orElseThrow(() -> ApiException.badRequest("Please choose one of the listed trades."));
+        return trade;
+    }
+
+    /**
+     * Stores the Aadhaar and PAN photos under partners/{userId}/documents in the
+     * private uploads folder and saves a PENDING application pointing at them.
+     */
+    private PartnerProfile saveApplication(User user, String trade, Integer experienceYears, String city,
+                                           String serviceAreas, String languages, PartnerDocuments documents) {
+        String folder = "partners/" + user.getId() + "/documents";
+        return partners.save(PartnerProfile.builder()
                 .user(user)
                 .primaryTrade(trade)
-                .experienceYears(request.experienceYears())
-                .city(request.city().trim())
-                .serviceAreas(blankToNull(request.serviceAreas()))
-                .languages(blankToNull(request.languages()))
+                .experienceYears(experienceYears)
+                .city(city.trim())
+                .serviceAreas(blankToNull(serviceAreas))
+                .languages(blankToNull(languages))
                 .aadhaarFrontPath(files.store(documents.aadhaarFront(), folder).storageKey())
                 .aadhaarBackPath(files.store(documents.aadhaarBack(), folder).storageKey())
                 .panFrontPath(files.store(documents.panFront(), folder).storageKey())
                 .status(PartnerStatus.PENDING)
                 .build());
-        return auth;
     }
 
     /** The signed-in user's own application, or 404 if they never applied. */

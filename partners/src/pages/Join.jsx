@@ -15,6 +15,10 @@ import shrinkPhoto from '../lib/shrinkPhoto';
  * only an admin approving the application does that, so the form has no
  * "role" of any kind to fill in or tamper with.
  *
+ * A customer already signed in with their website account applies on that
+ * account instead: the form drops the name, contact and password fields and
+ * the application is attached to the login they have (applyWithAccount).
+ *
  * The trade list comes from the live service catalogue, so it always matches
  * what customers can book (and what the API will accept).
  */
@@ -120,7 +124,9 @@ function Field({ id, label, icon, required, hint, error, children }) {
 }
 
 export default function Join() {
-  const { user, applyAsPartner } = useAuth();
+  const { user, applyAsPartner, logout } = useAuth();
+  // A signed-in website customer applies on the account they already have.
+  const withAccount = Boolean(user && user.role === 'CUSTOMER');
   const navigate = useNavigate();
 
   const [form, setForm] = useState(emptyForm);
@@ -136,10 +142,10 @@ export default function Join() {
   // The latest pick per document, so a slow earlier pick cannot overwrite it.
   const latestPick = useRef({});
 
-  // already signed in? the dashboard explains what that means for them
+  // a partner or admin already? the dashboard explains what that means for them
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user && !withAccount) navigate('/', { replace: true });
+  }, [user, withAccount, navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -191,15 +197,18 @@ export default function Join() {
   /** Field-level checks; the API repeats them and can add its own (email taken). */
   const validate = () => {
     const next = {};
-    if (!form.fullName.trim()) next.fullName = 'Please enter your name';
-    if (!form.email.trim()) next.email = 'Please enter your email address';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      next.email = 'Please enter a valid email address';
-    if (!form.phone.trim()) next.phone = 'Please enter your phone number';
-    else if (!isValidPhone(form.phone)) next.phone = 'Enter a 10-digit mobile number';
-    const weak = passwordProblem(form.password, form);
-    if (weak) next.password = weak;
-    if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
+    // The account already has these when applying with it.
+    if (!withAccount) {
+      if (!form.fullName.trim()) next.fullName = 'Please enter your name';
+      if (!form.email.trim()) next.email = 'Please enter your email address';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+        next.email = 'Please enter a valid email address';
+      if (!form.phone.trim()) next.phone = 'Please enter your phone number';
+      else if (!isValidPhone(form.phone)) next.phone = 'Enter a 10-digit mobile number';
+      const weak = passwordProblem(form.password, form);
+      if (weak) next.password = weak;
+      if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
+    }
     if (!form.primaryTrade) next.primaryTrade = 'Please choose the work you do';
     const years = Number(form.experienceYears);
     if (form.experienceYears === '') next.experienceYears = 'Please enter your years of experience';
@@ -229,7 +238,8 @@ export default function Join() {
 
     setBusy(true);
     try {
-      await applyAsPartner(form, documents);
+      if (withAccount) await api.applyWithAccount(form, documents);
+      else await applyAsPartner(form, documents);
       navigate('/', { replace: true });
     } catch (err) {
       // The API can reject what the browser cannot know (an email already in
@@ -255,11 +265,14 @@ export default function Join() {
             Join as a <span className="auth-accent">Partner</span>
           </h1>
           <p className="auth-intro">
-            Tell us about your work. We review every application by hand, and you can sign in to
-            check on yours at any time.
+            {withAccount
+              ? `You're signed in as ${user.fullName || user.email}. Tell us about your work and we'll add your application to this account.`
+              : 'Tell us about your work. We review every application by hand, and you can sign in to check on yours at any time.'}
           </p>
 
           <form onSubmit={handleSubmit} noValidate className="auth-form">
+            {!withAccount && (
+            <>
             <Field id="fullName" error={errors.fullName} label="Full Name" icon="user" required>
               <input
                 id="pj-fullName"
@@ -293,6 +306,8 @@ export default function Join() {
                 autoComplete="email"
               />
             </Field>
+            </>
+            )}
 
             <Field id="primaryTrade" error={errors.primaryTrade} label="What work do you do?" icon="wrench" required>
               <select
@@ -399,6 +414,8 @@ export default function Join() {
               ))}
             </div>
 
+            {!withAccount && (
+            <>
             <div className="auth-row-2">
               <Field id="password" error={errors.password} label="Password" icon="lock" required>
                 <input
@@ -447,6 +464,8 @@ export default function Join() {
                 </span>
               </div>
             )}
+            </>
+            )}
 
             <div className="login-meta">
               <label className="checkbox-row">
@@ -482,9 +501,18 @@ export default function Join() {
             </button>
           </form>
 
-          <p className="auth-switch">
-            Already applied? <Link to="/login">Partner Login</Link>
-          </p>
+          {withAccount ? (
+            <p className="auth-switch">
+              Not you?{' '}
+              <button type="button" className="auth-inline-link" onClick={() => logout()}>
+                Sign out
+              </button>
+            </p>
+          ) : (
+            <p className="auth-switch">
+              Already applied? <Link to="/login">Partner Login</Link>
+            </p>
+          )}
         </div>
       </div>
     </div>
