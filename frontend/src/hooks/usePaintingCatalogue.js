@@ -78,12 +78,13 @@ export default function usePaintingCatalogue() {
 
   const productsByTier = (questionKey, selections = {}) => {
     const byTier = new Map();
+    // Each product question has its own server-side options, so a product
+    // picked for Full Home must not be offered under Few Walls.
     const sharedQuestions = [
       'full_home_product',
       'few_walls_product',
     ];
 
-    // Full Home now has its own registered Economy and Premium products.
     const options = optionsFor(questionKey);
 
     const seen = new Set();

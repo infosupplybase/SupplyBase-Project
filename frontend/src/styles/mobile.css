@@ -1,0 +1,121 @@
+/* =========================================================================
+   PHONE FIXES
+   Small corrections found by checking every page, menu and pop-up on a
+   360px-wide phone. Loaded last so it wins over the page stylesheets; each
+   rule is scoped to a phone breakpoint, so tablets and desktops are
+   unchanged.
+   ========================================================================= */
+
+@media (max-width: 767px) {
+  /* iPhone Safari zooms the whole page in when you tap a field whose text is
+     smaller than 16px, and does not zoom back out. Our fields were 13–15px. */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* bottom-nav.css reserves 60px under every page for the phone tab bar.
+     The sign-in screen has no tab bar, so that gap showed as a white strip
+     under the dark background. */
+  body:has(.auth-screen) {
+    padding-bottom: 0;
+  }
+
+  /* Footer links (Quick links, Services): each was a 24px-tall strip of
+     text, hard to hit with a thumb. Same look, taller tap area. */
+  .ft-accordion .ft-list li {
+    margin-bottom: 2px;
+  }
+
+  .ft-accordion .ft-list a,
+  .ft-accordion .ft-list .ft-link-btn {
+    display: inline-block;
+    padding: 8px 0;
+  }
+
+  /* About page: the video was capped at 60% width, which is a postage stamp
+     on a phone. */
+  .media-frame {
+    padding: 0;
+  }
+
+  .media-frame .split-media {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Service banners (painting, waterproofing, POP, interiors, plumbing):
+     the corner logo reserved 84px on the right of every heading, so long
+     words like "WATERPROOFING" no longer fitted and broke mid-word. The
+     header right above already shows the logo, so the copy here goes. */
+  .pnt-hero-logo,
+  .plb-hero-logo {
+    display: none;
+  }
+
+  .pnt-hero-inner.container,
+  .plb-hero-inner.container {
+    padding-right: var(--gutter);
+  }
+
+  /* Services page cards: two to a row leaves ~130px for the name, too narrow
+     for "WATERPROOFING" in spaced capitals. */
+  .svc-card-body h3 {
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    overflow-wrap: break-word;
+  }
+
+  /* Book-a-service pop-up, plumbing items: the name had about 75px next to
+     its arrow, so "Installation" broke into "Installatio / n". */
+  .plb-overview-grid {
+    gap: 10px;
+  }
+
+  .plb-overview-name {
+    padding: 10px 12px 0;
+    font-size: 0.88rem;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+
+  .plb-overview-price {
+    padding: 4px 12px 0;
+  }
+
+  .plb-overview-price-note {
+    padding: 0 12px 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  /* Small phones (iPhone SE, older Androids, 320–375px). A dropdown is as
+     wide as its longest option and big buttons never wrap, so on the
+     contact, quote and profile forms they pushed the card past the right
+     edge of the screen. */
+  select {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* "Reset Your Password" / "Resend Verification Email" on the profile
+     page: let the label wrap instead of widening the page. */
+  .acct-security-card .btn {
+    height: auto;
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 1.25;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .btn-lg {
+    padding: 0 18px;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+  }
+}

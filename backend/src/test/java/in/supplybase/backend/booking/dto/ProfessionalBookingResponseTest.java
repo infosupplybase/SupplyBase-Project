@@ -2,10 +2,14 @@ package in.supplybase.backend.booking.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalTime;
+
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import in.supplybase.backend.appointment.AppointmentSlot;
 import in.supplybase.backend.booking.Booking;
 import in.supplybase.backend.booking.BookingStatus;
 
@@ -41,5 +45,17 @@ class ProfessionalBookingResponseTest {
         assertThat(response.address()).isNull();
         assertThat(response.name()).isEqualTo("Asha");
         assertThat(response.location()).isEqualTo("Andheri West, Mumbai");
+    }
+
+    @Test
+    @DisplayName("carries the visit time the customer picked")
+    void carriesAppointmentTime() {
+        Booking booking = job(BookingStatus.CONFIRMED);
+        booking.setAppointmentSlot(AppointmentSlot.builder().slotTime(LocalTime.of(14, 45)).build());
+
+        assertThat(ProfessionalBookingResponse.from(booking).appointmentTime())
+                .isEqualTo(LocalTime.of(14, 45));
+        assertThat(ProfessionalBookingResponse.from(job(BookingStatus.CONFIRMED)).appointmentTime())
+                .isNull();
     }
 }

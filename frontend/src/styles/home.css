@@ -201,6 +201,7 @@
 }
 
 .home-search-result:hover,
+.home-search-result.is-active,
 .home-search-result:focus-visible {
   background: var(--light-bg);
 }

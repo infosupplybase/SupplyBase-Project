@@ -37,6 +37,20 @@ export const formatDay = (value) => {
   return date ? date.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' }) : '—';
 };
 
+/** "18:00:00" -> "6:00 PM" */
+const toClock = (time) => {
+  const [h, min] = String(time).split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(min)) return String(time);
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(min).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+};
+
+/**
+ * A booking's visit time: the time the customer picked ("18:00:00" ->
+ * "6:00 PM"), or the morning/afternoon label on the old two-lane bookings.
+ */
+export const visitTime = (booking) =>
+  booking ? (booking.appointmentTime ? toClock(booking.appointmentTime) : booking.preferredSlot || '') : '';
+
 /** "just now", "12 min ago", "3 h ago", "2 days ago", then a plain date. */
 export const timeAgo = (value) => {
   if (!value) return '—';

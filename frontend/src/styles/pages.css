@@ -72,6 +72,10 @@
   display: block;
   width: 100%;
   height: auto;
+  /* the clip's own shape (480x848), so the box is the right size before
+     any of the video has loaded */
+  aspect-ratio: 480 / 848;
+  background: var(--light-bg);
 }
 
 /* checked list */
@@ -220,7 +224,8 @@
   gap: 2px;
 }
 
-.sidebar-list a {
+.sidebar-list a,
+.sidebar-list .sidebar-list-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -232,9 +237,20 @@
   transition: all 0.2s var(--ease);
 }
 
-.sidebar-list a:hover {
+.sidebar-list a:hover,
+.sidebar-list .sidebar-list-button:hover {
   background: var(--bg-soft);
   color: var(--ink);
+}
+
+.sidebar-list .sidebar-list-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.91rem;
+  text-align: left;
+  cursor: pointer;
 }
 
 .sidebar-list a.active {
@@ -687,12 +703,13 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  background-color: var(--auth-bg);
+  background-color: #05070a;
   background-image:
     linear-gradient(rgba(6, 7, 10, 0.6), rgba(6, 7, 10, 0.78)),
     url('/assets/hero-house2.webp');
   background-position: center;
-  background-size: cover;
+  background-attachment: fixed;
+  background-size: auto;
   background-repeat: no-repeat;
   overflow: hidden;
 }
@@ -736,8 +753,8 @@
 .auth-card {
   position: relative;
   background: var(--auth-card);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  /* backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%); */
   border-radius: 21px;
   clip-path: polygon(41px 0, 100% 0, 100% 100%, 0 100%, 0 41px);
   padding: 38px 32px 30px;

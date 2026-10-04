@@ -80,13 +80,27 @@ export const wpCategories = [
     their subservice preselected (see App.jsx / ServiceBooking.jsx). */
 export const wpBathroomServices = [
   { slug: 'bathroom-floor', name: 'Floor Waterproofing', tagline: 'Protects bathroom floors from seepage.', icon: 'droplet', route: '/services/waterproofing/bathroom-floor' },
-  { slug: 'wall', name: 'Wall Waterproofing', tagline: 'Prevents water from penetrating bathroom walls.', icon: 'wall-stain', route: '/booking/waterproofing?preselect=Bathroom%20Wall%20Waterproofing' },
+  { slug: 'wall', name: 'Wall Waterproofing', tagline: 'Prevents water from penetrating bathroom walls.', icon: 'wall-stain', route: '/booking/waterproofing?preselect=Interior%20Waterproofing' },
   // Not offered for now — commented out, not deleted, so they can come back.
   // { slug: 'corner-joint', name: 'Corner & Joint Sealing', tagline: 'Seals joints, cracks and pipe openings.', icon: 'grout', route: '/booking/waterproofing?preselect=Bathroom%20Corner%20%26%20Joint%20Sealing' },
   // { slug: 'shower-area', name: 'Shower Area Waterproofing', tagline: 'Extra protection for wet zones.', icon: 'droplet', route: '/booking/waterproofing?preselect=Bathroom%20Shower%20Area%20Waterproofing' },
   // { slug: 'pipeline-fixture', name: 'Pipeline & Fixture Sealing', tagline: 'Seals around pipes and fittings.', icon: 'wrench', route: '/booking/waterproofing?preselect=Bathroom%20Pipeline%20%26%20Fixture%20Sealing' },
   // { slug: 'tile-resealing', name: 'Tile Re-sealing', tagline: 'Protects existing tiles and grout lines.', icon: 'layers', route: '/booking/waterproofing?preselect=Bathroom%20Tile%20Re-sealing' },
 ];
+
+/**
+ * The catalogue's service_needed value for each waterproofing flow (see
+ * V6/V17). Most flows share their name with the catalogue option; the walls
+ * and the bathroom floor are stored under an older, broader name.
+ */
+const WP_CATALOGUE_SERVICE = {
+  'interior-wall': 'Wall Waterproofing',
+  'exterior-wall': 'External Waterproofing',
+  'bathroom-floor': 'Bathroom Waterproofing',
+};
+
+/** The service_needed value a booking from this flow is stored under. */
+export const wpCatalogueService = (slug, name) => WP_CATALOGUE_SERVICE[slug] || name;
 
 const FEE_NOTE = 'Rates are indicative and may vary based on site condition, area and material selection. For projects above ₹5,000, a ₹99 home visit fee applies — adjusted in your final bill if you proceed.';
 

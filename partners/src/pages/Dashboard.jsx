@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Icon from '../components/ui/Icon';
 import PartnerHero from '../components/dashboard/PartnerHero';
@@ -212,11 +212,6 @@ export default function Dashboard() {
     navigate('/login', { replace: true });
   };
 
-  const handleSignOutAndApply = async () => {
-    await logout();
-    navigate('/join', { replace: true });
-  };
-
   /* ---------------------------------------------------------------- body */
 
   const firstName = (user.fullName || '').split(' ')[0];
@@ -257,13 +252,13 @@ export default function Dashboard() {
     body = (
       <StatusCard icon="user" title="No partner application on this account">
         <p>
-          You&apos;re signed in as a customer. To work with Supplybase, sign out and apply with your professional
-          details.
+          You&apos;re signed in with your Supplybase customer account. To work with Supplybase, apply as a partner
+          with this same account: just add your work details and ID photos.
         </p>
         <div className="pp-actions">
-          <button type="button" className="btn btn-primary" onClick={handleSignOutAndApply}>
-            Sign out and apply
-          </button>
+          <Link to="/join" className="btn btn-primary">
+            Apply as a partner
+          </Link>
           <a href={`${SITE_URL}/dashboard/bookings`} className="btn btn-outline">
             Go to my bookings
           </a>
@@ -312,6 +307,8 @@ export default function Dashboard() {
 
   /* ---------------------------------------------------------------- page */
 
+  const isPending = Boolean(profile && profile.status === 'PENDING');
+
   const side = (
     <>
       <div className="pp-card pp-account">
@@ -346,7 +343,10 @@ export default function Dashboard() {
       </div>
 
       <SecurityCard user={user} remembered={remembered} onSignOut={handleSignOut} />
-      <SupportCard firstName={firstName} />
+      {/* A pending applicant sees the support card in the main column (below);
+          everyone else keeps it here, so approved partners can still reach the
+          partner desk about a job or a payout. */}
+      {!isPending && <SupportCard firstName={firstName} />}
     </>
   );
 
@@ -380,6 +380,7 @@ export default function Dashboard() {
             )}
 
             {body}
+            {isPending && <SupportCard firstName={firstName} />}
           </div>
 
           <aside className="pp-side" aria-label="Your account">

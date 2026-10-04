@@ -398,8 +398,13 @@
 }
 
 .pnt-step.done .pnt-step-num {
-  background: var(--gold-a40);
-  color: var(--white);
+  background: #111111;
+  color: var(--gold);
+}
+
+.pnt-step.done .pnt-step-num svg {
+  color: var(--gold);
+  stroke: var(--gold);
 }
 
 .pnt-step-line {
@@ -947,14 +952,25 @@
 }
 
 .pnt-summary-total span {
+  flex-shrink: 0;
   color: var(--ink-soft);
   font-size: 0.86rem;
+  white-space: nowrap;
 }
 
 .pnt-summary-total strong {
+  min-width: 0;
   color: var(--gold-deep);
   font-family: var(--font-display);
   font-size: 1.3rem;
+  line-height: 1.25;
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .pnt-summary-total strong {
+    font-size: 1.05rem;
+  }
 }
 
 .pnt-summary-includes {
@@ -1176,6 +1192,90 @@
   border: 1px solid #e7e7e7;
   border-radius: 8px;
   color: #202020;
+}
+
+.waterproofing-modal-scope .pnt-hero {
+  min-height: clamp(220px, 34vh, 300px);
+}
+
+.waterproofing-modal-scope .pnt-hero-inner {
+  padding-top: 76px;
+  padding-bottom: 28px;
+  padding-inline: clamp(20px, 4vw, 36px);
+}
+
+.waterproofing-modal-scope .pnt-hero-logo {
+  top: 14px;
+  right: 20px;
+  width: 58px;
+}
+
+.waterproofing-modal-scope .pnt-section {
+  padding-top: 12px !important;
+  padding-bottom: 16px !important;
+}
+
+.waterproofing-modal-scope .pnt-overview-list {
+  margin-top: 0;
+}
+
+.waterproofing-modal-scope button.pnt-overview-card {
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wp-modal-back-row {
+  max-width: none !important;
+  /* right padding keeps the button clear of the pop-up's close button */
+  padding: 10px 72px 6px 20px !important;
+}
+
+.wp-modal-wizard,
+.wp-modal-flow {
+  min-height: 0 !important;
+  padding-top: 12px !important;
+  padding-bottom: 16px !important;
+  background: transparent !important;
+}
+
+/* The flow's title bar starts below the pop-up's close button (the pop-up
+   header is hidden inside a waterproofing flow). */
+.waterproofing-modal-scope .wp-modal-wizard,
+.waterproofing-modal-scope .wp-modal-flow {
+  padding-top: 60px !important;
+}
+
+.wp-modal-wizard .wizard-container,
+.wp-modal-flow .container-narrow {
+  width: 100% !important;
+  max-width: none !important;
+  padding-top: 0 !important;
+}
+
+@media (max-width: 640px) {
+  .waterproofing-modal-scope .pnt-hero {
+    min-height: clamp(210px, 34vh, 250px);
+  }
+
+  .waterproofing-modal-scope .pnt-hero-inner {
+    padding: 64px clamp(20px, 5vw, 28px) 22px;
+  }
+
+  .waterproofing-modal-scope .pnt-hero-inner h1 {
+    font-size: 1.65rem;
+  }
+
+  .waterproofing-modal-scope .pnt-hero-logo {
+    width: 44px;
+  }
+
+  .waterproofing-modal-scope .pnt-overview-photo {
+    width: 56px;
+    height: 56px;
+  }
 }
 
 .painting-modal-scope .pnt-top-title {

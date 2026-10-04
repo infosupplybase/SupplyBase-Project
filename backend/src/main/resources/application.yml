@@ -44,6 +44,13 @@ spring:
 
 server:
   port: ${PORT:${SERVER_PORT:8080}}
+  # nginx sits in front and sends X-Forwarded-For / X-Forwarded-Proto
+  # (nginx/supplybase-api.conf). "native" lets Tomcat read them, but only from
+  # a proxy on a private address (nginx / Docker's bridge), so a visitor cannot
+  # forge their own address. Without this every request looks like it comes
+  # from nginx, and the per-address sign-up limit would be one shared bucket
+  # for the whole site. With no such header (local runs) nothing changes.
+  forward-headers-strategy: native
   error:
     include-message: always
     include-stacktrace: never
@@ -91,6 +98,16 @@ app:
     expiry-hours: ${BOOKING_EXPIRY_HOURS:24}
 
   storage-root-dir: ${STORAGE_ROOT_DIR:./uploads}
+
+# Interactive API docs (/swagger-ui.html) and the machine-readable spec
+# (/v3/api-docs) list every endpoint, including the admin ones, so they are OFF
+# unless API_DOCS_ENABLED=true (set it in backend/.env for local development;
+# never on the production server).
+springdoc:
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${API_DOCS_ENABLED:false}
 
 logging:
   level:

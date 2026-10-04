@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import { useCart } from '../context/CartContext';
-import { formatRupees } from '../lib/money';
+import { formatRupees, formatItemPrice } from '../lib/money';
 
 /** The electrical cart — in the booking pop-up, and at
     /services/electrical/cart. Only electrical items (see CartContext). */
@@ -59,7 +59,7 @@ export default function ElectricalCart({
                 <span className="plb-row-name">{item.name}</span>
                 <p className="plb-row-desc">{item.description}</p>
                 <div className="plb-row-price">
-                  {formatRupees(item.unitPricePaise / 100)}{' '}
+                  {formatItemPrice(item.unitPricePaise / 100)}{' '}
                   <span>× {item.quantity}</span>
                 </div>
               </div>
@@ -94,7 +94,7 @@ export default function ElectricalCart({
                 </div>
 
                 <span className="plb-cart-row-total">
-                  {formatRupees(
+                  {formatItemPrice(
                     (item.unitPricePaise * item.quantity) / 100
                   )}
                 </span>

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.InMemoryRateLimiter;
 import in.supplybase.backend.common.Reference;
 import in.supplybase.backend.config.AppProperties;
 import in.supplybase.backend.enquiry.dto.CreateEnquiryRequest;
@@ -28,20 +29,35 @@ public class EnquiryService {
     /** A real person does not file six enquiries in an hour; a bot does. */
     private static final int MAX_PER_PHONE_PER_HOUR = 5;
 
+    /**
+     * The per-phone cap does nothing against a bot that changes the number
+     * on every post, and this endpoint is public. Keyed by IP instead; set
+     * well above what one household or office sharing a connection sends.
+     */
+    private static final int MAX_PER_IP_PER_HOUR = 20;
+
     private final EnquiryRepository enquiries;
     private final AppProperties props;
     /** ObjectProvider, so the app still starts when no SMTP server is configured. */
     private final ObjectProvider<JavaMailSender> mailSender;
+    private final InMemoryRateLimiter rateLimiter;
 
     public EnquiryService(EnquiryRepository enquiries, AppProperties props,
-                          ObjectProvider<JavaMailSender> mailSender) {
+                          ObjectProvider<JavaMailSender> mailSender,
+                          InMemoryRateLimiter rateLimiter) {
         this.enquiries = enquiries;
         this.props = props;
         this.mailSender = mailSender;
+        this.rateLimiter = rateLimiter;
     }
 
     @Transactional
-    public EnquiryResponse.Receipt create(CreateEnquiryRequest request) {
+    public EnquiryResponse.Receipt create(CreateEnquiryRequest request, String clientIp) {
+        if (!rateLimiter.tryAcquire("enquiry:" + (clientIp == null ? "unknown" : clientIp),
+                MAX_PER_IP_PER_HOUR, Duration.ofHours(1))) {
+            throw ApiException.tooManyRequests("Too many enquiries from this connection. Please call or WhatsApp us instead.");
+        }
+
         String phone = request.phone().replaceAll("\\s+", "");
         long recent = enquiries.countByPhoneAndCreatedAtAfter(phone, Instant.now().minus(Duration.ofHours(1)));
         if (recent >= MAX_PER_PHONE_PER_HOUR) {

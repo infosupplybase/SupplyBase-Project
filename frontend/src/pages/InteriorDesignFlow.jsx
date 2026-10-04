@@ -174,7 +174,10 @@ export default function InteriorDesignFlow({
 
       const result = await api.createBooking({
         serviceSlug: 'interior-design',
-        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 500), label: 'Selected project, package and requirements' }],
+        // 400 is the API's limit per answer (500 was rejected as a whole
+        // booking). No label: the booking shows a label in place of the
+        // value, and staff need to read the selection itself.
+        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 400) }],
         preferredDate: date,
         preferredTime: time,
         name: details.name,
@@ -204,7 +207,9 @@ export default function InteriorDesignFlow({
   };
 
   /* ---------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const waMessage = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     // The reference says both "Booking Confirmed" and "our team will call to
     // confirm" — resolved using the real backend status rather than always
@@ -716,9 +721,21 @@ export default function InteriorDesignFlow({
                 </p>
                 {hasPricing && (
                   <div className="id-stats-row">
-                    <div><Icon name="ruler" size={18} /><span>{ID_REFERENCE_STATS.areaSqft}</span></div>
-                    <div><Icon name="clock" size={18} /><span>{ID_REFERENCE_STATS.timeline}</span></div>
-                    <div><Icon name="shield" size={18} /><span>{ID_REFERENCE_STATS.warranty} warranty</span></div>
+                    <div>
+                      <Icon name="ruler" size={20} />
+                      <span className="id-stat-value">{ID_REFERENCE_STATS.areaSqft}</span>
+                      <span className="id-stat-label">Area</span>
+                    </div>
+                    <div>
+                      <Icon name="clock" size={20} />
+                      <span className="id-stat-value">{ID_REFERENCE_STATS.timeline}</span>
+                      <span className="id-stat-label">Timeline</span>
+                    </div>
+                    <div>
+                      <Icon name="shield" size={20} />
+                      <span className="id-stat-value">{ID_REFERENCE_STATS.warranty}</span>
+                      <span className="id-stat-label">Warranty</span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -882,6 +899,7 @@ export default function InteriorDesignFlow({
               id="id-requirements"
               rows={3}
               placeholder="e.g. more storage, study table, TV unit, etc."
+              maxLength={300}
               value={requirements}
               onChange={(e) => setRequirements(e.target.value)}
             />

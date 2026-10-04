@@ -39,21 +39,24 @@ public record BookingReceipt(
         if (b.getItemsTotalPaise() == null) {
             // No priced items at all (a plain site-visit booking, or a
             // consultation-only plumbing booking) — nothing to itemise.
-            message = "Your booking is reserved. Pay the " + feeDisplay
-                    + " home visit fee to confirm it — it will be adjusted into your final bill if you proceed.";
+            message = "Your booking is reserved and our team will contact you to confirm it. The " + feeDisplay
+                    + " home visit fee is paid to our team on the day of the visit — it will be adjusted into your"
+                    + " final bill if you proceed.";
         } else if (!isHomeVisitFeeOnly(b)) {
             // visitFeePaise IS the itemised total (plumbing's actual-pricing
             // case, itemsTotalPaise <= the ₹5,000 threshold) — the fee being
             // paid already equals the real charge, nothing more to add.
-            message = "Your booking is reserved. Pay for your selected services to confirm it.";
+            message = "Your booking is reserved and our team will contact you to confirm it. You pay for your"
+                    + " selected services to our team on the day of the visit.";
         } else {
             // visitFeePaise is a flat fee SEPARATE from the itemised total —
             // plumbing over the ₹5,000 threshold, or any category (painting)
             // whose visit fee is never tied to its items total by design.
             String itemsDisplay = "₹" + Money.formatRupees(b.getItemsTotalPaise());
-            message = "Your booking is reserved. Pay the " + feeDisplay + " home visit fee to confirm it — your "
-                    + itemsDisplay + " estimate will be confirmed after inspection, and the fee will be adjusted "
-                    + "into your final bill if you proceed.";
+            message = "Your booking is reserved and our team will contact you to confirm it. The " + feeDisplay
+                    + " home visit fee is paid to our team on the day of the visit; your " + itemsDisplay
+                    + " estimate will be confirmed after inspection, and the fee will be adjusted into your final"
+                    + " bill if you proceed.";
         }
         return new BookingReceipt(
                 b.getBookingNumber(), b.getStatus(),

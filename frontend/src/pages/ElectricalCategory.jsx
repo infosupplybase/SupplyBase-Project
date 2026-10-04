@@ -5,6 +5,14 @@ import Reveal from '../components/ui/Reveal';
 import { electricalGroups } from '../data/electricalContent';
 import { formatRupees } from '../lib/money';
 
+/* The card's "From" price is the cheapest priced item actually listed in the
+   group, so it can never drift from the list behind it (the hand-typed
+   figures did: Fan Services said ₹79 with nothing under ₹99). */
+const fromPriceOf = (group) => {
+  const prices = (group.items || []).map((i) => i.price).filter((p) => p > 0);
+  return prices.length ? Math.min(...prices) : group.fromPrice ?? null;
+};
+
 export default function ElectricalCategory({
   modal = false,
   onSelectTab,
@@ -20,6 +28,7 @@ export default function ElectricalCategory({
   };
 
   const renderCard = (group, index) => {
+    const fromPrice = fromPriceOf(group);
     const content = (
       <>
         <span className="plb-overview-photo">
@@ -36,13 +45,13 @@ export default function ElectricalCategory({
         </span>
 
         <span className="plb-overview-price">
-          {group.fromPrice != null
-            ? `From ${formatRupees(group.fromPrice)}`
+          {fromPrice != null
+            ? `From ${formatRupees(fromPrice)}`
             : 'On-site quote'}
         </span>
 
         <span className="plb-overview-price-note">
-          {group.fromPrice != null
+          {fromPrice != null
             ? '(Actual pricing)'
             : 'Final pricing after inspection'}
         </span>

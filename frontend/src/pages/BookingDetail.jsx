@@ -7,6 +7,7 @@ import AccountSidebar from '../components/account/AccountSidebar';
 import api, { ApiError, friendlyError } from '../lib/api';
 import { bookingStatusLabel, bookingStatusTone } from '../lib/bookingStatus';
 import { formatRupees } from '../lib/money';
+import { bookingVisitTime } from '../lib/visitTime';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
 
 /** A cancelled or completed booking is finished — same rule as the backend's
@@ -215,7 +216,21 @@ export default function BookingDetail() {
                         <li>
                           <Icon name="calendar" size={15} />
                           Preferred visit: {formatDate(booking.preferredDate)}
-                          {booking.preferredSlot ? ` · ${booking.preferredSlot}` : ''}
+                          {bookingVisitTime(booking) ? ` · ${bookingVisitTime(booking)}` : ''}
+                        </li>
+                      )}
+                      {booking.itemsTotalPaise != null && (
+                        <li>
+                          <Icon name="layers" size={15} />
+                          Items total: {formatRupees(booking.itemsTotalPaise / 100)}
+                        </li>
+                      )}
+                      {booking.visitFeePaise != null && (
+                        <li>
+                          <Icon name="info" size={15} />
+                          {booking.itemsTotalPaise != null && booking.visitFeePaise === booking.itemsTotalPaise
+                            ? `Paid on the day of the visit: ${formatRupees(booking.visitFeePaise / 100)}`
+                            : `Home visit fee: ${formatRupees(booking.visitFeePaise / 100)}`}
                         </li>
                       )}
                       {booking.assignedProfessionalName && (

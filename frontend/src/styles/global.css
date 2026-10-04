@@ -343,17 +343,30 @@ header,
 footer {
   min-width: 0;
 }
+p,
+a,
+span,
+label {
+  overflow-wrap: anywhere;
+}
+/* Headings and buttons only break a word that cannot fit on a line of its
+   own, and then with a hyphen ("WATERPROOF-ING"), never mid-word without
+   one. "anywhere" also let a flex row squeeze a short button label down to
+   one letter per line ("Edi / t") on a phone. */
 h1,
 h2,
 h3,
 h4,
 h5,
-p,
-a,
-span,
-button,
-label {
-  overflow-wrap: anywhere;
+button {
+  overflow-wrap: break-word;
+}
+h1,
+h2,
+h3,
+h4,
+h5 {
+  hyphens: auto;
 }
 /* The navbar location button itself is styled in header.css. */
 
@@ -1201,7 +1214,8 @@ gmp-place-autocomplete {
 .booking-address-inputs input:focus {
   border-color: #e5a11a;
 
-  box-shadow: 0 0 0 2px rgba(229, 161, 26, 0.08);
+  /* the input has outline: none, so this ring is its only focus cue */
+  box-shadow: 0 0 0 3px rgba(229, 161, 26, 0.35);
 }
 
 

@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -104,12 +105,40 @@ class AppointmentControllerTest {
         }
 
         @Test
+        @DisplayName("HEAD (uptime monitors) is allowed anonymously too")
+        void headIsAllowed() throws Exception {
+            when(catalogueService.requireCategory("plumbing")).thenReturn(category(1L, "plumbing"));
+            when(appointmentService.availability(eq(1L), any(), org.mockito.ArgumentMatchers.anyInt()))
+                    .thenReturn(List.of(new DayAvailabilityResponse(LocalDate.now(), true, null, List.of())));
+
+            mockMvc.perform(head("/api/appointments/available-slots").param("service", "plumbing"))
+                    .andExpect(status().isOk());
+        }
+
+        @Test
         @DisplayName("404s an unrecognised service slug")
         void unknownServiceReturns404() throws Exception {
             when(catalogueService.requireCategory("ghost")).thenThrow(ApiException.notFound("That service"));
 
             mockMvc.perform(get("/api/appointments/available-slots").param("service", "ghost"))
                     .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("400s, not 500s, when ?service= is left out")
+        void missingServiceIsBadRequest() throws Exception {
+            mockMvc.perform(get("/api/appointments/available-slots"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("\"service\" is required."));
+        }
+
+        @Test
+        @DisplayName("400s, not 500s, when ?days= is not a number")
+        void nonNumericDaysIsBadRequest() throws Exception {
+            mockMvc.perform(get("/api/appointments/available-slots")
+                            .param("service", "plumbing").param("days", "lots"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("\"days\" has a value we could not read."));
         }
     }
 

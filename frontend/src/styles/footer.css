@@ -93,7 +93,7 @@
   font-weight: 400;
   line-height: 1.65;
 }
- 
+
 
 /* =========================================================================
    FOUR COLUMN LAYOUT
@@ -193,6 +193,27 @@
 }
 
 .ft-list a:hover {
+  color: #111111;
+}
+
+/* "Login" opens the sign-in card, so it is a button that looks like its
+   neighbouring links. */
+.ft-list .ft-link-btn {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #666666;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ft-list .ft-link-btn:hover {
   color: #111111;
 }
 
@@ -465,7 +486,49 @@
 .ft-legal a:hover {
   color: #111111;
 }
+/* =========================================================================
+   PARTNER LOGIN BUTTON
+   Same style as the main Login button
+   ========================================================================= */
 
+.ft-legal .ft-partner-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 44px;
+  padding: 0 20px;
+
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-sm);
+
+  background: transparent;
+  color: var(--gold-deep);
+
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  text-decoration: none;
+  white-space: nowrap;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    background var(--t) var(--ease),
+    color var(--t) var(--ease),
+    box-shadow var(--t) var(--ease);
+}
+
+.ft-legal .ft-partner-login:hover {
+  background: var(--gold);
+  color: var(--on-gold);
+
+  box-shadow: var(--shadow-gold);
+}
 
 /* =========================================================================
    TABLET
@@ -516,6 +579,9 @@
     padding: 40px 0 20px;
   }
 
+  .ft-col:first-child .ft-heading {
+    transform: translateY(3px);
+  }
 
   /* Logo */
 
@@ -538,14 +604,16 @@
 
   .ft-grid {
     display: block;
+
   }
 
 
   /* Accordion */
 
-  .ft-accordion {
-    border-bottom: 1px solid #e5e5e5;
-  }
+ .ft-accordion {
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 15px;
+}
 
   .ft-accordion .ft-heading {
     display: flex;
@@ -563,6 +631,7 @@
 
   .ft-accordion-chevron {
     transition: transform 0.2s ease;
+
   }
 
   .ft-accordion[open] .ft-accordion-chevron {
@@ -584,17 +653,23 @@
      sections around it, it gets no border-bottom of its own — without its
      own bottom spacing, Social Links' heading right after it ends up
      jammed straight under the working-hours line with no visible gap. */
-  .ft-col:not(.ft-accordion) {
-    padding-top: 28px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid #e5e5e5;
-  }
-
+ .ft-col:not(.ft-accordion) {
+  padding-top: 0;
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #e5e5e5;
+}
 
   /* Social */
 
   .ft-social {
     margin-bottom: 0;
+    margin-top: 0;
+    position: relative;
+    top: -12px;
+    padding-bottom: 15px ;
+
   }
 
 
@@ -608,14 +683,16 @@
   /* Bottom */
 
   .ft-bottom {
-    flex-direction: column;
+  flex-direction: column;
 
-    align-items: flex-start;
+  align-items: flex-start;
 
-    gap: 15px;
+  gap: 15px;
 
-    margin-top: 40px;
-  }
+  margin-top: 10px;
+
+  border-top: none;
+}
 
   .ft-legal {
     flex-wrap: wrap;
@@ -648,11 +725,7 @@
 }
 
 /* =========================================================================
-   PRIVACY POLICY MODAL
-   ========================================================================= */
-
-/* =========================================================================
-   PRIVACY POLICY MODAL
+   LEGAL LINKS (Privacy Policy, Terms)
    ========================================================================= */
 
 /* also styles the plain <Link> in the legal strip, so it needs no underline */
@@ -661,7 +734,11 @@ a.ft-legal-btn {
 }
 
 .ft-legal-btn {
-  padding: 0;
+  /* at least 24px tall so it is easy to tap on a phone */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 0;
   border: none;
   background: none;
   color: #666666;
@@ -673,326 +750,4 @@ a.ft-legal-btn {
 
 .ft-legal-btn:hover {
   color: #111111;
-}
-
-/* Modal background overlay */
-.privacy-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 25px;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-}
-
-/* Main modal */
-.privacy-modal {
-  position: relative;
-  width: min(700px, 100%);
-  max-height: 80vh;
-  padding: 35px;
-
-  /* Modal itself should NOT scroll */
-  overflow: hidden;
-
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-}
-
-/* Modal main heading */
-.privacy-modal h2 {
-  margin: 0 0 25px;
-  color: #202020;
-  font-size: 26px;
-  font-weight: 600;
-}
-
-/* Scrollable content */
-.privacy-modal-content {
-  max-height: calc(80vh - 110px);
-  overflow-y: auto;
-
-  /* Hide scrollbar */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-
-  color: #666666;
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-/* Chrome / Edge / Safari */
-.privacy-modal-content::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  display: none;
-}
-
-/* Content heading */
-.privacy-modal-content h3 {
-  margin: 0 0 18px;
-  color: #202020;
-  font-size: 26px;
-  font-weight: 600;
-}
-
-/* Section headings */
-.privacy-modal-content h4 {
-  margin: 24px 0 10px;
-  color: #202020;
-  font-size: 17px;
-  font-weight: 600;
-}
-
-/* Paragraphs */
-.privacy-modal-content p {
-  margin: 0 0 14px;
-  color: #666666;
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-/* Bullet lists */
-.privacy-modal-content ul {
-  margin: 0 0 18px;
-  padding-left: 22px;
-}
-
-.privacy-modal-content li {
-  margin-bottom: 8px;
-  color: #666666;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-/* Close button */
-.privacy-modal-close {
-  position: absolute;
-  top: 15px;
-  right: 18px;
-  width: 34px;
-  height: 34px;
-  border: none;
-  border-radius: 50%;
-  background: #f5f5f5;
-  color: #333333;
-  font-size: 25px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.privacy-modal-close:hover {
-  background: #eeeeee;
-  color: #000000;
-}
-
-
-/* =========================================================================
-   MOBILE
-   ========================================================================= */
-
-@media (max-width: 767px) {
-
-  .privacy-modal-overlay {
-    padding: 18px;
-  }
-
-  .privacy-modal {
-    width: 100%;
-    max-height: 85vh;
-    padding: 30px;
-
-    overflow: hidden;
-  }
-
-  .privacy-modal-content {
-    max-height: calc(85vh - 100px);
-    overflow-y: auto;
-
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .privacy-modal-content::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    display: none;
-  }
-
-  .privacy-modal h2 {
-    font-size: 22px;
-  }
-
-  .privacy-modal-content h3 {
-    font-size: 22px;
-  }
-
-  .privacy-modal-content h4 {
-    font-size: 16px;
-  }
-
-  .privacy-modal-content p,
-  .privacy-modal-content li {
-    font-size: 14px;
-  }
-}
-
-/* =========================================================================
-   TERMS & CONDITIONS MODAL
-   ========================================================================= */
-
-.terms-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 25px;
-
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-}
-
-.terms-modal {
-  position: relative;
-  width: min(700px, 100%);
-  max-height: 80vh;
-  padding: 35px;
-
-  overflow: hidden;
-
-  background: #ffffff;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-}
-
-.terms-modal > h2 {
-  margin: 0 0 25px;
-  color: #202020;
-  font-size: 26px;
-  font-weight: 600;
-}
-
-.terms-modal-content {
-  max-height: calc(80vh - 110px);
-  overflow-y: auto;
-
-  color: #666666;
-  font-size: 15px;
-  line-height: 1.7;
-
-  /* Hide scrollbar */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.terms-modal-content::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-
-.terms-modal-content h3 {
-  margin: 24px 0 10px;
-  color: #202020;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.terms-modal-content p {
-  margin: 0 0 15px;
-  color: #666666;
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-.terms-modal-content ul {
-  margin: 0 0 18px;
-  padding-left: 22px;
-}
-
-.terms-modal-content li {
-  margin-bottom: 8px;
-  color: #666666;
-  font-size: 15px;
-  line-height: 1.6;
-}
-
-.terms-modal-close {
-  position: absolute;
-  top: 15px;
-  right: 18px;
-
-  width: 34px;
-  height: 34px;
-
-  border: none;
-  border-radius: 50%;
-
-  background: #f5f5f5;
-  color: #333333;
-
-  font-size: 25px;
-  line-height: 1;
-
-  cursor: pointer;
-}
-
-.terms-modal-close:hover {
-  background: #eeeeee;
-  color: #000000;
-}
-
-
-/* MOBILE */
-
-@media (max-width: 767px) {
-
-  .terms-modal-overlay {
-    padding: 18px;
-  }
-
-  .terms-modal {
-    width: 100%;
-    max-height: 85vh;
-    padding: 30px;
-    overflow: hidden;
-  }
-
-  .terms-modal-content {
-    max-height: calc(85vh - 100px);
-    overflow-y: auto;
-
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .terms-modal-content::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-  }
-
-  .terms-modal > h2 {
-    font-size: 22px;
-  }
-
-  .terms-modal-content h3 {
-    font-size: 17px;
-  }
-
-  .terms-modal-content p,
-  .terms-modal-content li {
-    font-size: 14px;
-  }
 }

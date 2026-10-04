@@ -125,3 +125,10 @@ export function useCart(cart = 'plumbing') {
 
   return { ...actions, items, count, subtotalPaise, clear };
 }
+
+/** Items across both carts, for the cart badges in the header and bottom bar. */
+export function useCartCount() {
+  const plumbing = useCart('plumbing');
+  const electrical = useCart('electrical');
+  return plumbing.count + electrical.count;
+}

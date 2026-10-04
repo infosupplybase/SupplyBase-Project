@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
+import ConfirmLogoutDialog from '../ui/ConfirmLogoutDialog';
 import ServiceMegaMenu from './ServiceMegaMenu';
 import MobileMenu from './MobileMenu';
 import LocationSelector from './LocationSelector';
 import NotificationBell from './NotificationBell';
 import { mainNav, company } from '../../data/siteConfig';
 import { useAuth } from '../../context/AuthContext';
+import { useLoginGate } from '../auth/LoginGate';
+import { useCartCount } from '../../context/CartContext';
 
 /**
  * Navbar — sticky header with the services mega menu and mobile drawer.
@@ -15,8 +18,29 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
+  const burgerRef = useRef(null);
+  const cartCount = useCartCount();
   const location = useLocation();
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { openLogin } = useLoginGate();
+
+  const handleLogout = async () => {
+    setConfirmLogout(false);
+    await logout();
+    navigate('/');
+  };
+
+  const initials = user?.fullName
+    ? (() => {
+        const parts = user.fullName.trim().split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return 'U';
+        const first = parts[0][0]?.toUpperCase() || '';
+        const last = parts[parts.length - 1][0]?.toUpperCase() || '';
+        return `${first}${last}` || 'U';
+      })()
+    : 'U';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -76,7 +100,6 @@ export default function Navbar() {
                         `nav-link ${isActive ? 'active' : ''} ${megaOpen ? 'open' : ''}`
                       }
                       onClick={() => setMegaOpen(false)}
-                      aria-expanded={megaOpen}
                     >
                       {item.label}
                       {/* <Icon name="chevron-down" size={15} className="nav-caret" /> */}
@@ -98,15 +121,49 @@ export default function Navbar() {
 
             <div className="header-actions">
               <LocationSelector />
-              <NotificationBell />
-              <Link to={user ? '/dashboard' : '/login'} className="login-btn">
-                <Icon name="user" size={17} />
-                {user ? 'MY ACCOUNT' : 'LOGIN'}
+              <Link
+                to="/cart"
+                className="notif-bell-btn desktop-cart-btn"
+                aria-label={cartCount ? `Cart, ${cartCount} item${cartCount > 1 ? 's' : ''}` : 'Cart'}
+                title="Cart"
+              >
+                <Icon name="shopping-bag" size={18} />
+                {cartCount > 0 && (
+                  <span className="cart-count-badge" aria-hidden="true">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
               </Link>
+              <NotificationBell />
+              {user ? (
+                <>
+                  <Link to="/dashboard" className="login-btn user-logout-btn">
+                    <span className="user-avatar-badge" aria-hidden="true">{initials}</span>
+                    <span className="logout-label">MY ACCOUNT</span>
+                  </Link>
+                  <button
+                    type="button"
+                    className="login-btn icon-only-btn"
+                    onClick={() => setConfirmLogout(true)}
+                    aria-label="Log out"
+                    title="Log out"
+                  >
+                    <Icon name="log-out" size={17} />
+                  </button>
+                </>
+              ) : (
+                <button type="button" className="login-btn" onClick={openLogin}>
+                  <Icon name="user" size={17} />
+                  LOGIN
+                </button>
+              )}
               <button
                 type="button"
                 className="burger"
                 aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                aria-controls="mobile-menu"
+                ref={burgerRef}
                 onClick={() => setMobileOpen(true)}
               >
                 <Icon name="menu" size={22} />
@@ -123,7 +180,25 @@ export default function Navbar() {
 /> */}
 </div>
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <ConfirmLogoutDialog
+        open={confirmLogout}
+        onConfirm={handleLogout}
+        onCancel={() => setConfirmLogout(false)}
+      />
+
+      <MobileMenu
+        open={mobileOpen}
+        onClose={() => {
+          setMobileOpen(false);
+          // back to the button that opened it, so keyboard users are not
+          // dropped at the top of the page
+          burgerRef.current?.focus();
+        }}
+        onRequestLogout={() => {
+          setMobileOpen(false);
+          setConfirmLogout(true);
+        }}
+      />
     </>
   );
 }

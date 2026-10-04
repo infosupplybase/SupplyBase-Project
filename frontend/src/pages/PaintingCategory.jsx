@@ -10,6 +10,8 @@ export default function PaintingCategory({
   modal = false,
   onSelectFlow,
 }) {
+  // Renovation is chosen inside Full Home (as a painting type), so the page
+  // offers just the two journeys.
   const categories = paintingCategories.filter(
     (category) =>
       category.slug === 'full-home' ||

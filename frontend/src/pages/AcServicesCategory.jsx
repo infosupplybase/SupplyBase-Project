@@ -5,12 +5,12 @@ import Icon from '../components/ui/Icon';
 import { acCategories } from '../data/acContent';
 
 const categoryImages = {
-  regular: '/assets/ac-services/matched/jet-cleaning.jpg',
+  regular: '/assets/ac-services/matched/jet-cleaning.webp',
   repair: '/assets/ac-services/matched/electrical-diagnosis.webp',
-  installation: '/assets/ac-services/installation.png',
-  uninstallation: '/assets/ac-services/uninstallation.jpeg',
-  'gas-charging': '/assets/ac-services/matched/pressure-testing.jpg',
-  amc: '/assets/ac-services/matched/filter-cleaning.jpg',
+  installation: '/assets/ac-services/installation.webp',
+  uninstallation: '/assets/ac-services/uninstallation.webp',
+  'gas-charging': '/assets/ac-services/matched/pressure-testing.webp',
+  amc: '/assets/ac-services/matched/filter-cleaning.webp',
 };
 
 const categoryIcons = {
