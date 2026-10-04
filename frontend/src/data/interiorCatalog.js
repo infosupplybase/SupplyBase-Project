@@ -1,69 +1,614 @@
-/**
- * SUPPLYBASE — INTERIOR BY CHOICE CATALOGUE
- * ------------------------------------------
- * A browsable, ready-made design catalogue: pick a space, pick a design,
- * book a ₹99 home visit. This is placeholder content — real photography,
- * pricing and material specs replace it before launch — but the shape
- * (space -> designs -> colours/features/material detail) is the real one
- * the UI is built against.
- *
- * Booking submitted through this flow does not yet take a live payment;
- * see InteriorBooking.jsx.
- */
-
 export const interiorSpaces = [
   {
-    slug: 'living-room',
-    name: 'Living Room',
-    image: '/assets/projects/Living_room.webp',
-  },
-  {
-    slug: 'bedroom',
-    name: 'Bedroom',
-    image: '/assets/projects/bedroom.webp',
-  },
-  {
     slug: 'tv-wall',
-    name: 'TV Wall',
+    name: 'TV wall',
     image: '/assets/projects/tv_wall.webp',
   },
+
   {
-    slug: 'dining-area',
-    name: 'Dining Area',
-    image: '/assets/projects/Dining.webp',
+    slug: 'bed-back-wall',
+    name: 'Bed back wall',
+    image: '/assets/projects/bedroom.webp',
   },
+
   {
-    slug: 'home-entrance',
-    name: 'Home Entrance',
+    slug: 'living-room',
+    name: 'Living room',
+    image: '/assets/projects/Living_room.webp',
+  },
+
+  {
+    slug: 'entrance',
+    name: 'Entrance',
     image: '/assets/projects/home_Entrance.webp',
   },
+
   {
-    slug: 'office-commercial',
-    name: 'Office / Commercial',
-    image: '/assets/projects/office_commercial.webp',
+    slug: 'study',
+    name: 'Study',
+    image: '/assets/projects/study_room.webp',
+  },
+
+  {
+    slug: 'mandir',
+    name: 'Mandir',
+    image: '/assets/projects/mandir.webp',
   },
 ];
 
-/* Shared vocabulary so every design's feature list points at the same icon
-   and label rather than each entry spelling it out. */
 export const interiorFeatures = {
-  waterproof: { icon: 'droplet', label: 'Waterproof' },
-  'termite-resistant': { icon: 'shield', label: 'Termite Resistant' },
-  'easy-clean': { icon: 'check-circle', label: 'Easy to Clean' },
-  warranty: { icon: 'award', label: '5 Years Warranty' },
+  waterproof: {
+    icon: 'droplet',
+    label: 'Waterproof',
+  },
+
+  'termite-resistant': {
+    icon: 'shield',
+    label: 'Termite Resistant',
+  },
+
+  'easy-clean': {
+    icon: 'check-circle',
+    label: 'Easy to Clean',
+  },
+
+  warranty: {
+    icon: 'award',
+    label: '5 Years Warranty',
+  },
 };
 
-export const interiorDesigns = [
-  /* ---------------------------------------------------------- TV Wall */
+const subDesignNames = {
+  'tv-wall': [
+    'Modern Minimal',
+    'Marble Luxury',
+    'Wood & White',
+    'Stone Texture',
+    'Classic Elegant',
+    'Contemporary Colour',
+    'Fluted Luxe',
+    'Warm Walnut',
+    'Charcoal Frame',
+    'Beige Calm',
+    'Oak Slat',
+    'Grey Stone',
+    'Black & Brass',
+    'Ivory Panel',
+    'Earthy Modern',
+    'Linear Luxe',
+    'Urban Concrete',
+    'Natural Veneer',
+    'Soft Taupe',
+    'Bold Black',
+    'Terracotta Accent',
+    'Sage & Oak',
+    'Cream & Walnut',
+    'Mocha Modern',
+    'Minimal Grid',
+    'Vertical Rhythm',
+    'Floating Console',
+    'Backlit Marble',
+    'Dark Wood Luxe',
+    'Sandstone Modern',
+    'Monochrome Edge',
+    'Light Oak Frame',
+    'Textured Beige',
+    'Graphite Stone',
+    'Warm Grey Luxe',
+    'White Oak Minimal',
+    'Bronze Detail',
+    'Japandi TV Wall',
+    'Scandinavian Slat',
+    'Contemporary Classic',
+    'Luxury Flute',
+    'Soft Contrast',
+    'Statement Marble',
+    'Rustic Modern',
+    'Clean Geometry',
+    'Modern Arch',
+    'Natural Stone Luxe',
+    'Slimline Modern',
+    'Warm Contemporary',
+    'Signature TV Wall',
+  ],
+
+  'bed-back-wall': [
+    'Soft Minimal',
+    'Classic Wood',
+    'Hotel Luxe',
+    'Warm Beige',
+    'Fluted Headboard',
+    'Walnut Retreat',
+    'Ivory Calm',
+    'Earthy Bedroom',
+    'Modern Panel',
+    'Luxury Upholstery',
+    'Vertical Wood',
+    'Stone & Wood',
+    'Taupe Harmony',
+    'Charcoal Luxe',
+    'Cream & Oak',
+    'Japandi Bedroom',
+    'Scandinavian Calm',
+    'Contemporary Warmth',
+    'Natural Veneer',
+    'Soft Grey',
+    'Mocha Retreat',
+    'Sage Bedroom',
+    'Blush Neutral',
+    'Textured Headboard',
+    'Floating Bed Wall',
+    'Backlit Luxe',
+    'Minimal Arch',
+    'Modern Classic',
+    'Warm Walnut',
+    'Sand Beige',
+    'Elegant Flute',
+    'Urban Bedroom',
+    'Graphite & Oak',
+    'White Wood Calm',
+    'Cocoa Luxe',
+    'Linear Headboard',
+    'Hotel Minimal',
+    'Earth Tone Retreat',
+    'Black Accent',
+    'Cream Stone',
+    'Modern Symmetry',
+    'Oak & Beige',
+    'Soft Luxury',
+    'Statement Headboard',
+    'Natural Calm',
+    'Contemporary Classic',
+    'Warm Modern',
+    'Quiet Luxury',
+    'Signature Bedroom',
+    'Dreamy Minimal',
+  ],
+
+  'living-room': [
+    'Fluted Panel',
+    'Wooden Panel',
+    'Marble + Fluted Panel',
+    'Plain Panel',
+    'Designer Panel',
+  ],
+
+  entrance: [
+    'Grand Foyer',
+    'Minimal Welcome',
+    'Warm Entry',
+    'Modern Console',
+    'Luxury Foyer',
+    'Fluted Entrance',
+    'Wood & Stone Entry',
+    'Beige Welcome',
+    'Classic Entry',
+    'Contemporary Foyer',
+    'Japandi Entry',
+    'Scandinavian Welcome',
+    'Natural Oak Entry',
+    'Marble Console',
+    'Statement Mirror Wall',
+    'Backlit Entrance',
+    'Archway Welcome',
+    'Modern Classic Entry',
+    'Taupe Foyer',
+    'Charcoal Entry',
+    'Warm Walnut Foyer',
+    'Cream Stone Entry',
+    'Elegant Flute',
+    'Urban Welcome',
+    'Earthy Entrance',
+    'Black & Brass Entry',
+    'Ivory Foyer',
+    'Soft Grey Welcome',
+    'Mocha Entry',
+    'Linear Console',
+    'Hotel Style Foyer',
+    'Slimline Entry',
+    'Textured Welcome',
+    'Oak & Beige Entry',
+    'Graphite Foyer',
+    'Natural Veneer Entry',
+    'Quiet Luxury Foyer',
+    'Modern Heritage Entry',
+    'Sage Accent Entry',
+    'Terracotta Welcome',
+    'Clean Geometry Entry',
+    'Contemporary Classic Foyer',
+    'Warm Minimal Entry',
+    'Luxury Arch Entry',
+    'Stone Luxe Foyer',
+    'Soft Contrast Entry',
+    'Signature Entrance',
+    'Premium Welcome',
+    'Refined Foyer',
+    'Statement Entry',
+  ],
+
+  study: [
+    'Focus Minimal',
+    'Executive Wood',
+    'Modern Study',
+    'Warm Workroom',
+    'Japandi Study',
+    'Scandinavian Desk Wall',
+    'Walnut Office',
+    'Beige Study',
+    'Charcoal Executive',
+    'Natural Veneer Study',
+    'Fluted Workspace',
+    'Stone & Wood Study',
+    'Contemporary Office',
+    'Classic Library',
+    'Quiet Luxury Study',
+    'Minimalist Work Wall',
+    'Oak & Black Study',
+    'Cream & Walnut',
+    'Graphite Workspace',
+    'Soft Grey Office',
+    'Earthy Study',
+    'Hotel Executive',
+    'Backlit Study',
+    'Floating Desk Wall',
+    'Modern Shelving',
+    'Elegant Study',
+    'Urban Workspace',
+    'Warm Contemporary',
+    'Ivory Office',
+    'Mocha Study',
+    'Linear Workspace',
+    'Sage Study',
+    'Black & Brass Office',
+    'White Oak Study',
+    'Textured Study',
+    'Modern Heritage Office',
+    'Compact Study',
+    'Premium Workroom',
+    'Clean Geometry Study',
+    'Statement Library',
+    'Natural Calm Study',
+    'Contemporary Classic Study',
+    'Warm Minimal Workspace',
+    'Luxury Home Office',
+    'Refined Executive',
+    'Signature Study',
+    'Creative Workspace',
+    'Timeless Study',
+    'Grand Library',
+    'Smart Minimal Study',
+  ],
+
+  mandir: [
+    'Traditional Mandir',
+    'Modern Mandir',
+    'Marble Mandir',
+    'Wooden Mandir',
+    'Backlit Mandir',
+    'Fluted Mandir',
+    'Minimal Pooja',
+    'Luxury Pooja',
+    'Compact Mandir',
+    'Grand Pooja',
+    'Warm Wood Mandir',
+    'White Marble Mandir',
+    'Stone Mandir',
+    'Brass Accent Mandir',
+    'Arch Mandir',
+    'Jaali Mandir',
+    'Contemporary Pooja',
+    'Classic Pooja Room',
+    'Japandi Mandir',
+    'Ivory Mandir',
+    'Walnut Pooja',
+    'Cream & Gold Mandir',
+    'Beige Mandir',
+    'Black & Brass Pooja',
+    'Temple Arch',
+    'Floating Mandir',
+    'Vertical Flute Mandir',
+    'Natural Stone Pooja',
+    'Soft Light Mandir',
+    'Elegant Pooja',
+    'Modern Heritage Mandir',
+    'Carved Wood Mandir',
+    'Minimal Arch Pooja',
+    'Warm Marble Mandir',
+    'Sandalwood Mandir',
+    'Statement Mandir',
+    'Sacred Niche',
+    'Contemporary Classic Pooja',
+    'Premium Pooja Wall',
+    'Quiet Luxury Mandir',
+    'Natural Wood Pooja',
+    'Textured Marble Mandir',
+    'Gold Detail Mandir',
+    'Slimline Mandir',
+    'Corner Mandir',
+    'Family Pooja Room',
+    'Traditional Luxe Mandir',
+    'Modern Spiritual',
+    'Signature Mandir',
+    'Grand Temple Wall',
+  ],
+};
+
+/* =========================================================
+   LIVING ROOM SUB OPTIONS
+   ========================================================= */
+
+export const livingRoomSubOptions = {
+  'Fluted Panel': [
+    'Natural Oak',
+    'Mocha Brown',
+    'Pecan Brown',
+    'Marble White',
+    'Black',
+    'White',
+    'Dark Grey',
+    'Light Grey',
+  ],
+
+  'Wooden Panel': [
+    'Natural Oak',
+    'Teak',
+    'Walnut',
+    'Wenge',
+    'Coffee',
+    'White Oak',
+    'Grey Wood',
+  ],
+
+  'Marble + Fluted Panel': [
+    'Fluted Centre + Marble Sides',
+    'Marble Centre + Fluted Sides',
+    '50/50 Marble + Fluted',
+    'Marble Strips + Fluted',
+    'Marble Border + Fluted',
+    'Vertical Marble + Fluted',
+  ],
+
+  'Plain Panel': [
+    'White',
+    'Light Grey',
+    'Dark Grey',
+    'Beige',
+    'Warm White',
+    'Wood Finish',
+  ],
+
+  'Designer Panel': [
+    'Geometric Pattern',
+    'Modern Lines',
+    'Arch Pattern',
+    'Wave Pattern',
+    'Luxury Pattern',
+    'Custom Pattern',
+  ],
+};
+
+/* =========================================================
+   LIVING ROOM MAIN IMAGES
+   ========================================================= */
+
+const livingRoomImages = {
+  'Fluted Panel':
+    '/assets/projects/interior-by-choice/living-room/fluted-panel.webp',
+
+  'Wooden Panel':
+    '/assets/projects/interior-by-choice/living-room/wooden-panel.webp',
+
+  'Marble + Fluted Panel':
+    '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel.webp',
+
+  'Plain Panel':
+    '/assets/projects/interior-by-choice/living-room/plain-panel.webp',
+
+  'Designer Panel':
+    '/assets/projects/interior-by-choice/living-room/designer-panel.webp',
+};
+
+/* =========================================================
+   LIVING ROOM COLOUR IMAGES
+   ========================================================= */
+
+export const livingRoomColorImages = {
+  'Fluted Panel': {
+    'Natural Oak':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/natural-oak.webp',
+
+    'Mocha Brown':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/mocha-brown.webp',
+
+    'Pecan Brown':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/pecan-brown.webp',
+
+    'Marble White':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/marble-white.webp',
+
+    Black:
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/black.webp',
+
+    White:
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/white.webp',
+
+    'Dark Grey':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/dark-grey.webp',
+
+    'Light Grey':
+      '/assets/projects/interior-by-choice/living-room/fluted-panel/light-grey.webp',
+  },
+
+  'Wooden Panel': {
+    'Natural Oak':
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/natural-oak.webp',
+
+    Teak:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/teak.webp',
+
+    Walnut:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/walnut.webp',
+
+    Wenge:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/wenge.webp',
+
+    Coffee:
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/coffee.webp',
+
+    'White Oak':
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/white-oak.webp',
+
+    'Grey Wood':
+      '/assets/projects/interior-by-choice/living-room/wooden-panel/grey-wood.webp',
+  },
+
+  'Marble + Fluted Panel': {
+    'Fluted Centre + Marble Sides':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/fluted-centre-marble-sides.webp',
+
+    'Marble Centre + Fluted Sides':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/marble-centre-fluted-sides.webp',
+
+    '50/50 Marble + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/50-50-marble-fluted.webp',
+
+    'Marble Strips + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/marble-strips-fluted.webp',
+
+    'Marble Border + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/marble-border-fluted.webp',
+
+    'Vertical Marble + Fluted':
+      '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel/vertical-marble-fluted.webp',
+  },
+
+  'Plain Panel': {
+    White:
+      '/assets/projects/interior-by-choice/living-room/plain-panel/white.webp',
+
+    'Light Grey':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/light-grey.webp',
+
+    'Dark Grey':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/dark-grey.webp',
+
+    Beige:
+      '/assets/projects/interior-by-choice/living-room/plain-panel/beige.webp',
+
+    'Warm White':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/warm-white.webp',
+
+    'Wood Finish':
+      '/assets/projects/interior-by-choice/living-room/plain-panel/wood-finish.webp',
+  },
+
+  'Designer Panel': {
+    'Geometric Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/geometric-pattern.webp',
+
+    'Modern Lines':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/modern-lines.webp',
+
+    'Arch Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/arch-pattern.webp',
+
+    'Wave Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/wave-pattern.webp',
+
+    'Luxury Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/luxury-pattern.webp',
+
+    'Custom Pattern':
+      '/assets/projects/interior-by-choice/living-room/designer-panel/custom-pattern.webp',
+  },
+};
+
+/* =========================================================
+   LIVING ROOM DETAILS / FEATURES
+   ========================================================= */
+
+export const livingRoomDescriptions = {
+  'Fluted Panel':
+    'Modern vertical lines for a stylish and elegant living room wall.',
+
+  'Wooden Panel':
+    'Warm wood finish for a rich and timeless look. Perfect for living room walls.',
+
+  'Marble + Fluted Panel':
+    'Marble with fluted panels for a premium and elegant living room look.',
+
+  'Plain Panel':
+    'Simple and clean wall design for a calm, modern living room.',
+
+  'Designer Panel':
+    'Unique patterns for a modern statement wall in your living room.',
+};
+
+export const livingRoomFeatures = [
   {
-    slug: 'modern-minimal',
-    spaceSlug: 'tv-wall',
-    name: 'Modern Minimal',
-    tagline: 'Clean lines. Timeless look.',
-    pricePerSqft: 699,
-    image: '/assets/projects/tv_wall.webp',
-    colours: ['#6b4a34', '#2e2e2e', '#d8c9b0', '#9a9a9a', '#a87c52', '#3b2a20'],
-    features: ['waterproof', 'termite-resistant', 'easy-clean', 'warranty'],
+    icon: 'sparkles',
+    label: 'Elegant',
+    sublabel: 'Look',
+  },
+
+  {
+    icon: 'settings',
+    label: 'Easy to',
+    sublabel: 'Maintain',
+  },
+
+  {
+    icon: 'shield',
+    label: 'Durable',
+    sublabel: 'Material',
+  },
+
+  {
+    icon: 'home',
+    label: 'Suitable for',
+    sublabel: 'Mumbai Homes',
+  },
+];
+
+/* =========================================================
+   LIVING ROOM GALLERY IMAGES
+   ========================================================= */
+
+export const livingRoomGalleryImages = {
+  'Fluted Panel': [
+    '/assets/projects/interior-by-choice/living-room/fluted-panel.webp',
+  ],
+
+  'Wooden Panel': [
+    '/assets/projects/interior-by-choice/living-room/wooden-panel.webp',
+  ],
+
+  'Marble + Fluted Panel': [
+    '/assets/projects/interior-by-choice/living-room/marble-and-fluted-panel.webp',
+  ],
+
+  'Plain Panel': [
+    '/assets/projects/interior-by-choice/living-room/plain-panel.webp',
+  ],
+
+  'Designer Panel': [
+    '/assets/projects/interior-by-choice/living-room/designer-panel.webp',
+  ],
+};
+
+/* =========================================================
+   DESIGN PRESETS
+   ========================================================= */
+
+const designPresets = {
+  'tv-wall': {
+    features: [
+      'waterproof',
+      'termite-resistant',
+      'easy-clean',
+      'warranty',
+    ],
+
     materialDetails: {
       'Panel Type': 'WPC / MDF Fluted Panel',
       Thickness: '8 mm / 12 mm',
@@ -71,264 +616,228 @@ export const interiorDesigns = [
       'Installation Time': '1–2 Days',
     },
   },
-  {
-    slug: 'marble-luxury',
-    spaceSlug: 'tv-wall',
-    name: 'Marble Luxury',
-    tagline: 'A statement stone finish.',
-    pricePerSqft: 1199,
-    image: '/assets/projects/marble_luxury.webp',
-    colours: ['#efe9e2', '#c9c2b8', '#8a8478', '#3a3733'],
-    features: ['easy-clean', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'Marble-finish PVC Panel',
-      Thickness: '10 mm',
-      Finish: 'Glossy Marble',
-      'Installation Time': '2–3 Days',
-    },
-  },
-  {
-    slug: 'wood-white',
-    spaceSlug: 'tv-wall',
-    name: 'Wood & White',
-    tagline: 'Warm wood meets crisp white.',
-    pricePerSqft: 899,
-    image: '/assets/projects/Wood_White.webp',
-    colours: ['#ffffff', '#c9a876', '#8a6a45', '#e8e4dc'],
-    features: ['waterproof', 'easy-clean', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'WPC Fluted + Laminate',
-      Thickness: '8 mm',
-      Finish: 'Matte',
-      'Installation Time': '1–2 Days',
-    },
-  },
-  {
-    slug: 'stone-texture',
-    spaceSlug: 'tv-wall',
-    name: 'Stone Texture',
-    tagline: 'Raw texture, refined edge.',
-    pricePerSqft: 1099,
-    image: '/assets/projects/Stone_texture.webp',
-    colours: ['#5a5650', '#8a8378', '#2b2924', '#b3ab9c'],
-    features: ['waterproof', 'termite-resistant', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'Stone-veneer PU Panel',
-      Thickness: '12 mm',
-      Finish: 'Textured Matte',
-      'Installation Time': '2–3 Days',
-    },
-  },
-  {
-    slug: 'classic-elegant',
-    spaceSlug: 'tv-wall',
-    name: 'Classic Elegant',
-    tagline: 'Traditional panelling, elevated.',
-    pricePerSqft: 899,
-    image: '/assets/projects/classic_elegant.webp',
-    colours: ['#3b2a20', '#6b4a34', '#d8c9b0', '#1c1c1c'],
-    features: ['termite-resistant', 'easy-clean', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'MDF Moulded Panel',
-      Thickness: '12 mm',
-      Finish: 'Satin',
-      'Installation Time': '2 Days',
-    },
-  },
-  {
-    slug: 'contemporary-colour',
-    spaceSlug: 'tv-wall',
-    name: 'Contemporary Colour',
-    tagline: 'Bold tones for a modern room.',
-    pricePerSqft: 999,
-    image: '/assets/projects/Contemporary_Colour.webp',
-    colours: ['#2b5ea6', '#9c3b5c', '#5f6b23', '#111111'],
-    features: ['waterproof', 'easy-clean', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'Laminate on MDF',
-      Thickness: '8 mm',
-      Finish: 'Glossy',
-      'Installation Time': '1–2 Days',
-    },
-  },
 
-  /* ------------------------------------------------------ Living Room */
-  {
-    slug: 'warm-neutrals',
-    spaceSlug: 'living-room',
-    name: 'Warm Neutrals',
-    tagline: 'Soft tones, easy to live in.',
-    pricePerSqft: 749,
-    image: '/assets/projects/Warm_Neutral.webp',
-    colours: ['#d8c9b0', '#a87c52', '#efe9e2', '#6b4a34'],
-    features: ['waterproof', 'easy-clean', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'WPC Fluted Panel',
-      Thickness: '8 mm',
-      Finish: 'Matte',
-      'Installation Time': '2–3 Days',
-    },
-  },
-  {
-    slug: 'modern-luxe',
-    spaceSlug: 'living-room',
-    name: 'Modern Luxe',
-    tagline: 'A living room that feels curated.',
-    pricePerSqft: 1099,
-    image: '/assets/projects/modern_luxe.webp',
-    colours: ['#2e2e2e', '#c9a876', '#3a3733', '#efe9e2'],
-    features: ['termite-resistant', 'easy-clean', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'Veneer + Laminate Mix',
-      Thickness: '10 mm',
-      Finish: 'Satin',
-      'Installation Time': '3–4 Days',
-    },
-  },
+  'bed-back-wall': {
+    features: [
+      'termite-resistant',
+      'easy-clean',
+      'warranty',
+    ],
 
-  /* ---------------------------------------------------------- Bedroom */
-  {
-    slug: 'soft-minimal',
-    spaceSlug: 'bedroom',
-    name: 'Soft Minimal',
-    tagline: 'Calm colours, restful room.',
-    pricePerSqft: 799,
-    image: '/assets/projects/soft_minimal.webp',
-    colours: ['#efe9e2', '#c9c2b8', '#a87c52'],
-    features: ['easy-clean', 'warranty'],
     materialDetails: {
-      'Panel Type': 'MDF Fluted Panel',
-      Thickness: '8 mm',
-      Finish: 'Matte',
-      'Installation Time': '2 Days',
-    },
-  },
-  {
-    slug: 'classic-wood',
-    spaceSlug: 'bedroom',
-    name: 'Classic Wood',
-    tagline: 'A headboard wall that anchors the room.',
-    pricePerSqft: 949,
-    image: '/assets/projects/Classic_Wood.webp',
-    colours: ['#6b4a34', '#3b2a20', '#d8c9b0'],
-    features: ['termite-resistant', 'easy-clean', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'Veneer Panel',
-      Thickness: '10 mm',
-      Finish: 'Woodgrain',
+      'Panel Type': 'MDF / Veneer Fluted Panel',
+      Thickness: '8 mm / 12 mm',
+      Finish: 'Matte / Woodgrain',
       'Installation Time': '2–3 Days',
     },
   },
 
-  /* ------------------------------------------------------ Dining Area */
-  {
-    slug: 'elegant-oak',
-    spaceSlug: 'dining-area',
-    name: 'Elegant Oak',
-    tagline: 'Warm wood for shared meals.',
-    pricePerSqft: 849,
-    image: '/assets/projects/elegant_oak.webp',
-    colours: ['#a87c52', '#6b4a34', '#efe9e2'],
-    features: ['waterproof', 'easy-clean', 'warranty'],
+  'living-room': {
+    features: [
+      'waterproof',
+      'easy-clean',
+      'warranty',
+    ],
+
     materialDetails: {
-      'Panel Type': 'WPC Fluted Panel',
-      Thickness: '8 mm',
-      Finish: 'Woodgrain',
-      'Installation Time': '2 Days',
-    },
-  },
-  {
-    slug: 'contemporary-edge',
-    spaceSlug: 'dining-area',
-    name: 'Contemporary Edge',
-    tagline: 'A sharper, modern dining wall.',
-    pricePerSqft: 999,
-    image: '/assets/projects/Contemporary_Edge.webp',
-    colours: ['#2e2e2e', '#9a9a9a', '#111111'],
-    features: ['waterproof', 'termite-resistant', 'warranty'],
-    materialDetails: {
-      'Panel Type': 'PU Textured Panel',
-      Thickness: '12 mm',
-      Finish: 'Matte',
+      'Panel Type': 'WPC / Veneer / Laminate Mix',
+      Thickness: '8 mm / 10 mm',
+      Finish: 'Matte / Satin',
       'Installation Time': '2–3 Days',
     },
   },
 
-  /* --------------------------------------------------- Home Entrance */
-  {
-    slug: 'grand-foyer',
-    spaceSlug: 'home-entrance',
-    name: 'Grand Foyer',
-    tagline: 'A welcome that sets the tone.',
-    pricePerSqft: 899,
-    image: '/assets/projects/grand_foyer.webp',
-    colours: ['#3b2a20', '#a87c52', '#efe9e2'],
-    features: ['termite-resistant', 'easy-clean', 'warranty'],
+  'entrance': {
+    features: [
+      'waterproof',
+      'easy-clean',
+      'warranty',
+    ],
+
     materialDetails: {
-      'Panel Type': 'Veneer + Stone Mix',
-      Thickness: '12 mm',
-      Finish: 'Satin',
-      'Installation Time': '3 Days',
-    },
-  },
-  {
-    slug: 'minimal-welcome',
-    spaceSlug: 'home-entrance',
-    name: 'Minimal Welcome',
-    tagline: 'Clean and low-maintenance.',
-    pricePerSqft: 649,
-    image: '/assets/projects/minimal_welcome.webp',
-    colours: ['#efe9e2', '#c9c2b8', '#6b4a34'],
-    features: ['waterproof', 'easy-clean'],
-    materialDetails: {
-      'Panel Type': 'MDF Fluted Panel',
-      Thickness: '8 mm',
-      Finish: 'Matte',
-      'Installation Time': '1–2 Days',
+      'Panel Type': 'Veneer / Stone / MDF Mix',
+      Thickness: '8 mm / 12 mm',
+      Finish: 'Matte / Satin',
+      'Installation Time': '1–3 Days',
     },
   },
 
-  /* ---------------------------------------------------- Office / Commercial */
-  {
-    slug: 'corporate-clean',
-    spaceSlug: 'office-commercial',
-    name: 'Corporate Clean',
-    tagline: 'Sharp and professional.',
-    pricePerSqft: 949,
-    image: '/assets/projects/office-fitout.webp',
-    colours: ['#2e2e2e', '#9a9a9a', '#efe9e2'],
-    features: ['waterproof', 'easy-clean', 'warranty'],
+  'study': {
+    features: [
+      'termite-resistant',
+      'easy-clean',
+      'warranty',
+    ],
+
     materialDetails: {
-      'Panel Type': 'Laminate on MDF',
-      Thickness: '8 mm',
-      Finish: 'Matte',
+      'Panel Type': 'Laminate / Veneer on MDF',
+      Thickness: '8 mm / 12 mm',
+      Finish: 'Matte / Woodgrain',
       'Installation Time': '2–3 Days',
     },
   },
-  {
-    slug: 'showroom-bold',
-    spaceSlug: 'office-commercial',
-    name: 'Showroom Bold',
-    tagline: 'Built to be noticed.',
-    pricePerSqft: 1149,
-    image: '/assets/projects/retail-showroom.webp',
-    colours: ['#111111', '#c9a876', '#9c3b5c'],
-    features: ['termite-resistant', 'easy-clean', 'warranty'],
+
+  'mandir': {
+    features: [
+      'easy-clean',
+      'warranty',
+    ],
+
     materialDetails: {
-      'Panel Type': 'Veneer + Laminate Mix',
-      Thickness: '10 mm',
-      Finish: 'Glossy',
-      'Installation Time': '3–4 Days',
+      'Panel Type':
+        'MDF / Veneer / Marble-finish Panel',
+      Thickness: '8 mm / 12 mm',
+      Finish: 'Matte / Woodgrain',
+      'Installation Time': '2–3 Days',
     },
   },
-];
+};
 
-export const getSpaceBySlug = (slug) => interiorSpaces.find((s) => s.slug === slug);
+/* =========================================================
+   HELPERS
+   ========================================================= */
 
-export const getDesignsBySpace = (spaceSlug) =>
-  interiorDesigns.filter((d) => d.spaceSlug === spaceSlug);
+const slugify = (value) =>
+  value
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 
-export const getDesignBySlug = (spaceSlug, designSlug) =>
-  interiorDesigns.find((d) => d.spaceSlug === spaceSlug && d.slug === designSlug);
+const basePrices = {
+  'tv-wall': 699,
+  'bed-back-wall': 799,
+  'living-room': 749,
+  'entrance': 649,
+  'study': 849,
+  'mandir' : 899,
+};
+
+const taglines = {
+  'tv-wall':
+    'Clean lines. Timeless look.',
+
+  'bed-back-wall':
+    'Calm colours, restful room.',
+
+  'living-room':
+    'Soft tones, easy to live in.',
+
+  'entrance':
+    'A welcome that sets the tone.',
+
+  'study':
+    'A focused, functional workspace.',
+
+  'mandir':
+    'A peaceful, beautifully finished pooja space.',
+};
+
+/* =========================================================
+   INTERIOR DESIGNS
+   ========================================================= */
+
+export const interiorDesigns =
+  interiorSpaces.flatMap((space) =>
+    subDesignNames[space.slug].map(
+      (name, index) => {
+        const preset =
+          designPresets[space.slug];
+
+        const priceSteps = [
+          0,
+          50,
+          100,
+          150,
+          200,
+        ];
+
+        const pricePerSqft =
+          basePrices[space.slug] +
+          priceSteps[
+            index % priceSteps.length
+          ];
+
+        const dedicatedImage =
+          space.slug === 'living-room'
+            ? livingRoomImages[name]
+            : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
+                name
+              )}.webp`;
+
+        return {
+          slug: slugify(name),
+
+          spaceSlug: space.slug,
+
+          name,
+
+          tagline:
+            taglines[space.slug],
+
+          pricePerSqft,
+
+          image: dedicatedImage,
+
+          fallbackImage:
+            space.image,
+
+          colours: [
+            '#efe9e2',
+            '#d8c9b0',
+            '#6b4a34',
+            '#2e2e2e',
+          ],
+
+          features:
+            preset.features,
+
+          materialDetails:
+            preset.materialDetails,
+        };
+      }
+    )
+  );
+
+/* =========================================================
+   GET SPACE
+   ========================================================= */
+
+export const getSpaceBySlug =
+  (slug) =>
+    interiorSpaces.find(
+      (space) =>
+        space.slug === slug
+    );
+
+/* =========================================================
+   GET DESIGNS BY SPACE
+   ========================================================= */
+
+export const getDesignsBySpace =
+  (spaceSlug) =>
+    interiorDesigns.filter(
+      (design) =>
+        design.spaceSlug ===
+        spaceSlug
+    );
+
+/* =========================================================
+   GET SINGLE DESIGN
+   ========================================================= */
+
+export const getDesignBySlug =
+  (spaceSlug, designSlug) =>
+    interiorDesigns.find(
+      (design) =>
+        design.spaceSlug ===
+          spaceSlug &&
+        design.slug ===
+          designSlug
+    );
+
+/* =========================================================
+   HOME VISIT FEE
+   ========================================================= */
 
 export const HOME_VISIT_FEE = 99;

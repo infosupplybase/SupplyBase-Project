@@ -10,7 +10,13 @@ export default function PaintingCategory({
   modal = false,
   onSelectFlow,
 }) {
-  const categories = paintingCategories;
+  // Renovation is chosen inside Full Home (as a painting type), so the page
+  // offers just the two journeys.
+  const categories = paintingCategories.filter(
+    (category) =>
+      category.slug === 'full-home' ||
+      category.slug === 'few-walls'
+  );
 
   const renderCardContent = (category) => (
     <>
@@ -113,7 +119,7 @@ export default function PaintingCategory({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(148px, 1fr))',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
               gap: 14,
               padding: modal ? '4px 0 12px' : '24px 0',
             }}
