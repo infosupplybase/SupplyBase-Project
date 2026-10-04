@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import SlotPicker from '../components/booking/SlotPicker';
@@ -145,6 +145,11 @@ if (modal) {
       setBusy(false);
     }
   };
+
+  // A space or design in the URL that is not in the catalogue: no form to
+  // book against, so back to the catalogue (as the design page does).
+  if (!modal && spaceSlug && !space) return <Navigate to="/interior-by-choice" replace />;
+  if (!modal && designSlug && !design) return <Navigate to={`/interior-by-choice/${spaceSlug}`} replace />;
 
   return (
     <>
