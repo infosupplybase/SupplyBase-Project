@@ -711,6 +711,7 @@ const stageQuestions = useMemo(() => {
         receipt={receipt}
         details={details}
         modal={modal}
+        onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
       />
     );
   }
@@ -1213,6 +1214,7 @@ function Confirmation({
   receipt,
   details,
   modal = false,
+  onPaid,
 }) {
   const message = encodeURIComponent(
     `Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`
@@ -1294,7 +1296,12 @@ function Confirmation({
               </div>
             </dl>
 
-            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+            <PayBookingButton
+              bookingNumber={receipt.bookingNumber}
+              amountDisplay={receipt.visitFeeDisplay}
+              paid={receipt.paidOnline}
+              onPaid={onPaid}
+            />
 
             <Link
               to="/dashboard"

@@ -221,6 +221,7 @@ export default function PlumbingCheckout({
         config={config}
         modal={modal}
         onBackToServices={onBackToServices}
+        onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
       />
     );
   }
@@ -431,6 +432,7 @@ function CheckoutConfirmation({
   config,
   modal = false,
   onBackToServices,
+  onPaid,
 }) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
   return (
@@ -456,7 +458,7 @@ function CheckoutConfirmation({
             {config.showsFees ? (
               <>
                 <h2>Your Booking is Reserved!</h2>
-                <p>{receipt.message}</p>
+                {!receipt.paidOnline && <p>{receipt.message}</p>}
               </>
             ) : (
               // Like the electrician journeys: no fee amounts on this screen.
@@ -501,7 +503,12 @@ function CheckoutConfirmation({
               </div>
             </dl>
 
-            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+            <PayBookingButton
+              bookingNumber={receipt.bookingNumber}
+              amountDisplay={receipt.visitFeeDisplay}
+              paid={receipt.paidOnline}
+              onPaid={onPaid}
+            />
 
             {!modal && (
               <Link to="/dashboard" className="btn btn-primary btn-block">

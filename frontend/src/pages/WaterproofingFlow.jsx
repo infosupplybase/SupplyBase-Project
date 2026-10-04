@@ -265,12 +265,19 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
-              <div className="pnt-fee-note">
-                <Icon name="info" size={17} />
-                <span>{receipt.message}</span>
-              </div>
+              {!receipt.paidOnline && (
+                <div className="pnt-fee-note">
+                  <Icon name="info" size={17} />
+                  <span>{receipt.message}</span>
+                </div>
+              )}
 
-              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+              <PayBookingButton
+                bookingNumber={receipt.bookingNumber}
+                amountDisplay={receipt.visitFeeDisplay}
+                paid={receipt.paidOnline}
+                onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+              />
               <p className="question-hint" style={{ marginTop: 10 }}>
                 Our team will contact you shortly to confirm the details.
               </p>

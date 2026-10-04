@@ -306,7 +306,12 @@ export default function AcCheckout({
             <p><strong>Appointment:</strong> {formatVisit(date, time)}</p>
           </div>
 
-          <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+          <PayBookingButton
+            bookingNumber={receipt.bookingNumber}
+            amountDisplay={receipt.visitFeeDisplay}
+            paid={receipt.paidOnline}
+            onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+          />
 
           {photoWarning && (
             <p className="ac-checkout-notice" role="status">{photoWarning}</p>

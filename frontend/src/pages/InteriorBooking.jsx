@@ -349,7 +349,12 @@ if (modal) {
                 </p>
               </div>
 
-              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+              <PayBookingButton
+                bookingNumber={receipt.bookingNumber}
+                amountDisplay={receipt.visitFeeDisplay}
+                paid={receipt.paidOnline}
+                onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+              />
 
               <Link
   to="/dashboard"

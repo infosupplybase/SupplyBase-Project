@@ -11,8 +11,8 @@ import { payForBooking, PaymentCancelledError } from '../../lib/razorpay';
  * Paying online is optional: the booking is already reserved, and the
  * customer can still pay our team on the day of the visit.
  */
-export default function PayBookingButton({ bookingNumber, amountDisplay, onPaid, className = '' }) {
-  const [state, setState] = useState('idle'); // idle | paying | paid
+export default function PayBookingButton({ bookingNumber, amountDisplay, onPaid, paid = false, className = '' }) {
+  const [state, setState] = useState(paid ? 'paid' : 'idle'); // idle | paying | paid
   const [error, setError] = useState('');
 
   async function pay() {

@@ -194,6 +194,7 @@ if (receipt) {
       details={details}
       modal={modal}
       onBackToServices={onBackToServices}
+      onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
     />
   );
 }
@@ -369,6 +370,7 @@ function ConsultationConfirmation({
   details,
   modal = false,
   onBackToServices,
+  onPaid,
 }) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
   return (
@@ -392,7 +394,7 @@ function ConsultationConfirmation({
               <Icon name="check" size={38} strokeWidth={3} />
             </div>
             <h2>Your Consultation is Reserved!</h2>
-            <p>{receipt.message}</p>
+            {!receipt.paidOnline && <p>{receipt.message}</p>}
 
             <dl className="confirmed-panel">
               <div>
@@ -413,7 +415,12 @@ function ConsultationConfirmation({
               </div>
             </dl>
 
-            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
+            <PayBookingButton
+              bookingNumber={receipt.bookingNumber}
+              amountDisplay={receipt.visitFeeDisplay}
+              paid={receipt.paidOnline}
+              onPaid={onPaid}
+            />
 
             {!modal && (
   <Link to="/dashboard" className="btn btn-primary btn-block">
