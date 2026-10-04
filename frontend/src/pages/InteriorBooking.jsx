@@ -64,6 +64,9 @@ const designSlug = propDesignSlug || params.designSlug;
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  const shownStep = receipt ? 2 : step;
 
   // Kept in a ref: a new callback from the parent is not a step change.
   const onStepChangeRef = useRef(onStepChange);
@@ -173,7 +176,7 @@ if (modal) {
         : 'container container-narrow'
     }
   >
-          {step < 2 && (
+          {shownStep < 2 && (
             <ol className="ibc-steps">
               {STEPS.map((label, i) => (
                 <li key={label} className={`ibc-step ${i === step ? 'current' : ''} ${i < step ? 'done' : ''}`}>
@@ -184,7 +187,7 @@ if (modal) {
             </ol>
           )}
 
-          {(space || design) && step < 2 && (
+          {(space || design) && shownStep < 2 && (
             <div className="ibc-selected-service">
               <img
   src={
@@ -231,7 +234,7 @@ if (modal) {
             </div>
           )}
 
-          {step === 0 && (
+          {shownStep === 0 && (
             <div className="ibc-form-panel">
 
 {selectedColorName && (
@@ -275,7 +278,7 @@ if (modal) {
             </div>
           )}
 
-          {step === 1 && (
+          {shownStep === 1 && (
             <div className="ibc-form-panel">
               <SlotPicker
                 serviceSlug={CATEGORY_SLUG}
@@ -306,7 +309,7 @@ if (modal) {
             </div>
           )}
 
-          {step === 2 && receipt && (
+          {shownStep === 2 && receipt && (
             <div className="ibc-confirm-panel pb-6">
               <span className="ibc-confirm-icon">
                 <Icon name="check" size={30} />

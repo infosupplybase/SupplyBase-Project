@@ -261,7 +261,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   }
 
   /* -------------------------------------------------------------- intro */
-  if (stage === 0) {
+  if (stage === 0 && !receipt) {
     if (modal) {
       return (
         <div className="pop-modal-intro">
@@ -343,7 +343,9 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   }
 
   /* --------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
       <div className="wizard-shell">

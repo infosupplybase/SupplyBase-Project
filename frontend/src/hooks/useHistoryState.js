@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
@@ -17,6 +17,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
  *    previous step and Forward to the next one.
  *  - Typing and choosing replace the current entry, so filling in a form
  *    does not add hundreds of history entries.
+ *  - Only the step follows Back and Forward. Answers, details and the
+ *    booking receipt stay as they are and are copied into whichever entry
+ *    the form lands on: each entry only holds a snapshot of the answers
+ *    from when it was pushed, so following history would roll the details
+ *    back to what they were on that step (often empty). Keeping the receipt
+ *    also means Back after booking shows the confirmation, not a filled-in
+ *    form that can be sent again.
  *
  * Several setters called in the same tick (a click that sets the step and an
  * answer together) are merged into ONE navigation, so one click is one
@@ -33,6 +40,12 @@ const PUSHED = '__formPush';
 let pending = null;
 
 const currentUserState = () => (window.history.state && window.history.state.usr) || {};
+
+const has = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+
+// History state is structured-cloned, so a restored value is never the same
+// object; compare the data instead. Values are plain data (see above).
+const sameData = (a, b) => Object.is(a, b) || JSON.stringify(a) === JSON.stringify(b);
 
 function schedule(navigate, patch, push) {
   if (!pending) {
@@ -58,31 +71,45 @@ function schedule(navigate, patch, push) {
  * Like useState, but kept in the history entry.
  *
  * `push: true` makes every change a new history entry (use it for the step
- * or view — what Back should undo). Otherwise changes replace the entry.
+ * or view — what Back should undo), and the value follows Back and Forward.
+ * Otherwise changes replace the entry, and the value is kept as it is when
+ * the form moves to another entry (see "Only the step follows" above).
  */
 export function useHistoryState(key, initial, { push = false } = {}) {
   const location = useLocation();
   const navigate = useNavigate();
 
   const usr = location.state || {};
-  const fromHistory = Object.prototype.hasOwnProperty.call(usr, key) ? usr[key] : initial;
+  const fromHistory = has(usr, key) ? usr[key] : initial;
 
   // A local copy that changes on the same keystroke. A controlled input
   // needs that: if its value only changed a moment later (when the history
   // write lands), React would put the old text back and the cursor would
-  // jump to the end. The copy follows history whenever the entry changes —
-  // Back, Forward, a refresh — and history follows the copy.
+  // jump to the end. For a step the copy follows history whenever the entry
+  // changes (Back, Forward); an answer keeps its value and is written into
+  // the new entry below. A refresh starts from the entry either way.
   const [local, setLocal] = useState({ entry: location.key, value: fromHistory });
   let value = local.value;
   if (local.entry !== location.key) {
-    value = fromHistory;
-    setLocal({ entry: location.key, value: fromHistory });
+    if (push) value = fromHistory;
+    setLocal({ entry: location.key, value });
   }
 
   const valueRef = useRef(value);
   valueRef.current = value;
   const entryRef = useRef(location.key);
   entryRef.current = location.key;
+  const initialRef = useRef(initial);
+  initialRef.current = initial;
+
+  // After Back or Forward, copy the answer into the entry the form is now on,
+  // so a refresh there keeps it too.
+  useEffect(() => {
+    if (push) return;
+    const state = currentUserState();
+    const stored = has(state, key) ? state[key] : initialRef.current;
+    if (!sameData(stored, valueRef.current)) schedule(navigate, { [key]: valueRef.current }, false);
+  }, [location.key, key, navigate, push]);
 
   // `options.push` overrides the hook's default for one call.
   const setValue = useCallback(
@@ -122,5 +149,5 @@ export function useFormBack() {
 
 /** Whether a key is present in the current entry (e.g. "was this restored?"). */
 export function hasHistoryState(key) {
-  return Object.prototype.hasOwnProperty.call(currentUserState(), key);
+  return has(currentUserState(), key);
 }

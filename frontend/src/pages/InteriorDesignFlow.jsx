@@ -207,7 +207,9 @@ export default function InteriorDesignFlow({
   };
 
   /* ---------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const waMessage = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     // The reference says both "Booking Confirmed" and "our team will call to
     // confirm" — resolved using the real backend status rather than always
