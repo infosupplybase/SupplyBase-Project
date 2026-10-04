@@ -38,8 +38,8 @@
  *   the delivery report).
  */
 
-export const WP_HERO_IMAGE = '/assets/waterproofing/hero/modern-house.webp';
-export const WP_BATHROOM_IMAGE = '/assets/waterproofing/bathroom/bathroom.webp';
+export const WP_HERO_IMAGE = '/assets/waterproofing/curated-v2/terrace-service.webp';
+export const WP_BATHROOM_IMAGE = '/assets/waterproofing/curated-v2/bathroom-service.webp';
 
 export const wpOverviewIntro = {
   eyebrow: 'WATERPROOFING',
@@ -78,7 +78,6 @@ export const wpCategories = [
     their subservice preselected (see App.jsx / ServiceBooking.jsx). */
 export const wpBathroomServices = [
   { slug: 'bathroom-floor', name: 'Floor Waterproofing', tagline: 'Protects bathroom floors from seepage.', icon: 'droplet', route: '/services/waterproofing/bathroom-floor' },
-  { slug: 'wall', name: 'Wall Waterproofing', tagline: 'Prevents water from penetrating bathroom walls.', icon: 'wall-stain', route: '/booking/waterproofing?preselect=Interior%20Waterproofing' },
   // Not offered for now — commented out, not deleted, so they can come back.
   // { slug: 'corner-joint', name: 'Corner & Joint Sealing', tagline: 'Seals joints, cracks and pipe openings.', icon: 'grout', route: '/booking/waterproofing?preselect=Bathroom%20Corner%20%26%20Joint%20Sealing' },
   // { slug: 'shower-area', name: 'Shower Area Waterproofing', tagline: 'Extra protection for wet zones.', icon: 'droplet', route: '/booking/waterproofing?preselect=Bathroom%20Shower%20Area%20Waterproofing' },
@@ -171,7 +170,7 @@ export const wpFlows = {
     title: 'Floor Waterproofing',
     heroTagline: 'Keep Your Bathroom Dry. Stop Leaks Before They Start.',
     intro: {
-      image: WP_BATHROOM_IMAGE,
+      image: '/assets/waterproofing/curated-v2/bathroom-service.webp',
       heading: 'Special waterproofing treatment that protects bathroom floors from water seepage and leakage.',
       text: 'Suitable for new and existing bathrooms — homes, apartments and villas, all types of tiles and finishes.',
       points: [
@@ -198,7 +197,7 @@ export const wpFlows = {
     title: 'Interior Wall Waterproofing',
     heroTagline: 'Stop dampness. Protect your walls. Enjoy a healthier home.',
     intro: {
-      image: '/assets/projects/modern-interior.webp',
+      image: '/assets/waterproofing/curated-v2/interior-service.webp',
       heading: 'Stop rising and lateral dampness before it damages your walls and paint.',
       text: 'Ideal for bedrooms, living rooms, kitchens — any interior wall prone to dampness.',
       points: [
