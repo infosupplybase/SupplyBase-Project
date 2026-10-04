@@ -10,57 +10,58 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const mode = location.pathname === '/register' ? 'register' : 'login';
-  const isRegister = mode === 'register';
+const isRegister = mode === 'register';
 
-  const [form, setForm] = useState(emptyForm);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [accepted, setAccepted] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
-  const [errors, setErrors] = useState({});
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
-  const [busy, setBusy] = useState(false);
-  const fromParam = new URLSearchParams(location.search).get('from');
-  const rememberedReturn = (() => {
-    try {
-      return JSON.parse(sessionStorage.getItem('sb.bookingReturn') || 'null');
-    } catch {
-      return null;
-    }
-  })();
-  const redirectedFrom =
-    (location.state && location.state.from) ||
-    rememberedReturn?.path ||
-    fromParam ||
-    '/dashboard';
+const [form, setForm] = useState(emptyForm);
+const [showPassword, setShowPassword] = useState(false);
+const [showConfirm, setShowConfirm] = useState(false);
+const [accepted, setAccepted] = useState(false);
+const [rememberMe, setRememberMe] = useState(true);
+const [errors, setErrors] = useState({});
+const [error, setError] = useState('');
+const [notice, setNotice] = useState('');
+const [busy, setBusy] = useState(false);
+const fromParam = new URLSearchParams(location.search).get('from');
+const rememberedReturn = (() => {
+  try {
+    return JSON.parse(sessionStorage.getItem('sb.bookingReturn') || 'null');
+  } catch {
+    return null;
+  }
+})();
+const redirectedFrom =
+  (location.state && location.state.from) ||
+  rememberedReturn?.path ||
+  fromParam ||
+  '/dashboard';
 
-  const redirectedState =
-    (location.state && location.state.fromState) ||
-    rememberedReturn?.state ||
-    null;
+const redirectedState =
+  (location.state && location.state.fromState) ||
+  rememberedReturn?.state ||
+  null;
 
-  const redirectedStage =
-    (location.state && location.state.returnStage) ??
-    rememberedReturn?.stage ??
-    null;
+const redirectedStage =
+  (location.state && location.state.returnStage) ??
+  rememberedReturn?.stage ??
+  null;
 
-  const pathnameWithoutHash = redirectedFrom.split('#')[0];
-  const goTo = redirectedFrom;
+const pathnameWithoutHash = redirectedFrom.split('#')[0];
+const goTo = redirectedFrom;
 
-  const finishSignIn = () => {
-    sessionStorage.removeItem('sb.bookingReturn');
-    navigate(goTo, {
-      replace: true,
-      state: redirectedState
-        ? { ...redirectedState, returnStage: redirectedStage }
-        : redirectedStage !== null
-          ? { returnStage: redirectedStage }
-          : undefined,
-    });
-  };
+const finishSignIn = () => {
+  sessionStorage.removeItem('sb.bookingReturn');
+  navigate(goTo, {
+    replace: true,
+    state: redirectedState
+      ? { ...redirectedState, returnStage: redirectedStage }
+      : redirectedStage !== null
+        ? { returnStage: redirectedStage }
+        : undefined,
+  });
+};
 
   useEffect(() => {
+
     if (user) finishSignIn();
   }, [user]);
 
@@ -196,6 +197,7 @@ export default function Login() {
     }
   };
 
+
   /**
    * Closing the panel returns the visitor wherever they came from. On a direct
    * hit (a bookmark, a pasted link) there is nothing to go back to, so the home
@@ -236,7 +238,7 @@ export default function Login() {
             onModeChange={(next) =>
               navigate(next === 'register' ? '/register' : '/login', { state: location.state })
             }
-            onDone={finishSignIn}
+onDone={finishSignIn}
           />
         </div>
       </div>

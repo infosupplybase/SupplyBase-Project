@@ -1,31 +1,35 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import AuthPanel from './AuthPanel';
 import { useAuth } from '../../context/AuthContext';
 
 /**
- * SIGN IN AT THE BOOKING'S LAST STEP
+ * SIGN-IN GATES FOR BOOKING AND NAVIGATION
  *
  * Every booking needs an account (the API refuses POST /api/bookings without
- * one). Rather than sending a guest away to /login and back, the booking
- * asks here, on top of itself:
+ * one). Flows can either open sign-in over the booking:
  *
  *   if (!(await ensureLogin(details))) return;   // before api.createBooking
  *
- * Signed in already: resolves true straight away. Otherwise the sign-in /
- * create-account card opens over the booking — which stays mounted
- * underneath, so nothing the customer typed is lost — with the create-account
- * form started from their booking details (name, email, phone). It resolves
- * true once they are signed in (the booking then goes through), or false if
- * they close it (nothing is booked; they can press Confirm again).
+ * or route to /login and return to the saved booking:
+ *
+ *   if (!(await ensureLoginPage())) return;
+ *
+ * Both methods resolve true immediately for signed-in customers. The overlay
+ * method keeps the booking mounted while signing in; the page method records
+ * the current route and booking state so its caller can resume after login.
  */
 const LoginGateContext = createContext({
   ensureLogin: async () => true,
+  ensureLoginPage: async () => true,
   openLogin: () => { },
 });
 
 export function LoginGateProvider({ children }) {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [request, setRequest] = useState(null); // { prefill } while open
   const [mode, setMode] = useState('register');
   const resolveRef = useRef(null);
@@ -56,6 +60,23 @@ export function LoginGateProvider({ children }) {
     });
   }, []);
 
+  const ensureLoginPage = useCallback(() => {
+    if (userRef.current) return Promise.resolve(true);
+    const bookingState =
+      location.state && typeof location.state === 'object' ? location.state : {};
+    navigate('/login', {
+      state: {
+        from: {
+          pathname: location.pathname,
+          search: location.search,
+          hash: location.hash,
+          state: { ...bookingState, __resumeBookingSubmit: true },
+        },
+      },
+    });
+    return Promise.resolve(false);
+  }, [location, navigate]);
+
   const openLogin = useCallback(() => {
     setMode('login');
     setRequest({
@@ -82,7 +103,7 @@ export function LoginGateProvider({ children }) {
   }, [request, finish]);
 
   return (
-    <LoginGateContext.Provider value={{ ensureLogin, openLogin }}>
+    <LoginGateContext.Provider value={{ ensureLogin, ensureLoginPage, openLogin }}>
       {children}
       {request && (
         <div

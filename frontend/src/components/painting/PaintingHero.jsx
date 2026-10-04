@@ -5,9 +5,9 @@ import { PAINTING_HERO_IMAGE, paintingTrustPoints } from '../../data/paintingCon
     a real photograph (cropped clean of any baked-in text) with real HTML
     heading/tagline/trust-icons/logo layered on top so they stay sharp at
     any size, instead of embedding a screenshot as the page. */
-export default function PaintingHero({ eyebrow, title, tagline, trustPoints, image }) {
+export default function PaintingHero({ eyebrow, title, tagline, trustPoints, image, className = '' }) {
   return (
-    <section className="pnt-hero">
+    <section className={`pnt-hero ${className}`.trim()}>
       <img
         src={image || PAINTING_HERO_IMAGE}
         alt=""

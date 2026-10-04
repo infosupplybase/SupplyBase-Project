@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * Opens the "Book a service" modal, shared by every page that lets someone
@@ -22,7 +24,32 @@ import { useLocation, useNavigate } from 'react-router-dom';
 export function useServiceBookingModal() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const entry = (location.state && location.state.bookingModal) || null;
+  const resumeService = location.state && location.state.__resumeBookingModal;
+  const resumedLocationRef = useRef(null);
+
+  useEffect(() => {
+    if (!user || !resumeService || resumedLocationRef.current === location.key) return;
+
+    resumedLocationRef.current = location.key;
+    const usr = { ...location.state };
+    delete usr.__resumeBookingModal;
+    const currentIndex = (window.history.state && window.history.state.idx) || 0;
+    const { pathname, search, hash } = window.location;
+
+    navigate(
+      { pathname, search, hash },
+      {
+        replace: true,
+        state: {
+          ...stripBooking(usr),
+          bookingModal: { service: resumeService, base: Math.max(0, currentIndex - 1) },
+          __formPush: true,
+        },
+      }
+    );
+  }, [location, location.key, location.state, navigate, resumeService, user]);
 
   return {
     service: entry ? entry.service : null,
@@ -30,6 +57,22 @@ export function useServiceBookingModal() {
     // shares the entry it was opened from), new for the next one.
     openToken: entry ? entry.base : 0,
     open: (nextService) => {
+      if (!user) {
+        const usr = stripBooking((window.history.state && window.history.state.usr) || {});
+        const { pathname, search, hash } = window.location;
+        navigate('/login', {
+          state: {
+            from: {
+              pathname,
+              search,
+              hash,
+              state: { ...usr, __resumeBookingModal: nextService },
+            },
+          },
+        });
+        return;
+      }
+
       const base = (window.history.state && window.history.state.idx) || 0;
       const usr = (window.history.state && window.history.state.usr) || {};
       const { pathname, search, hash } = window.location;
@@ -60,7 +103,15 @@ export function useServiceBookingModal() {
 function stripBooking(usr) {
   const out = {};
   Object.keys(usr).forEach((k) => {
-    if (k !== 'bookingModal' && k !== '__formPush' && !k.startsWith('bm:') && !k.startsWith('f:')) out[k] = usr[k];
+    if (
+      k !== 'bookingModal' &&
+      k !== '__formPush' &&
+      k !== '__resumeBookingModal' &&
+      !k.startsWith('bm:') &&
+      !k.startsWith('f:')
+    ) {
+      out[k] = usr[k];
+    }
   });
   return out;
 }

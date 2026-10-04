@@ -19,7 +19,7 @@ import { hasHistoryState, useFormBack, useHistoryState } from '../hooks/useHisto
 import ModalFoot from '../components/services/ModalFoot';
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
-import { useEnsureLogin } from '../components/auth/LoginGate';
+import { useLoginGate } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import { wpCategories } from '../data/waterproofingContent';
@@ -116,7 +116,7 @@ export default function ServiceBooking({
 
   // The visit location pinned on the map (with a Google Maps key), or null.
   const pickedLocation = usePickedLocation();
-  const ensureLogin = useEnsureLogin();
+  const { ensureLoginPage } = useLoginGate();
 
   const [searchParams] = useSearchParams();
 
@@ -145,6 +145,7 @@ export default function ServiceBooking({
   const [busy, setBusy] = useState(false);
 
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+  const resumedSubmitRef = useRef(false);
 
   /**
    * Notify parent modal about current step.
@@ -513,12 +514,13 @@ const stageQuestions = useMemo(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateDetails()) {
+    // Check authentication as soon as Book Now is pressed; the booking is
+    // restored after sign-in and its details are validated before submission.
+    if (!(await ensureLoginPage())) {
       return;
     }
 
-    // Every booking needs an account: ask now, over this form (LoginGate).
-    if (!(await ensureLogin(details))) {
+    if (!validateDetails()) {
       return;
     }
 
@@ -621,6 +623,32 @@ const stageQuestions = useMemo(() => {
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    if (
+      !location.state?.__resumeBookingSubmit ||
+      !user ||
+      loading ||
+      !form ||
+      busy ||
+      resumedSubmitRef.current
+    ) {
+      return;
+    }
+
+    resumedSubmitRef.current = true;
+    const restoredState = { ...location.state };
+    delete restoredState.__resumeBookingSubmit;
+    navigate(
+      {
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      },
+      { replace: true, state: restoredState }
+    );
+    void handleSubmit({ preventDefault() {} });
+  }, [location, user, loading, form, busy, navigate]);
 
   /* ----------------------------------------------------------
      Loading

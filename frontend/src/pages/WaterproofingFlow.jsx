@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
 import BrandPicker from '../components/waterproofing/BrandPicker';
@@ -10,7 +10,7 @@ import useWaterproofingCatalogue from '../hooks/useWaterproofingCatalogue';
 import { wpFlows } from '../data/waterproofingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
-import { useEnsureLogin } from '../components/auth/LoginGate';
+import { useLoginGate } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
@@ -35,6 +35,8 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const { flowSlug: routeFlowSlug } = useParams();
   const flowSlug = flowSlugProp || routeFlowSlug;
   const flow = wpFlows[flowSlug];
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { category, loading, error: loadError, optionsFor, ratesByGroup } = useWaterproofingCatalogue();
 
@@ -45,7 +47,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
   const [brand, setBrand] = useHistoryState(`${scope}:brand`, '');
   const pickedLocation = usePickedLocation();
-  const ensureLogin = useEnsureLogin();
+  const { ensureLoginPage } = useLoginGate();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -55,6 +57,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+  const resumedSubmitRef = useRef(false);
 
   // STAGES: 0 intro, 1 work stages, 2 brand, 3 rates, [4 benefits], then
   // DETAILS/SCHEDULE/CONFIRM. Computed once per flow since only some flows
@@ -115,12 +118,15 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (busy) return;
+
+    // Check authentication as soon as Book Now is pressed; the booking is
+    // restored after sign-in and its schedule is validated before submission.
+    if (!(await ensureLoginPage())) return;
+
     if (!date || !time) {
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
-    // Every booking needs an account: ask now, over this form (LoginGate).
-    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');
@@ -156,6 +162,33 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
     }
   };
 
+  useEffect(() => {
+    if (
+      !location.state?.__resumeBookingSubmit ||
+      !user ||
+      loading ||
+      !category ||
+      stage !== CONFIRM ||
+      busy ||
+      resumedSubmitRef.current
+    ) {
+      return;
+    }
+
+    resumedSubmitRef.current = true;
+    const restoredState = { ...location.state };
+    delete restoredState.__resumeBookingSubmit;
+    navigate(
+      {
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      },
+      { replace: true, state: restoredState }
+    );
+    void handleSubmit({ preventDefault() {} });
+  }, [location, user, loading, category, stage, busy, navigate]);
+
   if (loading) {
     return (
       <div className="pnt-section">
@@ -190,7 +223,24 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
             </button>
           </div>
         )}
-        <PaintingHero eyebrow="PROFESSIONAL" title={flow.title} tagline={flow.heroTagline} image={flow.intro.image} trustPoints={[]} />
+        <PaintingHero
+          eyebrow="PROFESSIONAL"
+          title={flow.title}
+          tagline={flow.heroTagline}
+          image={flow.intro.image}
+          trustPoints={[]}
+          className={
+            flow.slug === 'exterior-wall'
+              ? 'pnt-hero-exterior-waterproofing'
+              : flow.slug === 'terrace'
+                ? 'pnt-hero-terrace-waterproofing'
+                  : flow.slug === 'water-tank'
+                    ? 'pnt-hero-water-tank-waterproofing'
+                    : flow.slug === 'basement'
+                      ? 'pnt-hero-basement-waterproofing'
+                      : ''
+          }
+        />
         <section className="pnt-section">
           <div className="container container-narrow">
             <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
