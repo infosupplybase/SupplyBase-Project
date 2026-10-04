@@ -785,7 +785,8 @@ const stageQuestions = useMemo(() => {
             Progress
         -------------------------------------------------- */}
 
-        <ol
+        {category.slug !== 'waterproofing' && (
+<ol
           className={
             modal
               ? 'wizard-steps !mb-3'
@@ -828,6 +829,7 @@ const stageQuestions = useMemo(() => {
             </li>
           ))}
         </ol>
+        )}
 
         {/* --------------------------------------------------
             Form

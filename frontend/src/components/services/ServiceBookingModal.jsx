@@ -153,6 +153,7 @@ export default function ServiceBookingModal({ service, onClose }) {
       <div
         className={`
           ${service.slug === 'ac-services' ? 'booking-pop-ac-layout' : ''}
+          ${service.slug === 'waterproofing' ? 'booking-pop-waterproofing-layout' : ''}
           relative
           w-full
           flex
@@ -172,7 +173,7 @@ export default function ServiceBookingModal({ service, onClose }) {
         // change size.
         style={{
           maxWidth: modalMaxWidth,
-          ...(service.slug === 'painting' || service.slug === 'ac-services'
+          ...(service.slug === 'painting' || service.slug === 'ac-services' || service.slug === 'waterproofing'
             ? { height: '88dvh', maxHeight: '88dvh' }
             : null),
         }}

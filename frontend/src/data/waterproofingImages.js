@@ -6,30 +6,17 @@
  */
 
 export const waterproofingImages = {
-  'Terrace Waterproofing':
-    '/assets/waterproofing/Terrace.webp',
-
-  'Bathroom Waterproofing':
-    '/assets/waterproofing/bathroom.webp',
-
-
-
-  'Basement Waterproofing':
-    '/assets/waterproofing/basement.webp',
-
-
-  'External Waterproofing':
-    '/assets/waterproofing/external.webp',
-
-  'Water Tank Waterproofing':
-    '/assets/waterproofing/watertank.webp',
-
-  'Interior Waterproofing':
-    '/assets/waterproofing/interior-waterproofing.webp',
-
-
-
-
+  "Terrace Waterproofing": "/assets/waterproofing/curated-v2/terrace-service.jpg",
+  "Bathroom Waterproofing": "/assets/waterproofing/curated-v2/bathroom-service.jpg",
+  "Interior Wall Waterproofing": "/assets/waterproofing/curated-v2/interior-service.jpg",
+  "Interior Waterproofing": "/assets/waterproofing/curated-v2/interior-service.jpg",
+  "Wall Waterproofing": "/assets/waterproofing/curated-v2/interior-service.jpg",
+  "Exterior Wall Waterproofing": "/assets/waterproofing/curated-v2/exterior-service.webp",
+  "External Waterproofing": "/assets/waterproofing/curated-v2/exterior-service.webp",
+  "Basement Waterproofing": "/assets/waterproofing/curated-v2/basement-service.jpg",
+  "Water Tank Waterproofing": "/assets/waterproofing/curated-v2/tank-service.jpg",
+  "Floor Waterproofing": "/assets/waterproofing/curated-v2/bathroom-floor-coating.jpg",
+  "Bathroom Wall Waterproofing": "/assets/waterproofing/curated-v2/bathroom-wall-coating.jpg"
 };
 
 
@@ -162,4 +149,3 @@ export const problemLocationImages = {
  */
 
 export default waterproofingImages;
-

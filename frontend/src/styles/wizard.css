@@ -2095,3 +2095,41 @@ svg {
 
   transform: none !important;
 }
+/* WATERPROOFING MODAL STABILITY START */
+
+.waterproofing-modal-scope .wizard-shell {
+  min-height: 0 !important;
+  padding: 0 !important;
+  background: #fff !important;
+  color: var(--dark, #222) !important;
+}
+
+.waterproofing-modal-scope .wizard-container {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 20px 24px 24px !important;
+}
+
+.waterproofing-modal-scope .wizard-card {
+  margin: 0;
+  box-shadow: none;
+}
+
+.waterproofing-modal-scope .wp-slot-region {
+  min-height: 230px;
+}
+
+.bm-scroll:has(.waterproofing-modal-scope) {
+  overflow-anchor: none;
+  scrollbar-gutter: stable;
+  scroll-behavior: auto;
+}
+
+@media (max-width: 600px) {
+  .waterproofing-modal-scope .wizard-container {
+    padding: 16px 14px 20px !important;
+  }
+}
+
+/* WATERPROOFING MODAL STABILITY END */

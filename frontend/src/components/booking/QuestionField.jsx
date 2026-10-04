@@ -618,7 +618,7 @@ export default function QuestionField({
                 {group.items.map(
                   (option, optionIndex) => {
 
-                    const image = isWaterproofingServices ? undefined : getOptionImage(option);
+                    const image = getOptionImage(option);
 
                     return (
                       <label
@@ -657,7 +657,20 @@ export default function QuestionField({
                         {/* IMAGE */}
 
                         <span
-                          className={`tile-image ${isWaterproofingServices ? 'waterproofing-service-icon' : ''}`}
+                          className={`tile-image ${isWaterproofingServices ? 'waterproofing-service-photo' : ''}`}
+                          style={
+                            isWaterproofingServices
+                              ? {
+                                  display: 'block',
+                                  width: '100%',
+                                  height: 88,
+                                  flexShrink: 0,
+                                  overflow: 'hidden',
+                                  borderRadius: 8,
+                                  marginBottom: 8,
+                                }
+                              : undefined
+                          }
                           aria-hidden="true"
                         >
 
@@ -668,6 +681,16 @@ export default function QuestionField({
                               alt=""
                               loading="eager"
                               decoding="async"
+                              style={
+                                isWaterproofingServices
+                                  ? {
+                                      display: 'block',
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'contain',
+                                    }
+                                  : undefined
+                              }
                               onError={(e) => {
                                 console.error(
                                   'POP/WATERPROOFING IMAGE NOT FOUND:',
