@@ -312,7 +312,7 @@ export default function ElectricianService() {
   if (!intro) return <Navigate to="/services/electrical" replace />;
 
   /* ---------------------------------------------------------- intro splash */
-  if (!started) {
+  if (!started && !receipt) {
     return (
       <div className="elc-intro-wrap">
         <div className="elc-intro-hero">

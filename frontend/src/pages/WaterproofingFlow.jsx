@@ -186,7 +186,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   }
 
   /* -------------------------------------------------------------- intro */
-  if (stage === 0) {
+  if (stage === 0 && !receipt) {
     return (
       <>
         {modal && (
@@ -221,7 +221,9 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   }
 
   /* --------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
       <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
