@@ -194,7 +194,7 @@ export default function Join() {
 
   const preparingPhotos = Object.values(preparing).some(Boolean);
 
-  /** Field-level checks; the API repeats them and can add its own (email taken). */
+  /** Field-level checks, returned as { field: message }; the API repeats them and can add its own (email taken). */
   const validate = () => {
     const next = {};
     // The account already has these when applying with it.
@@ -219,15 +219,20 @@ export default function Join() {
       if (!documents[doc.key]) next[doc.key] = errors[doc.key] || doc.missing;
     }
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return next;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!validate()) {
-      const first = document.querySelector('.field.error input, .field.error select');
+    const problems = validate();
+    if (Object.keys(problems).length > 0) {
+      // Not querySelector('.field.error'): the error classes only reach the
+      // page on the next render, so on a first submit nothing matched. The
+      // first field (in form order) that this check flagged gets the focus.
+      const fields = e.currentTarget.querySelectorAll('[id^="pj-"]');
+      const first = Array.from(fields).find((el) => problems[el.id.slice(3)]);
       if (first) first.focus();
       return;
     }
