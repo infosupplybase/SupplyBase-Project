@@ -13,6 +13,11 @@ import {
   livingRoomDescriptions,
   livingRoomFeatures,
   livingRoomGalleryImages,
+
+  mandirImages,
+  mandirDescriptions,
+  mandirGroups,
+
   HOME_VISIT_FEE,
 } from '../../data/interiorCatalog';
 import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
@@ -1422,8 +1427,304 @@ onClick={() => {
                           )}
                         </div>
                       )
-                    ) : (
-                      <div className="ibc-design-grid">
+
+
+) : selectedInteriorSpace === 'mandir' ? (
+  <div className="space-y-8">
+
+    {/* =================================
+        BASIC MANDIR DESIGNS
+        ================================= */}
+
+    <section>
+
+      <div className="mb-5">
+        <h3 className="text-2xl font-bold text-gray-950">
+          Basic Mandir Designs
+        </h3>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Simple • Elegant • Functional
+        </p>
+
+        <div className="mt-4 inline-flex rounded-lg bg-[#fff7ed] px-4 py-2">
+          <span className="text-sm font-semibold text-[#9A5B2D]">
+            ₹8,000 – ₹18,000
+          </span>
+        </div>
+      </div>
+
+
+      <div className="grid grid-cols-2 gap-4">
+
+        {mandirGroups.basic.map((name) => {
+
+          const design = getDesignsBySpace(
+            'mandir'
+          ).find(
+            (item) => item.name === name
+          );
+
+          if (!design) return null;
+
+          return (
+            <button
+              key={design.slug}
+              type="button"
+              className="
+                overflow-hidden
+                rounded-2xl
+                bg-white
+                text-left
+                shadow-sm
+                ring-1
+                ring-gray-200
+                transition
+                duration-200
+                hover:-translate-y-1
+                hover:shadow-lg
+              "
+              onClick={() => {
+                setSelectedInteriorDesign(
+                  design.slug
+                );
+
+                scrollModalToTop();
+              }}
+            >
+
+              <div
+                className="
+                  aspect-[4/3]
+                  w-full
+                  overflow-hidden
+                  bg-gray-100
+                "
+              >
+                <img
+                  src={design.image}
+                  alt={design.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="
+                    h-full!
+                    w-full
+                    object-cover
+                  "
+                />
+              </div>
+
+              <div className="p-4">
+
+                <h4 className="text-base font-bold text-gray-950">
+                  {design.name}
+                </h4>
+
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {mandirDescriptions[design.name]}
+                </p>
+
+              </div>
+
+            </button>
+          );
+        })}
+
+      </div>
+
+    </section>
+
+
+    {/* =================================
+        PREMIUM MANDIR DESIGNS
+        ================================= */}
+
+    <section>
+
+      <div className="mb-5">
+
+        <h3 className="text-2xl font-bold text-gray-950">
+          Premium Mandir Designs
+        </h3>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Luxurious • Modern • Customizable
+        </p>
+
+        <div className="mt-4 inline-flex rounded-lg bg-[#fff7ed] px-4 py-2">
+          <span className="text-sm font-semibold text-[#9A5B2D]">
+            ₹25,000 – ₹75,000
+          </span>
+        </div>
+
+      </div>
+
+
+      <div className="grid grid-cols-2 gap-4">
+
+        {mandirGroups.premium.map((name) => {
+
+          const design = getDesignsBySpace(
+            'mandir'
+          ).find(
+            (item) => item.name === name
+          );
+
+          if (!design) return null;
+
+          return (
+            <button
+              key={design.slug}
+              type="button"
+              className="
+                overflow-hidden
+                rounded-2xl
+                bg-white
+                text-left
+                shadow-sm
+                ring-1
+                ring-gray-200
+                transition
+                duration-200
+                hover:-translate-y-1
+                hover:shadow-lg
+              "
+              onClick={() => {
+                setSelectedInteriorDesign(
+                  design.slug
+                );
+
+                scrollModalToTop();
+              }}
+            >
+
+              <div
+                className="
+                  aspect-[4/3]
+                  w-full
+                  overflow-hidden
+                  bg-gray-100
+                "
+              >
+                <img
+                  src={design.image}
+                  alt={design.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="
+                    h-full!
+                    w-full
+                    object-cover
+                  "
+                />
+              </div>
+
+              <div className="p-4">
+
+                <h4 className="text-base font-bold text-gray-950">
+                  {design.name}
+                </h4>
+
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {mandirDescriptions[design.name]}
+                </p>
+
+              </div>
+
+            </button>
+          );
+        })}
+
+      </div>
+
+    </section>
+
+
+    {/* =================================
+        BENEFITS
+        ================================= */}
+
+    <section className="rounded-2xl bg-[#faf7f3] p-5">
+
+      <div className="grid grid-cols-2 gap-4">
+
+        <div>
+          
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+              <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span>High Quality Materials
+          </p>
+        </div>
+
+
+        <div>
+         
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+            <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span> Custom Sizes & Designs
+          </p>
+        </div>
+
+
+        <div>
+          
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+            <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span> Professional Installation
+          </p>
+        </div>
+
+
+        <div>
+         
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+            <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span> Expert Site Visit
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    {/* =================================
+        BOOK A SITE VISIT BUTTON
+        ================================= */}
+
+    <button
+      type="button"
+      className="
+        btn
+        btn-primary
+        w-full
+      "
+      onClick={() => {
+
+        setSelectedInteriorDesign(null);
+
+        setShowInteriorBooking(true);
+
+        scrollModalToTop();
+
+      }}
+    >
+      Book a Site Visit for your Mandir
+    </button>
+
+  </div>
+) : (
+
+
+  <div className="ibc-design-grid">
                         {getDesignsBySpace(
                           selectedInteriorSpace
                         ).map(
@@ -1509,8 +1810,9 @@ onClick={() => {
                       </div>
                     )}
 
-                    {!selectedLivingRoomOption &&
-                      !selectedLivingRoomColor && (
+                   {!selectedLivingRoomOption &&
+                    !selectedLivingRoomColor &&
+                    selectedInteriorSpace !== 'mandir' && (
                         <button
                           type="button"
                           className="
