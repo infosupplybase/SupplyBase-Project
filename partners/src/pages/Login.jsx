@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import { COMPANY_NAME, SITE_URL } from '../config';
 import { IDLE_MINUTES, useAuth, friendlyError } from '../context/AuthContext';
@@ -9,8 +9,8 @@ import api from '../lib/api';
  * /login — where Supplybase's professionals sign in.
  *
  * It is the same account system as the customer login (same API, same
- * accounts); what differs is where it leads. Signing in always lands on the
- * dashboard, which shows the right thing for the account: an application that
+ * accounts); what differs is where it leads. Signing in lands on the page
+ * that sent them here (a link like /?tab=earnings), or else on the dashboard, which shows the right thing for the account: an application that
  * is still being reviewed, a rejection or suspension with its reason, or —
  * once approved — the jobs assigned to them. Being a partner is decided by an
  * admin, never by which login page someone used, so a customer who signs in
@@ -23,6 +23,13 @@ import api from '../lib/api';
 export default function Login() {
   const { user, login, notice: signedOutNotice, clearNotice } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Where ProtectedRoute sent them from. Only a path in this app: "//evil.com"
+  // would leave the site.
+  const requested = location.state?.from;
+  const from = typeof requested === 'string' && requested.startsWith('/') && !requested.startsWith('//')
+    ? requested
+    : '/';
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -34,8 +41,8 @@ export default function Login() {
 
   // already signed in? go straight through
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(from, { replace: true });
+  }, [user, navigate, from]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,7 +58,7 @@ export default function Login() {
     try {
       await login(identifier, password, remember);
       clearNotice();
-      navigate('/', { replace: true });
+      navigate(from, { replace: true });
     } catch (err) {
       setError(friendlyError(err));
     } finally {

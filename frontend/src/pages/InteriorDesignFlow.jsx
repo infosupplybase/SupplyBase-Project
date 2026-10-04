@@ -20,6 +20,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * /services/interior-design/:categorySlug/:projectSlug — one page, every
@@ -174,7 +175,10 @@ export default function InteriorDesignFlow({
 
       const result = await api.createBooking({
         serviceSlug: 'interior-design',
-        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 500), label: 'Selected project, package and requirements' }],
+        // 400 is the API's limit per answer (500 was rejected as a whole
+        // booking). No label: the booking shows a label in place of the
+        // value, and staff need to read the selection itself.
+        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 400) }],
         preferredDate: date,
         preferredTime: time,
         name: details.name,
@@ -204,7 +208,9 @@ export default function InteriorDesignFlow({
   };
 
   /* ---------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const waMessage = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     // The reference says both "Booking Confirmed" and "our team will call to
     // confirm" — resolved using the real backend status rather than always
@@ -251,6 +257,8 @@ export default function InteriorDesignFlow({
                 <Icon name="info" size={17} />
                 <span>{receipt.message}</span>
               </div>
+
+              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
               <Link to="/dashboard" className={
   modal
@@ -894,6 +902,7 @@ export default function InteriorDesignFlow({
               id="id-requirements"
               rows={3}
               placeholder="e.g. more storage, study table, TV unit, etc."
+              maxLength={300}
               value={requirements}
               onChange={(e) => setRequirements(e.target.value)}
             />

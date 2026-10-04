@@ -345,6 +345,20 @@ export default function Footer() {
 
               </li>
 
+              {/* Email — opens the visitor's mail app. */}
+              <li>
+
+                <a
+                  href={mailtoHref}
+                  aria-label="Email"
+                >
+                  <Icon
+                    name="mail"
+                    size={18}
+                  />
+                </a>
+
+              </li>
 
               {/* Real social platforms, driven by siteConfig's `social`
                   list — only the ones with a url actually configured show

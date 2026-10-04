@@ -1,5 +1,7 @@
 package in.supplybase.backend.booking;
 
+import in.supplybase.backend.catalogue.ServiceCategory;
+
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -59,4 +61,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     /** Backs the flood check in BookingService. */
     long countByPhoneAndCreatedAtAfter(String phone, Instant since);
+
+    /** Backs the flood check in BookingService: one phone, one service. */
+    long countByPhoneAndCategoryAndCreatedAtAfter(String phone, ServiceCategory category, Instant since);
 }

@@ -3,7 +3,8 @@ import Icon from '../components/ui/Icon';
 import ModalFoot from '../components/services/ModalFoot';
 import '../styles/InteriorDesignCustomFlow.css';
 
-const MAX_LENGTH = 400;
+// Leaves room for the project and package text sent with it (400 in all).
+const MAX_LENGTH = 300;
 const MIN_LENGTH = 10;
 
 /**

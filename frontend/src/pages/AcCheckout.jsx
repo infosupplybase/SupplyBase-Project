@@ -5,6 +5,7 @@ import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import ModalFoot from '../components/services/ModalFoot';
 import { useEnsureLogin } from '../components/auth/LoginGate';
+import { useAuth } from '../context/AuthContext';
 import { usePickedLocation } from '../context/LocationContext';
 import { useHistoryState } from '../hooks/useHistoryState';
 import {
@@ -14,6 +15,7 @@ import {
 } from '../lib/bookingDetails';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import api, { friendlyError } from '../lib/api';
+import { formatVisit } from '../lib/visitTime';
 import {
   acCategories,
   acTypes,
@@ -22,6 +24,7 @@ import {
   acServicesByCategory,
   acAddonsByCategory,
 } from '../data/acContent';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 function labelFor(options, value) {
   return options.find((option) => option.value === value)?.label || value;
@@ -105,6 +108,7 @@ export default function AcCheckout({
 
   const pickedLocation = usePickedLocation();
   const ensureLogin = useEnsureLogin();
+  const { user } = useAuth();
 
   const [stage, setStage] = useHistoryState(
     `${scope}:stage-v2`,
@@ -128,6 +132,18 @@ export default function AcCheckout({
   const [catalogueError, setCatalogueError] = useState('');
   const [photoWarning, setPhotoWarning] = useState('');
   const submitting = useRef(false);
+
+  // A signed-in customer's name, phone and email, as in every other flow.
+  useEffect(() => {
+    if (user) {
+      setDetails((d) => ({
+        ...d,
+        name: d.name || user.fullName || '',
+        phone: d.phone || user.phone || '',
+        email: d.email || user.email || '',
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     let cancelled = false;
@@ -287,8 +303,10 @@ export default function AcCheckout({
             }</p>
             <p><strong>AC type:</strong> {labelFor(acTypes, selection.acType)}</p>
             <p><strong>Units:</strong> {selection.units}</p>
-            <p><strong>Appointment:</strong> {date} at {time}</p>
+            <p><strong>Appointment:</strong> {formatVisit(date, time)}</p>
           </div>
+
+          <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
           {photoWarning && (
             <p className="ac-checkout-notice" role="status">{photoWarning}</p>
@@ -362,7 +380,7 @@ export default function AcCheckout({
                 selection={selection}
                 visitFee={category?.visitFee}
               />
-              <p>Appointment: {date} at {time}</p>
+              <p>Appointment: {formatVisit(date, time)}</p>
             </details>
           </>
         )}

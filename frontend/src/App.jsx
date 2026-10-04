@@ -42,8 +42,60 @@ import BookingDetail from './pages/BookingDetail';
 import Profile from './pages/Profile';
 import PartnerRedirect from './pages/PartnerRedirect';
 import NotFound from './pages/NotFound';
-import { PrivacyPolicy, Terms } from './pages/Legal';
 import RequireBookingAuth from './components/layout/RequireBookingAuth';
+
+/* Pages load when first visited (a visitor to the home page does not need
+   the booking flows' code up front). Home and the not-found page stay in the
+   main file. */
+const Services = lazyPage(() => import('./pages/Services'));
+const ServiceBooking = lazyPage(() => import('./pages/ServiceBooking'));
+const InteriorByChoice = lazyPage(() => import('./pages/InteriorByChoice'));
+const InteriorSpaceGallery = lazyPage(() => import('./pages/InteriorSpaceGallery'));
+const InteriorDesignDetail = lazyPage(() => import('./pages/InteriorDesignDetail'));
+const InteriorBooking = lazyPage(() => import('./pages/InteriorBooking'));
+const ElectricalCategory = lazyPage(() => import('./pages/ElectricalCategory'));
+const ElectricalCart = lazyPage(() => import('./pages/ElectricalCart'));
+const ElectricalCheckout = lazyPage(() => import('./pages/ElectricalCheckout'));
+const ElectricalSubPage = lazyPage(() => import('./pages/ElectricalCheckout').then((m) => ({ default: m.ElectricalSubPage })));
+const AcServices = lazyPage(() => import('./pages/AcServices'));
+const PlumbingCategory = lazyPage(() => import('./pages/PlumbingCategory'));
+const PlumbingTab = lazyPage(() => import('./pages/PlumbingTab'));
+const PlumbingConsultationList = lazyPage(() => import('./pages/PlumbingConsultationList'));
+const PlumbingConsultationBook = lazyPage(() => import('./pages/PlumbingConsultationBook'));
+const PlumbingCart = lazyPage(() => import('./pages/PlumbingCart'));
+const PlumbingCheckout = lazyPage(() => import('./pages/PlumbingCheckout'));
+const Cart = lazyPage(() => import('./pages/Cart'));
+const PaintingCategory = lazyPage(() => import('./pages/PaintingCategory'));
+const PaintingFlow = lazyPage(() => import('./pages/PaintingFlow'));
+const PopCeilingCategory = lazyPage(() => import('./pages/PopCeilingCategory'));
+const PopCeilingFlow = lazyPage(() => import('./pages/PopCeilingFlow'));
+const WaterproofingCategory = lazyPage(() => import('./pages/WaterproofingCategory'));
+const WaterproofingBathroom = lazyPage(() => import('./pages/WaterproofingBathroom'));
+const WaterproofingFlow = lazyPage(() => import('./pages/WaterproofingFlow'));
+const InteriorDesignCategory = lazyPage(() => import('./pages/InteriorDesignCategory'));
+const InteriorDesignCatalogue = lazyPage(() => import('./pages/InteriorDesignCatalogue'));
+const InteriorDesignFlow = lazyPage(() => import('./pages/InteriorDesignFlow'));
+const About = lazyPage(() => import('./pages/About'));
+const Contact = lazyPage(() => import('./pages/Contact'));
+const Quote = lazyPage(() => import('./pages/Quote'));
+const Login = lazyPage(() => import('./pages/Login'));
+const ResetPassword = lazyPage(() => import('./pages/EmailLink').then((m) => ({ default: m.ResetPassword })));
+const VerifyEmail = lazyPage(() => import('./pages/EmailLink').then((m) => ({ default: m.VerifyEmail })));
+const MyBookings = lazyPage(() => import('./pages/MyBookings'));
+const BookingDetail = lazyPage(() => import('./pages/BookingDetail'));
+const Profile = lazyPage(() => import('./pages/Profile'));
+const PartnerRedirect = lazyPage(() => import('./pages/PartnerRedirect'));
+const PrivacyPolicy = lazyPage(() => import('./pages/Legal').then((m) => ({ default: m.PrivacyPolicy })));
+const Terms = lazyPage(() => import('./pages/Legal').then((m) => ({ default: m.Terms })));
+
+const RETIRED_SERVICE_SLUGS = [
+  'other-services',
+  'architectural-design',
+  'civil-construction',
+  'furniture',
+  'fabrication',
+  'finishing',
+];
 
 /**
  * ROUTES
@@ -92,6 +144,9 @@ export default function App() {
           both paths render it; the tab that opens is taken from the URL. */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
+      {/* Where the API's emails link to (AuthService). */}
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       {/* Professionals have their own app now (partners/). Old /partner links
           forward there once VITE_PARTNERS_URL is set; until then they go home. */}
       <Route path="/partner/*" element={<PartnerRedirect />} />

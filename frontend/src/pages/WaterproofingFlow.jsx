@@ -7,7 +7,7 @@ import RateTable from '../components/waterproofing/RateTable';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import useWaterproofingCatalogue from '../hooks/useWaterproofingCatalogue';
-import { wpFlows } from '../data/waterproofingContent';
+import { wpCatalogueService, wpFlows } from '../data/waterproofingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useLoginGate } from '../components/auth/LoginGate';
@@ -18,6 +18,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * One page, six journeys (Terrace / Exterior Wall / Bathroom-Floor /
@@ -31,6 +32,14 @@ import ModalFoot from '../components/services/ModalFoot';
  * have one) -> Details/Schedule/Confirm. See V17's migration comment for
  * why every booking here shows the flat ₹99 fee regardless of brand.
  */
+// Each flow's own photo needs a different crop to keep the work in frame.
+const HERO_CLASS_BY_FLOW = {
+  'exterior-wall': 'pnt-hero-exterior-waterproofing',
+  terrace: 'pnt-hero-terrace-waterproofing',
+  'water-tank': 'pnt-hero-water-tank-waterproofing',
+  basement: 'pnt-hero-basement-waterproofing',
+};
+
 export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = false, onBackToCategories, onStepChange }) {
   const { flowSlug: routeFlowSlug } = useParams();
   const flowSlug = flowSlugProp || routeFlowSlug;
@@ -131,7 +140,13 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
     setBusy(true);
     setSubmitError('');
     try {
-      const flat = [];
+      // The service itself, so staff see which job this is (Terrace, Water
+      // Tank...), not just the brand.
+      const flat = [{
+        key: 'service_needed',
+        value: wpCatalogueService(flowSlug, flow.title),
+        label: flowSlug === 'bathroom-floor' ? 'Bathroom Floor Waterproofing' : flow.title,
+      }];
       if (brand) {
         flat.push({ key: 'wp_brand', value: brand, label: brandLabel || brand });
       }
@@ -213,7 +228,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   }
 
   /* -------------------------------------------------------------- intro */
-  if (stage === 0) {
+  if (stage === 0 && !receipt) {
     return (
       <>
         {modal && (
@@ -229,17 +244,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
           tagline={flow.heroTagline}
           image={flow.intro.image}
           trustPoints={[]}
-          className={
-            flow.slug === 'exterior-wall'
-              ? 'pnt-hero-exterior-waterproofing'
-              : flow.slug === 'terrace'
-                ? 'pnt-hero-terrace-waterproofing'
-                  : flow.slug === 'water-tank'
-                    ? 'pnt-hero-water-tank-waterproofing'
-                    : flow.slug === 'basement'
-                      ? 'pnt-hero-basement-waterproofing'
-                      : ''
-          }
+className={HERO_CLASS_BY_FLOW[flow.slug] || ''}
         />
         <section className="pnt-section">
           <div className="container container-narrow">
@@ -265,7 +270,9 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   }
 
   /* --------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
       <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
@@ -290,6 +297,8 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
                 <Icon name="info" size={17} />
                 <span>{receipt.message}</span>
               </div>
+
+              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
               <p className="question-hint" style={{ marginTop: 10 }}>
                 Our team will contact you shortly to confirm the details.
               </p>

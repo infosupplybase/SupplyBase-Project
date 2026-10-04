@@ -52,6 +52,15 @@ public class PaymentController {
         return service.startCheckout(id, currentUser.require());
     }
 
+    /**
+     * Step 1 for a service booking: the booking form hands back a booking
+     * number, and the payment for its fee is created on first use.
+     */
+    @PostMapping("/api/payments/bookings/{bookingNumber}/order")
+    public RazorpayOrderResponse startBookingCheckout(@PathVariable("bookingNumber") String bookingNumber) {
+        return service.startBookingCheckout(bookingNumber, currentUser.require());
+    }
+
     /** Step 2: the browser reports success and we verify the signature. */
     @PostMapping("/api/payments/verify")
     public PaymentResponse verify(@Valid @RequestBody VerifyPaymentRequest request) {

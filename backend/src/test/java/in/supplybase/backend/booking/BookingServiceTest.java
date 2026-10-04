@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -116,10 +117,13 @@ class BookingServiceTest {
             LocalTime time = LocalTime.of(10, 0);
 
             when(catalogue.requireCategory("plumbing")).thenReturn(category);
-            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(eq("9820011223"), any(Instant.class)))
-                    .thenReturn(List.of());
-
-            AppointmentSlot slot = AppointmentSlot.builder()
+// The flood check counts this service's bookings only.
+when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(
+        eq("9820011223"),
+        same(category),
+        any(Instant.class)
+)).thenReturn(0L);
+          AppointmentSlot slot = AppointmentSlot.builder()
                     .id(9L).slotDate(date).slotTime(time).categoryId(1L)
                     .capacity(3).bookedCount(1).build();
             when(appointments.reserve(1L, date, time)).thenReturn(slot);
@@ -168,6 +172,59 @@ class BookingServiceTest {
         }
 
         @Test
+        @DisplayName("keeps the waterproofing service alongside the brand")
+        void waterproofingKeepsService() {
+            ServiceCategory category = ServiceCategory.builder()
+                    .id(7L).slug("waterproofing").name("Waterproofing")
+                    .visitFeePaise(9900L).active(true).build();
+            LocalDate date = LocalDate.now().plusDays(3);
+            LocalTime time = LocalTime.of(10, 0);
+
+            when(catalogue.requireCategory("waterproofing")).thenReturn(category);
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(any(), any(), any())).thenReturn(0L);
+            when(appointments.reserve(anyLong(), any(), any()))
+                    .thenReturn(AppointmentSlot.builder().id(1L).capacity(1).bookedCount(1).build());
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(options.findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(7L))
+                    .thenReturn(List.of(
+                            ServiceOption.builder().categoryId(7L).stepNo(1)
+                                    .questionKey("service_needed")
+                                    .questionText("What waterproofing service do you need?")
+                                    .inputType("MULTI").optionValue("Water Tank Waterproofing")
+                                    .optionLabel("Water Tank Waterproofing").active(true).build(),
+                            ServiceOption.builder().categoryId(7L).stepNo(1)
+                                    .questionKey("service_needed")
+                                    .questionText("What waterproofing service do you need?")
+                                    .inputType("MULTI").optionValue("Bathroom Waterproofing")
+                                    .optionLabel("Bathroom Waterproofing").active(true).build(),
+                            ServiceOption.builder().categoryId(7L).stepNo(2)
+                                    .questionKey("wp_brand").questionText("Preferred brand")
+                                    .inputType("SINGLE").optionValue("asian-paints")
+                                    .optionLabel("Asian Paints").active(true).build()));
+
+            CreateBookingRequest request = new CreateBookingRequest(
+                    "waterproofing",
+                    List.of(new CreateBookingRequest.AnswerInput(
+                                    "service_needed", "Bathroom Waterproofing",
+                                    "Bathroom Floor Waterproofing", null),
+                            new CreateBookingRequest.AnswerInput(
+                                    "wp_brand", "asian-paints", "Asian Paints", null)),
+                    date, time, "Asha Rao", "9820011223", null, null,
+                    "12 MG Road", "Mumbai", "400001", null);
+
+            service.create(request, null);
+
+            ArgumentCaptor<List<BookingAnswer>> answersCaptor = ArgumentCaptor.forClass(List.class);
+            verify(answers).saveAll(answersCaptor.capture());
+            assertThat(answersCaptor.getValue())
+                    .extracting(BookingAnswer::getQuestionKey, BookingAnswer::getAnswerLabel)
+                    .containsExactly(
+                            org.assertj.core.groups.Tuple.tuple(
+                                    "service_needed", "Bathroom Floor Waterproofing"),
+                            org.assertj.core.groups.Tuple.tuple("wp_brand", "Asian Paints"));
+        }
+
+        @Test
         @DisplayName("attaches the booking to the signed-in user when one is present")
         void attachesSignedInUser() {
             ServiceCategory category = plumbingCategory();
@@ -175,7 +232,7 @@ class BookingServiceTest {
             LocalTime time = LocalTime.of(10, 0);
 
             when(catalogue.requireCategory("plumbing")).thenReturn(category);
-            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(any(), any())).thenReturn(List.of());
+when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(any(), any(), any())).thenReturn(0L);
             when(appointments.reserve(anyLong(), any(), any()))
                     .thenReturn(AppointmentSlot.builder().id(1L).capacity(1).bookedCount(1).build());
             when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -196,6 +253,21 @@ class BookingServiceTest {
             ServiceCategory category = plumbingCategory();
             LocalDate date = LocalDate.now().plusDays(3);
             LocalTime time = LocalTime.of(11, 0);
+
+            // Keep the remaining body of this test from your HEAD version.
+        }
+
+        @DisplayName("refuses a sixth booking for the same service from the same phone within an hour")
+        void rejectsWhenRateLimited() {
+            when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(
+                    eq("9820011223"),
+                    any(),
+                    any(Instant.class)))
+                    .thenReturn(5L);
+
+            // Keep the remaining body of this test from origin/main.
+        }
 
             when(catalogue.requireCategory("plumbing")).thenReturn(category);
             when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(eq("9820011223"), any(Instant.class)))
@@ -236,7 +308,7 @@ class BookingServiceTest {
 
             assertThatThrownBy(() -> service.create(request, null))
                     .isInstanceOf(ApiException.class)
-                    .hasMessageContaining("We already have your booking")
+                    .hasMessageContaining("5 Plumbing bookings from this number in the last hour")
                     .extracting(ex -> ((ApiException) ex).getStatus())
                     .isEqualTo(HttpStatus.BAD_REQUEST);
 
@@ -248,7 +320,8 @@ class BookingServiceTest {
         @DisplayName("propagates the conflict when the slot is no longer available")
         void propagatesSlotConflict() {
             when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
-            when(bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(any(), any())).thenReturn(List.of());
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(any(), any(), any()))
+                    .thenReturn(0L);
             when(appointments.reserve(anyLong(), any(), any()))
                     .thenThrow(ApiException.conflict(
                             "This time slot is no longer available. Please select another time."));
@@ -1060,6 +1133,95 @@ class BookingServiceTest {
                     "Asha Rao", "9820011223", "  ", null, "Address", "Pune", null);
 
             assertThat(service.updateMine(1L, noWhatsapp, owner).whatsapp()).isEqualTo("9820011223");
+        }
+    }
+
+    @Nested
+    @DisplayName("confirmation email")
+    class ConfirmationEmail {
+
+        private final LocalDate VISIT = LocalDate.now().plusDays(3);
+
+        @Mock private JavaMailSender sender;
+
+        private BookingService emailingService;
+
+        @BeforeEach
+        void emailOn() {
+            AppProperties props = new AppProperties(
+                    List.of("*"), null, null, null,
+                    new AppProperties.Notifications("staff@example.com"),
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+            emailingService = new BookingService(bookings, answers, users, catalogue, options, appointments,
+                    bookingNumbers, props, mailSender, files, storage);
+            when(mailSender.getIfAvailable()).thenReturn(sender);
+
+            ServiceCategory category = plumbingCategory();
+            when(catalogue.requireCategory("plumbing")).thenReturn(category);
+            when(appointments.reserve(eq(1L), any(LocalDate.class), any(LocalTime.class)))
+                    .thenAnswer(inv -> AppointmentSlot.builder()
+                            .id(9L).slotDate(inv.getArgument(1)).slotTime(inv.getArgument(2)).categoryId(1L)
+                            .capacity(3).bookedCount(1).build());
+            when(bookingNumbers.next()).thenReturn("SB-20260906-000001");
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+        }
+
+        private List<org.springframework.mail.SimpleMailMessage> sent() {
+            ArgumentCaptor<org.springframework.mail.SimpleMailMessage> captor =
+                    ArgumentCaptor.forClass(org.springframework.mail.SimpleMailMessage.class);
+            verify(sender, org.mockito.Mockito.atLeastOnce()).send(captor.capture());
+            return captor.getAllValues();
+        }
+
+        @Test
+        @DisplayName("emails the customer the booking number, service, visit time and address")
+        void emailsCustomer() {
+            emailingService.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+
+            List<org.springframework.mail.SimpleMailMessage> mails = sent();
+            assertThat(mails).hasSize(2);
+            assertThat(mails.get(0).getTo()).containsExactly("staff@example.com");
+            org.springframework.mail.SimpleMailMessage customer = mails.get(1);
+            assertThat(customer.getTo()).containsExactly("asha@example.com");
+            assertThat(customer.getSubject()).isEqualTo("Your Supplybase booking SB-20260906-000001 — Plumbing");
+            assertThat(customer.getText())
+                    .contains("Hello Asha Rao")
+                    .contains("SB-20260906-000001")
+                    .contains(VISIT.format(java.time.format.DateTimeFormatter.ofPattern("EEE, d MMM yyyy", java.util.Locale.ENGLISH)) + ", 10:00 AM")
+                    .contains("12 MG Road, Mumbai 400001")
+                    .contains("₹25")
+                    // a guest booking has no account page to point at
+                    .doesNotContain("/dashboard/bookings");
+        }
+
+        @Test
+        @DisplayName("uses the account's email when the form left it blank, and links the booking page")
+        void fallsBackToAccountEmail() {
+            User owner = User.builder().id(5L).email("owner@example.com").build();
+            when(users.findById(5L)).thenReturn(Optional.of(owner));
+            CreateBookingRequest noEmail = new CreateBookingRequest(
+                    "plumbing", List.of(), VISIT, LocalTime.of(10, 0),
+                    "Asha Rao", "9820011223", null, null,
+                    "12 MG Road", "Mumbai", "400001", 800);
+
+            emailingService.create(noEmail, 5L);
+
+            org.springframework.mail.SimpleMailMessage customer = sent().get(1);
+            assertThat(customer.getTo()).containsExactly("owner@example.com");
+            assertThat(customer.getText())
+                    .contains("https://www.supplybase.co.in/dashboard/bookings");
+        }
+
+        @Test
+        @DisplayName("a mail failure does not fail the booking")
+        void mailFailureIsIgnored() {
+            org.mockito.Mockito.doThrow(new org.springframework.mail.MailSendException("down"))
+                    .when(sender).send(any(org.springframework.mail.SimpleMailMessage.class));
+
+            BookingReceipt receipt = emailingService.create(
+                    requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+
+            assertThat(receipt.bookingNumber()).isEqualTo("SB-20260906-000001");
         }
     }
 }

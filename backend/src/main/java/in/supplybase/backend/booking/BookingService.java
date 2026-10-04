@@ -4,10 +4,12 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,6 +57,12 @@ public class BookingService {
     private static final Logger log = LoggerFactory.getLogger(BookingService.class);
 
     /**
+     * A real person does not book six visits for one service in an hour; a
+     * bot does. Counted per service, so someone booking a plumber, an
+     * electrician and a painter in one sitting is not stopped.
+     */
+    private static final int MAX_PER_PHONE_PER_SERVICE_PER_HOUR = 5;
+    /**
      * The plumbing cart's pricing rule (from the approved rate card): actual
      * itemised pricing up to ₹5,000, a flat ₹99 home-visit/assessment fee
      * above that (adjusted into the final bill if the customer proceeds).
@@ -67,6 +75,9 @@ public class BookingService {
     private static final String PLUMBING_SLUG = "plumbing";
     private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
     private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+    // Joins a question key and an option value into one lookup key. Both the
+    // map that is built and every lookup into it must use this same constant.
+    private static final String OPTION_KEY_SEPARATOR = "\u0000";
 
     /**
      * Painting's itemised answer keys (see V15) — priced the same way
@@ -131,15 +142,32 @@ public class BookingService {
         String phone = PhoneNumbers.normalise(request.phone());
 
         Instant cutoff = Instant.now().minus(Duration.ofHours(1));
-        List<Booking> recentBookings = bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(phone, cutoff);
+
+        List<Booking> recentBookings =
+                bookings.findByPhoneAndCreatedAtAfterOrderByCreatedAtDesc(phone, cutoff);
+
         boolean sameChosenSlotRecentlyBooked = recentBookings.stream()
-                .anyMatch(existing -> sameSlotBooked(existing, request.preferredDate(), request.preferredTime()));
+                .anyMatch(existing ->
+                        sameSlotBooked(
+                                existing,
+                                request.preferredDate(),
+                                request.preferredTime()));
 
         if (sameChosenSlotRecentlyBooked) {
             throw ApiException.badRequest(
                     "We already have your booking. Please call us if it is urgent.");
         }
 
+        long recent = bookings.countByPhoneAndCategoryAndCreatedAtAfter(
+                phone, category, cutoff);
+
+        if (recent >= MAX_PER_PHONE_PER_SERVICE_PER_HOUR) {
+            throw ApiException.badRequest(
+                    "You have made " + MAX_PER_PHONE_PER_SERVICE_PER_HOUR
+                    + " " + category.getName()
+                    + " bookings from this number in the last hour."
+                    + " Please call us if you need another one now.");
+        }
         // Reserving before saving means a full slot fails the whole request
         // rather than leaving a booking pointing at a time nobody can attend.
         AppointmentSlot slot = appointments.reserve(
@@ -197,7 +225,9 @@ public class BookingService {
         }
 
         notifyStaff(saved);
-        return BookingReceipt.from(saved);
+        BookingReceipt receipt = BookingReceipt.from(saved);
+        emailCustomer(saved, receipt);
+        return receipt;
     }
 
     private boolean sameSlotBooked(Booking existing, LocalDate requestedDate, LocalTime requestedTime) {
@@ -273,7 +303,7 @@ public class BookingService {
             if (option.getOptionValue() != null) {
                 allowedByKey.computeIfAbsent(option.getQuestionKey(), k -> new HashSet<>())
                         .add(option.getOptionValue());
-                optionByKeyAndValue.put(option.getQuestionKey() + " " + option.getOptionValue(), option);
+                optionByKeyAndValue.put(option.getQuestionKey() + OPTION_KEY_SEPARATOR + option.getOptionValue(), option);
             }
         }
 
@@ -372,7 +402,7 @@ public class BookingService {
             if ("cart_item".equals(input.key())
                     || (paintingBooking && PAINTING_PRICED_KEYS.contains(input.key()))) {
                 ServiceOption matched = optionByKeyAndValue.get(
-                        input.key() + " " + input.value());
+                        input.key() + OPTION_KEY_SEPARATOR + input.value());
 
                 Long unitPricePaise = matched == null ? null : matched.getPricePaise();
 
@@ -452,7 +482,12 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingResponse> forDate(LocalDate date) {
+        // In visit-time order: the picked time on new bookings, the old
+        // morning/afternoon lane (already the query's order) on legacy ones.
         return bookings.findByPreferredDateOrderByPreferredSlotAsc(date).stream()
+                .sorted(java.util.Comparator.comparing(
+                        (Booking b) -> b.getAppointmentSlot() == null ? null : b.getAppointmentSlot().getSlotTime(),
+                        java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
                 .map(BookingResponse::from)
                 .toList();
     }
@@ -815,6 +850,56 @@ public class BookingService {
             sender.send(message);
         } catch (Exception ex) {
             log.warn("Could not email booking {} — it is saved regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    private static final DateTimeFormatter EMAIL_DATE =
+            DateTimeFormatter.ofPattern("EEE, d MMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter EMAIL_TIME =
+            DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
+
+    /**
+     * Confirms the booking to the customer, at the email given on the form or
+     * else their account's. Same switch as the staff email (ENQUIRY_EMAIL),
+     * and best effort the same way: a mail failure never fails the booking.
+     */
+    private void emailCustomer(Booking booking, BookingReceipt receipt) {
+        if (!props.notifications().emailEnabled()) {
+            return;
+        }
+        String to = booking.getEmail() != null ? booking.getEmail()
+                : booking.getUser() != null ? blankToNull(booking.getUser().getEmail()) : null;
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (to == null || sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Your Supplybase booking %s — %s".formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel()));
+            String when = (booking.getPreferredDate() == null ? "—" : booking.getPreferredDate().format(EMAIL_DATE))
+                    + (receipt.time() == null ? "" : ", " + receipt.time().format(EMAIL_TIME));
+            message.setText((
+                    "Hello %s,\n\n"
+                    + "Thank you for booking with Supplybase.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Visit:     %s\n"
+                    + "Address:   %s, %s %s\n"
+                    + "Visit fee: %s\n\n"
+                    + "%s\n\n"
+                    + "%s"
+                    + "Need to change something? Just reply to this email.\n").formatted(
+                    booking.getName(), booking.getBookingNumber(), booking.getServiceLabel(), when,
+                    orDash(booking.getAddress()), orDash(booking.getCity()), orDash(booking.getPincode()),
+                    receipt.visitFeeDisplay(), receipt.message(),
+                    booking.getUser() == null ? ""
+                            : "See your booking any time: " + props.frontendUrl() + "/dashboard/bookings\n\n"));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email booking {} to the customer — it is saved regardless",
                     booking.getBookingNumber(), ex);
         }
     }

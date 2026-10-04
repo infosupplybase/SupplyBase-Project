@@ -24,6 +24,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * One page, three journeys (Full Home / Few Walls / Renovation) — driven
@@ -442,7 +443,9 @@ if (modal) {
   }
 
   /* --------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
       <div
@@ -478,6 +481,8 @@ if (modal) {
                 <Icon name="info" size={17} />
                 <span>{receipt.message}</span>
               </div>
+
+              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
               <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
               <div

@@ -156,9 +156,9 @@ class BookingControllerTest {
                     new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
                             BookingType.SERVICE, BookingStatus.CONFIRMED,
                             "plumbing", "Plumbing", null, null, null, null, null, null, null,
-                            LocalDate.now().plusDays(3), "10:00 AM",
+                            LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                             "Asha Rao", "9820011223", null, null, null, null, null,
-                            false, null, null, null, null, null, List.of()));
+                            false, null, null, null, null, null, List.of(), null));
 
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isOk())
@@ -173,6 +173,14 @@ class BookingControllerTest {
 
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("an id that is not a number is the caller's mistake: 400, not 500")
+        void nonNumericIdIsBadRequest() throws Exception {
+            mockMvc.perform(get("/api/bookings/abc").with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message").value("\"id\" has a value we could not read."));
         }
     }
 
@@ -199,10 +207,10 @@ class BookingControllerTest {
                     new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
                             BookingType.SERVICE, BookingStatus.CONFIRMED,
                             "plumbing", "Plumbing", null, null, null, null, null, null, null,
-                            LocalDate.now().plusDays(3), "10:00 AM",
+                            LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                             "Asha Rao", "9820011223", "9820011223", "asha@example.com",
                             "New House", "Pune", "411001",
-                            false, null, null, null, null, null, List.of()));
+                            false, null, null, null, null, null, List.of(), null));
 
             mockMvc.perform(patch("/api/bookings/9")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -400,9 +408,9 @@ class BookingControllerTest {
             return new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
                     BookingType.SERVICE, BookingStatus.CONFIRMED,
                     "plumbing", "Plumbing", null, null, null, null, null, null, null,
-                    LocalDate.now().plusDays(3), "10:00 AM",
+                    LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                     "Asha Rao", "9820011223", null, null, null, null, null,
-                    false, null, null, null, null, null, List.of());
+                    false, null, null, null, null, null, List.of(), null);
         }
     }
 
@@ -460,7 +468,7 @@ class BookingControllerTest {
             when(service.advanceOwnBookingStatus(eq(9L), eq(BookingStatus.SITE_VISIT_COMPLETED), eq(5L)))
                     .thenReturn(new ProfessionalBookingResponse(9L, "BK-1", "SB-1", BookingType.SERVICE,
                             BookingStatus.SITE_VISIT_COMPLETED, "Plumbing", null, null, null, null, null,
-                            null, null, "Asha Rao", "9820011223", null, null, null, false, null,
+                            null, null, null, "Asha Rao", "9820011223", null, null, null, false, null,
                             null, null, null, List.of()));
 
             mockMvc.perform(patch("/api/professional/bookings/9/status")
@@ -553,9 +561,9 @@ class BookingControllerTest {
         void theCustomersOwnBookingNeverCarriesPayoutFields() throws Exception {
             when(service.get(eq(9L), any())).thenReturn(new BookingResponse(9L, "BK-1", "SB-1",
                     BookingType.SERVICE, BookingStatus.WORK_COMPLETED, "plumbing", "Plumbing",
-                    null, null, null, null, null, null, null, LocalDate.now(), "10:00 AM",
+                    null, null, null, null, null, null, null, LocalDate.now(), "10:00 AM", null, 9900L, null,
                     "Asha Rao", "9820011223", null, null, null, null, null,
-                    false, null, null, 5L, "Ravi Kumar", null, List.of()));
+                    false, null, null, 5L, "Ravi Kumar", null, List.of(), null));
 
             mockMvc.perform(get("/api/bookings/9").with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isOk())

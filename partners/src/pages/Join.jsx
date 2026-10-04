@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import { COMPANY_NAME, SITE_URL } from '../config';
 import { useAuth, friendlyError } from '../context/AuthContext';
 import api from '../lib/api';
+import shrinkPhoto from '../lib/shrinkPhoto';
 
 /**
  * /join — a professional applying to work with Supplybase.
@@ -13,6 +14,10 @@ import api from '../lib/api';
  * application is being reviewed. Nothing here grants any access to jobs:
  * only an admin approving the application does that, so the form has no
  * "role" of any kind to fill in or tamper with.
+ *
+ * A customer already signed in with their website account applies on that
+ * account instead: the form drops the name, contact and password fields and
+ * the application is attached to the login they have (applyWithAccount).
  *
  * The trade list comes from the live service catalogue, so it always matches
  * what customers can book (and what the API will accept).
@@ -30,9 +35,18 @@ const emptyForm = {
   languages: '',
 };
 
-/** Ten digits after the +91 and the spaces are taken out. */
-const isValidPhone = (value) =>
-  /^[6-9]\d{9}$/.test(String(value).replace(/\D/g, '').replace(/^91/, '').replace(/^0/, ''));
+/**
+ * Ten digits after the +91 and the spaces are taken out. The 91 or 0 prefix
+ * is only stripped when the length says one is there, so a real number that
+ * starts with 91 (9123456780) is not mangled — the same rule as the website
+ * and the API.
+ */
+const isValidPhone = (value) => {
+  let digits = String(value || '').replace(/\D/g, '');
+  if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
+  else if (digits.length === 11 && digits.startsWith('0')) digits = digits.slice(1);
+  return /^[6-9]\d{9}$/.test(digits);
+};
 
 const COMMON_PASSWORDS = ['password', '12345678', '123456789', 'qwerty123', 'supplybase', 'iloveyou', 'abcd1234'];
 
@@ -110,7 +124,9 @@ function Field({ id, label, icon, required, hint, error, children }) {
 }
 
 export default function Join() {
-  const { user, applyAsPartner } = useAuth();
+  const { user, applyAsPartner, logout } = useAuth();
+  // A signed-in website customer applies on the account they already have.
+  const withAccount = Boolean(user && user.role === 'CUSTOMER');
   const navigate = useNavigate();
 
   const [form, setForm] = useState(emptyForm);
@@ -122,11 +138,14 @@ export default function Join() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [documents, setDocuments] = useState({ aadhaarFront: null, aadhaarBack: null, panFront: null });
+  const [preparing, setPreparing] = useState({});
+  // The latest pick per document, so a slow earlier pick cannot overwrite it.
+  const latestPick = useRef({});
 
-  // already signed in? the dashboard explains what that means for them
+  // a partner or admin already? the dashboard explains what that means for them
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user && !withAccount) navigate('/', { replace: true });
+  }, [user, withAccount, navigate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,28 +169,46 @@ export default function Join() {
     setError('');
   };
 
-  const chooseDocument = (key) => (e) => {
-    const file = e.target.files?.[0] || null;
+  const chooseDocument = (key) => async (e) => {
+    const input = e.target;
+    const picked = input.files?.[0] || null;
+    setError('');
+    if (picked && !PHOTO_TYPES.includes(picked.type)) {
+      setDocuments((d) => ({ ...d, [key]: null }));
+      setErrors((err) => ({ ...err, [key]: photoProblem(picked) }));
+      input.value = '';
+      return;
+    }
+    // Camera photos are several MB each; send a smaller copy (see shrinkPhoto).
+    latestPick.current[key] = picked;
+    setPreparing((p) => ({ ...p, [key]: true }));
+    const file = picked ? await shrinkPhoto(picked) : null;
+    if (latestPick.current[key] !== picked) return;
+    setPreparing((p) => ({ ...p, [key]: false }));
     const problem = file ? photoProblem(file) : '';
     // A file the API would refuse is not kept: the error says why.
     setDocuments((d) => ({ ...d, [key]: problem ? null : file }));
     setErrors((err) => ({ ...err, [key]: problem || undefined }));
-    setError('');
-    if (problem) e.target.value = '';
+    if (problem) input.value = '';
   };
 
-  /** Field-level checks; the API repeats them and can add its own (email taken). */
+  const preparingPhotos = Object.values(preparing).some(Boolean);
+
+  /** Field-level checks, returned as { field: message }; the API repeats them and can add its own (email taken). */
   const validate = () => {
     const next = {};
-    if (!form.fullName.trim()) next.fullName = 'Please enter your name';
-    if (!form.email.trim()) next.email = 'Please enter your email address';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-      next.email = 'Please enter a valid email address';
-    if (!form.phone.trim()) next.phone = 'Please enter your phone number';
-    else if (!isValidPhone(form.phone)) next.phone = 'Enter a 10-digit mobile number';
-    const weak = passwordProblem(form.password, form);
-    if (weak) next.password = weak;
-    if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
+    // The account already has these when applying with it.
+    if (!withAccount) {
+      if (!form.fullName.trim()) next.fullName = 'Please enter your name';
+      if (!form.email.trim()) next.email = 'Please enter your email address';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+        next.email = 'Please enter a valid email address';
+      if (!form.phone.trim()) next.phone = 'Please enter your phone number';
+      else if (!isValidPhone(form.phone)) next.phone = 'Enter a 10-digit mobile number';
+      const weak = passwordProblem(form.password, form);
+      if (weak) next.password = weak;
+      if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
+    }
     if (!form.primaryTrade) next.primaryTrade = 'Please choose the work you do';
     const years = Number(form.experienceYears);
     if (form.experienceYears === '') next.experienceYears = 'Please enter your years of experience';
@@ -182,15 +219,20 @@ export default function Join() {
       if (!documents[doc.key]) next[doc.key] = errors[doc.key] || doc.missing;
     }
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return next;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!validate()) {
-      const first = document.querySelector('.field.error input, .field.error select');
+    const problems = validate();
+    if (Object.keys(problems).length > 0) {
+      // Not querySelector('.field.error'): the error classes only reach the
+      // page on the next render, so on a first submit nothing matched. The
+      // first field (in form order) that this check flagged gets the focus.
+      const fields = e.currentTarget.querySelectorAll('[id^="pj-"]');
+      const first = Array.from(fields).find((el) => problems[el.id.slice(3)]);
       if (first) first.focus();
       return;
     }
@@ -201,7 +243,8 @@ export default function Join() {
 
     setBusy(true);
     try {
-      await applyAsPartner(form, documents);
+      if (withAccount) await api.applyWithAccount(form, documents);
+      else await applyAsPartner(form, documents);
       navigate('/', { replace: true });
     } catch (err) {
       // The API can reject what the browser cannot know (an email already in
@@ -227,11 +270,14 @@ export default function Join() {
             Join as a <span className="auth-accent">Partner</span>
           </h1>
           <p className="auth-intro">
-            Tell us about your work. We review every application by hand, and you can sign in to
-            check on yours at any time.
+            {withAccount
+              ? `You're signed in as ${user.fullName || user.email}. Tell us about your work and we'll add your application to this account.`
+              : 'Tell us about your work. We review every application by hand, and you can sign in to check on yours at any time.'}
           </p>
 
           <form onSubmit={handleSubmit} noValidate className="auth-form">
+            {!withAccount && (
+            <>
             <Field id="fullName" error={errors.fullName} label="Full Name" icon="user" required>
               <input
                 id="pj-fullName"
@@ -265,6 +311,8 @@ export default function Join() {
                 autoComplete="email"
               />
             </Field>
+            </>
+            )}
 
             <Field id="primaryTrade" error={errors.primaryTrade} label="What work do you do?" icon="wrench" required>
               <select
@@ -360,13 +408,19 @@ export default function Join() {
                       <span>{documents[doc.key] ? 'Change Photo' : 'Choose Photo'}</span>
                     </label>
                     <span className="partner-document-name">
-                      {documents[doc.key] ? documents[doc.key].name : 'No photo chosen'}
+                      {preparing[doc.key]
+                        ? 'Preparing photo…'
+                        : documents[doc.key]
+                          ? documents[doc.key].name
+                          : 'No photo chosen'}
                     </span>
                   </div>
                 </Field>
               ))}
             </div>
 
+            {!withAccount && (
+            <>
             <div className="auth-row-2">
               <Field id="password" error={errors.password} label="Password" icon="lock" required>
                 <input
@@ -415,6 +469,8 @@ export default function Join() {
                 </span>
               </div>
             )}
+            </>
+            )}
 
             <div className="login-meta">
               <label className="checkbox-row">
@@ -444,15 +500,24 @@ export default function Join() {
               </div>
             )}
 
-            <button type="submit" className="auth-submit" disabled={busy}>
+            <button type="submit" className="auth-submit" disabled={busy || preparingPhotos}>
               {busy ? 'Sending Application…' : 'Submit Application'}
               {!busy && <Icon name="arrow-right" size={18} />}
             </button>
           </form>
 
-          <p className="auth-switch">
-            Already applied? <Link to="/login">Partner Login</Link>
-          </p>
+          {withAccount ? (
+            <p className="auth-switch">
+              Not you?{' '}
+              <button type="button" className="auth-inline-link" onClick={() => logout()}>
+                Sign out
+              </button>
+            </p>
+          ) : (
+            <p className="auth-switch">
+              Already applied? <Link to="/login">Partner Login</Link>
+            </p>
+          )}
         </div>
       </div>
     </div>

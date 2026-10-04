@@ -60,18 +60,18 @@ function AboutVideo() {
 const pillars = [
   {
     title: 'Design',
-    image: '/assets/services/architectural-design.webp',
-    text: 'Architectural planning, 2D/3D designs, elevations, and working drawings.',
+    image: '/assets/services/interior-design.webp',
+    text: 'Interior designs, ready-made room looks and POP ceiling layouts, planned with you at a home visit.',
   },
   {
-    title: 'Build',
-    image: '/assets/services/construction.webp',
-    text: 'RCC, masonry, plastering, electrical, plumbing, and all essential building work.',
+    title: 'Repair',
+    image: '/assets/services/waterproofing.avif',
+    text: 'Waterproofing, plumbing and electrical work by trained, verified professionals.',
   },
   {
     title: 'Finish',
-    image: '/assets/services/interior-design.jpeg',
-    text: 'Ceiling, furniture, painting, flooring, and final touch-ups for a perfect handover.',
+    image: '/assets/services/painting.webp',
+    text: 'Painting, ceilings and final touch-ups for a clean handover.',
   },
 ];
 
@@ -110,16 +110,16 @@ export default function About() {
                 </h2>
 
                 <p className="text-[var(--grey-600)] mb-3">
-                  Most construction projects go wrong in the gaps - between
+                  Most home projects go wrong in the gaps - between
                   design, people, and execution. Supplybase exists to close
                   those gaps.
                 </p>
 
                 <p className="text-[var(--grey-600)] mb-0">
                   Supplybase brings the entire project together under one team.
-                  We handle drawings, labour, materials, and project management.
+                  We handle the site visit, labour, materials, and supervision.
                   You get one contract, one point of contact, and clear
-                  accountability. From the first sketch to handover, we manage
+                  accountability. From the first visit to handover, we manage
                   it all.
                 </p>
 
@@ -171,7 +171,7 @@ export default function About() {
             center
             eyebrow="WHAT WE DO"
             title="THREE STAGES, ONE TEAM"
-            text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
+            text="Design, repairs and finishing are handled by one team, so nothing is lost in handover between trades."
           />
 
           <div className="value-grid">

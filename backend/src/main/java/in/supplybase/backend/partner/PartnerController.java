@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import in.supplybase.backend.auth.CurrentUser;
 import in.supplybase.backend.auth.dto.AuthResponse;
 import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
+import in.supplybase.backend.partner.dto.ApplyWithAccountRequest;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.partner.dto.PartnerProfileResponse;
 import in.supplybase.backend.partner.dto.PartnerSummaryResponse;
@@ -58,6 +59,22 @@ public class PartnerController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.apply(request, new PartnerDocuments(aadhaarFront, aadhaarBack, panFront),
                         httpRequest.getRemoteAddr()));
+    }
+
+    /**
+     * A signed-in customer applying on the account they already have (see
+     * PartnerService.applyWithAccount). Same multipart shape as /apply, with
+     * the work details only.
+     */
+    @PostMapping(value = "/api/partners/me/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PartnerProfileResponse> applyWithAccount(
+            @Valid @RequestPart("request") ApplyWithAccountRequest request,
+            @RequestPart("aadhaarFront") MultipartFile aadhaarFront,
+            @RequestPart("aadhaarBack") MultipartFile aadhaarBack,
+            @RequestPart("panFront") MultipartFile panFront) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.applyWithAccount(currentUser.require().id(), request,
+                        new PartnerDocuments(aadhaarFront, aadhaarBack, panFront)));
     }
 
     /** The signed-in user's own application. 404 if they never applied. */

@@ -15,6 +15,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -110,6 +111,11 @@ export default function PlumbingConsultationBook({
         return;
       }
     }
+    if (stage === DETAILS) {
+      const nextErrors = validateDetails(details, pickedLocation);
+      setErrors(nextErrors);
+      if (Object.keys(nextErrors).length > 0) return;
+    }
     setStage((s) => Math.min(s + 1, CONFIRM));
 
 if (modal) {
@@ -140,7 +146,11 @@ if (modal) {
     e.preventDefault();
     const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    // The fields are not on the Confirm step: go back to where they are.
+    if (Object.keys(nextErrors).length > 0) {
+      setStage(DETAILS, { push: false });
+      return;
+    }
     // Every booking needs an account: ask now, over this form (LoginGate).
     if (!(await ensureLogin(details))) return;
 
@@ -331,12 +341,13 @@ if (receipt) {
   </button>
 )}
               {stage === CONFIRM ? (
-                <button type="submit" className="btn btn-primary" disabled={busy}>
+                <button key="submit" type="submit" className="btn btn-primary" disabled={busy}>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
                 <button
+  key="continue"
   type="button"
   className="btn btn-primary !w-auto !min-w-[150px] !flex-none !ml-auto !justify-center"
   onClick={goNext}
@@ -401,6 +412,8 @@ function ConsultationConfirmation({
                 <dd>{details.city}</dd>
               </div>
             </dl>
+
+            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
             {!modal && (
   <Link to="/dashboard" className="btn btn-primary btn-block">

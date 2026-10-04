@@ -7,11 +7,23 @@ import AccountSidebar from '../components/account/AccountSidebar';
 import api, { ApiError, friendlyError } from '../lib/api';
 import { bookingStatusLabel, bookingStatusTone } from '../lib/bookingStatus';
 import { formatRupees } from '../lib/money';
+import { bookingVisitTime } from '../lib/visitTime';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /** A cancelled or completed booking is finished — same rule as the backend's
     BookingStatus.isFinal(), which is what actually refuses the edit. */
 const isFinalStatus = (status) => status === 'CANCELLED' || status === 'WORK_COMPLETED';
+
+/** Statuses where the visit fee can still be paid online (mirrors BookingStatus.isBeforeVisit on the API). */
+const PAYABLE_STATUSES = [
+  'PAYMENT_PENDING',
+  'BOOKING_REQUESTED',
+  'CONFIRMED',
+  'ASSIGNMENT_PENDING',
+  'PROFESSIONAL_ASSIGNED',
+  'SITE_VISIT_SCHEDULED',
+];
 
 const formatDate = (value) =>
   value
@@ -215,7 +227,27 @@ export default function BookingDetail() {
                         <li>
                           <Icon name="calendar" size={15} />
                           Preferred visit: {formatDate(booking.preferredDate)}
-                          {booking.preferredSlot ? ` · ${booking.preferredSlot}` : ''}
+                          {bookingVisitTime(booking) ? ` · ${bookingVisitTime(booking)}` : ''}
+                        </li>
+                      )}
+                      {booking.itemsTotalPaise != null && (
+                        <li>
+                          <Icon name="layers" size={15} />
+                          Items total: {formatRupees(booking.itemsTotalPaise / 100)}
+                        </li>
+                      )}
+                      {booking.visitFeePaise != null && (
+                        <li>
+                          <Icon name="info" size={15} />
+                          {booking.itemsTotalPaise != null && booking.visitFeePaise === booking.itemsTotalPaise
+                            ? `Paid on the day of the visit: ${formatRupees(booking.visitFeePaise / 100)}`
+                            : `Home visit fee: ${formatRupees(booking.visitFeePaise / 100)}`}
+                        </li>
+                      )}
+                      {booking.paidAt && (
+                        <li>
+                          <Icon name="check-circle" size={15} />
+                          Paid online on {formatDate(booking.paidAt)}
                         </li>
                       )}
                       {booking.assignedProfessionalName && (
@@ -226,6 +258,15 @@ export default function BookingDetail() {
                         </li>
                       )}
                     </ul>
+
+                    {!booking.paidAt && booking.bookingNumber && booking.visitFeePaise > 0 &&
+                      PAYABLE_STATUSES.includes(booking.status) && (
+                        <PayBookingButton
+                          bookingNumber={booking.bookingNumber}
+                          amountDisplay={formatRupees(booking.visitFeePaise / 100)}
+                          onPaid={() => api.booking(booking.id).then(setBooking).catch(() => {})}
+                        />
+                      )}
                   </div>
                 </Reveal>
               )}
