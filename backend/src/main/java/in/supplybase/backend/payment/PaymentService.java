@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.User;
 import in.supplybase.backend.auth.UserRepository;
+import in.supplybase.backend.booking.Booking;
+import in.supplybase.backend.booking.BookingRepository;
+import in.supplybase.backend.booking.BookingStatus;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.Money;
 import in.supplybase.backend.common.Reference;
@@ -35,16 +38,19 @@ public class PaymentService {
     private final ProjectRepository projects;
     private final RazorpayService razorpay;
     private final InvoiceService invoices;
+    private final BookingRepository bookings;
 
     public PaymentService(PaymentRepository payments, PaymentEventRepository events,
                           UserRepository users, ProjectRepository projects,
-                          RazorpayService razorpay, InvoiceService invoices) {
+                          RazorpayService razorpay, InvoiceService invoices,
+                          BookingRepository bookings) {
         this.payments = payments;
         this.events = events;
         this.users = users;
         this.projects = projects;
         this.razorpay = razorpay;
         this.invoices = invoices;
+        this.bookings = bookings;
     }
 
     /* ------------------------------------------------------------ reads */
@@ -120,7 +126,11 @@ public class PaymentService {
         if (payment.getStatus() == PaymentStatus.CANCELLED) {
             throw ApiException.badRequest("That payment was cancelled.");
         }
+        return openCheckout(payment);
+    }
 
+    /** Creates the Razorpay order on first use and returns what checkout needs. */
+    private RazorpayOrderResponse openCheckout(Payment payment) {
         String orderId = payment.getRazorpayOrderId();
         if (orderId == null) {
             orderId = razorpay.createOrder(payment.getAmountPaise(), payment.getCurrency(),
@@ -133,6 +143,54 @@ public class PaymentService {
         return new RazorpayOrderResponse(orderId, razorpay.keyId(), payment.getAmountPaise(),
                 payment.getCurrency(), payment.getReference(), payment.getDescription(),
                 client.getFullName(), client.getEmail(), client.getPhone());
+    }
+
+    /**
+     * Opens checkout for a booking's fee, keyed by the booking number the
+     * booking form hands back.
+     *
+     * The amount is the booking's own visitFeePaise, fixed by the server when
+     * the booking was made, so nothing the browser sends can change what is
+     * charged. One payment row per booking is reused across attempts, so
+     * closing checkout and trying again does not raise a second charge.
+     */
+    @Transactional
+    public RazorpayOrderResponse startBookingCheckout(String bookingNumber, AuthenticatedUser caller) {
+        Booking booking = bookings.findByBookingNumber(bookingNumber)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        User owner = booking.getUser();
+        if (owner == null || (!caller.isStaff() && !owner.getId().equals(caller.id()))) {
+            throw ApiException.notFound("That booking");
+        }
+        if (booking.getPaidAt() != null) {
+            throw ApiException.badRequest("This booking has already been paid.");
+        }
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw ApiException.badRequest("This booking was cancelled, so it cannot be paid.");
+        }
+        if (!booking.getStatus().isBeforeVisit()) {
+            throw ApiException.badRequest("This booking is past the visit stage. Please pay our team directly.");
+        }
+        if (booking.getVisitFeePaise() <= 0) {
+            throw ApiException.badRequest("There is nothing to pay on this booking.");
+        }
+
+        Payment payment = payments.findFirstByBookingIdAndStatusInOrderByCreatedAtDesc(
+                        booking.getId(), List.of(PaymentStatus.PENDING, PaymentStatus.FAILED))
+                .orElseGet(() -> payments.save(Payment.builder()
+                        .reference(Reference.forPayment())
+                        .user(owner)
+                        .booking(booking)
+                        .paymentType(PaymentType.BOOKING)
+                        .description(truncateDescription(booking.getServiceLabel() + " booking "
+                                + booking.getBookingNumber()))
+                        .amountPaise(booking.getVisitFeePaise())
+                        .currency("INR")
+                        .status(PaymentStatus.PENDING)
+                        .build()));
+
+        return openCheckout(payment);
     }
 
     /**
@@ -291,6 +349,30 @@ public class PaymentService {
         if (payment.getPaidAt() == null) {
             payment.setPaidAt(Instant.now());
         }
+        markBookingPaid(payment);
+    }
+
+    /**
+     * A verified booking payment stamps the booking paid and, if it was still
+     * waiting on that payment, confirms it (RULE 7 in BookingStatus). A
+     * booking that moved on, or was cancelled meanwhile, keeps its status:
+     * staff see the paid stamp and can refund a cancelled one.
+     */
+    private void markBookingPaid(Payment payment) {
+        Booking booking = payment.getBooking();
+        if (booking == null || booking.getPaidAt() != null) {
+            return;
+        }
+        booking.setPaidAt(payment.getPaidAt());
+        if (booking.getStatus() == BookingStatus.PAYMENT_PENDING
+                || booking.getStatus() == BookingStatus.BOOKING_REQUESTED) {
+            booking.setStatus(BookingStatus.CONFIRMED);
+        }
+        bookings.save(booking);
+    }
+
+    private static String truncateDescription(String value) {
+        return value.length() <= 255 ? value : value.substring(0, 255);
     }
 
     private static String truncate(String value) {

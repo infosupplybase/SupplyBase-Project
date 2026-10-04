@@ -18,6 +18,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * One page, six journeys (Terrace / Exterior Wall / Bathroom-Floor /
@@ -263,6 +264,8 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
                 <Icon name="info" size={17} />
                 <span>{receipt.message}</span>
               </div>
+
+              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
               <p className="question-hint" style={{ marginTop: 10 }}>
                 Our team will contact you shortly to confirm the details.
               </p>

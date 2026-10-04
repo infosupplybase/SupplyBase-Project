@@ -24,6 +24,7 @@ import {
   acServicesByCategory,
   acAddonsByCategory,
 } from '../data/acContent';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 function labelFor(options, value) {
   return options.find((option) => option.value === value)?.label || value;
@@ -304,6 +305,8 @@ export default function AcCheckout({
             <p><strong>Units:</strong> {selection.units}</p>
             <p><strong>Appointment:</strong> {formatVisit(date, time)}</p>
           </div>
+
+          <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
           {photoWarning && (
             <p className="ac-checkout-notice" role="status">{photoWarning}</p>

@@ -14,6 +14,7 @@ import { composeAddress, emptyDetails, validateDetails as checkDetails } from '.
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -680,6 +681,8 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
                 <dd>{details.address}, {details.city}</dd>
               </div>
             </dl>
+
+            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
             {fileCount > 0 && (
               <p className="elc-upload-status">

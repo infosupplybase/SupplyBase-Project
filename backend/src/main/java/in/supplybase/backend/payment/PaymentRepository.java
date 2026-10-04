@@ -18,4 +18,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByProjectIdOrderByCreatedAtDesc(Long projectId);
 
     Page<Payment> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    /** The open (not yet settled) payment for a booking, reused across checkout attempts. */
+    Optional<Payment> findFirstByBookingIdAndStatusInOrderByCreatedAtDesc(Long bookingId,
+                                                                         List<PaymentStatus> statuses);
 }

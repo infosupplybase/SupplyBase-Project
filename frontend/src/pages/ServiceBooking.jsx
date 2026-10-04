@@ -23,6 +23,7 @@ import { useEnsureLogin } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import { wpCatalogueService, wpCategories } from '../data/waterproofingContent';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 
 
@@ -1292,6 +1293,8 @@ function Confirmation({
                 </dd>
               </div>
             </dl>
+
+            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
             <Link
               to="/dashboard"

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 import in.supplybase.backend.auth.User;
+import in.supplybase.backend.booking.Booking;
 import in.supplybase.backend.project.Project;
 import in.supplybase.backend.project.ProjectStage;
 import org.hibernate.annotations.Generated;
@@ -60,6 +61,11 @@ public class Payment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id")
     private ProjectStage stage;
+
+    /** The booking this pays the fee for; null for project payments. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_type", nullable = false, length = 20)
