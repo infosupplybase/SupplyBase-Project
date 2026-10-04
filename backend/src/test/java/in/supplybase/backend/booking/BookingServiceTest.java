@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -115,7 +116,8 @@ class BookingServiceTest {
             LocalTime time = LocalTime.of(10, 0);
 
             when(catalogue.requireCategory("plumbing")).thenReturn(category);
-            when(bookings.countByPhoneAndCreatedAtAfter(eq("9820011223"), any(Instant.class)))
+            // The flood check counts this service's bookings only.
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(eq("9820011223"), same(category), any(Instant.class)))
                     .thenReturn(0L);
 
             AppointmentSlot slot = AppointmentSlot.builder()
@@ -167,6 +169,59 @@ class BookingServiceTest {
         }
 
         @Test
+        @DisplayName("keeps the waterproofing service alongside the brand")
+        void waterproofingKeepsService() {
+            ServiceCategory category = ServiceCategory.builder()
+                    .id(7L).slug("waterproofing").name("Waterproofing")
+                    .visitFeePaise(9900L).active(true).build();
+            LocalDate date = LocalDate.now().plusDays(3);
+            LocalTime time = LocalTime.of(10, 0);
+
+            when(catalogue.requireCategory("waterproofing")).thenReturn(category);
+            when(bookings.countByPhoneAndCreatedAtAfter(any(), any())).thenReturn(0L);
+            when(appointments.reserve(anyLong(), any(), any()))
+                    .thenReturn(AppointmentSlot.builder().id(1L).capacity(1).bookedCount(1).build());
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(options.findByCategoryIdAndActiveTrueOrderByStepNoAscSortOrderAsc(7L))
+                    .thenReturn(List.of(
+                            ServiceOption.builder().categoryId(7L).stepNo(1)
+                                    .questionKey("service_needed")
+                                    .questionText("What waterproofing service do you need?")
+                                    .inputType("MULTI").optionValue("Water Tank Waterproofing")
+                                    .optionLabel("Water Tank Waterproofing").active(true).build(),
+                            ServiceOption.builder().categoryId(7L).stepNo(1)
+                                    .questionKey("service_needed")
+                                    .questionText("What waterproofing service do you need?")
+                                    .inputType("MULTI").optionValue("Bathroom Waterproofing")
+                                    .optionLabel("Bathroom Waterproofing").active(true).build(),
+                            ServiceOption.builder().categoryId(7L).stepNo(2)
+                                    .questionKey("wp_brand").questionText("Preferred brand")
+                                    .inputType("SINGLE").optionValue("asian-paints")
+                                    .optionLabel("Asian Paints").active(true).build()));
+
+            CreateBookingRequest request = new CreateBookingRequest(
+                    "waterproofing",
+                    List.of(new CreateBookingRequest.AnswerInput(
+                                    "service_needed", "Bathroom Waterproofing",
+                                    "Bathroom Floor Waterproofing", null),
+                            new CreateBookingRequest.AnswerInput(
+                                    "wp_brand", "asian-paints", "Asian Paints", null)),
+                    date, time, "Asha Rao", "9820011223", null, null,
+                    "12 MG Road", "Mumbai", "400001", null);
+
+            service.create(request, null);
+
+            ArgumentCaptor<List<BookingAnswer>> answersCaptor = ArgumentCaptor.forClass(List.class);
+            verify(answers).saveAll(answersCaptor.capture());
+            assertThat(answersCaptor.getValue())
+                    .extracting(BookingAnswer::getQuestionKey, BookingAnswer::getAnswerLabel)
+                    .containsExactly(
+                            org.assertj.core.groups.Tuple.tuple(
+                                    "service_needed", "Bathroom Floor Waterproofing"),
+                            org.assertj.core.groups.Tuple.tuple("wp_brand", "Asian Paints"));
+        }
+
+        @Test
         @DisplayName("attaches the booking to the signed-in user when one is present")
         void attachesSignedInUser() {
             ServiceCategory category = plumbingCategory();
@@ -174,7 +229,7 @@ class BookingServiceTest {
             LocalTime time = LocalTime.of(10, 0);
 
             when(catalogue.requireCategory("plumbing")).thenReturn(category);
-            when(bookings.countByPhoneAndCreatedAtAfter(any(), any())).thenReturn(0L);
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(any(), any(), any())).thenReturn(0L);
             when(appointments.reserve(anyLong(), any(), any()))
                     .thenReturn(AppointmentSlot.builder().id(1L).capacity(1).bookedCount(1).build());
             when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -190,10 +245,10 @@ class BookingServiceTest {
         }
 
         @Test
-        @DisplayName("refuses a sixth booking from the same phone within an hour")
+        @DisplayName("refuses a sixth booking for the same service from the same phone within an hour")
         void rejectsWhenRateLimited() {
             when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
-            when(bookings.countByPhoneAndCreatedAtAfter(eq("9820011223"), any(Instant.class)))
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(eq("9820011223"), any(), any(Instant.class)))
                     .thenReturn(5L);
 
             CreateBookingRequest request =
@@ -201,7 +256,7 @@ class BookingServiceTest {
 
             assertThatThrownBy(() -> service.create(request, null))
                     .isInstanceOf(ApiException.class)
-                    .hasMessageContaining("We already have your booking")
+                    .hasMessageContaining("5 Plumbing bookings from this number in the last hour")
                     .extracting(ex -> ((ApiException) ex).getStatus())
                     .isEqualTo(HttpStatus.BAD_REQUEST);
 
@@ -213,7 +268,7 @@ class BookingServiceTest {
         @DisplayName("propagates the conflict when the slot is no longer available")
         void propagatesSlotConflict() {
             when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
-            when(bookings.countByPhoneAndCreatedAtAfter(any(), any())).thenReturn(0L);
+            when(bookings.countByPhoneAndCategoryAndCreatedAtAfter(any(), any(), any())).thenReturn(0L);
             when(appointments.reserve(anyLong(), any(), any()))
                     .thenThrow(ApiException.conflict(
                             "This time slot is no longer available. Please select another time."));

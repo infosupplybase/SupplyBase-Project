@@ -7,7 +7,7 @@ import RateTable from '../components/waterproofing/RateTable';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import useWaterproofingCatalogue from '../hooks/useWaterproofingCatalogue';
-import { wpFlows } from '../data/waterproofingContent';
+import { wpCatalogueService, wpFlows } from '../data/waterproofingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
@@ -125,7 +125,13 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
     setBusy(true);
     setSubmitError('');
     try {
-      const flat = [];
+      // The service itself, so staff see which job this is (Terrace, Water
+      // Tank...), not just the brand.
+      const flat = [{
+        key: 'service_needed',
+        value: wpCatalogueService(flowSlug, flow.title),
+        label: flowSlug === 'bathroom-floor' ? 'Bathroom Floor Waterproofing' : flow.title,
+      }];
       if (brand) {
         flat.push({ key: 'wp_brand', value: brand, label: brandLabel || brand });
       }
