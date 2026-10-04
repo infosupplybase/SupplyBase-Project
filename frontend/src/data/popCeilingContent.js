@@ -1,36 +1,6 @@
 /**
- * Presentational-only content for the POP Ceiling & Design section —
- * copy, icons and image paths. Names, prices and option lists come live
- * from the catalogue API (usePopCeilingCatalogue), same split as
- * paintingContent.js.
- *
- * IMAGE SOURCES (asset priority per the brief: existing project assets
- * first — nothing here was generated or downloaded):
- * - POP_HERO_IMAGE: cropped from the existing frontend/public/assets/hero/
- *   interior-design.png marketing banner — the clean photographic region
- *   (a living room with a cove-lit tray ceiling and chandelier), with the
- *   banner's own baked-in text and CTA strip cropped out. Matches the
- *   reference's own "premium living room with layered false ceiling and
- *   warm cove lighting" hero brief closely.
- * - Full Home POP intro: reuses the existing frontend/public/assets/
- *   projects/modern-interior.jpeg (a real project photo already used
- *   elsewhere in the site) — its own wood box-panel false ceiling with
- *   recessed lighting is the most ceiling-prominent existing photo in the
- *   project.
- * - Room POP intro: reuses the same interior-design.png crop as the
- *   category hero (POP_HERO_IMAGE) rather than the homepage tile photo
- *   (frontend/public/assets/popular-services/pop-ceiling-design.png) —
- *   that tile photo is only 600×540 and would visibly soften if stretched
- *   to fill this flow's full-bleed hero the way PaintingHero renders it
- *   (object-fit: cover at whatever width the container is).
- * - Category-overview row icons and design-style/add-on icons: the
- *   existing gold-outline Icon set, extended with a small number of new
- *   ceiling-specific glyphs (see components/ui/Icon.jsx) — there is no
- *   per-item photography for cornice/moulding/cove/tray/etc. in the
- *   reference or the project (its own embedded contact-sheet images are
- *   ~1000px for an entire 10-screen page, unusable at any individual size),
- *   so these follow the same icon-only precedent already used for
- *   Plumbing's and Painting's line items.
+ * Presentational content for POP Ceiling & Design.
+ * Option lists and prices come from the catalogue API.
  */
 
 export const POP_HERO_IMAGE = '/assets/pop-ceiling/hero/living-room-cove.webp';
@@ -48,16 +18,6 @@ export const popTrustPoints = [
   { icon: 'clock', label: 'On-Time Completion' },
 ];
 
-/**
- * The reference's own "POP Category" screen renders all six subservices as
- * plain icon + name + description rows (not photo cards) — this list
- * matches that shape. Full Home POP and Room POP open their own dedicated
- * flow; the other four have no detail screens in the reference and fall
- * back to the existing generic site-visit wizard with their closest
- * `service_needed` option preselected (see ServiceBooking.jsx's `preselect`
- * query param and V16's two additive options for the pair with no existing
- * match).
- */
 export const popCategories = [
   {
     slug: 'full-home',
@@ -103,9 +63,15 @@ export const popCategories = [
   },
 ];
 
-/** Per-design-style icon, looked up by option.value — falls back to the
-    step's own icon (see PopCeilingFlow) for any style not listed here. */
 export const DESIGN_STYLE_ICONS = {
+  'flat-ceiling': 'ceiling',
+  'double-layer-ceiling': 'layers',
+  'floating-ceiling': 'cove',
+  'border-ceiling': 'border',
+  'non-drop-ceiling': 'ceiling',
+  'recessed-ceiling': 'tray',
+
+  // Existing catalogue values retained for compatibility.
   'simple-elegant': 'sparkle',
   simple: 'sparkle',
   modern: 'layers',
@@ -113,12 +79,9 @@ export const DESIGN_STYLE_ICONS = {
   luxury: 'shield',
   'cove-ceiling': 'cove',
   'tray-ceiling': 'tray',
-  'border-ceiling': 'border',
   'custom-design': 'palette',
 };
 
-/** Per-add-on icon, looked up by option.value (POP's own AddonList, not
-    Painting's — see components/pop-ceiling/AddonList.jsx). */
 export const ADDON_ICONS = {
   'pop-cornice': 'cornice',
   'pop-moulding': 'moulding',
@@ -146,11 +109,6 @@ export const WHATS_INCLUDED_ROOM = [
   'Site supervision',
 ];
 
-/**
- * Flow configs consumed by PopCeilingFlow.jsx — steps array only names
- * question keys and UI shape; option lists, hints and (never, here) prices
- * come from the live catalogue.
- */
 export const popFlows = {
   'full-home': {
     slug: 'full-home',
@@ -169,11 +127,28 @@ export const popFlows = {
     },
     whatsIncluded: WHATS_INCLUDED_FULL_HOME,
     steps: [
-      { id: 'home_type', type: 'option', questionKey: 'pop_home_type', title: 'Select Your Home Type', icon: 'building' },
-      { id: 'design_style', type: 'style', questionKey: 'pop_home_design_style', title: 'Choose Design Style', icon: 'layers' },
-      { id: 'summary', type: 'summary', title: 'Your Selection' },
+      {
+        id: 'home_type',
+        type: 'option',
+        questionKey: 'pop_home_type',
+        title: 'Select Your Home Type',
+        icon: 'building',
+      },
+      {
+        id: 'design_style',
+        type: 'style',
+        questionKey: 'pop_home_design_style',
+        title: 'Choose Ceiling Type',
+        icon: 'layers',
+      },
+      {
+        id: 'summary',
+        type: 'summary',
+        title: 'Your Selection',
+      },
     ],
   },
+
   room: {
     slug: 'room',
     title: 'Room POP',
@@ -191,9 +166,28 @@ export const popFlows = {
     },
     whatsIncluded: WHATS_INCLUDED_ROOM,
     steps: [
-      { id: 'room_type', type: 'option', questionKey: 'pop_room_type', title: 'Which Room Do You Need POP For?', icon: 'home-check', notesFor: 'other-room', notesLabel: 'Describe the room', notesPlaceholder: 'e.g. Pooja room, guest room, home office…' },
-      { id: 'design_style', type: 'style', questionKey: 'pop_room_design_style', title: 'Choose Design Style', icon: 'layers', notesFor: 'custom-design', notesLabel: 'Your design brief (optional)', notesPlaceholder: 'Describe what you have in mind — style, colours, references you can share on your visit…' },
-      { id: 'summary', type: 'summary', title: 'Your Selection' },
+      {
+        id: 'room_type',
+        type: 'option',
+        questionKey: 'pop_room_type',
+        title: 'Which Room Do You Need POP For?',
+        icon: 'home-check',
+        notesFor: 'other-room',
+        notesLabel: 'Describe the room',
+        notesPlaceholder: 'e.g. Pooja room, guest room, home office…',
+      },
+      {
+        id: 'design_style',
+        type: 'style',
+        questionKey: 'pop_room_design_style',
+        title: 'Choose Ceiling Type',
+        icon: 'layers',
+      },
+      {
+        id: 'summary',
+        type: 'summary',
+        title: 'Your Selection',
+      },
     ],
   },
 };

@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import StepIndicator from '../components/painting/StepIndicator';
@@ -14,6 +15,8 @@ import usePaintingCatalogue from '../hooks/usePaintingCatalogue';
 import { paintingFlows } from '../data/paintingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
+import { useEnsureLogin } from '../components/auth/LoginGate';
+import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { formatRupees } from '../lib/money';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
@@ -53,6 +56,7 @@ export default function PaintingFlow({
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 1, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
   const pickedLocation = usePickedLocation();
+  const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
     ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
     : emptyDetails);
@@ -63,14 +67,70 @@ export default function PaintingFlow({
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [choiceError, setChoiceError] = useState('');
 
-  const configSteps = useMemo(() => flow?.steps || [], [flow]);
+  useEffect(() => {
+    setChoiceError('');
+  }, [answers, stage]);
+
+  useEffect(() => {
+    if (!choiceError) return;
+    const timer = window.setTimeout(() => setChoiceError(''), 4000);
+    return () => window.clearTimeout(timer);
+  }, [choiceError]);
+
+  const configSteps = useMemo(() => {
+    const steps = flow?.steps || [];
+
+    if (
+      flowSlug !== 'few-walls' ||
+      answers.few_walls_area !== 'ceiling-paint'
+    ) {
+      return steps;
+    }
+
+    return [
+      steps[0],
+      {
+        id: 'ceiling_type',
+        type: 'option',
+        questionKey: 'few_walls_ceiling_type',
+        title: 'Choose Your Ceiling Type',
+        showThumb: false,
+        icon: 'ceiling',
+        required: true,
+      },
+      ...steps.slice(1),
+    ];
+  }, [flow, flowSlug, answers.few_walls_area]);
   const DETAILS = 1 + configSteps.length;
   const SCHEDULE = DETAILS + 1;
   const CONFIRM = SCHEDULE + 1;
 
   const setAnswer = (key) => (value) => {
-    setAnswers((a) => ({ ...a, [key]: value }));
+    setAnswers((a) => {
+      const next = { ...a, [key]: value };
+
+      if (key === 'few_walls_area' && value !== a.few_walls_area) {
+        delete next.few_walls_ceiling_type;
+        delete next.few_walls_product;
+      }
+
+      if (
+        key === 'few_walls_ceiling_type' &&
+        value !== a.few_walls_ceiling_type
+      ) {
+        delete next.few_walls_product;
+      }
+
+      if (key === 'paint_brand' && value !== a.paint_brand) {
+        delete next.full_home_product;
+        delete next.few_walls_product;
+        delete next.renovation_product;
+      }
+
+      return next;
+    });
     setErrors((e) => ({ ...e, [key]: undefined }));
     setSubmitError('');
   };
@@ -109,7 +169,7 @@ export default function PaintingFlow({
           return { stepIndex: i + 1, label: step.title.replace(/\?$/, ''), value: opt?.label, priceRupees: opt?.price ?? null };
         }
         if (step.type === 'product') {
-          const tiers = productsByTier(step.questionKey);
+          const tiers = productsByTier(step.questionKey, answers);
           const opt = [...tiers.values()].flat().find((o) => o.value === answers[step.questionKey]);
           return { stepIndex: i + 1, label: 'Product', value: opt?.label, priceRupees: opt?.price ?? null };
         }
@@ -133,6 +193,15 @@ export default function PaintingFlow({
       });
   }, [flow, configSteps, answers, optionsFor, productsByTier, coloursByTab]);
 
+  const requiresPaintingSiteQuote =
+    (flowSlug === 'full-home' &&
+      (answers.full_home_painting_type === 'renovation-painting' ||
+        (answers.home_type === 'independent-house' &&
+          answers.full_home_painting_type === 'unfurnished-home'))) ||
+    flowSlug === 'renovation' ||
+    (flowSlug === 'few-walls' &&
+      answers.few_walls_area === 'multiple-walls');
+
   const itemsTotalPaise = useMemo(
     () => resolved.reduce((sum, r) => sum + Math.round((r.priceRupees || 0) * 100), 0),
     [resolved]
@@ -155,25 +224,83 @@ export default function PaintingFlow({
 };
 
   const validateStep = (step) => {
-    if (step.type === 'option') {
-      const question = optionsFor(step.questionKey);
-      const required = question.length > 0; // catalogue-driven; area/home-type are required in V15
-      if (required && !answers[step.questionKey]) {
-        setErrors({ [step.questionKey]: 'Please choose an option' });
-        return false;
-      }
-    }
-    if (step.type === 'brand' && !answers.paint_brand) {
-      setErrors({ paint_brand: 'Please choose a brand' });
+    const reject = (key, message) => {
+      setErrors({ [key]: message });
+      if (modal) setChoiceError(message);
       return false;
-    }
-    if (step.type === 'addon' && step.required) {
-      const chosen = Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : [];
-      if (chosen.length === 0) {
-        setErrors({ [step.questionKey]: 'Please choose at least one' });
-        return false;
+    };
+
+    if (step.type === 'option') {
+      const options = optionsFor(step.questionKey);
+
+      if (
+        step.questionKey === 'few_walls_ceiling_type' &&
+        options.length === 0
+      ) {
+        return reject(
+          step.questionKey,
+          'Ceiling options are unavailable. Please refresh and try again.'
+        );
+      }
+      const valid = options.some(
+        (option) => option.value === answers[step.questionKey]
+      );
+
+      if (options.length > 0 && !valid) {
+        return reject(
+          step.questionKey,
+          'Choose an option to continue.'
+        );
       }
     }
+
+    if (step.type === 'brand') {
+      const valid = optionsFor('paint_brand').some(
+        (option) => option.value === answers.paint_brand
+      );
+
+      if (!valid) {
+        return reject(
+          'paint_brand',
+          'Choose a paint brand to continue.'
+        );
+      }
+    }
+
+    if (step.type === 'product') {
+      const products = [...productsByTier(step.questionKey, answers).values()].flat();
+
+      const valid = products.some(
+        (product) => product.value === answers[step.questionKey]
+      );
+
+      if (products.length > 0 && !valid) {
+        return reject(
+          step.questionKey,
+          'Choose a paint product to continue.'
+        );
+      }
+    }
+
+    if (step.type === 'addon' && step.required) {
+      const chosen = Array.isArray(answers[step.questionKey])
+        ? answers[step.questionKey]
+        : [];
+
+      const valid = optionsFor(step.questionKey).some(
+        (option) => chosen.includes(option.value)
+      );
+
+      if (!valid) {
+        return reject(
+          step.questionKey,
+          'Choose at least one service to continue.'
+        );
+      }
+    }
+
+    setErrors({});
+    setChoiceError('');
     return true;
   };
 
@@ -227,6 +354,8 @@ export default function PaintingFlow({
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    // Every booking needs an account: ask now, over this form (LoginGate).
+    if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');
@@ -252,7 +381,7 @@ export default function PaintingFlow({
         const value = answers[step.questionKey];
         if (value === undefined || value === '' || value === null) return;
         let opt;
-        if (step.type === 'product') opt = [...productsByTier(step.questionKey).values()].flat().find((o) => o.value === value);
+        if (step.type === 'product') opt = [...productsByTier(step.questionKey, answers).values()].flat().find((o) => o.value === value);
         else if (step.type === 'colour') opt = [...coloursByTab(step.questionKey).values()].flat().find((o) => o.value === value);
         else opt = optionsFor(step.questionKey).find((o) => o.value === value);
         flat.push({ key: step.questionKey, value, label: opt?.label || value });
@@ -272,6 +401,8 @@ export default function PaintingFlow({
         pincode: details.pincode || null,
       });
       setReceipt(result);
+      // Photos picked in the details form go to the booking now it exists.
+      uploadBookingPhotos('pnt', result.bookingNumber, details.phone);
 setStage(CONFIRM);
 
 if (modal) {
@@ -291,7 +422,7 @@ if (modal) {
     return (
       <div className="pnt-section">
         <div className="container container-narrow">
-          <p className="question-hint">Loading services…</p>
+          <p className="question-hint" role="status">Loading painting options...</p>
         </div>
       </div>
     );
@@ -547,12 +678,31 @@ if (modal) {
   }
 >
           {step.type !== 'summary' && <h2 className="pnt-step-title">{step.title}</h2>}
-          {step.notSureNote && (
-            <p className="question-hint" style={{ marginTop: -8, marginBottom: 16 }}>
-              Pick the one that matters most — not sure? Our expert will help you
-              identify the best walls during the home visit.
-            </p>
+
+          {(step.type === 'colour' ||
+            (step.type === 'addon' && !step.required)) && (
+            <div
+              className="painting-optional-note"
+              style={{
+                marginBottom: 18,
+                padding: '12px 14px',
+                border: '1px solid #eee3c4',
+                borderRadius: 10,
+                background: '#fffaf0',
+                color: '#5e543e',
+                fontSize: 13,
+                lineHeight: 1.6,
+              }}
+            >
+              <strong style={{ display: 'block', marginBottom: 4 }}>
+                Optional
+              </strong>
+              {step.type === 'colour'
+                ? 'Have a preferred colour? Select it here. You can also continue without choosing and discuss colours with our team during your home visit.'
+                : 'Add extra services if you need them. If you do not need any add-ons, simply click Continue.'}
+            </div>
           )}
+
 
           {step.type === 'option' && (
             <>
@@ -573,24 +723,67 @@ if (modal) {
                   <Icon name="layers" size={16} /> Compare Packages <Icon name="chevron-right" size={15} />
                 </button>
               )}
-              {errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
             </>
           )}
 
           {step.type === 'brand' && (
             <>
               <BrandPicker options={optionsFor('paint_brand')} value={answers.paint_brand} onSelect={setAnswer('paint_brand')} />
-              {errors.paint_brand && <span className="field-error">{errors.paint_brand}</span>}
+              {!modal && errors.paint_brand && <span className="field-error">{errors.paint_brand}</span>}
             </>
           )}
 
           {step.type === 'product' && (
-            <ProductPicker
-              productsByTier={productsByTier(step.questionKey)}
+            <>
+<ProductPicker
+              showAllProducts={step.questionKey === 'few_walls_product'}
+              productsByTier={productsByTier(step.questionKey, answers)}
+              hidePrices={requiresPaintingSiteQuote}
               brand={answers.paint_brand}
               value={answers[step.questionKey]}
               onSelect={setAnswer(step.questionKey)}
             />
+              {flowSlug === 'few-walls' &&
+                answers.paint_brand === 'asian-paints' &&
+                ['1-wall', '2-walls', 'multiple-walls'].includes(
+                  answers.few_walls_area
+                ) && (
+                  <div
+                    className="painting-wall-price-notes"
+                    style={{
+                      marginTop: 18,
+                      padding: '14px 16px',
+                      border: '1px solid #ead9aa',
+                      borderRadius: 12,
+                      background: '#fffaf0',
+                      color: '#685527',
+                      fontSize: 13,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    <strong>Important notes</strong>
+                    <ul
+                      style={{
+                        margin: '8px 0 0',
+                        paddingLeft: 18,
+                      }}
+                    >
+                      <li>
+                        Painting prices apply to walls with no damage.
+                      </li>
+                      <li>
+                        Seepage or crack repairs may cost approximately
+                        {' '}₹2,499 extra, depending on inspection.
+                      </li>
+                      <li>
+                        Leakage waterproofing may cost approximately
+                        {' '}₹2,999 extra, depending on inspection.
+                      </li>
+                    </ul>
+                  </div>
+                )}
+            </>
           )}
 
           {step.type === 'colour' && (
@@ -609,7 +802,7 @@ if (modal) {
                 selected={Array.isArray(answers[step.questionKey]) ? answers[step.questionKey] : []}
                 onToggle={toggleMulti(step.questionKey)}
               />
-              {errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
+              {!modal && errors[step.questionKey] && <span className="field-error">{errors[step.questionKey]}</span>}
             </>
           )}
 
@@ -617,7 +810,8 @@ if (modal) {
             <EstimateSummary
               rows={resolved}
               whatsIncluded={flow.whatsIncluded}
-              itemsTotalPaise={itemsTotalPaise}
+              itemsTotalPaise={requiresPaintingSiteQuote ? null : itemsTotalPaise}
+              siteVisitQuote={requiresPaintingSiteQuote}
               onEditStep={jumpToStep}
             />
           )}
@@ -644,6 +838,46 @@ if (modal) {
           </ModalFoot>
         </div>
       </div>
+
+      {modal && choiceError && createPortal(
+        <div
+          className="pop-choice-toast painting-choice-toast"
+          role="alert"
+          style={{
+            position: 'fixed',
+            top: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 3000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            width: 'min(420px, calc(100vw - 32px))',
+            padding: '13px 16px',
+            border: '1px solid #e7ca7c',
+            borderRadius: 12,
+            background: '#fff9e9',
+            color: '#78580d',
+            boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
+          }}
+        >
+          <Icon name="info" size={20} />
+          <span style={{ flex: 1 }}>{choiceError}</span>
+          <button
+            type="button"
+            onClick={() => setChoiceError('')}
+            aria-label="Dismiss message"
+            style={{
+              border: 0,
+              background: 'transparent',
+              color: 'inherit',
+              fontSize: 23,
+              cursor: 'pointer',
+            }}
+          >{'\u00D7'}</button>
+        </div>,
+        document.body
+      )}
 
       {compareOpen && (
         <div className="pnt-modal-overlay" onClick={() => setCompareOpen(false)}>

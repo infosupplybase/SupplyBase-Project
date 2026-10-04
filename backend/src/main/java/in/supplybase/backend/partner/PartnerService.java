@@ -27,6 +27,7 @@ import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
+import in.supplybase.backend.common.FileStorageService;
 import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.partner.dto.PartnerJobResponse;
@@ -60,15 +61,17 @@ public class PartnerService {
     private final BookingRepository bookings;
     private final ServiceCategoryRepository categories;
     private final AuthService authService;
+    private final FileStorageService files;
 
     public PartnerService(PartnerProfileRepository partners, UserRepository users,
                           BookingRepository bookings, ServiceCategoryRepository categories,
-                          AuthService authService) {
+                          AuthService authService, FileStorageService files) {
         this.partners = partners;
         this.users = users;
         this.bookings = bookings;
         this.categories = categories;
         this.authService = authService;
+        this.files = files;
     }
 
     /* ------------------------------------------------------------ partner */
@@ -77,21 +80,26 @@ public class PartnerService {
      * Creates the login and a PENDING application together, so a failure in
      * either leaves nothing behind. Sign-up rate limiting, duplicate email and
      * phone checks all come from {@link AuthService#register}.
+     *
+     * The Aadhaar and PAN photos are stored under partners/{userId}/documents
+     * in the private uploads folder; only their storage keys go on the profile.
      */
     @Transactional
-    public AuthResponse apply(ApplyAsPartnerRequest request, String clientIp) {
+    public AuthResponse apply(ApplyAsPartnerRequest request, PartnerDocuments documents, String clientIp) {
         String trade = request.primaryTrade().trim();
-        // Checked before the account is created so a bad trade never costs
-        // anyone a sign-up attempt.
+        // Checked before the account is created so a bad trade, or a file
+        // that is not a photo, never costs anyone a sign-up attempt.
         categories.findBySlugAndActiveTrue(trade)
                 .filter(category -> category.getParentSlug() == null)
                 .orElseThrow(() -> ApiException.badRequest("Please choose one of the listed trades."));
+        documents.requirePhotos();
 
         AuthResponse auth = authService.register(
                 new RegisterRequest(request.fullName(), request.email(), request.phone(), request.password()),
                 clientIp);
 
         User user = users.getReferenceById(auth.user().id());
+        String folder = "partners/" + auth.user().id() + "/documents";
         partners.save(PartnerProfile.builder()
                 .user(user)
                 .primaryTrade(trade)
@@ -99,6 +107,9 @@ public class PartnerService {
                 .city(request.city().trim())
                 .serviceAreas(blankToNull(request.serviceAreas()))
                 .languages(blankToNull(request.languages()))
+                .aadhaarFrontPath(files.store(documents.aadhaarFront(), folder).storageKey())
+                .aadhaarBackPath(files.store(documents.aadhaarBack(), folder).storageKey())
+                .panFrontPath(files.store(documents.panFront(), folder).storageKey())
                 .status(PartnerStatus.PENDING)
                 .build());
         return auth;

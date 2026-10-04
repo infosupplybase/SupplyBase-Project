@@ -1,26 +1,39 @@
 import { useEffect, useMemo, useState } from 'react';
 import api, { friendlyError } from '../lib/api';
 
-/**
- * Fetches the painting category's live form once
- * (GET /api/catalogue/services/painting/form) and exposes it by question
- * key, plus grouped-by-tab colour swatches. Every flow's PaintingFlow page
- * reads from this one hook — names, descriptions and prices all come from
- * here, nothing is duplicated into frontend data files (see V15 migration).
- */
+let cachedForm = null;
+let pendingRequest = null;
+
+function loadPaintingForm() {
+  if (cachedForm) return Promise.resolve(cachedForm);
+
+  if (!pendingRequest) {
+    pendingRequest = api.serviceForm('painting')
+      .then((result) => {
+        cachedForm = result;
+        return result;
+      })
+      .finally(() => {
+        pendingRequest = null;
+      });
+  }
+
+  return pendingRequest;
+}
+
 export default function usePaintingCatalogue() {
-  const [form, setForm] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState(() => cachedForm);
+  const [loading, setLoading] = useState(() => !cachedForm);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError('');
-    api
-      .serviceForm('painting')
+
+    loadPaintingForm()
       .then((result) => {
-        if (!cancelled) setForm(result);
+        if (cancelled) return;
+        setForm(result);
+        setError('');
       })
       .catch((err) => {
         if (!cancelled) setError(friendlyError(err));
@@ -28,6 +41,7 @@ export default function usePaintingCatalogue() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+
     return () => {
       cancelled = true;
     };
@@ -35,32 +49,104 @@ export default function usePaintingCatalogue() {
 
   const byKey = useMemo(() => {
     const map = new Map();
-    (form?.questions || []).forEach((q) => map.set(q.key, q));
+    (form?.questions || []).forEach((question) => {
+      map.set(question.key, question);
+    });
     return map;
   }, [form]);
 
-  const optionsFor = (questionKey) => byKey.get(questionKey)?.options || [];
+  const priceIndex = useMemo(() => {
+    const map = new Map();
 
-  /** Product options for a question key, grouped by tier (option_group). */
-  const productsByTier = (questionKey) => {
-    const byTier = new Map();
-    optionsFor(questionKey).forEach((opt) => {
-      const tier = opt.group || 'Premium';
-      if (!byTier.has(tier)) byTier.set(tier, []);
-      byTier.get(tier).push(opt);
+    (form?.productPrices || []).forEach((entry) => {
+      const key = JSON.stringify([
+        entry.flowKey,
+        entry.paintingType,
+        entry.brand,
+        entry.homeType,
+        entry.productValue,
+      ]);
+
+      map.set(key, entry.price);
     });
+
+    return map;
+  }, [form]);
+
+  const optionsFor = (questionKey) =>
+    byKey.get(questionKey)?.options || [];
+
+  const productsByTier = (questionKey, selections = {}) => {
+    const byTier = new Map();
+    // Each product question has its own server-side options, so a product
+    // picked for Full Home must not be offered under Few Walls.
+    const sharedQuestions = [
+      'full_home_product',
+      'few_walls_product',
+    ];
+
+    const options = optionsFor(questionKey);
+
+    const seen = new Set();
+
+    options.forEach((option) => {
+      const productBrand = option.value.startsWith('berger-')
+        ? 'berger'
+        : 'asian-paints';
+
+      if (
+        sharedQuestions.includes(questionKey) &&
+        selections.paint_brand !== productBrand
+      ) {
+        return;
+      }
+
+      if (seen.has(option.value)) return;
+      seen.add(option.value);
+
+      let price = option.price;
+
+      if (sharedQuestions.includes(questionKey)) {
+        const fewWalls = questionKey === 'few_walls_product';
+        const ceiling = fewWalls &&
+          selections.few_walls_area === 'ceiling-paint';
+
+        const key = JSON.stringify([
+          questionKey,
+          fewWalls ? (ceiling ? 'ceiling-painting' : 'wall-painting') : selections.full_home_painting_type,
+          selections.paint_brand,
+          fewWalls ? (ceiling ? selections.few_walls_ceiling_type : selections.few_walls_area) : selections.home_type,
+          option.value,
+        ]);
+
+        price = priceIndex.get(key) ?? null;
+      }
+
+      const tier = option.group || 'Premium';
+      if (!byTier.has(tier)) byTier.set(tier, []);
+
+      byTier.get(tier).push({
+        ...option,
+        price,
+      });
+    });
+
     return byTier;
   };
 
-  /** Colour options for a question key, grouped by tab (option_group), each
-      carrying its preview hex from option.hint (see V15's colour rows). */
   const coloursByTab = (questionKey) => {
     const byTab = new Map();
-    optionsFor(questionKey).forEach((opt) => {
-      const tab = opt.group || 'Popular';
+
+    optionsFor(questionKey).forEach((option) => {
+      const tab = option.group || 'Popular';
       if (!byTab.has(tab)) byTab.set(tab, []);
-      byTab.get(tab).push({ ...opt, hex: opt.hint || '#E5E5E5' });
+
+      byTab.get(tab).push({
+        ...option,
+        hex: option.hint || '#E5E5E5',
+      });
     });
+
     return byTab;
   };
 

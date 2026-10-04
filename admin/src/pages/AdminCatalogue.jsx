@@ -528,6 +528,7 @@ export default function AdminCatalogue() {
                     key={q.key}
                     style={{
                       display: 'flex',
+                      flexWrap: 'wrap',
                       alignItems: 'flex-start',
                       justifyContent: 'space-between',
                       gap: 14,
@@ -538,7 +539,10 @@ export default function AdminCatalogue() {
                       borderRadius: 'var(--radius)',
                     }}
                   >
-                    <div style={{ minWidth: 0 }}>
+                    {/* Grows to fill the row; below ~220px (a phone) the
+                        buttons wrap underneath instead of squeezing the
+                        question to two words a line. */}
+                    <div style={{ minWidth: 0, flex: '1 1 220px' }}>
                       <div
                         style={{
                           fontSize: 11.5,

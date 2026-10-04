@@ -41,10 +41,10 @@ public class AppointmentController {
      */
     @GetMapping("/api/appointments/available-slots")
     public List<DayAvailabilityResponse> availableSlots(
-            @RequestParam String service,
-            @RequestParam(required = false)
+            @RequestParam("service") String service,
+            @RequestParam(value = "from", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(defaultValue = "14") int days) {
+            @RequestParam(value = "days", defaultValue = "14") int days) {
         Long categoryId = catalogue.requireCategory(service).getId();
         return appointments.availability(categoryId, from, days);
     }

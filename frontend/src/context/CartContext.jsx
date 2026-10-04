@@ -46,12 +46,21 @@ function readStoredItems() {
   }
 }
 
+/** Which cart an item belongs to: electrical items' slugs start "elec-"
+    (data/electricalContent.js), everything else is plumbing. */
+const cartOf = (itemSlug) => (String(itemSlug || '').startsWith('elec-') ? 'electrical' : 'plumbing');
+
 /**
- * The plumbing services cart — client-side state persisted to localStorage
- * (same pattern as LocationContext), so it survives navigation and a page
- * reload. There is no server-side "saved cart": the cart exists only until
- * the customer checks out, at which point its contents are submitted as one
- * real booking (see PlumbingCheckout.jsx) and the local cart is cleared.
+ * The services carts (plumbing and electrical) — client-side state persisted
+ * to localStorage (same pattern as LocationContext), so it survives
+ * navigation and a page reload. There is no server-side "saved cart": the
+ * cart exists only until the customer checks out, at which point its
+ * contents are submitted as one real booking (see PlumbingCheckout.jsx) and
+ * that cart is cleared.
+ *
+ * Both carts share one list and one storage key; useCart('electrical') and
+ * useCart() (plumbing) each see, count, total and clear only their own
+ * items, so checking out one never touches the other.
  *
  * An item's identity is its catalogue slug (itemSlug) — adding an item
  * already in the cart increments its quantity rather than duplicating the row.
@@ -91,26 +100,35 @@ export function CartProvider({ children }) {
     setItems((prev) => prev.map((i) => (i.itemSlug === itemSlug ? { ...i, quantity } : i)));
   };
 
-  const clear = () => setItems([]);
-
-  const count = useMemo(() => items.reduce((sum, i) => sum + i.quantity, 0), [items]);
-  const subtotalPaise = useMemo(
-    () => items.reduce((sum, i) => sum + i.unitPricePaise * i.quantity, 0),
-    [items]
-  );
   const quantityOf = (itemSlug) => items.find((i) => i.itemSlug === itemSlug)?.quantity || 0;
 
   return (
-    <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQuantity, clear, count, subtotalPaise, quantityOf }}
-    >
+    <CartContext.Provider value={{ items, setItems, addItem, removeItem, updateQuantity, quantityOf }}>
       {children}
     </CartContext.Provider>
   );
 }
 
-export function useCart() {
+/** One cart: 'plumbing' (the default) or 'electrical'. */
+export function useCart(cart = 'plumbing') {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error('useCart must be used inside <CartProvider>');
-  return ctx;
+
+  const { items: allItems, setItems, ...actions } = ctx;
+  const items = useMemo(() => allItems.filter((i) => cartOf(i.itemSlug) === cart), [allItems, cart]);
+  const count = useMemo(() => items.reduce((sum, i) => sum + i.quantity, 0), [items]);
+  const subtotalPaise = useMemo(
+    () => items.reduce((sum, i) => sum + i.unitPricePaise * i.quantity, 0),
+    [items]
+  );
+  const clear = () => setItems((prev) => prev.filter((i) => cartOf(i.itemSlug) !== cart));
+
+  return { ...actions, items, count, subtotalPaise, clear };
+}
+
+/** Items across both carts, for the cart badges in the header and bottom bar. */
+export function useCartCount() {
+  const plumbing = useCart('plumbing');
+  const electrical = useCart('electrical');
+  return plumbing.count + electrical.count;
 }

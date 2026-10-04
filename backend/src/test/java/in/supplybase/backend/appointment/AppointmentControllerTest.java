@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -101,6 +102,17 @@ class AppointmentControllerTest {
             mockMvc.perform(get("/api/appointments/available-slots").param("service", "plumbing"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].open").value(true));
+        }
+
+        @Test
+        @DisplayName("HEAD (uptime monitors) is allowed anonymously too")
+        void headIsAllowed() throws Exception {
+            when(catalogueService.requireCategory("plumbing")).thenReturn(category(1L, "plumbing"));
+            when(appointmentService.availability(eq(1L), any(), org.mockito.ArgumentMatchers.anyInt()))
+                    .thenReturn(List.of(new DayAvailabilityResponse(LocalDate.now(), true, null, List.of())));
+
+            mockMvc.perform(head("/api/appointments/available-slots").param("service", "plumbing"))
+                    .andExpect(status().isOk());
         }
 
         @Test

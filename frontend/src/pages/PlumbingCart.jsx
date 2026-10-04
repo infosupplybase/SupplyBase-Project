@@ -65,7 +65,18 @@ export default function PlumbingCart({
               Continue browsing
             </button>
           ) : (
-            <Link to="/services/plumbing" className="plb-back-link">
+            <Link
+              to="/services/plumbing"
+              className="plb-back-link"
+              onClick={(e) => {
+                // Back to the service list the customer came from, when
+                // there is one in this visit (history idx > 0).
+                if (window.history.state?.idx > 0) {
+                  e.preventDefault();
+                  navigate(-1);
+                }
+              }}
+            >
               <Icon name="arrow-left" size={18} />
               Continue browsing
             </Link>

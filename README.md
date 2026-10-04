@@ -118,7 +118,7 @@ You should almost never need to touch a component to change content on the websi
 |---|---|
 | `/` | Home |
 | `/services` | All services |
-| `/services/:slug` | One service — a site-visit booking form, or (Painting, Plumbing, Waterproofing, POP, Electrical, Interior, Other Services) its own category page |
+| `/services/:slug` | One service — a site-visit booking form, or (Painting, Plumbing, Waterproofing, POP, Electrical, Interior, AC Services) its own category page |
 | `/projects` | Projects with category filtering |
 | `/projects/:slug` | Project detail |
 | `/materials` | Materials and brands we use |

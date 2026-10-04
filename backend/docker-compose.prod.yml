@@ -14,6 +14,13 @@ services:
     image: mysql:8.4
     container_name: supplybase-mysql
     restart: unless-stopped
+    # Docker keeps every container's output forever by default and fills the
+    # disk in the end. Keep the last 5 files of 10 MB for each container.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
@@ -39,6 +46,11 @@ services:
       dockerfile: Dockerfile
     container_name: supplybase-api
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
     depends_on:
       mysql:
         condition: service_healthy

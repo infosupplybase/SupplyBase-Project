@@ -2,7 +2,7 @@ package in.supplybase.backend.booking;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -91,25 +91,22 @@ class BookingControllerTest {
     }
 
     @Nested
-    @DisplayName("POST /api/bookings — public")
+    @DisplayName("POST /api/bookings — signed-in customers only")
     class CreateBooking {
 
         @Test
-        @DisplayName("works without any authenticated principal")
-        void worksAnonymously() throws Exception {
-            when(service.create(any(), isNull())).thenReturn(sampleReceipt());
-
+        @DisplayName("is refused without a signed-in account")
+        void anonymousIsUnauthorized() throws Exception {
             mockMvc.perform(post("/api/bookings")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CREATE_BOOKING_JSON))
-                    .andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.bookingNumber").value("SB-20260906-000001"));
+                    .andExpect(status().isUnauthorized());
 
-            verify(service).create(any(), isNull());
+            verify(service, never()).create(any(), any());
         }
 
         @Test
-        @DisplayName("attaches the booking to a signed-in principal when one is present")
+        @DisplayName("books for the signed-in customer")
         void attachesSignedInUser() throws Exception {
             when(service.create(any(), eq(42L))).thenReturn(sampleReceipt());
 
@@ -117,7 +114,8 @@ class BookingControllerTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(CREATE_BOOKING_JSON)
                             .with(asUser(42L, Role.CUSTOMER)))
-                    .andExpect(status().isCreated());
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.bookingNumber").value("SB-20260906-000001"));
 
             verify(service).create(any(), eq(42L));
         }
@@ -239,6 +237,61 @@ class BookingControllerTest {
                                     """)
                             .with(asUser(42L, Role.CUSTOMER)))
                     .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    @DisplayName("POST /api/bookings/by-number/{n}/files — the booking's own customer only")
+    class OwnPhotoUpload {
+
+        private final MockMultipartFile photo =
+                new MockMultipartFile("file", "wall.jpg", "image/jpeg", new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF });
+
+        @Test
+        @DisplayName("an anonymous caller is refused (it used to be open to anyone with the booking number and phone)")
+        void anonymousIsUnauthorized() throws Exception {
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo).param("phone", "9820011223"))
+                    .andExpect(status().isUnauthorized());
+
+            verify(service, never()).uploadOwnFile(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("a signed-in customer's upload goes to the service as that customer")
+        void signedInCustomerUploads() throws Exception {
+            when(service.uploadOwnFile(eq("SB-20261003-000001"), any(), any()))
+                    .thenReturn(new BookingFileResponse(1L, "wall.jpg", "image/jpeg", 3L, "PHOTO", null));
+
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo)
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.kind").value("PHOTO"));
+        }
+
+        @Test
+        @DisplayName("older website builds still send phone and kind; they are accepted and ignored")
+        void oldClientParamsAreTolerated() throws Exception {
+            when(service.uploadOwnFile(eq("SB-20261003-000001"), any(), any()))
+                    .thenReturn(new BookingFileResponse(1L, "wall.jpg", "image/jpeg", 3L, "PHOTO", null));
+
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo).param("phone", "9820011223").param("kind", "PHOTO")
+                            .with(asUser(42L, Role.CUSTOMER)))
+                    .andExpect(status().isCreated());
+        }
+
+        @Test
+        @DisplayName("someone else's booking comes back 404")
+        void notTheOwner() throws Exception {
+            when(service.uploadOwnFile(eq("SB-20261003-000001"), any(), any()))
+                    .thenThrow(in.supplybase.backend.common.ApiException.notFound("That booking"));
+
+            mockMvc.perform(multipart("/api/bookings/by-number/SB-20261003-000001/files")
+                            .file(photo)
+                            .with(asUser(43L, Role.CUSTOMER)))
+                    .andExpect(status().isNotFound());
         }
     }
 

@@ -336,6 +336,11 @@ body:has(.wizard-shell) .floating-actions {
   gap: 16px;
 }
 
+.tile-grid.waterproofing-service-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
 
 /* ========================================================================
    INDIVIDUAL SERVICE CARD
@@ -534,7 +539,7 @@ body:has(.wizard-shell) .floating-actions {
  * Example:
  *
  * Terrace Waterproofing
- * Bathroom Wall Waterproofing
+ * Interior Waterproofing
  * Bathroom Tile Re-sealing
  */
 
@@ -1819,4 +1824,274 @@ body:has(.wizard-shell) .floating-actions {
     width: auto !important;
     max-width: none !important;
   }
+}
+
+/* ============================================================
+   WATERPROOFING SERVICE TILES
+   CLEAN COMPACT DESIGN
+   ============================================================ */
+
+.tile.waterproofing-service-tile {
+  position: relative;
+
+  width: 100%;
+  min-height: 110px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  padding: 0 !important;
+  overflow: hidden;
+
+  background: #F3F0E8 !important;
+
+  border: 1px solid #D8D2C5 !important;
+  border-radius: 8px;
+
+  color: #171717;
+
+  box-shadow: none !important;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+/* ============================================================
+   ICON AREA
+   ============================================================ */
+
+.waterproofing-service-tile .waterproofing-service-icon {
+  width: 100%;
+  height: 62px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+  padding: 8px 0 2px;
+
+  background: #F3F0E8 !important;
+
+  color: #111111 !important;
+
+  border: none !important;
+}
+
+
+/* Fallback icon */
+
+.waterproofing-service-tile .tile-icon-fallback {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent !important;
+
+  color: #111111 !important;
+
+  border: none !important;
+}
+
+
+/* SVG icon */
+
+.waterproofing-service-tile
+.waterproofing-service-icon
+.tile-icon-fallback
+svg {
+  width: 38px;
+  height: 38px;
+
+  color: #111111 !important;
+  stroke: #111111 !important;
+
+  stroke-width: 1.8;
+}
+
+
+/* ============================================================
+   TEXT AREA
+   ============================================================ */
+
+.waterproofing-service-tile .tile-body {
+  width: 100%;
+
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0;
+  padding: 5px 6px 8px;
+
+  background: #F3F0E8 !important;
+
+  color: #111111 !important;
+
+  text-align: center;
+
+  border: none !important;
+  border-top: none !important;
+
+  box-shadow: none !important;
+}
+
+
+/* Service name */
+
+.waterproofing-service-tile .tile-label {
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  font-size: 12px;
+  line-height: 1.25;
+
+  font-weight: 700;
+
+  color: #171717 !important;
+
+  text-align: center;
+
+  border: none !important;
+
+  box-shadow: none !important;
+
+  transform: none !important;
+
+  transition:
+    color 0.2s ease;
+}
+
+
+/* ============================================================
+   REMOVE ALL POSSIBLE DIVIDER LINES
+   ============================================================ */
+
+.waterproofing-service-tile .tile-body::before,
+.waterproofing-service-tile .tile-body::after,
+.waterproofing-service-tile .tile-label::before,
+.waterproofing-service-tile .tile-label::after {
+  content: none !important;
+
+  display: none !important;
+
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
+/* ============================================================
+   HOVER
+   ============================================================ */
+
+.tile.waterproofing-service-tile:hover {
+  background: #F3F0E8 !important;
+
+  border-color: #D4AF37 !important;
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 5px 14px rgba(212, 175, 55, 0.18) !important;
+}
+
+
+/* Keep icon black */
+
+.tile.waterproofing-service-tile:hover
+.waterproofing-service-icon,
+.tile.waterproofing-service-tile:hover
+.tile-icon-fallback {
+  color: #111111 !important;
+}
+
+
+.tile.waterproofing-service-tile:hover
+.waterproofing-service-icon
+.tile-icon-fallback
+svg {
+  color: #111111 !important;
+  stroke: #111111 !important;
+}
+
+
+/* Hover text GOLD */
+
+.tile.waterproofing-service-tile:hover .tile-label {
+  color: #C9A227 !important;
+
+  transform: none !important;
+}
+
+
+/* ============================================================
+   SELECTED
+   ============================================================ */
+
+.tile.waterproofing-service-tile:has(input:checked) {
+  background: #F3F0E8 !important;
+
+  border-color: #D4AF37 !important;
+
+  box-shadow:
+    inset 0 0 0 1px #D4AF37 !important;
+
+  transform: none;
+}
+
+
+/* Selected body */
+
+.tile.waterproofing-service-tile:has(input:checked)
+.tile-body {
+  background: #F3F0E8 !important;
+
+  border: none !important;
+}
+
+
+/* Selected icon BLACK */
+
+.tile.waterproofing-service-tile:has(input:checked)
+.waterproofing-service-icon,
+.tile.waterproofing-service-tile:has(input:checked)
+.tile-icon-fallback {
+  color: #111111 !important;
+}
+
+
+/* Selected SVG BLACK */
+
+.tile.waterproofing-service-tile:has(input:checked)
+.waterproofing-service-icon
+.tile-icon-fallback
+svg {
+  color: #111111 !important;
+  stroke: #111111 !important;
+}
+
+
+/* Selected text */
+
+.tile.waterproofing-service-tile:has(input:checked)
+.tile-label {
+  color: #C9A227 !important;
+
+  font-weight: 700;
+
+  transform: none !important;
 }

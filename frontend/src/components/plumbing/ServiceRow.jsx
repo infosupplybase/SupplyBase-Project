@@ -1,19 +1,20 @@
 import Icon from '../ui/Icon';
-import { formatRupees } from '../../lib/money';
+import { formatItemPrice } from '../../lib/money';
 import { useCart } from '../../context/CartContext';
 import { ITEM_ICON_OVERRIDES, ITEM_IMAGES } from '../../data/plumbingContent';
 
 /**
  * One priced line item — thumbnail, name, description, price, and either an
- * "Add +" button or a live quantity stepper once it's in the cart. No
- * per-item photography exists (see plumbingContent.js's asset note), so the
- * thumbnail is a gold outline icon on the category's accent colour instead
- * of a fabricated or insufficient-quality photo.
+ * "Add +" button or a live quantity stepper once it's in the cart. Shared by
+ * plumbing and electrical: an electrical item brings its own `item.image`
+ * (an illustration, shown whole); plumbing uses ITEM_IMAGES, and an item
+ * with no photo gets a gold outline icon instead.
  */
 export default function ServiceRow({ item, group }) {
   const { quantityOf, addItem, updateQuantity } = useCart();
   const quantity = quantityOf(item.value);
   const icon = ITEM_ICON_OVERRIDES[item.value] || 'wrench';
+  const image = item.image || ITEM_IMAGES[item.value];
 
   const handleAdd = () => {
     addItem({
@@ -28,11 +29,11 @@ export default function ServiceRow({ item, group }) {
   return (
     <div className="plb-row">
       <span className="plb-row-thumb" aria-hidden="true">
-  {ITEM_IMAGES[item.value] ? (
+  {image ? (
   <img loading="lazy" decoding="async"
-    src={ITEM_IMAGES[item.value]}
+    src={image}
     alt=""
-    className="h-full w-full object-cover"
+    className={`h-full w-full ${item.image ? 'object-contain' : 'object-cover'}`}
   />
 ) : (
     <Icon name={icon} size={26} />
@@ -43,7 +44,7 @@ export default function ServiceRow({ item, group }) {
         <span className="plb-row-name">{item.label}</span>
         <p className="plb-row-desc">{item.hint}</p>
         <div className="plb-row-price">
-          {formatRupees(item.price)} <span>(Actual pricing)</span>
+          {formatItemPrice(item.price)} {item.price > 0 && <span>(Actual pricing)</span>}
         </div>
       </div>
 

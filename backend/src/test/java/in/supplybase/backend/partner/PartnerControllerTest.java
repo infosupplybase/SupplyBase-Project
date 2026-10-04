@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,10 +26,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import in.supplybase.backend.auth.AuthenticatedUser;
@@ -86,14 +89,32 @@ class PartnerControllerTest {
     @DisplayName("POST /api/partners/apply — public")
     class Apply {
 
+        private static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F' };
+
+        private static MockMultipartFile photo(String part) {
+            return new MockMultipartFile(part, part + ".jpg", MediaType.IMAGE_JPEG_VALUE, JPEG);
+        }
+
+        /** The application as the partners app sends it: JSON part + three photos. */
+        private MockMultipartHttpServletRequestBuilder apply(String json, String... photoParts) {
+            var request = multipart("/api/partners/apply")
+                    .file(new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, json.getBytes()));
+            for (String part : photoParts) {
+                request.file(photo(part));
+            }
+            return request;
+        }
+
+        private static final String[] ALL_DOCUMENTS = { "aadhaarFront", "aadhaarBack", "panFront" };
+
         @Test
         @DisplayName("201s with tokens, without being signed in")
         void worksAnonymously() throws Exception {
             var user = new UserResponse(7L, "Ravi Kumar", "ravi@example.com", "9820011223", null, null, null,
                     null, null, null, Role.CUSTOMER, null, true, true, false);
-            when(service.apply(any(), any())).thenReturn(AuthResponse.of("access", "refresh", 900, user));
+            when(service.apply(any(), any(), any())).thenReturn(AuthResponse.of("access", "refresh", 900, user));
 
-            mockMvc.perform(post("/api/partners/apply").contentType(MediaType.APPLICATION_JSON).content(APPLY_JSON))
+            mockMvc.perform(apply(APPLY_JSON, ALL_DOCUMENTS))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.accessToken").value("access"))
                     .andExpect(jsonPath("$.user.role").value("CUSTOMER"));
@@ -102,20 +123,28 @@ class PartnerControllerTest {
         @Test
         @DisplayName("400s when required fields are missing")
         void missingFields() throws Exception {
-            mockMvc.perform(post("/api/partners/apply").contentType(MediaType.APPLICATION_JSON).content("{}"))
+            mockMvc.perform(apply("{}", ALL_DOCUMENTS))
                     .andExpect(status().isBadRequest());
 
-            verify(service, never()).apply(any(), any());
+            verify(service, never()).apply(any(), any(), any());
         }
 
         @Test
         @DisplayName("400s on an impossible amount of experience")
         void absurdExperience() throws Exception {
-            mockMvc.perform(post("/api/partners/apply").contentType(MediaType.APPLICATION_JSON)
-                            .content(APPLY_JSON.replace("\"experienceYears\":6", "\"experienceYears\":99")))
+            mockMvc.perform(apply(APPLY_JSON.replace("\"experienceYears\":6", "\"experienceYears\":99"), ALL_DOCUMENTS))
                     .andExpect(status().isBadRequest());
 
-            verify(service, never()).apply(any(), any());
+            verify(service, never()).apply(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("400s when the PAN card photo is missing")
+        void missingDocument() throws Exception {
+            mockMvc.perform(apply(APPLY_JSON, "aadhaarFront", "aadhaarBack"))
+                    .andExpect(status().isBadRequest());
+
+            verify(service, never()).apply(any(), any(), any());
         }
     }
 

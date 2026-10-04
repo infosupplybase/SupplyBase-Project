@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { mainNav, company, contact } from '../../data/siteConfig';
@@ -6,19 +6,28 @@ import { activeServices } from '../../data/services';
 import useServiceCatalogue, { serviceRoute } from '../../hooks/useServiceCatalogue';
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
+import { useLoginGate } from '../auth/LoginGate';
 
 /**
  * MobileMenu — slide-in navigation drawer for tablet and phone.
  */
-export default function MobileMenu({ open, onClose }) {
+export default function MobileMenu({ open, onClose, onRequestLogout }) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const { user } = useAuth();
+  const { openLogin } = useLoginGate();
 
   // Live catalogue, with the static list only as the "not loaded yet" fill-in.
   const { services } = useServiceCatalogue(activeServices);
 
+  // Move focus into the drawer when it opens, so a keyboard or screen-reader
+  // user lands in the menu instead of behind it.
+  const closeRef = useRef(null);
+  useEffect(() => {
+    if (open) closeRef.current?.focus();
+  }, [open]);
+
   return (
-    <div className={`mobile-menu ${open ? 'open' : ''}`}>
+    <div id="mobile-menu" className={`mobile-menu ${open ? 'open' : ''}`}>
       <div className="mobile-backdrop" onClick={onClose} />
       <div
   className="
@@ -36,7 +45,7 @@ export default function MobileMenu({ open, onClose }) {
           <Link to="/" onClick={onClose}>
             <img loading="lazy" decoding="async" src="/assets/brand/logo.webp" alt={company.name} />
           </Link>
-          <button type="button" className="mobile-close" onClick={onClose} aria-label="Close menu">
+          <button type="button" className="mobile-close" onClick={onClose} aria-label="Close menu" ref={closeRef}>
             <Icon name="close" size={20} />
           </button>
         </div>
@@ -75,9 +84,28 @@ export default function MobileMenu({ open, onClose }) {
               </NavLink>
             )
           )}
-          <NavLink to={user ? '/dashboard' : '/login'} className="mobile-link" onClick={onClose}>
-            {user ? 'MY ACCOUNT' : 'LOGIN'}
-          </NavLink>
+          {user ? (
+            <>
+              <NavLink to="/dashboard" className="mobile-link" onClick={onClose}>
+                MY ACCOUNT
+              </NavLink>
+              {/* Opens the same "Are you sure?" card as the header's log-out button */}
+              <button type="button" className="mobile-link text-left" onClick={onRequestLogout}>
+                LOG OUT
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="mobile-link text-left"
+              onClick={() => {
+                onClose();
+                openLogin();
+              }}
+            >
+              LOGIN
+            </button>
+          )}
         </nav>
 
         <div className="mobile-foot">

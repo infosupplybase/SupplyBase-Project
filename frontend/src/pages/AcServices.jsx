@@ -1,0 +1,117 @@
+import '../styles/ac-services.css';
+import { useNavigate, useParams } from 'react-router-dom';
+import AcServicesCategory from './AcServicesCategory';
+import AcServiceFlow from './AcServiceFlow';
+import AcCheckout from './AcCheckout';
+import { acCategories } from '../data/acContent';
+import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+
+function AcServicesContent({
+  modal = false,
+  onClose,
+  onStepChange,
+}) {
+  const { acCategory } = useParams();
+  const navigate = useNavigate();
+  const formBack = useFormBack();
+
+  const [selectedCategory, setSelectedCategory] = useHistoryState(
+    'f:ac:selected-category',
+    null,
+    { push: true }
+  );
+
+  const [view, setView] = useHistoryState(
+    'f:ac:view',
+    'options',
+    { push: true }
+  );
+
+  const [selection, setSelection] = useHistoryState(
+    'f:ac:selection',
+    null
+  );
+
+  const categorySlug = modal ? selectedCategory : acCategory;
+
+  const validCategory = acCategories.some(
+    (category) => category.slug === categorySlug
+  );
+
+  function openCategory(slug) {
+    setView('options', { push: false });
+    setSelection(null);
+
+    if (modal) {
+      setSelectedCategory(slug);
+    } else {
+      navigate(`/services/ac-services/${slug}`);
+    }
+
+    onStepChange?.();
+  }
+
+  function backToCategories() {
+    if (modal) {
+      formBack(() => {
+        setSelectedCategory(null, { push: false });
+        setView('options', { push: false });
+      });
+    } else {
+      navigate('/services/ac-services');
+    }
+
+    onStepChange?.();
+  }
+
+  if (!categorySlug || !validCategory) {
+    return (
+      <AcServicesCategory
+        modal={modal}
+        onSelectFlow={openCategory}
+      />
+    );
+  }
+
+  if (
+    view === 'checkout' &&
+    selection?.category === categorySlug
+  ) {
+    return (
+      <AcCheckout
+        key={`checkout-${categorySlug}`}
+        selection={selection}
+        onBack={() => {
+          formBack(() => setView('options', { push: false }));
+          onStepChange?.();
+        }}
+        onClose={
+          onClose || (() => navigate('/services'))
+        }
+        onStepChange={onStepChange}
+      />
+    );
+  }
+
+  return (
+    <AcServiceFlow
+      key={categorySlug}
+      categorySlug={categorySlug}
+      headingLevel={modal ? 'h2' : 'h1'}
+      onBackToCatalogue={backToCategories}
+      onStepChange={onStepChange}
+      onContinue={(answers) => {
+        setSelection(answers);
+        setView('checkout');
+        onStepChange?.();
+      }}
+    />
+  );
+}
+export default function AcServices(props) {
+  return (
+    <div className="ac-booking-ui">
+      <AcServicesContent {...props} />
+    </div>
+  );
+}
