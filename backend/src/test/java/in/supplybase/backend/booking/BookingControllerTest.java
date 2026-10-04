@@ -156,7 +156,7 @@ class BookingControllerTest {
                     new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
                             BookingType.SERVICE, BookingStatus.CONFIRMED,
                             "plumbing", "Plumbing", null, null, null, null, null, null, null,
-                            LocalDate.now().plusDays(3), "10:00 AM",
+                            LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                             "Asha Rao", "9820011223", null, null, null, null, null,
                             false, null, null, null, null, null, List.of()));
 
@@ -207,7 +207,7 @@ class BookingControllerTest {
                     new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
                             BookingType.SERVICE, BookingStatus.CONFIRMED,
                             "plumbing", "Plumbing", null, null, null, null, null, null, null,
-                            LocalDate.now().plusDays(3), "10:00 AM",
+                            LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                             "Asha Rao", "9820011223", "9820011223", "asha@example.com",
                             "New House", "Pune", "411001",
                             false, null, null, null, null, null, List.of()));
@@ -408,7 +408,7 @@ class BookingControllerTest {
             return new BookingResponse(9L, "BK-260906-ABCD", "SB-20260906-000001",
                     BookingType.SERVICE, BookingStatus.CONFIRMED,
                     "plumbing", "Plumbing", null, null, null, null, null, null, null,
-                    LocalDate.now().plusDays(3), "10:00 AM",
+                    LocalDate.now().plusDays(3), "10:00 AM", null, 9900L, null,
                     "Asha Rao", "9820011223", null, null, null, null, null,
                     false, null, null, null, null, null, List.of());
         }
@@ -468,7 +468,7 @@ class BookingControllerTest {
             when(service.advanceOwnBookingStatus(eq(9L), eq(BookingStatus.SITE_VISIT_COMPLETED), eq(5L)))
                     .thenReturn(new ProfessionalBookingResponse(9L, "BK-1", "SB-1", BookingType.SERVICE,
                             BookingStatus.SITE_VISIT_COMPLETED, "Plumbing", null, null, null, null, null,
-                            null, null, "Asha Rao", "9820011223", null, null, null, false, null,
+                            null, null, null, "Asha Rao", "9820011223", null, null, null, false, null,
                             null, null, null, List.of()));
 
             mockMvc.perform(patch("/api/professional/bookings/9/status")
@@ -561,7 +561,7 @@ class BookingControllerTest {
         void theCustomersOwnBookingNeverCarriesPayoutFields() throws Exception {
             when(service.get(eq(9L), any())).thenReturn(new BookingResponse(9L, "BK-1", "SB-1",
                     BookingType.SERVICE, BookingStatus.WORK_COMPLETED, "plumbing", "Plumbing",
-                    null, null, null, null, null, null, null, LocalDate.now(), "10:00 AM",
+                    null, null, null, null, null, null, null, LocalDate.now(), "10:00 AM", null, 9900L, null,
                     "Asha Rao", "9820011223", null, null, null, null, null,
                     false, null, null, 5L, "Ravi Kumar", null, List.of()));
 

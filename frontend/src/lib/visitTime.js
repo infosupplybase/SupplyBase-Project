@@ -31,3 +31,10 @@ export function formatVisit(date, time) {
   const t = formatVisitTime(time);
   return d && t ? `${d} at ${t}` : d || t;
 }
+
+/**
+ * A booking's visit time: the time the customer picked ("18:00:00" ->
+ * "6:00 PM"), or the morning/afternoon label on the old two-lane bookings.
+ */
+export const bookingVisitTime = (booking) =>
+  booking ? formatVisitTime(booking.appointmentTime) || booking.preferredSlot || '' : '';
