@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
 import BrandPicker from '../components/waterproofing/BrandPicker';
+import TerraceSlider from '../components/waterproofing/TerraceSlider';
 import RateTable from '../components/waterproofing/RateTable';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
@@ -205,14 +206,18 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
             </button>
           </div>
         )}
-        <PaintingHero
-          eyebrow="PROFESSIONAL"
-          title={flow.title}
-          tagline={flow.heroTagline}
-          image={flow.intro.image}
-          trustPoints={[]}
-          className={HERO_CLASS_BY_FLOW[flow.slug] || ''}
-        />
+        {flowSlug === 'terrace' ? (
+          <TerraceSlider title={flow.title} />
+        ) : (
+          <PaintingHero
+            eyebrow="PROFESSIONAL"
+            title={flow.title}
+            tagline={flow.heroTagline}
+            image={flow.intro.image}
+            trustPoints={[]}
+            className={HERO_CLASS_BY_FLOW[flow.slug] || ''}
+          />
+        )}
         <section className="pnt-section">
           <div className="container container-narrow">
             <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
