@@ -149,6 +149,43 @@ class PartnerControllerTest {
     }
 
     @Nested
+    @DisplayName("POST /api/partners/me/apply — a signed-in customer's own account")
+    class ApplyWithAccount {
+
+        private static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F' };
+        private static final String JSON = "{\"primaryTrade\":\"electrical\",\"experienceYears\":6,\"city\":\"Thane\"}";
+
+        private MockMultipartHttpServletRequestBuilder applyWithAccount() {
+            var request = multipart("/api/partners/me/apply")
+                    .file(new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, JSON.getBytes()));
+            for (String part : new String[] { "aadhaarFront", "aadhaarBack", "panFront" }) {
+                request.file(new MockMultipartFile(part, part + ".jpg", MediaType.IMAGE_JPEG_VALUE, JPEG));
+            }
+            return request;
+        }
+
+        @Test
+        @DisplayName("401s when not signed in")
+        void anonymous() throws Exception {
+            mockMvc.perform(applyWithAccount()).andExpect(status().isUnauthorized());
+
+            verify(service, never()).applyWithAccount(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("201s with the new application, for the signed-in account's id")
+        void appliesForSignedInAccount() throws Exception {
+            when(service.applyWithAccount(eq(7L), any(), any())).thenReturn(new PartnerProfileResponse(
+                    PartnerStatus.PENDING, "electrical", "Electrical", 6, "Thane", null, null, null,
+                    Instant.now(), null));
+
+            mockMvc.perform(applyWithAccount().with(asUser(7L, Role.CUSTOMER)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.status").value("PENDING"));
+        }
+    }
+
+    @Nested
     @DisplayName("GET /api/partners/me")
     class Me {
 

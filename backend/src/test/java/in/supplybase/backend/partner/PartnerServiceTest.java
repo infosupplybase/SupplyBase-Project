@@ -37,6 +37,7 @@ import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
 import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
+import in.supplybase.backend.partner.dto.ApplyWithAccountRequest;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 
 /**
@@ -184,6 +185,65 @@ class PartnerServiceTest {
                     .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 
             verify(authService, never()).register(any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("applyWithAccount — a signed-in customer applying on their own account")
+    class ApplyWithAccount {
+
+        private final ApplyWithAccountRequest request =
+                new ApplyWithAccountRequest("electrical", 6, "  Thane  ", "Thane West", " ");
+
+        @BeforeEach
+        void knownTrade() {
+            when(categories.findBySlugAndActiveTrue("electrical"))
+                    .thenReturn(Optional.of(category("electrical", "Electrical", null)));
+            when(partners.save(any(PartnerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(files.store(any(), eq("partners/7/documents"))).thenReturn(
+                    new FileStorageService.StoredFile("partners/7/documents/a.jpg", "a.jpg", "image/jpeg", 8));
+        }
+
+        @Test
+        @DisplayName("attaches a PENDING application to the existing login, creating no new account")
+        void attachesToExistingAccount() {
+            when(users.findById(7L)).thenReturn(Optional.of(user(7L, Role.CUSTOMER)));
+            when(partners.findByUserId(7L)).thenReturn(Optional.empty());
+
+            var result = service.applyWithAccount(7L, request, photos());
+
+            ArgumentCaptor<PartnerProfile> saved = ArgumentCaptor.forClass(PartnerProfile.class);
+            verify(partners).save(saved.capture());
+            assertThat(saved.getValue().getUser().getId()).isEqualTo(7L);
+            assertThat(saved.getValue().getUser().getRole()).isEqualTo(Role.CUSTOMER);
+            assertThat(saved.getValue().getStatus()).isEqualTo(PartnerStatus.PENDING);
+            assertThat(saved.getValue().getCity()).isEqualTo("Thane");
+            assertThat(saved.getValue().getLanguages()).isNull();
+            assertThat(result.status()).isEqualTo(PartnerStatus.PENDING);
+            verify(authService, never()).register(any(), any());
+        }
+
+        @Test
+        @DisplayName("409s a customer who has already applied")
+        void refusesSecondApplication() {
+            when(users.findById(7L)).thenReturn(Optional.of(user(7L, Role.CUSTOMER)));
+            when(partners.findByUserId(7L)).thenReturn(Optional.of(PartnerProfile.builder().build()));
+
+            assertThatThrownBy(() -> service.applyWithAccount(7L, request, photos()))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.CONFLICT);
+            verify(partners, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("refuses an admin account")
+        void refusesAdmin() {
+            when(users.findById(7L)).thenReturn(Optional.of(user(7L, Role.ADMIN)));
+
+            assertThatThrownBy(() -> service.applyWithAccount(7L, request, photos()))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+            verify(partners, never()).save(any());
         }
     }
 
