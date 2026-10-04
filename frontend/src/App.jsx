@@ -47,6 +47,8 @@ const About = lazyPage(() => import('./pages/About'));
 const Contact = lazyPage(() => import('./pages/Contact'));
 const Quote = lazyPage(() => import('./pages/Quote'));
 const Login = lazyPage(() => import('./pages/Login'));
+const ResetPassword = lazyPage(() => import('./pages/EmailLink').then((m) => ({ default: m.ResetPassword })));
+const VerifyEmail = lazyPage(() => import('./pages/EmailLink').then((m) => ({ default: m.VerifyEmail })));
 const MyBookings = lazyPage(() => import('./pages/MyBookings'));
 const BookingDetail = lazyPage(() => import('./pages/BookingDetail'));
 const Profile = lazyPage(() => import('./pages/Profile'));
@@ -115,6 +117,9 @@ export default function App() {
           both paths render it; the tab that opens is taken from the URL. */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
+      {/* Where the API's emails link to (AuthService). */}
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       {/* Professionals have their own app now (partners/). Old /partner links
           forward there once VITE_PARTNERS_URL is set; until then they go home. */}
       <Route path="/partner/*" element={<PartnerRedirect />} />
