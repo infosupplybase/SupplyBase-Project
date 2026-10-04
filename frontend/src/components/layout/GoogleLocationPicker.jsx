@@ -796,7 +796,7 @@ export default function GoogleLocationPicker({
             aria-label="Close location picker"
           >
             <Icon
-              name="x"
+              name="close"
               size={22}
             />
           </button>
@@ -824,7 +824,7 @@ export default function GoogleLocationPicker({
               aria-label="Clear search"
             >
               <Icon
-                name="x"
+                name="close"
                 size={16}
               />
             </button>

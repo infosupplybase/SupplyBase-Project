@@ -569,6 +569,8 @@ gmp-place-autocomplete {
   --gmpx-color-on-surface: #222222;
   --gmpx-color-on-surface-variant: #666666;
   --gmpx-color-primary: #e49a00;
+  /* Google follows the visitor's dark-mode setting otherwise (black box). */
+  color-scheme: light;
 }
 
 
@@ -1590,5 +1592,23 @@ gmp-place-autocomplete {
 
   .loc-book-resolved {
     padding: 12px;
+  }
+}
+
+
+/* Header "Your location" popup built on SavedAddressPicker */
+
+.loc-book-modal-body {
+  overflow-y: auto;
+  padding: 4px 22px 22px;
+}
+
+.loc-book-modal-body .loc-book {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .loc-book-modal-body {
+    padding: 4px 16px 16px;
   }
 }
