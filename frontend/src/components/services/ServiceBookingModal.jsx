@@ -388,22 +388,22 @@ onStepChange={
                           "
                         >
                           <div
-                            className="
-                              overflow-hidden
-                              rounded-xl
-                            "
+                            className={`ibc-modal-design-media ${
+                              design.spaceSlug === 'entrance'
+                                ? 'ibc-modal-design-media--entrance'
+                                : ''
+                            }`}
                           >
                             <img
                               loading="lazy"
                               decoding="async"
                               src={design.image}
                               alt={design.name}
-                              className="
-                                h-auto
-                                max-h-[420px]
-                                w-full
-                                object-cover
-                              "
+                              className={`h-auto max-h-[420px] w-full ${
+                                design.spaceSlug === 'entrance'
+                                  ? 'object-contain'
+                                  : 'object-cover'
+                              }`}
                             />
                           </div>
 
@@ -452,11 +452,8 @@ onStepChange={
                                 text-gray-900
                               "
                             >
-                              ₹
-                              {
-                                design.pricePerSqft
-                              }{' '}
-                              / sq.ft.
+                              {design.priceRange ||
+                                `₹${design.pricePerSqft} / sq.ft.`}
                             </p>
 
                             {design.description && (
@@ -1724,14 +1721,26 @@ onClick={() => {
 ) : (
 
 
-  <div className="ibc-design-grid">
+  <div
+                        className={`ibc-design-grid ${
+                          selectedInteriorSpace === 'entrance'
+                            ? 'ibc-design-grid--entrance'
+                            : selectedInteriorSpace === 'bed-back-wall'
+                              ? 'ibc-design-grid--bed-back-wall'
+                              : ''
+                        }`}
+                      >
                         {getDesignsBySpace(
                           selectedInteriorSpace
                         ).map(
                           (design) => (
                             <div
                               key={design.slug}
-                              className="ibc-design-card"
+                              className={`ibc-design-card ${
+                                selectedInteriorSpace === 'entrance'
+                                  ? 'ibc-design-card--entrance'
+                                  : ''
+                              }`}
                             >
                               <button
                                 type="button"
@@ -1797,11 +1806,8 @@ onClick={() => {
                                 </span>
 
                                 <span className="ibc-design-price">
-                                  ₹
-                                  {
-                                    design.pricePerSqft
-                                  }{' '}
-                                  / sq.ft.
+                                  {design.priceRange ||
+                                    `₹${design.pricePerSqft} / sq.ft.`}
                                 </span>
                               </button>
                             </div>
