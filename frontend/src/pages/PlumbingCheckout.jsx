@@ -61,12 +61,13 @@ const TRADES = {
     scope: 'f:elc-checkout',
     cartPath: '/services/electrical/cart',
     serviceSlug: electricalServiceFor,
+    // The label is what the booking pages show, so it carries the quantity
+    // and price too: the server has no catalogue price to add them from.
     answers: (items) =>
-      items.map((item) => ({
-        key: 'requirements',
-        value: `${item.name} × ${item.quantity} — ${formatRupees((item.unitPricePaise * item.quantity) / 100)}`.slice(0, 400),
-        label: item.name,
-      })),
+      items.map((item) => {
+        const line = `${item.name} × ${item.quantity} — ${formatRupees((item.unitPricePaise * item.quantity) / 100)}`;
+        return { key: 'requirements', value: line.slice(0, 400), label: line.slice(0, 300) };
+      }),
     arrival: 'Our electrician will arrive in this window.',
     help: 'Hello Supplybase, I need help with my electrical cart checkout.',
     backLabel: 'BACK TO ELECTRICAL',
