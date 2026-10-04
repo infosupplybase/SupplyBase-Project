@@ -134,6 +134,11 @@ export default function PlumbingCheckout({
         return;
       }
     }
+    if (stage === DETAILS) {
+      const nextErrors = validateDetails(details, pickedLocation);
+      setErrors(nextErrors);
+      if (Object.keys(nextErrors).length > 0) return;
+    }
     setStage((s) => Math.min(s + 1, CONFIRM));
 
     if (modal) {
@@ -164,7 +169,11 @@ export default function PlumbingCheckout({
     e.preventDefault();
     const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    // The fields are not on the Confirm step: go back to where they are.
+    if (Object.keys(nextErrors).length > 0) {
+      setStage(DETAILS, { push: false });
+      return;
+    }
     // Every booking needs an account: ask now, over this form (LoginGate).
     if (!(await ensureLogin(details))) return;
 
@@ -333,12 +342,13 @@ export default function PlumbingCheckout({
   </button>
 )}
               {stage === CONFIRM ? (
-                <button type="submit" className="btn btn-primary !m-0 !w-full !justify-center" disabled={busy}>
+                <button key="submit" type="submit" className="btn btn-primary !m-0 !w-full !justify-center" disabled={busy}>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
                 <button
+  key="continue"
   type="button"
   className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center"
   onClick={goNext}
