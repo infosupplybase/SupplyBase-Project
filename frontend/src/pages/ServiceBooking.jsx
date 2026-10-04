@@ -1163,6 +1163,13 @@ function Summary({
           <strong>
             Site Visit &amp; Quotation Fee
           </strong>
+
+          {/* The amount "before you pay" refers to. */}
+          {category.visitFeeDisplay && (
+            <span className="fee-panel-amount">
+              {category.visitFeeDisplay}
+            </span>
+          )}
         </div>
 
         <ul className="fee-includes">
