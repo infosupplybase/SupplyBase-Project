@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+import in.supplybase.backend.common.validation.MaxUtf8Bytes;
+
 /**
  * A professional applying to work with SupplyBase. Creates the login and the
  * application in one step; there is no role field, because nobody applying
@@ -29,6 +31,7 @@ public record ApplyAsPartnerRequest(
 
         @NotBlank(message = "Please choose a password")
         @Size(min = 8, max = 72, message = "Use between 8 and 72 characters")
+        @MaxUtf8Bytes(value = 72, message = "That password is too long. Use fewer characters, or fewer accented letters and symbols")
         String password,
 
         @NotBlank(message = "Please choose the work you do")

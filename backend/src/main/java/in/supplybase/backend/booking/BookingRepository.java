@@ -53,8 +53,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             + "GROUP BY b.assignedProfessional.id, b.status")
     List<PartnerJobCount> countJobsByPartner(@Param("ids") Collection<Long> ids);
 
-    /** Backs BookingExpiryJob: unpaid or unconfirmed bookings nobody followed up on. */
-    List<Booking> findByStatusInAndCreatedAtBefore(List<BookingStatus> statuses, Instant cutoff);
+    /**
+     * Backs BookingExpiryJob: bookings whose customer opened online checkout
+     * before the cutoff and never paid. Pay-on-the-day bookings (no checkout)
+     * never match.
+     */
+    List<Booking> findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(List<BookingStatus> statuses,
+                                                                         Instant cutoff);
 
     /** Backs the flood check in BookingService: one phone, one service. */
     long countByPhoneAndCategoryAndCreatedAtAfter(String phone, ServiceCategory category, Instant since);
