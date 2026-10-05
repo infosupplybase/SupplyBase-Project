@@ -59,7 +59,8 @@ const COMMON_PASSWORDS = ['password', '12345678', '123456789', 'qwerty123', 'sup
 function passwordProblem(password, form) {
   if (!password) return 'Please choose a password';
   if (password.length < 8) return 'Use at least eight characters';
-  if (password.length > 72) return 'Use 72 characters or fewer';
+  // 72 bytes, not characters: BCrypt's limit, and the API checks the same way.
+  if (new TextEncoder().encode(password).length > 72) return 'That password is too long. Use fewer characters, or fewer accented letters and symbols';
   if (!/[a-z]/i.test(password) || !/\d/.test(password)) return 'Use both letters and numbers';
   const lower = password.toLowerCase();
   if (COMMON_PASSWORDS.some((common) => lower.includes(common))) return 'That password is too easy to guess';

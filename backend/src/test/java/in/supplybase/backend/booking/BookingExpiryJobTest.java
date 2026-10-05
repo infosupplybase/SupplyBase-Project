@@ -47,7 +47,7 @@ class BookingExpiryJobTest {
                 .appointmentSlot(slot).build();
         Booking withoutSlot = Booking.builder().id(2L).status(BookingStatus.BOOKING_REQUESTED).build();
 
-        when(bookings.findByStatusInAndCreatedAtBefore(anyList(), any(Instant.class)))
+        when(bookings.findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(anyList(), any(Instant.class)))
                 .thenReturn(List.of(withSlot, withoutSlot));
 
         job.expireStaleBookings();
@@ -64,12 +64,30 @@ class BookingExpiryJobTest {
     @Test
     @DisplayName("an empty query result does nothing")
     void doesNothingWhenNoStaleBookings() {
-        when(bookings.findByStatusInAndCreatedAtBefore(anyList(), any(Instant.class)))
+        when(bookings.findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(anyList(), any(Instant.class)))
                 .thenReturn(List.of());
 
         job.expireStaleBookings();
 
         verifyNoInteractions(appointments);
         verify(bookings, never()).saveAll(any());
+    }
+
+    @Test
+    @DisplayName("only bookings that opened online checkout are looked for, and only unpaid ones")
+    void asksOnlyForUnfinishedOnlinePayments() {
+        when(bookings.findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(anyList(), any(Instant.class)))
+                .thenReturn(List.of());
+
+        Instant before = Instant.now();
+        job.expireStaleBookings();
+
+        org.mockito.ArgumentCaptor<Instant> cutoff = org.mockito.ArgumentCaptor.forClass(Instant.class);
+        verify(bookings).findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(
+                org.mockito.ArgumentMatchers.eq(
+                        List.of(BookingStatus.PAYMENT_PENDING, BookingStatus.BOOKING_REQUESTED)),
+                cutoff.capture());
+        assertThat(cutoff.getValue()).isBefore(before.minusSeconds(24 * 3600 - 60));
+        verify(bookings, never()).findAll();
     }
 }

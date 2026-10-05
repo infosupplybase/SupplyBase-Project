@@ -14,11 +14,15 @@ import in.supplybase.backend.appointment.AppointmentService;
 import in.supplybase.backend.config.AppProperties;
 
 /**
- * Auto-cancels bookings nobody ever paid for or confirmed.
+ * Auto-cancels bookings whose online payment was started and never finished.
  *
- * A PAYMENT_PENDING or BOOKING_REQUESTED booking that sits untouched past
- * app.booking.expiry-hours is not going anywhere — this frees the appointment
- * seat it is holding so a real customer can take it.
+ * A PAYMENT_PENDING or BOOKING_REQUESTED booking whose customer opened online
+ * checkout more than app.booking.expiry-hours ago and still has not paid is
+ * not going anywhere, so this frees the appointment seat it is holding.
+ *
+ * A booking whose customer never opened checkout is left alone: the site
+ * tells them they can pay our team on the day of the visit, so it is not
+ * "unpaid" until then. Staff cancel those by hand if they need to.
  */
 @Component
 public class BookingExpiryJob {
@@ -43,7 +47,7 @@ public class BookingExpiryJob {
     @Transactional
     public void expireStaleBookings() {
         Instant cutoff = Instant.now().minus(Duration.ofHours(props.booking().expiryHours()));
-        List<Booking> stale = bookings.findByStatusInAndCreatedAtBefore(EXPIRABLE, cutoff);
+        List<Booking> stale = bookings.findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(EXPIRABLE, cutoff);
         if (stale.isEmpty()) {
             return;
         }
@@ -57,7 +61,7 @@ public class BookingExpiryJob {
             }
         }
         bookings.saveAll(stale);
-        log.info("Expired {} stale booking(s) older than {} hour(s)",
+        log.info("Expired {} booking(s) with online payment unfinished after {} hour(s)",
                 stale.size(), props.booking().expiryHours());
     }
 }
