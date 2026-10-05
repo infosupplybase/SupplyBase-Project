@@ -22,9 +22,7 @@ import {
   interiorFeatures,
 } from '../../data/interiorCatalog';
 import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
-import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
 import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
-import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
 import PaintingCategory from '../../pages/PaintingCategory';
 import PaintingFlow from '../../pages/PaintingFlow';
 import PopCeilingCategory from '../../pages/PopCeilingCategory';
@@ -103,6 +101,10 @@ export default function ServiceBookingModal({ service, onClose }) {
   // Inside a Painting or POP flow the flow shows its own title bar, so the
   // pop-up's "Book a service" header gives way to a spacer under the close
   // button (yash's layout). AC Services always draws its own bar.
+  const interiorDesignFlowOpen =
+    service.slug === 'interior-design' &&
+    Boolean(selectedInteriorDesignCategory);
+
   const hideMainHeader =
     (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
     (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow)) ||
@@ -159,6 +161,8 @@ export default function ServiceBookingModal({ service, onClose }) {
       <div
         className={`
           ${service.slug === 'ac-services' ? 'booking-pop-ac-layout' : ''}
+          ${interiorDesignFlowOpen ? 'booking-interior-flow-layout' : ''}
+          ${service.slug === 'pop-ceiling-design' ? 'booking-pop-ceiling-layout' : ''}
           ${service.slug === 'waterproofing' ? 'booking-pop-waterproofing-layout' : ''}
           relative
           w-full
@@ -193,7 +197,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           className={`
             !absolute
             !right-5
-            ${hideMainHeader ? '!top-3' : '!top-5'}
+            ${interiorDesignFlowOpen ? '!top-2' : hideMainHeader ? '!top-3' : '!top-5'}
             !z-50
 
             !flex
@@ -226,8 +230,10 @@ export default function ServiceBookingModal({ service, onClose }) {
             close button), and inside a waterproofing flow, whose hero sits
             right under the close button */}
 
-        {hideMainHeader ? (
-          <div className="h-14 shrink-0" aria-hidden="true" />
+        {interiorDesignFlowOpen ? null : hideMainHeader ? (
+          service.slug === 'ac-services' ? null : (
+            <div className="h-14 shrink-0" aria-hidden="true" />
+          )
         ) : waterproofingFlowOpen ? null : (
         <>
         <div className="shrink-0 px-6 pt-6 pr-16 max-sm:px-4 max-sm:pr-16">
@@ -2166,61 +2172,19 @@ onClick={() => {
               )}
             </>
           ) : service.slug === 'interior-design' ? (
-            showCustomInteriorDesign ? (
-              <InteriorDesignCustomFlow
-                initialRequirements={customInteriorRequirements}
-                onDraftChange={setCustomInteriorRequirements}
-                onBack={() => {
-                  formBack(() => setShowCustomInteriorDesign(false));
-                  scrollModalToTop();
-                }}
-                onContinue={(requirements) => {
-                  setCustomInteriorRequirements(requirements);
-                  setShowCustomInteriorDesign(false);
-                  setShowCustomInteriorDetails(true);
-                  scrollModalToTop();
-                }}
-              />
-            ) : showCustomInteriorDetails ? (
+            selectedInteriorDesignCategory ? (
               <InteriorDesignFlow
-                modal={true}
-                startAtDetails={true}
-                customRequirements={customInteriorRequirements}
-                onBackToCatalogue={() => {
-                  formBack(() => {
-                    setShowCustomInteriorDetails(false);
-                    setShowCustomInteriorDesign(true);
-                  });
-                  scrollModalToTop();
-                }}
-                onStepChange={scrollModalToTop}
-              />
-            ) : selectedInteriorDesignProject ? (
-              <InteriorDesignFlow
+                key={selectedInteriorDesignCategory}
                 modal={true}
                 categorySlug={selectedInteriorDesignCategory}
-                projectSlug={selectedInteriorDesignProject}
                 onBackToCatalogue={() => {
-                  formBack(() => setSelectedInteriorDesignProject(null));
-                  scrollModalToTop();
-                }}
-                onStepChange={scrollModalToTop}
-              />
-            ) : selectedInteriorDesignCategory ? (
-              <InteriorDesignCatalogue
-                modal={true}
-                categorySlug={selectedInteriorDesignCategory}
-                onSelectProject={(projectSlug) => {
-                  setSelectedInteriorDesignProject(projectSlug);
-                  scrollModalToTop();
-                }}
-                onBack={() => {
                   formBack(() => {
                     setSelectedInteriorDesignCategory(null);
                     setSelectedInteriorDesignProject(null);
                   });
                   scrollModalToTop();
                 }}
+                onStepChange={scrollModalToTop}
               />
             ) : (
               <InteriorDesignCategory
@@ -2228,10 +2192,6 @@ onClick={() => {
                 onSelectCategory={(categorySlug) => {
                   setSelectedInteriorDesignCategory(categorySlug);
                   setSelectedInteriorDesignProject(null);
-                  scrollModalToTop();
-                }}
-                onCustom={() => {
-                  setShowCustomInteriorDesign(true);
                   scrollModalToTop();
                 }}
               />

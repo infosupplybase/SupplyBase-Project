@@ -1,134 +1,154 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
-import { idOverviewIntro, idTrustPoints, idProjectTypeFilters, idCategories, ID_HERO_IMAGE } from '../data/interiorDesignContent';
+import {
+  idOverviewIntro,
+  idTrustPoints,
+  idCategories,
+  ID_HERO_IMAGE,
+} from '../data/interiorDesignContent';
 
-/**
- * /services/interior-design — landing page: type filter pills (All /
- * Apartments / Villas / Custom) + four category cards. "Custom" carries
- * the project type into the existing quotation enquiry flow rather than
- * inventing a fixed custom package (per the brief).
- */
+function CategoryContent({ category }) {
+  return (
+    <>
+      <span
+        className="id-category-photo"
+        style={{
+          display: 'block',
+          width: '100%',
+          height: 'clamp(90px, 16vw, 115px)',
+          flexShrink: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <img
+          src={category.image}
+          alt={category.name}
+          loading="lazy"
+          decoding="async"
+          style={{
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+          }}
+        />
+      </span>
+
+      <span
+        className="id-category-body"
+        style={{
+          display: 'flex',
+          flex: 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          gap: 6,
+          padding: '12px',
+          minWidth: 0,
+        }}
+      >
+        <strong style={{ lineHeight: 1.3 }}>
+          {category.name}
+        </strong>
+
+        <span style={{ lineHeight: 1.5 }}>
+          {category.tagline}
+        </span>
+
+        <span
+          className="id-category-area"
+          style={{
+            marginTop: 'auto',
+            paddingTop: 4,
+            lineHeight: 1.4,
+          }}
+        >
+          {category.areaNote}
+        </span>
+      </span>
+    </>
+  );
+}
+
 export default function InteriorDesignCategory({
   modal = false,
   onSelectCategory,
-  onCustom,
 }) {
-  const [filter, setFilter] = useState('all');
-  const visible = filter === 'all' ? idCategories : idCategories.filter((c) => c.type === filter);
+  const cardStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    width: '100%',
+    height: '100%',
+    minWidth: 0,
+    margin: 0,
+    padding: 0,
+    boxSizing: 'border-box',
+    overflow: 'hidden',
+    textAlign: 'left',
+    font: 'inherit',
+    color: 'inherit',
+    textDecoration: 'none',
+    border: '1px solid #e5e7eb',
+    borderRadius: 14,
+    background: '#fff',
+    cursor: 'pointer',
+  };
 
   return (
     <>
       {!modal && (
-  <PaintingHero
-    eyebrow={idOverviewIntro.eyebrow}
-    title={idOverviewIntro.title}
-    tagline={idOverviewIntro.text}
-    image={ID_HERO_IMAGE}
-    trustPoints={idTrustPoints}
-  />
-)}
+        <PaintingHero
+          eyebrow={idOverviewIntro.eyebrow}
+          title={idOverviewIntro.title}
+          tagline={idOverviewIntro.text}
+          image={ID_HERO_IMAGE}
+          trustPoints={idTrustPoints}
+        />
+      )}
 
       <section className={modal ? 'w-full' : 'pnt-section'}>
-  <div className={modal ? 'w-full' : 'container container-narrow'}>
-          <div className="id-filter-pills" role="tablist">
-            {idProjectTypeFilters.map((f) => (
-              f.key === 'custom' ? (
-                modal ? (
-  <button
-    key={f.key}
-    type="button"
-    className="id-filter-pill"
-    onClick={onCustom}
-  >
-    {f.label}
-  </button>
-) : (
-  <Link
-    key={f.key}
-    to="/quote?service=interior-design"
-    className="id-filter-pill"
-  >
-    {f.label}
-  </Link>
-)
-              ) : (
+        <div
+          className={
+            modal ? 'w-full' : 'container container-narrow'
+          }
+        >
+          <div
+            className="id-category-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              alignItems: 'stretch',
+              gap: 12,
+              width: '100%',
+              margin: 0,
+              padding: 0,
+            }}
+          >
+            {idCategories.map((category) =>
+              modal ? (
                 <button
-                  key={f.key}
+                  key={category.slug}
                   type="button"
-                  role="tab"
-                  aria-selected={filter === f.key}
-                  className={`id-filter-pill ${filter === f.key ? 'active' : ''}`}
-                  onClick={() => setFilter(f.key)}
+                  className="id-category-card"
+                  style={cardStyle}
+                  onClick={() =>
+                    onSelectCategory?.(category.slug)
+                  }
                 >
-                  {f.label}
+                  <CategoryContent category={category} />
                 </button>
+              ) : (
+                <Link
+                  key={category.slug}
+                  to={`/services/interior-design/${category.slug}`}
+                  className="id-category-card"
+                  style={cardStyle}
+                >
+                  <CategoryContent category={category} />
+                </Link>
               )
-            ))}
-          </div>
-
-          <div className="id-category-grid">
-            {visible.map((cat) =>
-  modal ? (
-    <button
-      key={cat.slug}
-      type="button"
-      className="id-category-card !w-full !text-left"
-      onClick={() => onSelectCategory?.(cat.slug)}
-    >
-      <span className="id-category-photo">
-        <img
-          src={cat.image}
-          alt=""
-          loading="lazy"
-        />
-      </span>
-
-      <span className="id-category-body">
-        <strong>{cat.name}</strong>
-        <span>{cat.tagline}</span>
-        <span className="id-category-area">
-          {cat.areaNote}
-        </span>
-      </span>
-
-      {/* <Icon
-        name="chevron-right"
-        size={18}
-        className="pnt-overview-arrow"
-      /> */}
-    </button>
-  ) : (
-    <Link
-      key={cat.slug}
-      to={`/services/interior-design/${cat.slug}`}
-      className="id-category-card"
-    >
-      <span className="id-category-photo">
-        <img
-          src={cat.image}
-          alt=""
-          loading="lazy"
-        />
-      </span>
-
-      <span className="id-category-body">
-        <strong>{cat.name}</strong>
-        <span>{cat.tagline}</span>
-        <span className="id-category-area">
-          {cat.areaNote}
-        </span>
-      </span>
-
-      {/* <Icon
-        name="chevron-right"
-        size={18}
-        className="pnt-overview-arrow"
-      /> */}
-    </Link>
-  )
-)}
+            )}
           </div>
         </div>
       </section>

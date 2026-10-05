@@ -75,6 +75,13 @@ export default function AcServicesCategory({
 }) {
   return (
     <>
+      {modal && (
+        <header className="ac-category-header">
+          <p className="ac-category-eyebrow">Book a service</p>
+          <h2 className="ac-category-title">AC Services</h2>
+        </header>
+      )}
+
       {!modal && (
         <PageHero
           eyebrow="AC SERVICES"
@@ -88,7 +95,7 @@ export default function AcServicesCategory({
       )}
 
       <section
-        className={modal ? 'plb-section !py-0 !pb-4' : 'plb-section'}
+        className={modal ? 'plb-section ac-category-modal !py-0 !pb-4' : 'plb-section'}
       >
         <div
           className={
