@@ -2,13 +2,18 @@ package in.supplybase.backend.payment;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -16,9 +21,13 @@ import tools.jackson.databind.ObjectMapper;
  * Razorpay's server-to-server callback. This, not the browser, is the
  * authoritative record that money moved.
  *
- * The body is taken as a raw String on purpose: the HMAC is computed over the
+ * The body is read as raw bytes on purpose: the HMAC is computed over the
  * exact bytes Razorpay sent, so deserialising to an object first and
  * re-serialising would change the whitespace and break every signature.
+ *
+ * The URL is public, so the body is capped at {@link #MAX_BODY_BYTES}. Real
+ * Razorpay events are a few kilobytes; anything far bigger is refused before
+ * it is read into memory or near the database.
  */
 @RestController
 public class RazorpayWebhookController {
@@ -27,6 +36,7 @@ public class RazorpayWebhookController {
     private static final String SIGNATURE_HEADER = "X-Razorpay-Signature";
     // Razorpay sends the event id only in this header; the body has none.
     private static final String EVENT_ID_HEADER = "X-Razorpay-Event-Id";
+    static final int MAX_BODY_BYTES = 64 * 1024;
 
     private final RazorpayService razorpay;
     private final PaymentService payments;
@@ -41,9 +51,24 @@ public class RazorpayWebhookController {
 
     @PostMapping(value = "/api/payments/webhook", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> receive(
-            @RequestBody String rawBody,
+            HttpServletRequest request,
             @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,
-            @RequestHeader(value = EVENT_ID_HEADER, required = false) String eventIdHeader) {
+            @RequestHeader(value = EVENT_ID_HEADER, required = false) String eventIdHeader)
+            throws IOException {
+
+        if (request.getContentLengthLong() > MAX_BODY_BYTES) {
+            return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).build();
+        }
+        byte[] body;
+        try (InputStream in = request.getInputStream()) {
+            // One byte over the cap is enough to know it is too big, and works
+            // for a chunked body that sent no Content-Length.
+            body = in.readNBytes(MAX_BODY_BYTES + 1);
+        }
+        if (body.length > MAX_BODY_BYTES) {
+            return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE).build();
+        }
+        String rawBody = new String(body, StandardCharsets.UTF_8);
 
         boolean valid = signature != null && razorpay.verifyWebhookSignature(rawBody, signature);
 

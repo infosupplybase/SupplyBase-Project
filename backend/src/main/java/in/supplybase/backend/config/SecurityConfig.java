@@ -88,6 +88,9 @@ public class SecurityConfig {
                 // Razorpay authenticates itself with an HMAC signature in the
                 // request body, not with our JWT, so this must stay open.
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
+                // Only says whether online payment is on, so the site can hide
+                // its Pay buttons; nothing about any payment.
+                .requestMatchers(HttpMethod.GET, "/api/payments/status").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 

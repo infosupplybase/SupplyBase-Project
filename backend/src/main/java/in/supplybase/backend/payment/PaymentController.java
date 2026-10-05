@@ -40,6 +40,16 @@ public class PaymentController {
         this.currentUser = currentUser;
     }
 
+    /**
+     * Whether online payment is switched on (Razorpay keys are set). Public,
+     * so the site can hide its Pay buttons rather than offer one that can
+     * only say "not switched on yet".
+     */
+    @GetMapping("/api/payments/status")
+    public Map<String, Boolean> status() {
+        return Map.of("onlinePayments", service.onlinePaymentsEnabled());
+    }
+
     /** The dashboard's "what do I owe" list. */
     @GetMapping("/api/payments/mine")
     public List<PaymentResponse> mine() {

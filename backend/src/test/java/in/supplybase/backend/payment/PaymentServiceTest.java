@@ -384,8 +384,6 @@ class PaymentServiceTest {
         @Test
         @DisplayName("an invalid webhook signature is recorded but never applied")
         void invalidSignatureRecordedNotApplied() {
-            when(events.existsByRazorpayEventId("evt_1")).thenReturn(false);
-
             service.recordAndApplyWebhook("evt_1", "payment.captured", "{}", false, "order_1", "pay_1");
 
             ArgumentCaptor<PaymentEvent> captor = ArgumentCaptor.forClass(PaymentEvent.class);
@@ -393,6 +391,31 @@ class PaymentServiceTest {
             assertThat(captor.getValue().isProcessed()).isFalse();
             assertThat(captor.getValue().getProcessError()).contains("Signature did not verify");
             verify(payments, never()).findByRazorpayOrderId(any());
+        }
+
+        @Test
+        @DisplayName("an unsigned event keeps no event id, so a forged one can't block the real event")
+        void unsignedEventKeepsNoEventId() {
+            service.recordAndApplyWebhook("evt_real", "payment.captured", "{}", false, "order_1", "pay_1");
+
+            ArgumentCaptor<PaymentEvent> captor = ArgumentCaptor.forClass(PaymentEvent.class);
+            verify(events).save(captor.capture());
+            assertThat(captor.getValue().getRazorpayEventId()).isNull();
+            verify(events, never()).existsByRazorpayEventId(any());
+        }
+
+        @Test
+        @DisplayName("an unsigned event stores only the start of its body, and a long event name is cut to fit")
+        void unsignedEventIsCut() {
+            String huge = "x".repeat(5_000_000);
+            String longType = "e".repeat(200);
+
+            service.recordAndApplyWebhook(null, longType, huge, false, null, null);
+
+            ArgumentCaptor<PaymentEvent> captor = ArgumentCaptor.forClass(PaymentEvent.class);
+            verify(events).save(captor.capture());
+            assertThat(captor.getValue().getPayload()).hasSize(2000);
+            assertThat(captor.getValue().getEventType()).hasSize(60);
         }
 
         @Test

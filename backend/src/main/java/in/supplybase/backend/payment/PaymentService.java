@@ -55,6 +55,11 @@ public class PaymentService {
 
     /* ------------------------------------------------------------ reads */
 
+    /** False until the Razorpay keys are set on the server. */
+    public boolean onlinePaymentsEnabled() {
+        return razorpay.isConfigured();
+    }
+
     @Transactional(readOnly = true)
     public List<PaymentResponse> myPayments(Long userId) {
         return payments.findByUserIdOrderByCreatedAtDesc(userId).stream()
@@ -300,6 +305,25 @@ public class PaymentService {
     public void recordAndApplyWebhook(String eventId, String eventType, String rawBody,
                                       boolean signatureValid, String razorpayOrderId,
                                       String razorpayPaymentId, String refundStatus) {
+        // The webhook URL is public, so an unsigned event is anyone's. It is
+        // kept as a short audit row only: no event id (or a forged one sent
+        // first would make the real, signed event look like a duplicate and be
+        // dropped) and only the start of its body, so it cannot fill the disk.
+        if (!signatureValid) {
+            events.save(PaymentEvent.builder()
+                    .eventType(cut(eventType, EVENT_TYPE_MAX))
+                    .signatureValid(false)
+                    .payload(cut(rawBody, UNSIGNED_PAYLOAD_MAX))
+                    .processed(false)
+                    .processError("Signature did not verify — not applied")
+                    .build());
+            return;
+        }
+
+        // Razorpay's ids are short; anything longer than the column is not one.
+        if (eventId != null && eventId.length() > EVENT_ID_MAX) {
+            eventId = null;
+        }
         if (eventId != null && events.existsByRazorpayEventId(eventId)) {
             log.info("Ignoring duplicate Razorpay event {}", eventId);
             return;
@@ -307,17 +331,11 @@ public class PaymentService {
 
         PaymentEvent event = PaymentEvent.builder()
                 .razorpayEventId(eventId)
-                .eventType(eventType)
-                .signatureValid(signatureValid)
+                .eventType(cut(eventType, EVENT_TYPE_MAX))
+                .signatureValid(true)
                 .payload(rawBody)
                 .processed(false)
                 .build();
-
-        if (!signatureValid) {
-            event.setProcessError("Signature did not verify — not applied");
-            events.save(event);
-            return;
-        }
 
         try {
             Payment payment = razorpayOrderId == null ? null
@@ -406,6 +424,18 @@ public class PaymentService {
 
     private static String truncateDescription(String value) {
         return value.length() <= 255 ? value : value.substring(0, 255);
+    }
+
+    // payment_events column sizes (V1), and how much of an unsigned body is kept.
+    private static final int EVENT_ID_MAX = 64;
+    private static final int EVENT_TYPE_MAX = 60;
+    private static final int UNSIGNED_PAYLOAD_MAX = 2000;
+
+    private static String cut(String value, int max) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= max ? value : value.substring(0, max);
     }
 
     private static String truncate(String value) {

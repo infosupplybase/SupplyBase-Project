@@ -110,10 +110,25 @@ class PaymentControllerTest {
     private static PaymentResponse samplePaymentResponse() {
         return new PaymentResponse(1L, "PAY-260101-ABCD", PaymentType.INVOICE, "Site visit",
                 new BigDecimal("500.00"), "₹500.00", "INR", PaymentStatus.PENDING,
-                null, null, null, null, null);
+                null, null, null, null, null,
+                7L, "Asha Rao", "9820011223", null, null, null, false);
     }
 
     /* ------------------------------------------------------------ mine */
+
+    @Nested
+    class Status {
+
+        @Test
+        @DisplayName("anyone can ask whether online payment is on, so the site can hide its Pay buttons")
+        void publicStatus() throws Exception {
+            when(service.onlinePaymentsEnabled()).thenReturn(false);
+
+            mockMvc.perform(get("/api/payments/status"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.onlinePayments").value(false));
+        }
+    }
 
     @Nested
     class Mine {

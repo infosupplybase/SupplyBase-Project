@@ -281,6 +281,9 @@ updateProfile: (profile) =>
   startBookingPayment: (bookingNumber) =>
     request(`/api/payments/bookings/${encodeURIComponent(bookingNumber)}/order`, { method: 'POST' }),
 
+  /** { onlinePayments: boolean }: false until Razorpay keys are set on the server. */
+  paymentStatus: () => request('/api/payments/status', { auth: false }),
+
   /** Hands checkout's signed result to the server, which verifies it before marking anything paid. */
   verifyPayment: ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) =>
     request('/api/payments/verify', {

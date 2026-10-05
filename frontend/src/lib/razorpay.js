@@ -35,6 +35,26 @@ function loadCheckoutScript() {
   return scriptPromise;
 }
 
+let statusPromise = null;
+
+/**
+ * Whether the API can take online payments at all (its Razorpay keys are set).
+ * Asked once per page load. If the question itself fails, assume yes: the Pay
+ * button then behaves as it always did and the API explains any refusal.
+ */
+export function onlinePaymentsEnabled() {
+  if (!statusPromise) {
+    statusPromise = api
+      .paymentStatus()
+      .then((status) => status?.onlinePayments !== false)
+      .catch(() => {
+        statusPromise = null;
+        return true;
+      });
+  }
+  return statusPromise;
+}
+
 /** Thrown when the customer closes the payment window without paying. */
 export class PaymentCancelledError extends Error {
   constructor() {
