@@ -176,6 +176,13 @@ public class PaymentService {
             throw ApiException.badRequest("There is nothing to pay on this booking.");
         }
 
+        // The customer chose to pay online: from now on BookingExpiryJob may
+        // cancel the booking if the payment is never finished.
+        if (booking.getOnlineCheckoutAt() == null) {
+            booking.setOnlineCheckoutAt(Instant.now());
+            bookings.save(booking);
+        }
+
         Payment payment = payments.findFirstByBookingIdAndStatusInOrderByCreatedAtDesc(
                         booking.getId(), List.of(PaymentStatus.PENDING, PaymentStatus.FAILED))
                 .orElseGet(() -> payments.save(Payment.builder()

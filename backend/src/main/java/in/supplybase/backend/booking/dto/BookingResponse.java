@@ -36,7 +36,10 @@ public record BookingResponse(
         // actually ask for" data.
         List<BookingAnswerResponse> answers,
         // When the fee was paid online through Razorpay; null while unpaid.
-        Instant paidAt) {
+        Instant paidAt,
+        // When the customer first opened online checkout; null if they never
+        // did. Only such a booking can be auto-cancelled (BookingExpiryJob).
+        Instant onlineCheckoutAt) {
 
     public static BookingResponse from(Booking b) {
         return from(b, List.of());
@@ -60,7 +63,8 @@ public record BookingResponse(
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getFullName(),
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getPhone(),
                 answers,
-                b.getPaidAt());
+                b.getPaidAt(),
+                b.getOnlineCheckoutAt());
     }
 
 }

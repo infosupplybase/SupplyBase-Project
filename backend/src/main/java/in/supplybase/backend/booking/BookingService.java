@@ -21,6 +21,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import in.supplybase.backend.appointment.AppointmentService;
@@ -205,9 +207,15 @@ public class BookingService {
             saved = bookings.save(saved);
         }
 
-        notifyStaff(saved);
         BookingReceipt receipt = BookingReceipt.from(saved);
-        emailCustomer(saved, receipt);
+        // After commit: SMTP is slow and can stall, and it must neither hold
+        // this transaction (and the appointment seat's row lock) open nor
+        // email about a booking that then rolls back.
+        Booking booked = saved;
+        afterCommit(() -> {
+            notifyStaff(booked);
+            emailCustomer(booked, receipt);
+        });
         return receipt;
     }
 
@@ -763,6 +771,20 @@ public class BookingService {
 
     /* ------------------------------------------------------------ email */
 
+    /** Runs once the current transaction commits, or straight away outside one. */
+    private static void afterCommit(Runnable action) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            action.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                action.run();
+            }
+        });
+    }
+
     private void notifyStaff(Booking booking) {
         if (!props.notifications().emailEnabled()) {
             return;
@@ -803,11 +825,12 @@ public class BookingService {
 
     /**
      * Confirms the booking to the customer, at the email given on the form or
-     * else their account's. Same switch as the staff email (ENQUIRY_EMAIL),
-     * and best effort the same way: a mail failure never fails the booking.
+     * else their account's. Its own switch (CUSTOMER_EMAILS, on by default),
+     * not the staff one, and best effort like it: a mail failure never fails
+     * the booking.
      */
     private void emailCustomer(Booking booking, BookingReceipt receipt) {
-        if (!props.notifications().emailEnabled()) {
+        if (!props.notifications().customerEmailsEnabled()) {
             return;
         }
         String to = booking.getEmail() != null ? booking.getEmail()

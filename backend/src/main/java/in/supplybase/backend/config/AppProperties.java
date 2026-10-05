@@ -3,6 +3,7 @@ package in.supplybase.backend.config;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
 /**
  * Everything under `app:` in application.yml, bound once at startup.
@@ -45,9 +46,28 @@ public record AppProperties(
         }
     }
 
-    public record Notifications(String enquiryRecipient) {
+    /**
+     * enquiryRecipient (ENQUIRY_EMAIL) is the staff inbox; blank switches the
+     * staff emails off. customerEmails (CUSTOMER_EMAILS, on unless "false")
+     * is its own switch for the booking confirmation sent to the customer,
+     * so customers are not left without one just because no staff inbox is set.
+     */
+    public record Notifications(String enquiryRecipient, Boolean customerEmails) {
+
+        @ConstructorBinding
+        public Notifications {
+        }
+
+        public Notifications(String enquiryRecipient) {
+            this(enquiryRecipient, null);
+        }
+
         public boolean emailEnabled() {
             return enquiryRecipient != null && !enquiryRecipient.isBlank();
+        }
+
+        public boolean customerEmailsEnabled() {
+            return customerEmails == null || customerEmails;
         }
     }
 

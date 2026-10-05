@@ -65,7 +65,7 @@ function ExpiryChip({ booking }) {
   return (
     <span
       className={`admin-expiry${hours <= 6 ? ' urgent' : ''}`}
-      title="Unconfirmed bookings are cancelled automatically 24 hours after they are made"
+      title="The customer started paying online and did not finish. Unless it is paid or confirmed, the booking is cancelled 24 hours after they started."
     >
       <Icon name="clock" size={12} />
       {hours === 0 ? 'Cancelling now' : `Cancels in ${hours} h`}

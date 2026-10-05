@@ -1160,6 +1160,56 @@ class BookingServiceTest {
         }
 
         @Test
+        @DisplayName("the customer still gets their email when no staff inbox is set")
+        void customerEmailWithoutStaffInbox() {
+            AppProperties props = new AppProperties(
+                    List.of("*"), null, null, null,
+                    new AppProperties.Notifications(null, true),
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+            BookingService noStaffInbox = new BookingService(bookings, answers, users, catalogue, options,
+                    appointments, bookingNumbers, props, mailSender, files, storage);
+
+            noStaffInbox.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+
+            List<org.springframework.mail.SimpleMailMessage> mails = sent();
+            assertThat(mails).hasSize(1);
+            assertThat(mails.get(0).getTo()).containsExactly("asha@example.com");
+        }
+
+        @Test
+        @DisplayName("CUSTOMER_EMAILS=false switches off only the customer's email")
+        void customerEmailsSwitchedOff() {
+            AppProperties props = new AppProperties(
+                    List.of("*"), null, null, null,
+                    new AppProperties.Notifications("staff@example.com", false),
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+            BookingService staffOnly = new BookingService(bookings, answers, users, catalogue, options,
+                    appointments, bookingNumbers, props, mailSender, files, storage);
+
+            staffOnly.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+
+            List<org.springframework.mail.SimpleMailMessage> mails = sent();
+            assertThat(mails).hasSize(1);
+            assertThat(mails.get(0).getTo()).containsExactly("staff@example.com");
+        }
+
+        @Test
+        @DisplayName("inside a transaction, nothing is emailed until it commits")
+        void emailsWaitForCommit() {
+            org.springframework.transaction.support.TransactionSynchronizationManager.initSynchronization();
+            try {
+                emailingService.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+                verify(sender, never()).send(any(org.springframework.mail.SimpleMailMessage.class));
+
+                org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations()
+                        .forEach(org.springframework.transaction.support.TransactionSynchronization::afterCommit);
+                assertThat(sent()).hasSize(2);
+            } finally {
+                org.springframework.transaction.support.TransactionSynchronizationManager.clearSynchronization();
+            }
+        }
+
+        @Test
         @DisplayName("a mail failure does not fail the booking")
         void mailFailureIsIgnored() {
             org.mockito.Mockito.doThrow(new org.springframework.mail.MailSendException("down"))

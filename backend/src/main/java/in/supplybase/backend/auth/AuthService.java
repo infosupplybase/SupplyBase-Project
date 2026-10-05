@@ -135,15 +135,24 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        String loginKey = "login:" + rateLimitKey(request.identifier());
+        Optional<User> account = findByIdentifier(request.identifier());
+        // One budget per account, not per thing typed: an account's phone and
+        // its email are two identifiers, and keying on those gave each its own
+        // 10 guesses. An identifier that matches no account keeps its own key.
+        String loginKey = account
+                .map(found -> "login:user:" + found.getId())
+                .orElseGet(() -> "login:" + rateLimitKey(request.identifier()));
         if (!rateLimiter.tryAcquire(loginKey, LOGIN_MAX, LOGIN_WINDOW)) {
             throw ApiException.tooManyRequests("Too many attempts. Please wait a while and try again.");
         }
 
-        User user = findByIdentifier(request.identifier())
+        User user = account
                 // hasPassword() first: a Google-only account has a null hash, and
                 // BCrypt.matches would throw on it rather than simply say no.
                 .filter(User::hasPassword)
+                // No stored password is over BCrypt's 72 bytes, so a longer one
+                // is simply wrong; checking it would make the encoder throw.
+                .filter(candidate -> fitsBcrypt(request.password()))
                 .filter(candidate -> passwordEncoder.matches(request.password(), candidate.getPasswordHash()))
                 // One message for "no such email" and for "wrong password", so
                 // the endpoint cannot be used to discover who has an account.
@@ -157,6 +166,10 @@ public class AuthService {
         // lock themselves out.
         rateLimiter.reset(loginKey);
         return issueTokens(user);
+    }
+
+    private static boolean fitsBcrypt(String password) {
+        return password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 72;
     }
 
     /**
@@ -383,7 +396,14 @@ public class AuthService {
 
     @Transactional
     public void verifyEmail(String token) {
-        EmailVerificationToken stored = emailVerificationTokens.findByTokenHash(jwtService.hashRefreshToken(token))
+        Optional<EmailVerificationToken> found =
+                emailVerificationTokens.findByTokenHash(jwtService.hashRefreshToken(token));
+        // Opening the link a second time (a mail app's preview, a double tap)
+        // finds it used. The address is verified, so say so, not "invalid".
+        if (found.filter(t -> t.getUsedAt() != null && t.getUser().isEmailVerified()).isPresent()) {
+            return;
+        }
+        EmailVerificationToken stored = found
                 .filter(EmailVerificationToken::isUsable)
                 .orElseThrow(() -> ApiException.badRequest(
                         "This verification link is invalid or has expired. Please request a new one."));

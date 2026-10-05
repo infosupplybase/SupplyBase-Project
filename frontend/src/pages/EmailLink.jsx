@@ -36,6 +36,70 @@ function Alert({ kind, children }) {
   );
 }
 
+/** BCrypt's limit is 72 bytes, so "é" counts twice (the API checks the same way). */
+const tooLongForBcrypt = (value) => new TextEncoder().encode(value).length > 72;
+
+/**
+ * "Send me a new link" right where an expired reset link lands, so the
+ * customer does not have to find Forgot password on the sign-in page.
+ */
+function RequestNewResetLink() {
+  const [identifier, setIdentifier] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!identifier.trim()) {
+      setError('Type the email or phone number you sign in with');
+      return;
+    }
+    setError('');
+    setBusy(true);
+    try {
+      await api.forgotPassword(identifier.trim());
+      setSent(true);
+    } catch (err) {
+      setError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (sent) {
+    return (
+      <Alert kind="success">
+        If that matches an account, a new reset link is on its way to its email address. It works for one hour.
+      </Alert>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} noValidate className="auth-form">
+      <div className={`field auth-field ${error ? 'error' : ''}`}>
+        <label htmlFor="reset-new-link">Email or Phone Number</label>
+        <div className="auth-input-wrap">
+          <Icon name="user" size={17} className="auth-input-icon" />
+          <input
+            id="reset-new-link"
+            type="text"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            placeholder="you@example.com or 98765 43210"
+            autoComplete="username"
+          />
+        </div>
+        {error && <span className="field-error">{error}</span>}
+      </div>
+      <button type="submit" className="auth-submit" disabled={busy}>
+        {busy ? 'Sending…' : 'Send Me a New Link'}
+        {!busy && <Icon name="arrow-right" size={18} />}
+      </button>
+    </form>
+  );
+}
+
 const MISSING_LINK = `This link is incomplete. Open the link from the email again, or call us on ${contact.phoneDisplay}.`;
 
 export function ResetPassword() {
@@ -48,6 +112,9 @@ export function ResetPassword() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  // The link itself was refused (used, expired or wrong), as opposed to a
+  // password the API did not accept: offer a fresh link instead of the form.
+  const [linkDead, setLinkDead] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,7 +122,7 @@ export function ResetPassword() {
     const next = {};
     // 8 and 72 are the API's own limits (ResetPasswordRequest).
     if (password.length < 8) next.password = 'Use at least eight characters';
-    else if (password.length > 72) next.password = 'Use 72 characters or fewer';
+    else if (tooLongForBcrypt(password)) next.password = 'That password is too long. Use fewer characters, or fewer accented letters and symbols';
     if (confirm !== password) next.confirm = 'Both passwords must match';
     setErrors(next);
     if (Object.keys(next).length) return;
@@ -66,6 +133,7 @@ export function ResetPassword() {
       setDone(true);
     } catch (err) {
       if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      else if (err?.status === 400) setLinkDead(true);
       setError(friendlyError(err));
     } finally {
       setBusy(false);
@@ -78,7 +146,15 @@ export function ResetPassword() {
         Reset <span className="auth-accent">Password</span>
       </h1>
       {!token ? (
-        <Alert kind="error">{MISSING_LINK}</Alert>
+        <>
+          <Alert kind="error">{MISSING_LINK}</Alert>
+          <RequestNewResetLink />
+        </>
+      ) : linkDead ? (
+        <>
+          <Alert kind="error">{error}</Alert>
+          <RequestNewResetLink />
+        </>
       ) : done ? (
         <>
           <Alert kind="success">Your password has been changed. Sign in with the new one.</Alert>
