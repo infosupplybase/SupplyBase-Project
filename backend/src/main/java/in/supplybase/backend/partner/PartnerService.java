@@ -184,6 +184,7 @@ public class PartnerService {
         PartnerProfile profile = partners.findByUserId(userId)
                 .orElseThrow(() -> ApiException.notFound("A partner application for this account"));
         return PartnerProfileResponse.from(profile, tradeLabels().get(profile.getPrimaryTrade()));
+    }
 
     /* -------------------------------------------------------------- admin */
 
