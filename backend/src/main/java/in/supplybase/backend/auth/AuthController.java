@@ -98,8 +98,7 @@ public ResponseEntity<Void> register(
     @PostMapping("/api/auth/forgot-password")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         try {
-            authService.forgotPassword(request.identifier());
-        } catch (Exception ex) {
+            authService.forgotPassword(request.identifier(), request.app());        } catch (Exception ex) {
             log.warn("forgot-password failed for a request — responding 200 regardless", ex);
         }
         return ResponseEntity.ok().build();

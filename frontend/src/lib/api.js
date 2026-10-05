@@ -201,7 +201,7 @@ updateProfile: (profile) =>
 
   /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
   forgotPassword: (identifier) =>
-    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier, app: 'customer' }, }),
 
   /** Re-sends the sign-up verification email to the signed-in user's own address. */
   sendVerificationEmail: () => request('/api/auth/send-verification', { method: 'POST' }),

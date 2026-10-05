@@ -87,7 +87,7 @@ app:
   cors-allowed-origins: ${CORS_ORIGINS:http://localhost:[*],http://127.0.0.1:[*]}
   # The single frontend origin used to build links emailed out (password
   # reset, email verification). Not a CORS list, just one URL.
-  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
   jwt:
     # No fixed fallback on purpose — see JwtService.resolveSecret for why a
     # value baked in here would itself be a security hole. Left unset, a

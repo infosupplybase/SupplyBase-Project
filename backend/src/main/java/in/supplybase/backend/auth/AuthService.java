@@ -574,6 +574,16 @@ public class AuthService {
 
             throw ApiException.conflict(
                     "Another account already uses that phone number.");
+
+    public void forgotPassword(String identifier) {
+    forgotPassword(identifier, "customer");
+}
+    @Transactional
+
+
+public void forgotPassword(String identifier, String app) {        if (!rateLimiter.tryAcquire("forgot-password:" + rateLimitKey(identifier),
+                FORGOT_PASSWORD_MAX, FORGOT_PASSWORD_WINDOW)) {
+            throw ApiException.tooManyRequests("Too many attempts. Please wait a while and try again.");
         }
 
         user.setFullName(
@@ -659,6 +669,11 @@ public class AuthService {
         sendBestEffort(
                 user.getEmail(),
                 "Reset your SupplyBase password",
+String frontendUrl = "partner".equalsIgnoreCase(app)
+        ? "http://localhost:3002"
+        : props.frontendUrl();
+
+String link = frontendUrl + "/reset-password?token=" + rawToken;        sendBestEffort(user.getEmail(), "Reset your SupplyBase password",
                 "We received a request to reset your SupplyBase password.\n\n"
                         + "Reset it here: "
                         + link
