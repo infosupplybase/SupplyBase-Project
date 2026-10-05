@@ -208,6 +208,12 @@ public class PaymentService {
         if (!caller.isStaff() && !payment.getUser().getId().equals(caller.id())) {
             throw ApiException.notFound("That payment");
         }
+        // Only a payment still waiting on money can become paid here. A paid
+        // one is already done, and replaying an old signed checkout result
+        // must never turn a refunded or cancelled payment back into PAID.
+        if (payment.getStatus() != PaymentStatus.PENDING && payment.getStatus() != PaymentStatus.FAILED) {
+            return PaymentResponse.from(payment);
+        }
 
         if (!razorpay.verifyCheckoutSignature(request.razorpayOrderId(),
                 request.razorpayPaymentId(), request.razorpaySignature())) {
@@ -281,6 +287,19 @@ public class PaymentService {
     public void recordAndApplyWebhook(String eventId, String eventType, String rawBody,
                                       boolean signatureValid, String razorpayOrderId,
                                       String razorpayPaymentId) {
+        recordAndApplyWebhook(eventId, eventType, rawBody, signatureValid, razorpayOrderId,
+                razorpayPaymentId, null);
+    }
+
+    /**
+     * As above, with the payment's {@code refund_status} from the event
+     * ("full" or "partial", null when the event carries none), so only a
+     * full refund marks the payment REFUNDED.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordAndApplyWebhook(String eventId, String eventType, String rawBody,
+                                      boolean signatureValid, String razorpayOrderId,
+                                      String razorpayPaymentId, String refundStatus) {
         if (eventId != null && events.existsByRazorpayEventId(eventId)) {
             log.info("Ignoring duplicate Razorpay event {}", eventId);
             return;
@@ -308,7 +327,7 @@ public class PaymentService {
             if (payment == null) {
                 event.setProcessError("No payment matches order " + razorpayOrderId);
             } else {
-                applyEvent(payment, eventType, razorpayPaymentId);
+                applyEvent(payment, eventType, razorpayPaymentId, refundStatus);
                 payments.save(payment);
                 event.setProcessed(true);
             }
@@ -319,10 +338,14 @@ public class PaymentService {
         events.save(event);
     }
 
-    private void applyEvent(Payment payment, String eventType, String razorpayPaymentId) {
+    private void applyEvent(Payment payment, String eventType, String razorpayPaymentId,
+                            String refundStatus) {
         switch (eventType) {
             case "payment.captured", "order.paid" -> {
-                if (payment.getStatus() != PaymentStatus.PAID) {
+                // A late or retried capture must not undo a refund or a
+                // cancellation, nor re-stamp a payment that is already paid.
+                if (payment.getStatus() == PaymentStatus.PENDING
+                        || payment.getStatus() == PaymentStatus.FAILED) {
                     markPaid(payment, razorpayPaymentId, null);
                 }
             }
@@ -334,7 +357,17 @@ public class PaymentService {
                     payment.setFailureReason("Razorpay reported the payment failed");
                 }
             }
-            case "refund.processed", "refund.created" -> payment.setStatus(PaymentStatus.REFUNDED);
+            // refund.created only means a refund was asked for (it can still
+            // fail), and a partial refund leaves most of the money paid, so
+            // only a processed refund that covers the whole payment counts.
+            case "refund.processed" -> {
+                if (payment.getStatus() == PaymentStatus.PAID && "full".equals(refundStatus)) {
+                    payment.setStatus(PaymentStatus.REFUNDED);
+                } else {
+                    log.info("Refund on payment {} is not a full refund ({}); status kept as {}",
+                            payment.getReference(), refundStatus, payment.getStatus());
+                }
+            }
             default -> log.debug("Ignoring unhandled Razorpay event type {}", eventType);
         }
     }

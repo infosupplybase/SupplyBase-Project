@@ -25,6 +25,8 @@ public class RazorpayWebhookController {
 
     private static final Logger log = LoggerFactory.getLogger(RazorpayWebhookController.class);
     private static final String SIGNATURE_HEADER = "X-Razorpay-Signature";
+    // Razorpay sends the event id only in this header; the body has none.
+    private static final String EVENT_ID_HEADER = "X-Razorpay-Event-Id";
 
     private final RazorpayService razorpay;
     private final PaymentService payments;
@@ -40,24 +42,29 @@ public class RazorpayWebhookController {
     @PostMapping(value = "/api/payments/webhook", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> receive(
             @RequestBody String rawBody,
-            @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature) {
+            @RequestHeader(value = SIGNATURE_HEADER, required = false) String signature,
+            @RequestHeader(value = EVENT_ID_HEADER, required = false) String eventIdHeader) {
 
         boolean valid = signature != null && razorpay.verifyWebhookSignature(rawBody, signature);
 
         String eventType = "unknown";
-        String eventId = null;
+        String eventId = eventIdHeader == null || eventIdHeader.isBlank() ? null : eventIdHeader;
         String orderId = null;
         String paymentId = null;
+        String refundStatus = null;
 
         try {
             JsonNode root = mapper.readTree(rawBody);
             eventType = root.path("event").asString("unknown");
-            eventId = textOrNull(root.path("id"));
+            if (eventId == null) {
+                eventId = textOrNull(root.path("id"));
+            }
 
             JsonNode entity = root.path("payload").path("payment").path("entity");
             if (entity.isObject()) {
                 orderId = textOrNull(entity.path("order_id"));
                 paymentId = textOrNull(entity.path("id"));
+                refundStatus = textOrNull(entity.path("refund_status"));
             } else {
                 JsonNode orderEntity = root.path("payload").path("order").path("entity");
                 if (orderEntity.isObject()) {
@@ -68,7 +75,8 @@ public class RazorpayWebhookController {
             log.warn("Could not parse a Razorpay webhook body", ex);
         }
 
-        payments.recordAndApplyWebhook(eventId, eventType, rawBody, valid, orderId, paymentId);
+        payments.recordAndApplyWebhook(eventId, eventType, rawBody, valid, orderId, paymentId,
+                refundStatus);
 
         // Always 200, even for a bad signature. Razorpay retries on non-2xx,
         // and retrying a forged request forever helps nobody — it is recorded
