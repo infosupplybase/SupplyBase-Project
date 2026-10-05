@@ -213,8 +213,8 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
           <TerraceSlider title={flow.title} />
         ) : (
           <PaintingHero
-            eyebrow="PROFESSIONAL"
-            title={flow.title}
+            eyebrow=""
+            title={flow.slug === 'bathroom-floor' ? 'BATHROOM WATERPROOFING' : flow.title}
             tagline={flow.heroTagline}
             image={flow.intro.image}
             trustPoints={[]}
