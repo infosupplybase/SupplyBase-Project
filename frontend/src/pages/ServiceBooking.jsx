@@ -985,7 +985,10 @@ const stageQuestions = useMemo(() => {
               )}
 
               {!(slug === 'waterproofing' && stage === 0) && (stage === confirmStage ? (
+                // Distinct keys so React never reuses this node for CONTINUE:
+                // a reused button turns into type="submit" mid-click and books.
                 <button
+                  key="submit"
                   type="submit"
                   className="
                     btn btn-primary btn-sm
@@ -1035,6 +1038,7 @@ const stageQuestions = useMemo(() => {
                   )
                 ) && (
                   <button
+                    key="continue"
                     type="button"
                     className="btn btn-primary btn-sm md:!flex-none md:!w-44 md:!ms-auto"
                     onClick={goNext}
