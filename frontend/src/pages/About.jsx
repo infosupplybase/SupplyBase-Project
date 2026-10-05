@@ -66,7 +66,7 @@ const pillars = [
   {
     title: 'Repair',
     image: '/assets/services/waterproofing.avif',
-    text: 'Waterproofing, plumbing and electrical work by trained, verified professionals.',
+    text: 'Waterproofing, plumbing, electrical and AC servicing by trained, verified professionals.',
   },
   {
     title: 'Finish',

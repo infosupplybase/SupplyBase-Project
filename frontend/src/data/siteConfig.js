@@ -12,9 +12,9 @@ export const company = {
   statement: 'DESIGN. BUILD. DELIVER.',
   model: 'LABOUR + MATERIAL + MANAGEMENT',
   shortIntro:
-    'Painting, waterproofing, plumbing, electrical, POP ceiling and interior design — we provide the people, the materials and the supervision under one roof.',
+    'Painting, waterproofing, plumbing, electrical, AC servicing, POP ceiling and interior design — we provide the people, the materials and the supervision under one roof.',
   longIntro:
-    'Supplybase does painting, waterproofing, plumbing, electrical, POP ceiling and interior design work for homes. We handle labour, material and supervision so our clients deal with one partner from the first visit to the final handover.',
+    'Supplybase does painting, waterproofing, plumbing, electrical, AC servicing, POP ceiling and interior design work for homes. We handle labour, material and supervision so our clients deal with one partner from the first visit to the final handover.',
 };
 
 /**

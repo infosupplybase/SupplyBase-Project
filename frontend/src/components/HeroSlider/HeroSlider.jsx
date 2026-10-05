@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import HomeHero from '../home/HomeHero';
+import CarouselPauseButton from '../ui/CarouselPauseButton';
 import './HeroSlider.css';
 
 const slides = [
@@ -36,7 +37,11 @@ export default function HeroSlider() {
   const [active, setActive] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [interacting, setInteracting] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
+  // Holds still while the pointer is over the banner or anything in it
+  // (dots, search) has focus, and whenever the visitor pressed Pause.
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [paused, setPaused] = useState(false);
   const startTouch = useRef(null);
 
   useEffect(() => {
@@ -48,7 +53,7 @@ export default function HeroSlider() {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || interacting || searchFocused) return undefined;
+    if (reducedMotion || interacting || hovered || focused || paused) return undefined;
 
     const timer = window.setInterval(() => {
       if (!document.hidden) {
@@ -57,7 +62,7 @@ export default function HeroSlider() {
     }, 4000);
 
     return () => window.clearInterval(timer);
-  }, [active, reducedMotion, interacting, searchFocused]);
+  }, [active, reducedMotion, interacting, hovered, focused, paused]);
 
   // Keep the full artwork below the site header.
   useLayoutEffect(() => {
@@ -104,6 +109,14 @@ export default function HeroSlider() {
     <section
       className="sb-home-banner sb-final-banner"
       aria-label="SupplyBase service offers"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocusCapture={() => setFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setFocused(false);
+        }
+      }}
       style={{
         '--banner-ratio': `${current.width} / ${current.height}`,
         '--mobile-banner-ratio': `${current.mobileWidth} / ${current.mobileHeight}`,
@@ -174,17 +187,22 @@ export default function HeroSlider() {
         </div>
       </div>
 
-      <div
-        className="sb-final-banner__search"
-        onFocusCapture={() => setSearchFocused(true)}
-        onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setSearchFocused(false);
-          }
-        }}
-      >
+      <h1 className="sr-only">
+        Home services in Mumbai: painting, waterproofing, plumbing, electrical, AC servicing, POP ceilings and interiors
+      </h1>
+
+      <div className="sb-final-banner__search">
         <HomeHero />
       </div>
+
+      {!reducedMotion && (
+        <CarouselPauseButton
+          className="sb-final-banner__pause"
+          paused={paused}
+          onToggle={() => setPaused((p) => !p)}
+          label="banner slides"
+        />
+      )}
 
       <div className="sb-final-banner__dots" style={{ '--image-height': `${current.height / current.width * 100}vw` }} aria-label="Choose banner">
         {slides.map((slide, index) => (

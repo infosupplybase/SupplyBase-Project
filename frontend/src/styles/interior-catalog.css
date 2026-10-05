@@ -441,6 +441,12 @@
   box-shadow: 0 0 0 2px var(--gold);
 }
 
+.ibc-swatch-name {
+  margin: var(--space-2) 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
 .ibc-feature-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -671,6 +677,19 @@
 }
 
 /* ------------------------------------------------------------- confirm */
+
+.ibc-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.ibc-confirm-actions .ibc-form-submit {
+  display: flex;
+  margin-top: 0;
+}
 
 .ibc-confirm-panel {
   max-width: 460px;

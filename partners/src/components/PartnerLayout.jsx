@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
+import api from '../lib/api';
 import Icon from './ui/Icon';
 import { useAuth } from '../context/AuthContext';
 import { COMPANY_NAME, SITE_URL } from '../config';
@@ -30,6 +32,29 @@ export default function PartnerLayout() {
 
   const verified = user && user.role === 'PROFESSIONAL';
 
+  // Only someone who has sent an application is a "partner applicant"; a
+  // customer who signed in here without applying is shown as a customer.
+  const [applied, setApplied] = useState(null);
+  useEffect(() => {
+    if (!user || user.role !== 'CUSTOMER') return undefined;
+    let cancelled = false;
+    api
+      .application()
+      .then(() => !cancelled && setApplied(true))
+      .catch((err) => !cancelled && setApplied(err && err.status === 404 ? false : null));
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const roleLabel = verified
+    ? 'Verified partner'
+    : user?.role === 'ADMIN'
+      ? 'Admin account'
+      : applied === false
+        ? 'Customer account'
+        : 'Partner applicant';
+
   return (
     <div className="pp-app">
       <a href="#pp-main" className="skip-link">
@@ -52,7 +77,7 @@ export default function PartnerLayout() {
                 <strong>{user.fullName}</strong>
                 <small className={verified ? 'is-verified' : ''}>
                   {verified && <Icon name="shield" size={13} />}
-                  {verified ? 'Verified partner' : user.role === 'ADMIN' ? 'Admin account' : 'Partner applicant'}
+                  {roleLabel}
                 </small>
               </span>
               <button type="button" className="pp-signout" onClick={handleSignOut}>
