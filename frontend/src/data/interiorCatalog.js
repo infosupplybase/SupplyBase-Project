@@ -1099,9 +1099,18 @@ pricePerSqft,
         ? mandirEstimatedPrices[index]
         : null,
 
+          // The list, the design page and the booking pop-up all read
+          // this, so study, TV wall and mandir show their estimate everywhere.
           priceRange:
             entranceDetails?.priceRange ||
-            bedBackWallDetail?.priceRange,
+            bedBackWallDetail?.priceRange ||
+            (space.slug === 'study'
+              ? studyEstimatedPrices[index]
+              : space.slug === 'tv-wall'
+                ? tvEstimatedPrices[index]
+                : space.slug === 'mandir'
+                  ? mandirEstimatedPrices[index]
+                  : undefined),
 
           description:
             space.slug === 'study'

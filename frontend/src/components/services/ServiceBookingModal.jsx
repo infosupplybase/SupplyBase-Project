@@ -19,6 +19,7 @@ import {
   mandirGroups,
 
   HOME_VISIT_FEE,
+  interiorFeatures,
 } from '../../data/interiorCatalog';
 import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
 import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
@@ -500,7 +501,7 @@ onStepChange={
           <span className="mt-0.5 text-[#9A5B2D]">✓</span>
 
           <span className="text-sm leading-6 text-gray-700">
-            {feature}
+            {interiorFeatures[feature]?.label || feature}
           </span>
         </div>
       ))}
