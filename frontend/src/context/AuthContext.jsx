@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { clearGuestAddresses } from '../lib/savedAddresses';
 import api, { clearTokens, getAccessToken, getRefreshToken, storeTokens } from '../lib/api';
 
 /**
@@ -9,6 +10,9 @@ import api, { clearTokens, getAccessToken, getRefreshToken, storeTokens } from '
  * true when it was issued, and the server says what is true now — which is
  * what matters if an account has been disabled or a role changed since.
  */
+/** Fired on sign-out so other parts of the site can forget the customer. */
+export const SIGNED_OUT = 'supplybase:signed-out';
+
 const AuthContext = createContext({
   user: null,
   loading: true,
@@ -71,6 +75,10 @@ export function AuthProvider({ children }) {
     // token expires on its own.
     clearTokens();
     setUser(null);
+    // The next person on this browser shouldn't see this customer's
+    // addresses or their place in the header.
+    clearGuestAddresses();
+    window.dispatchEvent(new Event(SIGNED_OUT));
     if (refreshToken) {
       try {
         await api.logout(refreshToken);

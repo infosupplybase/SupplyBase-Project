@@ -463,7 +463,7 @@ function CheckoutConfirmation({
             ) : (
               // Like the electrician journeys: no fee amounts on this screen.
               <>
-                <h2>Booking Confirmed!</h2>
+                <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
                 <p>
                   We have received your request. Our team will contact you on WhatsApp or phone to confirm the
                   appointment.

@@ -36,6 +36,14 @@ export const interiorSpaces = [
   },
 ];
 
+/** Names for the design-page colour swatches, shown to the customer and sent with the booking. */
+export const interiorColourNames = {
+  '#efe9e2': 'Ivory',
+  '#d8c9b0': 'Beige',
+  '#6b4a34': 'Walnut',
+  '#2e2e2e': 'Charcoal',
+};
+
 export const interiorFeatures = {
   waterproof: {
     icon: 'droplet',

@@ -57,10 +57,13 @@ export function AddressFields({
       label: place.label,
     });
 
-    // City and pincode follow the chosen address when it knows them.
+    // City and pincode follow the chosen address. When it has none, the old
+    // value is cleared rather than kept, so a Kharghar address never goes out
+    // with the pincode of the Bandra one picked before it.
     const fill = (key, value) => {
-      if (value && value !== details[key]) {
-        setDetail(key)({ target: { value } });
+      const next = value || '';
+      if (next !== (details[key] || '')) {
+        setDetail(key)({ target: { value: next } });
       }
     };
 

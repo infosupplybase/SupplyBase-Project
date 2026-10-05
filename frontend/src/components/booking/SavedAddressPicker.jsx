@@ -174,11 +174,17 @@ export default function SavedAddressPicker({ selected, onUse, idPrefix = 'bk' })
       setError('Search for your address first.');
       return;
     }
-    const entry = save({
-      ...draft,
-      id: editingId || undefined,
-      label: label.trim() || draft.address.split(',')[0].trim(),
-    });
+    let entry;
+    try {
+      entry = save({
+        ...draft,
+        id: editingId || undefined,
+        label: label.trim() || draft.address.split(',')[0].trim(),
+      });
+    } catch (err) {
+      setError(err.message);
+      return;
+    }
     // Editing an address that isn't this booking's leaves the booking alone.
     if (!editingId || samePlace(addresses.find((a) => a.id === editingId), selected)) {
       onUse(entry);

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import CarouselPauseButton from '../ui/CarouselPauseButton';
 
 // The banners carry their own headline, so the page title stays for screen
 // readers only (see the sr-only h1 below).
@@ -14,20 +15,27 @@ const SLIDES = [
  * Terrace waterproofing banner carousel. Advances every 4 seconds; a copy of
  * the first slide sits at the end so the loop slides forward and then jumps
  * back to the start without the jump showing. Holds still for visitors who
- * ask for reduced motion.
+ * ask for reduced motion, while the pointer is over it or it has focus, and
+ * after the visitor presses Pause.
  */
 export default function TerraceSlider({ title }) {
   const [slide, setSlide] = useState(0);
   const [animate, setAnimate] = useState(true);
+  const [reducedMotion] = useState(
+    () => Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+  );
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+    if (reducedMotion || hovered || focused || paused) return undefined;
     const timer = setInterval(() => {
       setAnimate(true);
       setSlide((current) => current + 1);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [reducedMotion, hovered, focused, paused]);
 
   const onTransitionEnd = () => {
     if (slide !== SLIDES.length) return;
@@ -37,7 +45,15 @@ export default function TerraceSlider({ title }) {
   };
 
   return (
-    <section className="wp-terrace-slider">
+    <section
+      className="wp-terrace-slider"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocusCapture={() => setFocused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+      }}
+    >
       <h1 className="sr-only">{title}</h1>
       <div
         className="wp-terrace-slider-track"
@@ -57,6 +73,15 @@ export default function TerraceSlider({ title }) {
           />
         ))}
       </div>
+
+      {!reducedMotion && (
+        <CarouselPauseButton
+          className="wp-terrace-slider-pause"
+          paused={paused}
+          onToggle={() => setPaused((p) => !p)}
+          label="terrace banner slides"
+        />
+      )}
 
       <div className="wp-terrace-slider-dots">
         {SLIDES.map((image, index) => (
