@@ -6,6 +6,11 @@
   margin: 0;
   padding: 0;
   isolation: isolate;
+  /* The search results drop below the banner's bottom edge. isolation makes
+     this a stacking context, so without a z-index of its own the Popular
+     Services tile grid (which makes its own stacking context) paints over
+     the lower results and swallows their clicks. */
+  z-index: 3;
 }
 
 .sb-final-banner__images {
