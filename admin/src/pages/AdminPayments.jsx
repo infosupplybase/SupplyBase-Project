@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PageHeader from '../components/admin/PageHeader';
 import DataTable from '../components/admin/DataTable';
@@ -26,6 +27,11 @@ const toneFor = (status) => {
   return 'accent';
 };
 
+/** A booking fee that was paid although the booking was then cancelled: staff may owe a refund. */
+const paidOnCancelledBooking = (p) => p.status === 'PAID' && p.bookingStatus === 'CANCELLED';
+
+const emptyRefund = { amount: '', reason: '' };
+
 const emptyForm = {
   client: null,
   projectId: '',
@@ -50,6 +56,47 @@ export default function AdminPayments() {
   const [projects, setProjects] = useState([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [refund, setRefund] = useState(emptyRefund);
+  const [refunding, setRefunding] = useState(false);
+  const [refundError, setRefundError] = useState('');
+
+  const openPayment = (row) => {
+    setRefund(emptyRefund);
+    setRefundError('');
+    setViewing(row);
+  };
+
+  const handleRefund = async (e) => {
+    e.preventDefault();
+    if (!refund.reason.trim()) {
+      setRefundError('Say why it is being refunded. It is kept with the refund.');
+      return;
+    }
+    let amountPaise;
+    if (refund.amount !== '') {
+      const rupees = Number(refund.amount);
+      if (!(rupees > 0) || rupees > Number(viewing.amount)) {
+        setRefundError(`Enter an amount between ₹1 and ${viewing.amountDisplay}, or leave it empty to refund it all.`);
+        return;
+      }
+      amountPaise = Math.round(rupees * 100);
+    }
+    const what = amountPaise ? `₹${(amountPaise / 100).toLocaleString('en-IN')}` : `the full ${viewing.amountDisplay}`;
+    if (!window.confirm(`Refund ${what} to ${viewing.clientName || 'the client'} through Razorpay? This cannot be undone.`)) return;
+
+    setRefunding(true);
+    setRefundError('');
+    try {
+      await api.admin.payments.refund(viewing.id, { amountPaise, reason: refund.reason.trim() });
+      notify(`Refund of ${what} requested. The payment shows Refunded once Razorpay confirms a full refund.`);
+      setViewing(null);
+      load();
+    } catch (err) {
+      setRefundError(err && err.fieldErrors ? Object.values(err.fieldErrors)[0] : friendlyError(err));
+    } finally {
+      setRefunding(false);
+    }
+  };
 
   const load = useCallback(() => {
     setLoading(true);
@@ -138,8 +185,9 @@ export default function AdminPayments() {
           <thead>
             <tr>
               <th>Payment</th>
+              <th>Client</th>
               <th>Type</th>
-              <th>Project</th>
+              <th>Booking / project</th>
               <th>Amount</th>
               <th>Due</th>
               <th>Status</th>
@@ -147,16 +195,31 @@ export default function AdminPayments() {
           </thead>
           <tbody>
             {loading ? (
-              <TableLoading columns={6} />
+              <TableLoading columns={7} />
             ) : data && data.content.length ? (
               data.content.map((row) => (
-                <tr key={row.id} {...rowProps(() => setViewing(row), `Open payment ${row.reference}`)}>
+                <tr key={row.id} {...rowProps(() => openPayment(row), `Open payment ${row.reference}`)}>
                   <td>
                     <span className="admin-cell-main">{row.description}</span>
                     <span className="admin-table-sub admin-mono">{row.reference}</span>
                   </td>
+                  <td>
+                    <span className="admin-cell-main">{row.clientName || '—'}</span>
+                    {row.clientPhone && <span className="admin-table-sub">{row.clientPhone}</span>}
+                  </td>
                   <td>{label(row.paymentType)}</td>
-                  <td>{row.projectName || '—'}</td>
+                  <td>
+                    {row.bookingNumber ? (
+                      <>
+                        <span className="admin-cell-main admin-mono">{row.bookingNumber}</span>
+                        <span className="admin-table-sub">
+                          {paidOnCancelledBooking(row) ? 'Booking cancelled · refund?' : label(row.bookingStatus)}
+                        </span>
+                      </>
+                    ) : (
+                      row.projectName || '—'
+                    )}
+                  </td>
                   <td>
                     <strong>{row.amountDisplay}</strong>
                   </td>
@@ -167,7 +230,7 @@ export default function AdminPayments() {
                 </tr>
               ))
             ) : (
-              <TableEmpty columns={6} icon="rupee" title="No payments raised yet">
+              <TableEmpty columns={7} icon="rupee" title="No payments raised yet">
                 Raise an advance, milestone or invoice and the client can pay it from their dashboard.
               </TableEmpty>
             )}
@@ -197,13 +260,32 @@ export default function AdminPayments() {
                 </dd>
               </div>
               <div>
+                <dt>Client</dt>
+                <dd>
+                  {viewing.clientName || '—'}
+                  {viewing.clientPhone ? ` · ${viewing.clientPhone}` : ''}
+                </dd>
+              </div>
+              <div>
                 <dt>Type</dt>
                 <dd>{label(viewing.paymentType)}</dd>
               </div>
-              <div>
-                <dt>Project</dt>
-                <dd>{viewing.projectName || '—'}</dd>
-              </div>
+              {viewing.bookingNumber ? (
+                <div>
+                  <dt>Booking</dt>
+                  <dd>
+                    <Link to={`/bookings?open=${viewing.bookingId}`} className="admin-mono">
+                      {viewing.bookingNumber}
+                    </Link>{' '}
+                    ({label(viewing.bookingStatus)})
+                  </dd>
+                </div>
+              ) : (
+                <div>
+                  <dt>Project</dt>
+                  <dd>{viewing.projectName || '—'}</dd>
+                </div>
+              )}
               <div>
                 <dt>Due</dt>
                 <dd>{formatDate(viewing.dueDate)}</dd>
@@ -219,6 +301,59 @@ export default function AdminPayments() {
                 </div>
               )}
             </dl>
+
+            {paidOnCancelledBooking(viewing) && (
+              <div role="status" className="alert alert-warning" style={{ marginTop: 16 }}>
+                <Icon name="alert" size={18} />
+                <span>This fee was paid but the booking is cancelled. Refund it unless the customer is rebooking.</span>
+              </div>
+            )}
+
+            {viewing.refundable && (
+              <form onSubmit={handleRefund} noValidate style={{ marginTop: 20 }}>
+                <h3 className="admin-form-section-title">Refund</h3>
+                <div className="field" style={{ marginBottom: 12 }}>
+                  <label htmlFor="refund-amount">Amount (₹, optional)</label>
+                  <input
+                    id="refund-amount"
+                    type="number"
+                    inputMode="decimal"
+                    min="1"
+                    step="0.01"
+                    max={viewing.amount}
+                    value={refund.amount}
+                    onChange={(e) => setRefund((r) => ({ ...r, amount: e.target.value }))}
+                    placeholder={`Leave empty for the full ${viewing.amountDisplay}`}
+                  />
+                </div>
+                <div className="field" style={{ marginBottom: 12 }}>
+                  <label htmlFor="refund-reason">
+                    Reason <span className="req">*</span>
+                  </label>
+                  <input
+                    id="refund-reason"
+                    type="text"
+                    maxLength={300}
+                    value={refund.reason}
+                    onChange={(e) => setRefund((r) => ({ ...r, reason: e.target.value }))}
+                    placeholder="e.g. Booking cancelled by the customer"
+                  />
+                </div>
+                {refundError && (
+                  <div role="alert" className="alert alert-error">
+                    <Icon name="alert" size={18} />
+                    <span>{refundError}</span>
+                  </div>
+                )}
+                <button type="submit" className="btn btn-outline btn-block" disabled={refunding}>
+                  {refunding ? 'REQUESTING REFUND…' : 'REFUND THROUGH RAZORPAY'}
+                </button>
+                <span className="field-hint">
+                  Razorpay sends the money back to the card or UPI it came from. The status changes to Refunded once Razorpay
+                  confirms a full refund.
+                </span>
+              </form>
+            )}
           </>
         )}
       </Drawer>

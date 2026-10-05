@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
@@ -17,6 +18,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     List<Payment> findByProjectIdOrderByCreatedAtDesc(Long projectId);
 
+    /** The admin list, with each row's client, booking and project in the same query. */
+    @EntityGraph(attributePaths = {"user", "booking", "project"})
     Page<Payment> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     /** The open (not yet settled) payment for a booking, reused across checkout attempts. */
