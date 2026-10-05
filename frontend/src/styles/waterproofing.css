@@ -8,6 +8,15 @@
    get their own `wp-` rules here.
    ========================================================================= */
 
+/* --------------------------------------------------------- page layout */
+
+/* The full-page flow steps start below the fixed site header, like the
+   schedule and details steps (.wizard-shell) do. Without this the back
+   arrow, title and "Need help?" row sat hidden under the header. */
+.pnt-flow-shell.wp-page-flow {
+  padding-top: calc(var(--header-h) + var(--space-5));
+}
+
 /* ------------------------------------------------------------ work stages */
 
 .wp-stage-list {
@@ -215,6 +224,13 @@
   position: relative;
   width: 100%;
   overflow: hidden;
+  /* Starts below the fixed header so the banner's own headline is not
+     hidden behind it (the pop-up has no site header above it). */
+  margin-top: var(--header-h);
+}
+
+.waterproofing-modal-scope .wp-terrace-slider {
+  margin-top: 0;
 }
 
 .wp-terrace-slider-track {
@@ -259,4 +275,81 @@
 /* Dots are hidden on every screen size; the slides still advance. */
 .wp-terrace-slider-dots {
   display: none;
+}
+
+/* ------------------------------------------------ service tiles (pop-up) */
+
+/* The tiles are white cards with a dark label (global.css, "WATERPROOFING
+   CARD ALIGNMENT"), but the older black-tile hover and selected rules in
+   wizard.css still turned the label white on hover and on the chosen tile,
+   so the hovered or chosen service showed a blank, white label. */
+.waterproofing-service-grid .tile.waterproofing-service-tile:hover,
+.waterproofing-service-grid .tile.waterproofing-service-tile:has(input:checked) {
+  background: #ffffff !important;
+  border-color: #c49a2c !important;
+}
+
+.waterproofing-service-grid .tile.waterproofing-service-tile:hover .tile-label,
+.waterproofing-service-grid .tile.waterproofing-service-tile:has(input:checked) .tile-label {
+  color: #222222 !important;
+}
+
+.waterproofing-service-grid .tile.waterproofing-service-tile:has(input:checked) .tile-body {
+  background: #fff8e7 !important;
+}
+
+/* ------------------------------------------------------ narrow phones */
+
+@media (max-width: 400px) {
+  /* The rate column kept the whole range on one line, which pushed the
+     table past the card's right edge on a 320px phone. */
+  .wp-rate-table table {
+    font-size: 0.8rem;
+  }
+
+  .wp-rate-table thead th,
+  .wp-rate-table tbody td {
+    padding: 9px 10px;
+  }
+
+  .wp-rate-table tbody td:last-child {
+    white-space: normal;
+    min-width: 6.5em;
+  }
+
+  /* "WATERPROOFING SERVICES" no longer runs under the pop-up's close
+     button. */
+  .wp-modal-back-row {
+    padding-right: 64px !important;
+  }
+
+  .wp-modal-back-row .btn {
+    max-width: 100%;
+    white-space: normal;
+    text-align: left;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+  }
+
+  /* The flow title broke mid-word ("WATERPROOFIN / G") beside the back
+     arrow and "Need help?". */
+  .waterproofing-modal-scope .pnt-top-title {
+    font-size: 14px;
+  }
+
+  .waterproofing-modal-scope .pnt-help {
+    padding: 6px 7px;
+    font-size: 11px;
+  }
+
+  /* BACK and CONTINUE now fit side by side in the pop-up footer; the
+     120px minimum on BACK pushed CONTINUE off the right edge. */
+  .booking-pop-waterproofing-layout .bm-foot .wizard-foot .btn-back {
+    min-width: 0;
+  }
+
+  .booking-pop-waterproofing-layout .bm-foot .wizard-foot .btn {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 }
