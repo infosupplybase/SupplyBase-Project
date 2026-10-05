@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
-import { getSpaceBySlug, getDesignBySlug, interiorFeatures, HOME_VISIT_FEE } from '../data/interiorCatalog';
+import {
+  getSpaceBySlug,
+  getDesignBySlug,
+  interiorColourNames,
+  interiorFeatures,
+  HOME_VISIT_FEE,
+} from '../data/interiorCatalog';
 import { whatsappHref } from '../lib/contact';
 
 /**
@@ -14,12 +20,18 @@ export default function InteriorDesignDetail() {
   const { spaceSlug, designSlug } = useParams();
   const space = getSpaceBySlug(spaceSlug);
   const design = getDesignBySlug(spaceSlug, designSlug);
-  const [activeColour, setActiveColour] = useState(0);
+  // No colour counts as chosen until the customer taps one.
+  const [activeColour, setActiveColour] = useState(null);
   const [shared, setShared] = useState(false);
 
   if (!space || !design) return <Navigate to="/interior-by-choice" replace />;
 
-  const quoteMessage = `Hello Supplybase, I would like a quote for the ${design.name}. Estimated range: ${design.priceRange}. Please arrange a measurement and consultation.`;
+  const colourHex = activeColour != null ? design.colours[activeColour] : null;
+  const colourName = colourHex ? interiorColourNames[colourHex] || colourHex : '';
+  const quoteMessage = `Hello Supplybase, I would like a quote for the ${design.name}${colourName ? ` in ${colourName}` : ''}. Estimated range: ${design.priceRange}. Please arrange a measurement and consultation.`;
+  const bookHref = `/interior-by-choice/${spaceSlug}/${designSlug}/book${
+    colourName ? `?colour=${encodeURIComponent(colourName)}` : ''
+  }`;
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -88,18 +100,26 @@ export default function InteriorDesignDetail() {
           {design.colours.length > 0 && (
             <div className="ibc-detail-block">
               <h3>Available Colours</h3>
-              <div className="ibc-swatch-row">
-                {design.colours.map((hex, i) => (
-                  <button
-                    key={hex}
-                    type="button"
-                    className={`ibc-swatch ${i === activeColour ? 'active' : ''}`}
-                    style={{ background: hex }}
-                    aria-label={`Colour option ${i + 1}`}
-                    onClick={() => setActiveColour(i)}
-                  />
-                ))}
+              <div className="ibc-swatch-row" role="group" aria-label="Colour">
+                {design.colours.map((hex, i) => {
+                  const name = interiorColourNames[hex] || `Colour ${i + 1}`;
+                  return (
+                    <button
+                      key={hex}
+                      type="button"
+                      className={`ibc-swatch ${i === activeColour ? 'active' : ''}`}
+                      style={{ background: hex }}
+                      aria-label={name}
+                      aria-pressed={i === activeColour}
+                      title={name}
+                      onClick={() => setActiveColour(i)}
+                    />
+                  );
+                })}
               </div>
+              <p className="ibc-swatch-name">
+                {colourName ? `Selected: ${colourName}` : 'Tap a colour to add it to your booking.'}
+              </p>
             </div>
           )}
 
@@ -148,7 +168,7 @@ export default function InteriorDesignDetail() {
                 Get Quote on WhatsApp
               </a>
             )}
-            <Link to={`/interior-by-choice/${spaceSlug}/${designSlug}/book`} className="btn btn-primary">
+            <Link to={bookHref} className="btn btn-primary">
               {design.priceRange
                 ? `Book a Consultation – ₹${HOME_VISIT_FEE}`
                 : `Book Home Visit – ₹${HOME_VISIT_FEE}`}
