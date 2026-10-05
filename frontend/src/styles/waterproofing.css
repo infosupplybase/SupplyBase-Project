@@ -277,6 +277,11 @@
   display: none;
 }
 
+.wp-terrace-slider-pause {
+  right: 10px;
+  bottom: 10px;
+}
+
 /* ------------------------------------------------ service tiles (pop-up) */
 
 /* The tiles are white cards with a dark label (global.css, "WATERPROOFING

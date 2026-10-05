@@ -1,6 +1,7 @@
 # Runs on every push to any branch, and on pull requests: fails (red cross
-# on GitHub) when a branch has unfinished merge-conflict markers or when one
-# of the three websites no longer builds — so a broken branch is spotted
+# on GitHub) when a branch has unfinished merge-conflict markers, when one
+# of the three websites no longer builds, or when the API's tests fail or it
+# can no longer start against a fresh MySQL — so a broken branch is spotted
 # before anyone pulls or merges it.
 name: Check
 
@@ -38,3 +39,60 @@ jobs:
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  # The API: run its tests, then start it against an empty MySQL so every
+  # Flyway migration runs. A migration that fails (like V49 adding a column
+  # V5 already had) stops the API at startup, which no frontend build catches.
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: supplybase
+          MYSQL_USER: supplybase
+          MYSQL_PASSWORD: supplybase
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - name: Tests
+        run: ./mvnw -B test
+      - name: Build
+        run: ./mvnw -B -DskipTests package
+      - name: Starts and migrates a fresh database
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: supplybase
+          DB_PASSWORD: supplybase
+          JWT_SECRET: ci-only-secret-that-is-at-least-32-characters
+        run: |
+          java -jar target/backend-0.0.1-SNAPSHOT.jar > api.log 2>&1 &
+          pid=$!
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8080/actuator/health > /dev/null 2>&1; then
+              echo "API started and all migrations applied."
+              kill $pid
+              exit 0
+            fi
+            if ! kill -0 $pid 2>/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          echo "::error::The API did not start. Last lines of its log:"
+          tail -n 60 api.log
+          kill $pid 2>/dev/null || true
+          exit 1

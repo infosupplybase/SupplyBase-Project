@@ -2038,3 +2038,28 @@ img[src^="/assets/waterproofing/curated-v2/"] {
   object-fit: cover !important;
   object-position: center !important;
 }
+
+/* Pause / play on auto-advancing carousels (components/ui/CarouselPauseButton) */
+.carousel-pause {
+  position: absolute;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.carousel-pause:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.carousel-pause:focus-visible {
+  outline: 2px solid #e6b638;
+  outline-offset: 2px;
+}

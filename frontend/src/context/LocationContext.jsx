@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { contact } from '../data/siteConfig';
 import { hasGoogleMaps } from '../components/layout/GoogleLocationPicker';
+import { SIGNED_OUT } from './AuthContext';
 
 const STORAGE_KEY = 'sb.location';
 
@@ -92,6 +93,13 @@ export function LocationProvider({ children }) {
       // Storage disabled/private browsing.
     }
   }, [locationData]);
+
+  // A signed-out browser goes back to the default area.
+  useEffect(() => {
+    const reset = () => setLocationData(DEFAULT_LOCATION);
+    window.addEventListener(SIGNED_OUT, reset);
+    return () => window.removeEventListener(SIGNED_OUT, reset);
+  }, []);
 
   const setLocation = (next) => {
     // Google location object

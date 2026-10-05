@@ -331,6 +331,23 @@ class PaymentServiceTest {
             verify(payments).save(payment);
         }
 
+        @ParameterizedTest
+        @ValueSource(strings = { "REFUNDED", "CANCELLED", "PAID" })
+        @DisplayName("replaying a signed checkout never changes a settled or cancelled payment")
+        void replayKeepsStatus(String statusName) {
+            User owner = user(1L, Role.CUSTOMER);
+            PaymentStatus status = PaymentStatus.valueOf(statusName);
+            Payment payment = aPayment(owner).status(status).razorpayPaymentId("pay_1").build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            VerifyPaymentRequest request = new VerifyPaymentRequest("order_1", "pay_1", "sig_1");
+            PaymentResponse response = service.confirmFromCheckout(request, callerFor(owner));
+
+            assertThat(response.status()).isEqualTo(status);
+            assertThat(payment.getStatus()).isEqualTo(status);
+            verify(payments, never()).save(any());
+        }
+
         @Test
         @DisplayName("a customer cannot confirm someone else's checkout")
         void rejectsNonOwner() {
@@ -440,15 +457,51 @@ class PaymentServiceTest {
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
         }
 
-        @ParameterizedTest
-        @ValueSource(strings = { "refund.processed", "refund.created" })
-        @DisplayName("a refund event settles the payment as refunded")
-        void refundEventMarksRefunded(String eventType) {
+        @Test
+        @DisplayName("a processed full refund settles the payment as refunded")
+        void fullRefundMarksRefunded() {
             User owner = user(1L, Role.CUSTOMER);
             Payment payment = aPayment(owner).status(PaymentStatus.PAID).build();
             when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
 
-            service.recordAndApplyWebhook("evt_1", eventType, "{}", true, "order_1", "pay_1");
+            service.recordAndApplyWebhook("evt_1", "refund.processed", "{}", true, "order_1", "pay_1", "full");
+
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+        }
+
+        @Test
+        @DisplayName("a partial refund keeps the payment paid")
+        void partialRefundKeepsPaid() {
+            User owner = user(1L, Role.CUSTOMER);
+            Payment payment = aPayment(owner).status(PaymentStatus.PAID).build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            service.recordAndApplyWebhook("evt_1", "refund.processed", "{}", true, "order_1", "pay_1", "partial");
+
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
+        }
+
+        @Test
+        @DisplayName("refund.created is only a request, so the payment stays paid")
+        void refundCreatedKeepsPaid() {
+            User owner = user(1L, Role.CUSTOMER);
+            Payment payment = aPayment(owner).status(PaymentStatus.PAID).build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            service.recordAndApplyWebhook("evt_1", "refund.created", "{}", true, "order_1", "pay_1", "full");
+
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "payment.captured", "order.paid" })
+        @DisplayName("a late capture cannot turn a refunded payment back into paid")
+        void lateCaptureKeepsRefunded(String eventType) {
+            User owner = user(1L, Role.CUSTOMER);
+            Payment payment = aPayment(owner).status(PaymentStatus.REFUNDED).razorpayPaymentId("pay_1").build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            service.recordAndApplyWebhook("evt_9", eventType, "{}", true, "order_1", "pay_1");
 
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
         }
