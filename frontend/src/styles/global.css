@@ -1972,7 +1972,8 @@ div:has(> .bm-scroll .waterproofing-modal-scope) {
 /* Waterproofing brand validation popup */
 .wp-validation-popup {
   position: fixed;
-  top: 24px;
+  /* Below the fixed site header, so it doesn't cover the nav links. */
+  top: calc(var(--header-h) + 12px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 2200;

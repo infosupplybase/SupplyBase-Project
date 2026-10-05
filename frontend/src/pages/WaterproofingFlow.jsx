@@ -411,7 +411,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
 
   /* -------------------------------------------------------- config step */
   return (
-    <div className={modal ? 'pnt-flow-shell wp-modal-flow' : 'pnt-flow-shell'}>
+    <div className={modal ? 'pnt-flow-shell wp-modal-flow' : 'pnt-flow-shell wp-page-flow'}>
       <div className="container container-narrow">
         <FlowTopBar flow={flow} onBack={goBack} plain />
 
