@@ -1,183 +1,159 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
-import PaintingHero from '../components/painting/PaintingHero';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
+import ModalFoot from '../components/services/ModalFoot';
 import useInteriorDesignCatalogue from '../hooks/useInteriorDesignCatalogue';
-import {
-  getCategoryBySlug, getProjectBySlug, idPackageTiers, idInclusions, idStyles, idColourThemes,
-  ID_REFERENCE_PACKAGES, ID_REFERENCE_STATS, ID_REFERENCE_PROJECT_SLUG,
-  idWhatsNext, idProcessSteps, idFaqs,
-} from '../data/interiorDesignContent';
+import { getCategoryBySlug, idPackageTiers } from '../data/interiorDesignContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
-import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
-import ModalFoot from '../components/services/ModalFoot';
 
-/**
- * /services/interior-design/:categorySlug/:projectSlug — one page, every
- * project. Follows the reference's own screen order: Package -> Details
- * -> Customise -> Consultation Details -> Schedule -> Confirm, with What
- * Happens Next / Process / Support bundled into the confirmation stage
- * rather than fragmented into more routes (same precedent as Painting's
- * Renovation closing banner).
- *
- * Only `ID_REFERENCE_PROJECT_SLUG` ("Modern Minimal") has real package
- * prices/area/timeline/warranty — every other project shows an honest
- * "Quotation after site visit" instead of a guessed number (see V18's
- * migration comment).
- */
 const PACKAGE = 0;
-const DETAILS = 1;
-const CUSTOMISE = 2;
-const CONSULT_DETAILS = 3;
-const SCHEDULE = 4;
-const CONFIRM = 5;
+const INCLUDED = 1;
+const ESTIMATE = 2;
+const SLOT = 3;
+const DETAILS = 4;
+
+const packageInclusions = {
+  standard: [
+    'Space planning and furniture layout',
+    'Living room TV unit design',
+    'Bedroom wardrobe design',
+    'Modular kitchen design',
+    'Colour and material selection guidance',
+    'Basic lighting layout',
+    'Design consultation and project coordination',
+  ],
+  premium: [
+    'Detailed space planning and furniture layout',
+    'Custom living room TV unit and storage design',
+    'Bedroom wardrobes with personalised storage planning',
+    'Modular kitchen with accessory planning',
+    'False ceiling and decorative lighting design',
+    'Wall finishes and feature wall design',
+    'Dining area and crockery storage design',
+    'Material selection and project coordination',
+  ],
+};
+
+const packageImages = {
+  standard: '/assets/projects/modern-interior.webp',
+  premium: '/assets/pop-ceiling/hero/living-room-cove.webp',
+};
 
 export default function InteriorDesignFlow({
   modal = false,
-  categorySlug: propCategorySlug,
-  projectSlug: propProjectSlug,
+  categorySlug: suppliedCategorySlug,
   onBackToCatalogue,
   onStepChange,
-  startAtDetails = false,
-  customRequirements = '',
 }) {
   const params = useParams();
-
-  const categorySlug = propCategorySlug || params.categorySlug;
-  const projectSlug = propProjectSlug || params.projectSlug;
+  const categorySlug = suppliedCategorySlug || params.categorySlug;
   const category = getCategoryBySlug(categorySlug);
-  const project = category ? getProjectBySlug(category.slug, projectSlug) : null;
   const { user } = useAuth();
-  const { category: liveCategory } = useInteriorDesignCatalogue();
-
-  // This form's step and answers live in the browser's history (see
-  // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
-  const scope = `f:id:${categorySlug}:${projectSlug}`;
-  const formBack = useFormBack();
-  // The "Custom" path (InteriorDesignCustomFlow) has no project or package:
-  // it starts at the customer's details and books their requirements.
-  const firstStage = startAtDetails ? CONSULT_DETAILS : PACKAGE;
-  const [stage, setStage] = useHistoryState(`${scope}:stage`, firstStage, { push: true });
-  const [tier, setTier] = useHistoryState(`${scope}:tier`, 'standard');
-  const [compareOpen, setCompareOpen] = useState(false);
-  const [detailTab, setDetailTab] = useState('overview');
-  const [customiseTab, setCustomiseTab] = useState('style');
-  const [style, setStyle] = useHistoryState(`${scope}:style`, '');
-  const [colour, setColour] = useHistoryState(`${scope}:colour`, '');
-  const [requirements, setRequirements] = useHistoryState(`${scope}:requirements`, '');
-  const [previewOpen, setPreviewOpen] = useState(false);
-
+  const { category: liveCategory, loading, error: catalogueError } =
+    useInteriorDesignCatalogue();
   const pickedLocation = usePickedLocation();
   const ensureLogin = useEnsureLogin();
-  const [details, setDetails] = useHistoryState(`${scope}:details`, user
-    ? { ...emptyDetails, name: user.fullName || '', phone: user.phone || '', email: user.email || '' }
-    : emptyDetails);
+  const formBack = useFormBack();
+
+  const scope = `f:id:simple-v2:${categorySlug}`;
+  const [stage, setStage] = useHistoryState(`${scope}:stage`, PACKAGE, { push: true });
+  const [tier, setTier] = useHistoryState(`${scope}:tier`, '');
   const [date, setDate] = useHistoryState(`${scope}:date`, '');
   const [time, setTime] = useHistoryState(`${scope}:time`, '');
+  const [details, setDetails] = useHistoryState(
+    `${scope}:details`,
+    user
+      ? {
+          ...emptyDetails,
+          name: user.fullName || '',
+          phone: user.phone || '',
+          email: user.email || '',
+        }
+      : { ...emptyDetails }
+  );
+  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
-  const hasPricing = project?.hasReferencePricing;
-  const packagePrice = useMemo(() => {
-    if (!hasPricing) return null;
-    return ID_REFERENCE_PACKAGES[tier];
-  }, [hasPricing, tier]);
+  const selectedPackage = idPackageTiers.find((item) => item.key === tier);
 
-  if ((!category || !project) && !startAtDetails) {
-    if (modal) return null;
-
-    return (
-      <Navigate
-        to="/services/interior-design"
-        replace
-      />
-    );
+  if (!category) {
+    return modal ? null : <Navigate to="/services/interior-design" replace />;
   }
 
-  const jumpToStage = (s) => {
-    setStage(s);
-
-    if (modal) {
-      onStepChange?.();
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  const moveTo = (nextStage) => {
+    setSubmitError('');
+    setStage(nextStage);
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const goBack = () => {
-    setSubmitError('');
-
-    if (stage === firstStage && modal) {
-      onBackToCatalogue?.();
-      return;
-    }
-
-    formBack(() => setStage((s) => Math.max(s - 1, firstStage)));
-
-    if (modal) {
-      onStepChange?.();
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const canLeaveDetails = () => {
-    const next = validateDetails(details, pickedLocation);
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
-
-  const setDetail = (key) => (e) => {
-    setDetails((d) => ({ ...d, [key]: e.target.value }));
-    setErrors((err) => ({ ...err, [key]: undefined }));
-    setSubmitError('');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     if (busy) return;
-    if (!date || !time) {
-      setErrors({ slot: 'Please choose a date and a time' });
+    setSubmitError('');
+    if (stage === PACKAGE) {
+      if (modal) onBackToCatalogue?.();
       return;
     }
-    // Every booking needs an account: ask now, over this form (LoginGate).
+    formBack(() => setStage(Math.max(PACKAGE, stage - 1)));
+    if (modal) onStepChange?.();
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const setDetail = (key) => (event) => {
+    setDetails((previous) => ({ ...previous, [key]: event.target.value }));
+    setErrors((previous) => ({ ...previous, [key]: undefined }));
+    setSubmitError('');
+  };
+
+  const submitBooking = async (event) => {
+    event.preventDefault();
+    if (busy || receipt) return;
+
+    if (!selectedPackage) {
+      moveTo(PACKAGE);
+      return;
+    }
+
+    if (!date || !time) {
+      setErrors((previous) => ({
+        ...previous,
+        slot: 'Please choose a date and a time.',
+      }));
+      moveTo(SLOT);
+      return;
+    }
+
+    const validation = validateDetails(details, pickedLocation);
+    setErrors(validation);
+    if (Object.keys(validation).length) return;
+
+    if (!liveCategory || loading || catalogueError) {
+      setSubmitError('Service information is unavailable. Please reopen and try again.');
+      return;
+    }
+
     if (!(await ensureLogin(details))) return;
 
     setBusy(true);
     setSubmitError('');
     try {
-      const parts = [];
-      if (customRequirements.trim()) {
-        // The "Custom" path: the customer's own brief, no project or package.
-        parts.push(`Requirements: ${customRequirements.trim()}`);
-      } else {
-        const tierMeta = idPackageTiers.find((t) => t.key === tier);
-        if (category && project) {
-          parts.push(`Project: ${category.name} — ${project.name} (${project.location})`);
-        }
-        parts.push(`Package: ${tierMeta?.name || tier}${packagePrice ? ` (${packagePrice.priceDisplay})` : ' (quotation after site visit)'}`);
-        if (style) parts.push(`Style: ${idStyles.find((s) => s.key === style)?.name || style}`);
-        if (colour) parts.push(`Colour theme: ${idColourThemes.find((c) => c.key === colour)?.name || colour}`);
-        if (requirements.trim()) parts.push(requirements.trim());
-      }
-
       const result = await api.createBooking({
         serviceSlug: 'interior-design',
-        // 400 is the API's limit per answer (500 was rejected as a whole
-        // booking). No label: the booking shows a label in place of the
-        // value, and staff need to read the selection itself.
-        answers: [{ key: 'notes', value: parts.join(' · ').slice(0, 400) }],
+        answers: [{
+          key: 'notes',
+          value: `Home: ${category.name} · Package: ${selectedPackage.name} · Price will be confirmed during the site visit`,
+        }],
         preferredDate: date,
         preferredTime: time,
         name: details.name,
@@ -188,835 +164,310 @@ export default function InteriorDesignFlow({
         city: details.city,
         pincode: details.pincode || null,
       });
-      setReceipt(result);
-      // Photos picked in the details form go to the booking now it exists.
-      uploadBookingPhotos('id', result.bookingNumber, details.phone);
-      setStage(CONFIRM);
 
-      if (modal) {
-        onStepChange?.();
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    } catch (err) {
-      if (err && err.fieldErrors) setErrors(err.fieldErrors);
-      setSubmitError(friendlyError(err));
+      setReceipt(result);
+      uploadBookingPhotos('id', result.bookingNumber, details.phone);
+      onStepChange?.();
+    } catch (error) {
+      if (error?.fieldErrors) setErrors(error.fieldErrors);
+      setSubmitError(friendlyError(error));
     } finally {
       setBusy(false);
     }
   };
 
-  /* ---------------------------------------------------------- confirmed */
-  // Once booked, every step shows the confirmation (Back included), so the
-  // same booking cannot be sent twice.
+  const heading = (
+    <div className="id-flow-topbar">
+      {modal || stage > PACKAGE ? (
+        <button
+          type="button"
+          className="id-flow-back"
+          onClick={goBack}
+          disabled={busy || Boolean(receipt)}
+          aria-label="Go back"
+        >
+          <Icon name="arrow-left" size={18} />
+        </button>
+      ) : (
+        <Link
+          className="id-flow-back"
+          to="/services/interior-design"
+          aria-label="Back to interior categories"
+        >
+          <Icon name="arrow-left" size={18} />
+        </Link>
+      )}
+      <h2>{category.name}</h2>
+    </div>
+  );
+
+  const actions = (next, label = 'CONTINUE', disabled = false) => (
+    <ModalFoot className="pnt-step-actions modal-sticky-foot">
+      {stage === PACKAGE && !modal ? (
+        <Link className="btn btn-ghost" to="/services/interior-design">BACK</Link>
+      ) : (
+        <button type="button" className="btn btn-ghost" onClick={goBack} disabled={busy}>
+          BACK
+        </button>
+      )}
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={next}
+        disabled={disabled}
+      >
+        {label} <Icon name="arrow-right" size={17} />
+      </button>
+    </ModalFoot>
+  );
+
+  const summaryRow = (label, value) => (
+    <div style={{
+      display: 'flex', justifyContent: 'space-between',
+      gap: 16, padding: '12px 0', borderBottom: '1px solid #eee',
+    }}>
+      <span>{label}</span>
+      <strong style={{ textAlign: 'right' }}>{value}</strong>
+    </div>
+  );
+
   if (receipt) {
-    const waMessage = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
-    // The reference says both "Booking Confirmed" and "our team will call to
-    // confirm" — resolved using the real backend status rather than always
-    // claiming a confirmed appointment (see the brief's explicit note on
-    // this). Every booking starts PAYMENT_PENDING/BOOKING_REQUESTED, so
-    // this reads "Consultation Request Received" unless the booking has
-    // genuinely already reached CONFIRMED.
-    const isConfirmed = receipt.status === 'CONFIRMED';
     return (
-      <div
-  className={
-    modal
-      ? 'wizard-shell !min-h-0 !bg-transparent !p-0'
-      : 'wizard-shell'
+      <section className="pnt-section" style={{ padding: 0 }}>
+        {heading}
+        <div className="wizard-card">
+          <Icon name="check" size={32} />
+          <h2>Consultation Request Received</h2>
+          <p>Our team will contact you to confirm your appointment.</p>
+          {summaryRow('Booking number', receipt.bookingNumber)}
+          {summaryRow('Home', category.name)}
+          {summaryRow('Package', selectedPackage?.name || tier)}
+          {summaryRow('Visit', formatVisit(date, time))}
+          <p>Price will be confirmed during the site visit.</p>
+        </div>
+      </section>
+    );
   }
->
-  <div
-    className={
-      modal
-        ? 'wizard-container !w-full !max-w-none !bg-transparent !p-0'
-        : 'wizard-container'
-    }
-  >
-          <div className="wizard-card">
-            <div className="confirmed">
-              <div className="confirmed-tick">
-                <Icon name="check" size={38} strokeWidth={3} />
+
+  return (
+    <section className={modal ? 'w-full' : 'pnt-section'}>
+      <div className={modal ? 'w-full' : 'container container-narrow'}>
+        {heading}
+
+        {stage === PACKAGE && (
+          <>
+            <h3 style={{ margin: '0 0 16px' }}>Choose Your Package</h3>
+            <div className="id-package-grid">
+              {idPackageTiers.map((item) => (
+                <label
+                  key={item.key}
+                  className={`id-package-card ${tier === item.key ? 'selected' : ''}`}
+                >
+                  <input
+                    type="radio"
+                    name="interior-package"
+                    value={item.key}
+                    checked={tier === item.key}
+                    onChange={() => setTier(item.key)}
+                  />
+                  <span className="id-package-photo">
+                    <img
+                      src={packageImages[item.key]}
+                      alt={`${item.name} interior example`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </span>
+                  <span className="id-package-body">
+                    <strong>{item.name}</strong>
+                    <span className="id-package-blurb">{item.blurb}</span>
+                  </span>
+                  {tier === item.key && (
+                    <span className="id-package-check">
+                      <Icon name="check" size={18} />
+                    </span>
+                  )}
+                </label>
+              ))}
+            </div>
+            {actions(() => moveTo(INCLUDED), 'CONTINUE', !selectedPackage)}
+          </>
+        )}
+
+        {stage === INCLUDED && (
+          <>
+            <div className="wizard-card">
+              <h3 style={{ margin: '0 0 8px' }}>What’s Included</h3>
+              <p style={{ margin: '0 0 18px', color: '#666' }}>
+                {selectedPackage?.name} Package
+              </p>
+
+              <ul style={{
+                listStyle: 'none',
+                margin: 0,
+                padding: 0,
+                display: 'grid',
+                gap: 10,
+              }}>
+                {(packageInclusions[tier] || []).map((point) => (
+                  <li
+                    key={point}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 10,
+                      padding: '12px 14px',
+                      border: '1px solid #e9e5db',
+                      borderRadius: 10,
+                      background: '#fff',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <span style={{
+                      color: '#9a741b',
+                      flexShrink: 0,
+                      marginTop: 2,
+                    }}>
+                      <Icon name="check" size={18} />
+                    </span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <p style={{
+                margin: '16px 0 0',
+                fontSize: 12,
+                color: '#777',
+                lineHeight: 1.5,
+              }}>
+                Indicative scope. Final inclusions, materials and quantities
+                will be confirmed during the site visit.
+              </p>
+            </div>
+
+            {actions(() => moveTo(ESTIMATE), 'VIEW ESTIMATE', !selectedPackage)}
+          </>
+        )}
+
+        {stage === ESTIMATE && (
+          <>
+            <div className="id-selection-strip">
+              <strong>YOUR SELECTION</strong>
+              <span>Interior Design</span>
+            </div>
+
+            <div className="id-estimate-card">
+              <div className="id-estimate-row">
+                <span>Home Type</span>
+                <strong>{category.name}</strong>
               </div>
-              <h2>{isConfirmed ? 'Booking Confirmed!' : 'Consultation Request Received'}</h2>
-              <p>{isConfirmed ? 'Our expert will visit your home at the confirmed time.' : 'Our expert will call you shortly to confirm your home visit.'}</p>
 
-              <dl className="confirmed-panel">
-                <div><dt>Booking ID</dt><dd className="booking-id">{receipt.bookingNumber}</dd></div>
-                <div><dt>Date &amp; Time</dt><dd>{formatVisit(receipt.date, receipt.time)}</dd></div>
-                {customRequirements ? (
-                  <div><dt>Requirements</dt><dd>{customRequirements}</dd></div>
-                ) : (
-                  <div><dt>Project</dt><dd>{project?.name || 'Interior Design'} — {tier}</dd></div>
-                )}
-                <div><dt>Location</dt><dd>{details.city}</dd></div>
-              </dl>
-
-              <div className="pnt-fee-note">
-                <Icon name="info" size={17} />
-                <span>{receipt.message}</span>
-              </div>
-
-              <Link to="/dashboard" className={
-  modal
-    ? 'btn btn-primary md:!w-[45%] !mx-auto'
-    : 'btn btn-primary'
-}>GO TO DASHBOARD</Link>
-              <div
-  className={
-    modal
-      ? 'btn-row !flex !items-center !justify-center !gap-3'
-      : 'btn-row'
-  }
-  style={{ marginTop: 12 }}
->
-                <a href={`https://wa.me/${contact.phoneRaw}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
-                  <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
-                </a>
-                {modal ? (
+              <div className="id-estimate-row">
+                <span>Selected Package</span>
+                <div className="id-estimate-value">
+                  <strong>{selectedPackage?.name || 'Not selected'}</strong>
                   <button
                     type="button"
-                    className="btn btn-ghost btn-back"
-                    onClick={onBackToCatalogue}
+                    onClick={() => moveTo(PACKAGE)}
+                    className="id-estimate-edit"
                   >
-                    BACK TO INTERIOR DESIGN
+                    Edit
                   </button>
-                ) : (
-                  <Link
-                    to="/services/interior-design"
-                    className="btn btn-ghost btn-back"
-                  >
-                    BACK TO INTERIOR DESIGN
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {!modal && (
-            <>
-              {/* What Happens Next */}
-              <div className="pnt-included" style={{ marginTop: 24 }}>
-                <h3>What Happens Next?</h3>
-
-                <ul>
-                  {idWhatsNext.map((step, i) => (
-                    <li
-                      key={step.title}
-                      className="id-next-li"
-                    >
-                      <span className="id-next-num">
-                        {i + 1}
-                      </span>
-
-                      <span>
-                        <strong style={{ display: 'block' }}>
-                          {step.title}
-                        </strong>
-
-                        {step.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Process */}
-              <div className="id-process-row">
-                {idProcessSteps.map((p) => (
-                  <div
-                    key={p.label}
-                    className="id-process-step"
-                  >
-                    <Icon
-                      name={p.icon}
-                      size={24}
-                    />
-
-                    <span>{p.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              <Link
-                to="/services/interior-design"
-                className="btn btn-primary btn-block"
-                style={{ marginBottom: 24 }}
-              >
-                VIEW MORE PROJECTS
-
-                <Icon
-                  name="arrow-right"
-                  size={17}
-                />
-              </Link>
-
-              {/* Support */}
-              <div className="id-support-card">
-                <h3>Need Help?</h3>
-
-                <a
-                  href={`tel:+${contact.phoneRaw}`}
-                  className="id-support-row"
-                >
-                  <Icon
-                    name="phone"
-                    size={18}
-                  />
-                  Call Us — {contact.phoneDisplay}
-                </a>
-
-                <a
-                  href={`https://wa.me/${contact.phoneRaw}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="id-support-row"
-                >
-                  <Icon
-                    name="whatsapp"
-                    size={18}
-                  />
-                  Chat on WhatsApp
-                </a>
-
-                <a
-                  href={`mailto:${contact.email}`}
-                  className="id-support-row"
-                >
-                  <Icon
-                    name="mail"
-                    size={18}
-                  />
-                  Email Us — {contact.email}
-                </a>
-
-                <div className="id-faqs">
-                  {idFaqs.map((f) => (
-                    <details key={f.q}>
-                      <summary>{f.q}</summary>
-                      <p>{f.a}</p>
-                    </details>
-                  ))}
                 </div>
               </div>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
 
-  /* ------------------------------------------------------------ details */
-  if (stage === CONSULT_DETAILS) {
-    return (
-      <div className={modal ? 'wizard-shell id-modal-flow' : 'wizard-shell'}>
-        <div className="wizard-container">
-          <FlowTopBar project={project} onBack={goBack} modal={modal} />
-          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) jumpToStage(SCHEDULE); }} noValidate>
-            <div className="wizard-card">
-              <div className="wizard-card-head">
-                <h2>Your Details</h2>
-                <p>We will contact you to confirm the appointment.</p>
+              <div className="id-estimate-price">
+                <span>Estimated Price</span>
+                <strong>
+                  Price will be confirmed during the site visit
+                </strong>
               </div>
-              <CustomerDetailsFields details={details} setDetail={setDetail} errors={errors} idPrefix="id" />
-              {submitError && (
-                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
-                  <Icon name="info" size={18} /><span>{submitError}</span>
+
+              {liveCategory && (
+                <div className="id-estimate-fee">
+                  <span>Consultation fee</span>
+                  <strong>{liveCategory.visitFeeDisplay}</strong>
                 </div>
               )}
-              <ModalFoot
-  className={
-    modal
-      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 !border-0 md:!flex md:!justify-between md:!gap-3'
-      : 'wizard-foot'
-  }
->
-                <button
-                  type="button"
-                  className={
-  modal
-    ? 'btn btn-ghost btn-back !w-[72px] !min-w-[72px] !px-2 md:!w-auto md:!min-w-0 md:!flex-none md:!px-4'
-    : 'btn btn-ghost btn-back'
-}
-                  onClick={goBack}
-                >
-                  BACK
-                </button>
 
-                <button
-                  type="submit"
-                  className={
-  modal
-    ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-3 !whitespace-nowrap md:!ml-auto md:!w-auto md:!max-w-none md:!flex-none md:!px-5'
-    : 'btn btn-primary'
-}
-                >
-                  CONTINUE
-                  <Icon name="arrow-right" size={17} />
-                </button>
-              </ModalFoot>
+              {catalogueError && (
+                <p role="alert" className="alert alert-error">
+                  {catalogueError}
+                </p>
+              )}
             </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
 
-  /* ----------------------------------------------------------- schedule */
-  if (stage === SCHEDULE) {
-    return (
-      <div
-  className={
-    modal
-      ? 'wizard-shell !min-h-0 !bg-transparent !p-0'
-      : 'wizard-shell'
-  }
->
-        <div
-  className={
-    modal
-      ? 'wizard-container !w-full !max-w-none !bg-transparent !p-0'
-      : 'wizard-container'
-  }
->
-          <FlowTopBar project={project} onBack={goBack} modal={modal} />
-          <form onSubmit={handleSubmit} noValidate>
+            <ModalFoot className="id-estimate-actions">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => moveTo(SLOT)}
+                disabled={!selectedPackage || loading || !liveCategory}
+              >
+                BOOK A HOME VISIT
+                <Icon name="arrow-right" size={17} />
+              </button>
+            </ModalFoot>
+          </>
+        )}
+        {stage === SLOT && (
+          <>
             <div className="wizard-card">
-              <div className="wizard-card-head">
-                <h2>Book a Consultation</h2>
-                <p>Our designer will visit, measure your space and share a detailed quotation.</p>
-              </div>
+              <h3 style={{ marginTop: 0 }}>Choose Date & Time</h3>
               <SlotPicker
                 serviceSlug="interior-design"
                 date={date}
                 time={time}
-                onPick={(d, t) => { setDate(d); setTime(t); setErrors((e) => ({ ...e, slot: undefined })); }}
+                onPick={(nextDate, nextTime) => {
+                  setDate(nextDate);
+                  setTime(nextTime);
+                  setErrors((previous) => ({ ...previous, slot: undefined }));
+                }}
                 error={errors.slot}
               />
+            </div>
+            {actions(() => moveTo(DETAILS), 'CONTINUE', !date || !time)}
+          </>
+        )}
 
-              <div className="pnt-fee-strip">
-                <span>{liveCategory ? liveCategory.visitFeeDisplay : '₹99.00'}</span>
-                <span>Consultation fee — adjusted in your final project cost if you proceed</span>
-              </div>
-
+        {stage === DETAILS && (
+          <form onSubmit={submitBooking} noValidate>
+            <div className="wizard-card">
+              <h3 style={{ marginTop: 0 }}>Your Details</h3>
+              <p>{formatVisit(date, time)}</p>
+              <CustomerDetailsFields
+                details={details}
+                setDetail={setDetail}
+                errors={errors}
+                idPrefix="id"
+              />
               {submitError && (
-                <div role="alert" className="alert alert-error" style={{ marginTop: 18 }}>
-                  <Icon name="info" size={18} /><span>{submitError}</span>
+                <div role="alert" className="alert alert-error" style={{ marginTop: 16 }}>
+                  {submitError}
                 </div>
               )}
-              <ModalFoot
-  className={
-    modal
-      ? 'wizard-foot modal-sticky-foot !grid !w-full !grid-cols-[92px_minmax(0,1fr)] !items-stretch !gap-2 !border-0 md:!flex md:!justify-end md:!gap-3'
-      : 'wizard-foot'
-  }
->
-                <button
-  type="button"
-  className={
-    modal
-      ? 'btn btn-ghost btn-back !m-0 !w-full !min-w-0 !max-w-full !px-2 !overflow-hidden !whitespace-nowrap md:!w-auto md:!px-4'
-      : 'btn btn-ghost btn-back'
-  }
-  onClick={goBack}
->
-  BACK
-</button>
-                <button
-  type="submit"
-  className={
-  modal
-    ? 'btn btn-primary !m-0 !w-full !min-w-0 !max-w-full !px-2 !text-[10px] !whitespace-nowrap !overflow-hidden md:!w-fit md:!min-w-0 md:!max-w-none md:!px-5 md:!text-sm md:!ml-auto'
-    : 'btn btn-primary'
-}
-  disabled={busy}
->
-                  {busy ? 'BOOKING…' : 'CONFIRM BOOKING'} <Icon name="arrow-right" size={17} />
-                </button>
-              </ModalFoot>
             </div>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
-  /* -------------------------------------------------------------- PACKAGE */
-  if (stage === PACKAGE) {
-    return (
-      <>
-  {!modal && (
-    <PaintingHero
-      eyebrow="INTERIOR DESIGN"
-      title={`${category.name.replace(' Interiors', '')} – ${project.name}`}
-      tagline={project.location}
-      image={project.image}
-      trustPoints={[]}
-    />
-  )}
-
-  <section
-    className={
-      modal
-        ? '!w-full !bg-transparent !p-0'
-        : 'pnt-section'
-    }
-  >
-    <div
-      className={
-        modal
-          ? '!w-full !max-w-none !mx-auto !p-0'
-          : 'container container-narrow'
-      }
-    >
-            <h2 className="pnt-step-title">Choose Your Package</h2>
-
-            <div className="id-package-grid">
-              {idPackageTiers.map((t) => {
-                const price = hasPricing ? ID_REFERENCE_PACKAGES[t.key] : null;
-                return (
-                  <label key={t.key} className={`id-package-card ${tier === t.key ? 'selected' : ''}`}>
-                    <input type="radio" name="tier" value={t.key} checked={tier === t.key} onChange={() => setTier(t.key)} />
-                    <span className="id-package-icon"><Icon name={t.icon} size={24} /></span>
-                    <span className="id-package-body">
-                      <strong>{t.name}</strong>
-                      <span className="id-package-price">{price ? price.priceDisplay : 'Quotation after site visit'}</span>
-                      <span className="id-package-blurb">{t.blurb}</span>
-                    </span>
-                    {tier === t.key && <span className="id-package-check"><Icon name="check" size={12} strokeWidth={3.5} /></span>}
-                  </label>
-                );
-              })}
-            </div>
-
-            <button type="button" className="pnt-compare-link" onClick={() => setCompareOpen(true)}>
-              <Icon name="layers" size={16} /> Compare Packages <Icon name="chevron-right" size={15} />
-            </button>
-
-            <div className="pnt-included">
-              <h3>What&rsquo;s Included</h3>
-              <div className="id-inclusion-grid">
-                {idInclusions.map((inc) => (
-                  <div key={inc.label} className="id-inclusion-item">
-                    <Icon name={inc.icon} size={20} />
-                    <span>{inc.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {!hasPricing && (
-              <p className="wp-rate-note">
-                This project&rsquo;s package price will be confirmed during your free site consultation — the ₹4.99–9.99 Lakh
-                range shown for Modern Minimal (1 BHK, Mumbai) is a specific illustrated example, not a price for every home.
-              </p>
-            )}
-
-            <ModalFoot
-  className={
-    modal
-      ? 'pnt-step-actions modal-sticky-foot !flex !w-full !items-center !justify-between !gap-3'
-      : 'pnt-step-actions'
-  }
->
-              {modal ? (
-  <button
-    type="button"
-    className="btn btn-ghost btn-back !w-auto !min-w-0 !flex-none !px-4"
-    onClick={onBackToCatalogue}
-  >
-    BACK
-  </button>
-) : (
-  <Link
-    to={`/services/interior-design/${category.slug}`}
-    className="btn btn-ghost btn-back"
-  >
-    BACK
-  </Link>
-)}
+            <ModalFoot className="pnt-step-actions modal-sticky-foot">
               <button
-  type="button"
-  className={
-    modal
-      ? 'btn btn-primary !ml-auto !w-auto !min-w-0 !flex-none !px-5'
-      : 'btn btn-primary'
-  }
-  onClick={() => jumpToStage(DETAILS)}
->
-                Continue <Icon name="arrow-right" size={17} />
-              </button>
-            </ModalFoot>
-          </div>
-        </section>
-
-        {compareOpen && (
-          <div className="pnt-modal-overlay" onClick={() => setCompareOpen(false)}>
-            <div className="pnt-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="pnt-modal-head">
-                <h3>Compare Packages</h3>
-                <button type="button" onClick={() => setCompareOpen(false)} aria-label="Close">
-                  <Icon name="close" size={18} />
-                </button>
-              </div>
-              <div className="pnt-modal-body pnt-compare-table">
-                {idPackageTiers.map((t) => {
-                  const price = hasPricing ? ID_REFERENCE_PACKAGES[t.key] : null;
-                  return (
-                    <div key={t.key} className="pnt-compare-col">
-                      <strong>{t.name}</strong>
-                      <span className="pnt-option-price">{price ? price.priceDisplay : 'Quote after visit'}</span>
-                      <p>{t.blurb} All tiers include the full inclusion list above — material grade and finish level are what scale with the tier, confirmed exactly during your consultation.</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
-
-  /* -------------------------------------------------------------- DETAILS */
-  if (stage === DETAILS) {
-    return (
-      <div
-        className={
-          modal
-            ? 'pnt-flow-shell !min-h-0 !bg-transparent !p-0'
-            : 'pnt-flow-shell'
-        }
-      >
-        <div className={modal ? '!w-full !max-w-none !p-0' : 'container container-narrow'}>
-          <FlowTopBar project={project} onBack={goBack} plain modal={modal} />
-          <div
-            className={
-              modal
-                ? 'pnt-step-card !w-full !max-w-none !m-0 !p-0 !bg-transparent !bg-none !border-0 !shadow-none'
-                : 'pnt-step-card'
-            }
-          >
-            <img src={project.image} alt={project.name} className="id-detail-hero" />
-            <h2 className="pnt-step-title" style={{ marginTop: 16 }}>{project.name}</h2>
-            <p className="question-hint"><Icon name="map-pin" size={14} /> {project.location} · {idPackageTiers.find((t) => t.key === tier)?.name} package
-              {packagePrice ? ` · ${packagePrice.priceDisplay}` : ' · Quotation after site visit'}
-            </p>
-
-            <div className="pnt-tabs" role="tablist" style={{ marginTop: 16 }}>
-              {['overview', 'inclusions', 'materials', 'gallery'].map((t) => (
-                <button key={t} type="button" role="tab" aria-selected={detailTab === t} className={`pnt-tab ${detailTab === t ? 'active' : ''}`} onClick={() => setDetailTab(t)}>
-                  {t[0].toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
-
-            {detailTab === 'overview' && (
-              <div className="id-tab-panel">
-                <p>
-                  A {category.name} concept in {project.location}, finished to the {idPackageTiers.find((t) => t.key === tier)?.name.toLowerCase()} tier.
-                  {project.slug === ID_REFERENCE_PROJECT_SLUG
-                    ? ' This is the illustrated reference project — its area, timeline and warranty below are real example figures.'
-                    : ' Exact scope, materials and timeline for this project are confirmed during your free site consultation.'}
-                </p>
-                {hasPricing && (
-                  <div className="id-stats-row">
-                    <div>
-                      <Icon name="ruler" size={20} />
-                      <span className="id-stat-value">{ID_REFERENCE_STATS.areaSqft}</span>
-                      <span className="id-stat-label">Area</span>
-                    </div>
-                    <div>
-                      <Icon name="clock" size={20} />
-                      <span className="id-stat-value">{ID_REFERENCE_STATS.timeline}</span>
-                      <span className="id-stat-label">Timeline</span>
-                    </div>
-                    <div>
-                      <Icon name="shield" size={20} />
-                      <span className="id-stat-value">{ID_REFERENCE_STATS.warranty}</span>
-                      <span className="id-stat-label">Warranty</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {detailTab === 'inclusions' && (
-              <div className="id-tab-panel id-inclusion-grid">
-                {idInclusions.map((inc) => (
-                  <div key={inc.label} className="id-inclusion-item">
-                    <Icon name={inc.icon} size={20} />
-                    <span>{inc.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {detailTab === 'materials' && (
-              <div className="id-tab-panel">
-                <p className="question-hint">
-                  Material specification is confirmed with you during the site consultation, based on the package tier and
-                  your customisation choices — we don&rsquo;t fabricate a fixed materials list before that visit.
-                </p>
-              </div>
-            )}
-
-            {detailTab === 'gallery' && (
-              <div className="id-tab-panel">
-                <button type="button" className="id-gallery-thumb" onClick={() => setPreviewOpen(true)}>
-                  <img loading="lazy" decoding="async" src={project.image} alt={project.name} />
-                </button>
-                <p className="question-hint" style={{ marginTop: 8 }}>+ more photos shared during your consultation.</p>
-              </div>
-            )}
-
-            <ModalFoot className={modal ? 'pnt-step-actions modal-sticky-foot' : 'pnt-step-actions'}>
-              <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-              <button type="button" className="btn btn-primary" onClick={() => jumpToStage(CUSTOMISE)}>
-                Continue <Icon name="arrow-right" size={17} />
-              </button>
-            </ModalFoot>
-            <Link to="/quote?service=interior-design" className="pnt-compare-link" style={{ marginTop: 12 }}>
-              <Icon name="chat" size={16} /> Get Detailed Quotation <Icon name="chevron-right" size={15} />
-            </Link>
-          </div>
-        </div>
-
-        {previewOpen && (
-          <div className="pnt-modal-overlay" onClick={() => setPreviewOpen(false)}>
-            <div className="pnt-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="pnt-modal-head">
-                <h3>{project.name}</h3>
-                <button type="button" onClick={() => setPreviewOpen(false)} aria-label="Close"><Icon name="close" size={18} /></button>
-              </div>
-              <div className="pnt-modal-body">
-                <img loading="lazy" decoding="async" src={project.image} alt={project.name} style={{ width: '100%', borderRadius: 8 }} />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  /* ------------------------------------------------------------ CUSTOMISE */
-  const custTabs = ['style', 'materials', 'colours', 'layouts'];
-  return (
-    <div
-      className={
-        modal
-          ? 'pnt-flow-shell !min-h-0 !bg-transparent !p-0'
-          : 'pnt-flow-shell'
-      }
-    >
-      <div className={modal ? '!w-full !max-w-none !p-0' : 'container container-narrow'}>
-        <FlowTopBar project={project} onBack={goBack} plain modal={modal} />
-        <div
-          className={
-            modal
-              ? 'pnt-step-card !w-full !max-w-none !m-0 !p-0 !bg-transparent !bg-none !border-0 !shadow-none'
-              : 'pnt-step-card'
-          }
-        >
-          <h2 className="pnt-step-title">Customise Your Design</h2>
-
-          <div className="pnt-tabs" role="tablist">
-            {custTabs.map((t) => (
-              <button key={t} type="button" role="tab" aria-selected={customiseTab === t} className={`pnt-tab ${customiseTab === t ? 'active' : ''}`} onClick={() => setCustomiseTab(t)}>
-                {t[0].toUpperCase() + t.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {customiseTab === 'style' && (
-            <div className="id-tab-panel">
-              <div
-                className={
-                  modal
-                    ? 'pnt-option-list !w-full md:!max-w-[520px] md:!mx-auto'
-                    : 'pnt-option-list'
-                }
+                type="button"
+                className="btn btn-ghost"
+                onClick={goBack}
+                disabled={busy}
               >
-                {idStyles.map((s) => (
-                  <label
-                    key={s.key}
-                    className={`pnt-option ${style === s.key ? 'selected' : ''
-                      } ${modal
-                        ? '!w-full md:!min-h-[48px] md:!px-3 md:!py-2'
-                        : ''
-                      }`}
-                  >
-                    <input type="radio" name="style" checked={style === s.key} onChange={() => setStyle(s.key)} />
-                    <span className="pnt-option-icon"><Icon name={s.icon} size={24} /></span>
-                    <span className="pnt-option-body">
-                      <span className="pnt-option-label">{s.name}</span>
-                      <span className="pnt-option-hint">{s.hint}</span>
-                    </span>
-                    <span className="pnt-option-radio" aria-hidden="true" />
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {customiseTab === 'materials' && (
-            <div className="id-tab-panel">
-              <p className="question-hint">
-                Material choices depend on your selected package and space — our designer will show you real samples and
-                confirm your final selection during the consultation.
-              </p>
-            </div>
-          )}
-
-          {customiseTab === 'colours' && (
-            <div className="id-tab-panel">
-              <div className="pnt-swatch-grid">
-                {idColourThemes.map((c) => (
-                  <label key={c.key} className={`pnt-swatch ${colour === c.key ? 'selected' : ''}`}>
-                    <input type="radio" name="colour" checked={colour === c.key} onChange={() => setColour(c.key)} />
-                    <span className="pnt-swatch-chip" style={{ background: c.hex }} aria-hidden="true">
-                      {colour === c.key && <Icon name="check" size={16} strokeWidth={3} />}
-                    </span>
-                    <span className="pnt-swatch-name">{c.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {customiseTab === 'layouts' && (
-            <div className="id-tab-panel">
-              <p className="question-hint">
-                Floor plans and layout options depend on your actual room measurements — these are confirmed on site, not
-                guessed in advance.
-              </p>
-            </div>
-          )}
-
-          <div className="field" style={{ marginTop: 16 }}>
-            <label htmlFor="id-requirements">Add Special Requirements (Optional)</label>
-            <textarea
-              id="id-requirements"
-              rows={3}
-              placeholder="e.g. more storage, study table, TV unit, etc."
-              maxLength={300}
-              value={requirements}
-              onChange={(e) => setRequirements(e.target.value)}
-            />
-          </div>
-
-          <div
-            className={
-              modal
-                ? 'id-3d-actions !flex !w-full !flex-col !gap-2 md:!flex-row'
-                : 'id-3d-actions'
-            }
-          >
-            <button type="button" className={
-              modal
-                ? 'btn btn-ghost !w-full !whitespace-normal !text-center md:!w-auto'
-                : 'btn btn-ghost'
-            } onClick={() => setPreviewOpen(true)}>
-              <Icon name="eye" size={16} /> View Design Preview
-            </button>
-            <a
-              href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I'd like a 3D design consultation for ${project.name} (${category.name}).`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={
-                modal
-                  ? 'btn btn-ghost !w-full !whitespace-normal !text-center md:!w-auto'
-                  : 'btn btn-ghost'
-              }
-            >
-              <Icon name="chat" size={16} /> Request a 3D Design Consultation
-            </a>
-          </div>
-
-          <ModalFoot
-  className={
-    modal
-      ? 'pnt-step-actions modal-sticky-foot !grid !w-full !grid-cols-[72px_minmax(0,1fr)] !items-center !gap-2 md:!flex md:!justify-between md:!gap-3'
-      : 'pnt-step-actions'
-  }
->
-            <button
-              type="button"
-              className={
-  modal
-    ? 'btn btn-ghost btn-back !w-[72px] !min-w-[72px] !px-2 md:!w-auto md:!min-w-0 md:!flex-none md:!px-4'
-    : 'btn btn-ghost btn-back'
-}
-              onClick={goBack}
-            >
-              BACK
-            </button>
-            <button
-              type="button"
-              className={
-  modal
-    ? 'btn btn-primary !w-full !min-w-0 !max-w-full !px-2 !text-[12px] !whitespace-nowrap !overflow-hidden md:!ml-auto md:!w-auto md:!max-w-none md:!flex-none md:!px-5 md:!text-sm'
-    : 'btn btn-primary'
-}
-              onClick={() => jumpToStage(CONSULT_DETAILS)}
-            >
-              Book Now ₹99 <Icon name="arrow-right" size={17} />
-            </button>
-          </ModalFoot>
-        </div>
+                BACK
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={busy || loading || !liveCategory}
+              >
+                {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
+              </button>
+            </ModalFoot>
+          </form>
+        )}
       </div>
-
-      {previewOpen && (
-        <div className="pnt-modal-overlay" onClick={() => setPreviewOpen(false)}>
-          <div className="pnt-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="pnt-modal-head">
-              <h3>{project.name} — Design Preview</h3>
-              <button type="button" onClick={() => setPreviewOpen(false)} aria-label="Close"><Icon name="close" size={18} /></button>
-            </div>
-            <div className="pnt-modal-body">
-              <img loading="lazy" decoding="async" src={project.image} alt={project.name} style={{ width: '100%', borderRadius: 8 }} />
-              <p className="question-hint" style={{ marginTop: 10 }}>
-                An illustrative concept preview, not a personalised 3D render of your own space — request a 3D design
-                consultation below for that.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function FlowTopBar({ project, onBack, plain, modal }) {
-  // The booking pop-up has its own header (title) and footer (Back), so
-  // there this bar would only be an empty band above the content.
-  if (modal) return null;
-
-  return (
-    <div className={plain ? 'pnt-top' : 'wizard-top'}>
-      <button
-        type="button"
-        className={plain ? 'pnt-back' : 'wizard-back'}
-        onClick={onBack}
-        aria-label="Go back"
-      >
-        <Icon name="arrow-left" size={20} />
-      </button>
-
-      <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>
-        {project?.name || 'Custom Interior Design'}
-      </h1>
-
-      <a
-        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
-          `Hello Supplybase, I need help with ${project?.name || 'Custom Interior Design'}.`
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={plain ? 'pnt-help' : 'wizard-help'}
-      >
-        Need help?
-      </a>
-    </div>
+    </section>
   );
 }

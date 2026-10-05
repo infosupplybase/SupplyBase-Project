@@ -41,7 +41,6 @@ const WaterproofingCategory = lazyPage(() => import('./pages/WaterproofingCatego
 const WaterproofingBathroom = lazyPage(() => import('./pages/WaterproofingBathroom'));
 const WaterproofingFlow = lazyPage(() => import('./pages/WaterproofingFlow'));
 const InteriorDesignCategory = lazyPage(() => import('./pages/InteriorDesignCategory'));
-const InteriorDesignCatalogue = lazyPage(() => import('./pages/InteriorDesignCatalogue'));
 const InteriorDesignFlow = lazyPage(() => import('./pages/InteriorDesignFlow'));
 const About = lazyPage(() => import('./pages/About'));
 const Contact = lazyPage(() => import('./pages/Contact'));
@@ -220,7 +219,7 @@ export default function App() {
             config-driven flow (package -> details -> customise ->
             consultation -> confirm). */}
         <Route path="services/interior-design" element={<InteriorDesignCategory />} />
-        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignCatalogue />} />
+        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignFlow />} />
         <Route path="services/interior-design/:categorySlug/:projectSlug" element={<InteriorDesignFlow />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />

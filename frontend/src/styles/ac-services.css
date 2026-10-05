@@ -1242,3 +1242,233 @@
   opacity: .5;
   cursor: wait;
 }
+/* AC category header and spacing */
+
+.booking-pop-ac-layout .bm-scroll:has(.ac-category-modal) {
+  padding: 0 !important;
+}
+
+.booking-pop-ac-layout:has(.ac-category-modal) .pop-modal-scope,
+.booking-pop-ac-layout:has(.ac-category-modal) .pop-modal-scope > .container,
+.booking-pop-ac-layout:has(.ac-category-modal) .ac-booking-ui .ac-pop-flow {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.booking-pop-ac-layout:has(.ac-category-modal)
+  > button[aria-label="Close booking modal"] {
+  top: 20px !important;
+}
+
+.booking-pop-ac-layout .ac-category-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 24px 76px 22px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.booking-pop-ac-layout .ac-category-eyebrow {
+  margin: 0 0 12px;
+  color: #ff9800;
+  font-family: var(--font-body, Arial, sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.booking-pop-ac-layout .ac-category-title {
+  margin: 0 !important;
+  color: #111 !important;
+  font-family: var(--font-display, Arial, sans-serif) !important;
+  font-size: clamp(32px, 7vw, 48px) !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  letter-spacing: .01em !important;
+  text-transform: uppercase !important;
+}
+
+.booking-pop-ac-layout .ac-category-modal {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.booking-pop-ac-layout .ac-category-modal > .container {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 20px 24px 24px !important;
+}
+
+.booking-pop-ac-layout .ac-category-modal .ac-category-compact {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding-top: 0 !important;
+  gap: 12px !important;
+}
+
+@media (max-width: 600px) {
+  .booking-pop-ac-layout .ac-category-header {
+    padding: 20px 68px 18px 16px;
+  }
+
+  .booking-pop-ac-layout .ac-category-modal > .container {
+    padding: 16px !important;
+  }
+
+  .booking-pop-ac-layout .ac-category-eyebrow {
+    font-size: 12px;
+  }
+}
+/* AC category card inset */
+.booking-pop-ac-layout .ac-category-modal > .container {
+  padding: 0 !important;
+}
+
+.booking-pop-ac-layout .ac-category-modal .ac-category-compact {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 20px !important;
+  gap: 12px !important;
+}
+
+.booking-pop-ac-layout .ac-category-header {
+  padding-left: 20px;
+}
+
+@media (max-width: 600px) {
+  .booking-pop-ac-layout .ac-category-modal .ac-category-compact {
+    padding: 16px !important;
+  }
+
+  .booking-pop-ac-layout .ac-category-header {
+    padding-left: 16px;
+  }
+}
+/* AC flow consistent spacing */
+
+.booking-pop-ac-layout .bm-scroll {
+  padding: 56px 20px 20px !important;
+}
+
+.booking-pop-ac-layout .pop-modal-scope,
+.booking-pop-ac-layout .pop-modal-scope > .container,
+.booking-pop-ac-layout .ac-booking-ui .ac-pop-flow,
+.booking-pop-ac-layout .ac-booking-ui .ac-checkout-shell {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
+}
+
+.booking-pop-ac-layout .ac-pop-top,
+.booking-pop-ac-layout .ac-pop-progress,
+.booking-pop-ac-layout .ac-pop-step {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.booking-pop-ac-layout .bm-foot {
+  padding: 14px 20px 18px !important;
+}
+
+.booking-pop-ac-layout .ac-pop-actions {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* The category screen already has its own header and card inset. */
+.booking-pop-ac-layout .bm-scroll:has(.ac-category-modal) {
+  padding: 0 !important;
+}
+
+@media (max-width: 600px) {
+  .booking-pop-ac-layout .bm-scroll {
+    padding: 56px 16px 16px !important;
+  }
+
+  .booking-pop-ac-layout .bm-foot {
+    padding: 12px 16px 16px !important;
+  }
+}
+/* AC checkout top alignment */
+
+.booking-pop-ac-layout .bm-scroll:has(.ac-checkout-shell) {
+  padding-top: 12px !important;
+}
+
+.booking-pop-ac-layout .ac-booking-ui .ac-checkout-shell {
+  margin-top: 0 !important;
+}
+
+.booking-pop-ac-layout .ac-checkout-shell .ac-checkout-back-row {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  box-sizing: border-box;
+  margin: 0 0 12px;
+  padding: 0 56px 0 0;
+}
+
+.booking-pop-ac-layout .ac-checkout-shell .ac-checkout-back-button {
+  min-height: 36px;
+  margin: 0;
+}
+/* AC type image fitting correction */
+
+.booking-pop-ac-layout .ac-pop-option-grid:has(.ac-pop-type-image) {
+  gap: 12px !important;
+  align-items: stretch;
+}
+
+.booking-pop-ac-layout .ac-pop-option:has(.ac-pop-type-image) {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.booking-pop-ac-layout .ac-booking-ui
+  .ac-pop-option-image.ac-pop-type-image {
+  display: block !important;
+  width: 100% !important;
+  height: 136px !important;
+  flex: 0 0 136px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 12px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  background: #fff;
+}
+
+.booking-pop-ac-layout .ac-pop-option:has(.ac-pop-type-image)
+  .ac-pop-option-body {
+  padding: 10px 12px 12px !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 420px) {
+  .booking-pop-ac-layout .ac-booking-ui
+    .ac-pop-option-image.ac-pop-type-image {
+    height: 116px !important;
+    flex-basis: 116px !important;
+    padding: 10px !important;
+  }
+}
