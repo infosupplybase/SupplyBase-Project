@@ -2751,3 +2751,338 @@ button[aria-label="Close booking modal"] {
     font-size: 19px;
   }
 }
+/* Location picker clean opening view */
+.google-location-overlay {
+  padding: 16px !important;
+}
+
+.google-location-modal {
+  width: 100% !important;
+  max-width: 520px !important;
+  max-height: 90dvh !important;
+  overflow-y: auto !important;
+  padding: 22px !important;
+  box-sizing: border-box;
+  border-radius: 18px !important;
+  background: #fff !important;
+  color: #222;
+  color-scheme: light;
+}
+
+.google-location-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.google-location-header h2 {
+  margin: 5px 0 6px !important;
+  font-family: var(--font-display);
+  font-size: 24px !important;
+  line-height: 1.2;
+}
+
+.google-location-header p {
+  margin: 0 !important;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #777;
+}
+
+.google-location-close {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0 !important;
+  border: 1px solid #e5e5e5;
+  border-radius: 50%;
+  background: #fff;
+  color: #444;
+  cursor: pointer;
+}
+
+.google-location-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px !important;
+  min-height: 50px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  background: #fff;
+  color-scheme: light;
+}
+
+.google-location-autocomplete-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.google-location-autocomplete,
+.google-location-autocomplete gmp-place-autocomplete {
+  width: 100%;
+  color-scheme: light !important;
+  background: #fff !important;
+  color: #222 !important;
+}
+
+.google-location-search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  background: #fff;
+  cursor: pointer;
+}
+
+.google-current-location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  margin-top: 12px;
+  border: 1px solid #efd48a;
+  border-radius: 10px;
+  background: #fff8e8;
+  color: #94690c;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.google-location-map-toggle {
+  display: block;
+  margin: 12px 0;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #777;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.google-location-map-wrapper {
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.google-selected-location {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.google-selected-location p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.google-location-footer {
+  display: grid !important;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.google-location-footer button {
+  min-height: 44px;
+  width: 100%;
+  margin: 0;
+  border-radius: 10px;
+}
+
+@media (max-width: 420px) {
+  .google-location-modal {
+    padding: 18px !important;
+  }
+
+  .google-location-header h2 {
+    font-size: 21px !important;
+  }
+}
+/* End location picker clean opening view */
+/* Location picker final compact alignment */
+.google-location-modal.google-location-modal {
+  width: min(480px, 100%) !important;
+  padding: 24px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  border-radius: 18px !important;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, .18);
+}
+
+.google-location-modal,
+.google-location-modal * {
+  box-sizing: border-box;
+}
+
+.google-location-modal .google-location-header {
+  margin: 0 0 20px !important;
+  padding: 0 !important;
+}
+
+.google-location-modal .google-location-header h2 {
+  margin: 5px 0 7px !important;
+  font-size: 23px !important;
+}
+
+.google-location-modal .google-location-search {
+  width: 100% !important;
+  margin: 0 !important;
+  min-height: 50px !important;
+}
+
+.google-location-modal .google-current-location {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 12px 0 0 !important;
+  padding: 12px !important;
+  min-height: 46px !important;
+  font-size: 13px !important;
+}
+
+.google-location-modal .google-selected-location {
+  width: 100%;
+  margin: 16px 0 0 !important;
+}
+
+.google-location-modal .google-location-error {
+  margin: 12px 0 0 !important;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.google-location-modal .google-location-footer {
+  width: 100% !important;
+  margin: 20px 0 0 !important;
+  padding: 16px 0 0 !important;
+  border-top: 1px solid #eee;
+  grid-template-columns: 90px minmax(0, 1fr) !important;
+  gap: 10px !important;
+}
+
+.google-location-modal .google-location-footer button {
+  min-width: 0 !important;
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  font-size: 12px !important;
+}
+
+.google-location-modal .google-location-confirm:not(:disabled) {
+  background: #efbd43 !important;
+  color: #171717 !important;
+  border: 1px solid #dfaa2e !important;
+}
+
+.google-location-modal .google-location-confirm:disabled {
+  background: #f5ebd2 !important;
+  color: #94866b !important;
+  cursor: not-allowed;
+}
+
+@media (max-width: 420px) {
+  .google-location-modal.google-location-modal {
+    padding: 20px !important;
+  }
+
+  .google-location-modal .google-location-header h2 {
+    font-size: 21px !important;
+  }
+}
+/* Location search focus alignment */
+.google-location-modal .google-location-search {
+  position: relative;
+  gap: 10px !important;
+  padding: 0 12px !important;
+  border: 1px solid #dedede !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.google-location-modal .google-location-search:focus-within {
+  border-color: #d6a329 !important;
+  box-shadow: 0 0 0 3px rgba(214, 163, 41, .12) !important;
+}
+
+.google-location-modal .google-location-autocomplete-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding-right: 30px;
+}
+
+.google-location-modal .google-location-autocomplete {
+  flex: 1;
+  min-width: 0;
+}
+
+.google-location-modal gmp-place-autocomplete {
+  display: block;
+  width: 100% !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: #fff !important;
+  color-scheme: light !important;
+}
+
+.google-location-modal gmp-place-autocomplete:focus,
+.google-location-modal gmp-place-autocomplete:focus-within,
+.google-location-modal gmp-place-autocomplete:focus-visible {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.google-location-modal .google-location-search-clear {
+  position: absolute !important;
+  right: 0 !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50%;
+  background: #fff !important;
+  color: #666;
+}
+
+.google-location-modal .google-location-search-clear:hover {
+  background: #f3f3f3 !important;
+}
+
+.google-location-modal .google-location-search-clear:focus-visible {
+  outline: 2px solid #d6a329;
+  outline-offset: 2px;
+}
+/* Remove location autocomplete blue ring */
+.google-location-modal gmp-place-autocomplete::part(focus-ring) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.google-location-modal gmp-place-autocomplete::part(input) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

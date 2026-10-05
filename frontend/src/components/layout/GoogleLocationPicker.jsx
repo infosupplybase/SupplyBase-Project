@@ -193,14 +193,18 @@ export async function getCurrentLocation() {
   const { latitude, longitude } = coords;
   const place = await reverseGeocode(latitude, longitude);
 
+  if (!place?.address) {
+    throw new Error(
+      'We found your position but could not identify its address. Please search for your area or landmark.'
+    );
+  }
+
   return {
-    address:
-      place?.address ||
-      `Current location (${latitude.toFixed(5)}, ${longitude.toFixed(5)})`,
+    address: place.address,
     latitude,
     longitude,
-    city: place?.city || '',
-    pincode: place?.pincode || '',
+    city: place.city || '',
+    pincode: place.pincode || '',
   };
 }
 
@@ -209,6 +213,7 @@ export default function GoogleLocationPicker({
   onClose,
   onSelect,
 }) {
+
   const mapRef = useRef(null);
   const searchContainerRef = useRef(null);
 
@@ -232,11 +237,25 @@ export default function GoogleLocationPicker({
   /*
    * Update selected location
    */
-  const updateSelectedLocation = (
+  const updateSelectedLocation = async (
     latitude,
     longitude,
     address
   ) => {
+    if (!address || /^(Selected|Current) location\s*\(/i.test(address)) {
+      const place = await reverseGeocode(latitude, longitude);
+
+      if (!place?.address) {
+        setSelectedLocation(null);
+        setError(
+          'Could not identify this address. Please search for your area or landmark.'
+        );
+        return;
+      }
+
+      address = place.address;
+    }
+
     if (
       !mapInstanceRef.current ||
       !window.google?.maps
@@ -710,6 +729,7 @@ export default function GoogleLocationPicker({
    */
   useEffect(() => {
     if (!open) {
+
       setError('');
       setSelectedLocation(null);
       setLocationLoading(false);
@@ -794,10 +814,7 @@ export default function GoogleLocationPicker({
             onClick={onClose}
             aria-label="Close location picker"
           >
-            <Icon
-              name="x"
-              size={22}
-            />
+            <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>×</span>
           </button>
         </div>
 
@@ -822,10 +839,7 @@ export default function GoogleLocationPicker({
               }
               aria-label="Clear search"
             >
-              <Icon
-                name="x"
-                size={16}
-              />
+              <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1 }}>×</span>
             </button>
           </div>
         </div>
@@ -852,7 +866,12 @@ export default function GoogleLocationPicker({
         </button>
 
         {/* MAP */}
-        <div className="google-location-map-wrapper">
+
+
+        <div
+          className="google-location-map-wrapper"
+          style={{ display: 'none' }}
+        >
           <div
             ref={mapRef}
             className="google-location-map"
