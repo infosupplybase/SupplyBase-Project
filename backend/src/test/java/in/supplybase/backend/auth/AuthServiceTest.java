@@ -476,6 +476,29 @@ class AuthServiceTest {
         }
 
         @Test
+        @DisplayName("sends a partner's reset link to the partners site, a customer's to the main site")
+        void resetLinkFollowsTheApp() {
+            props = new AppProperties(List.of(), null, null, null, null,
+                    "https://supplybase.example", null, null, null, "https://partners.supplybase.example");
+            service = new AuthService(users, refreshTokens, passwordResetTokens, emailVerificationTokens,
+                    passwordEncoder, jwtService, googleVerifier, rateLimiter, props, mailSender);
+            JavaMailSender sender = org.mockito.Mockito.mock(JavaMailSender.class);
+            when(mailSender.getIfAvailable()).thenReturn(sender);
+            when(users.findByEmailIgnoreCase("existing@example.com")).thenReturn(Optional.of(customer(1L)));
+
+            service.forgotPassword("existing@example.com", "partner");
+            service.forgotPassword("existing@example.com", "customer");
+
+            org.mockito.ArgumentCaptor<org.springframework.mail.SimpleMailMessage> sent =
+                    org.mockito.ArgumentCaptor.forClass(org.springframework.mail.SimpleMailMessage.class);
+            verify(sender, org.mockito.Mockito.times(2)).send(sent.capture());
+            org.assertj.core.api.Assertions.assertThat(sent.getAllValues().get(0).getText())
+                    .contains("https://partners.supplybase.example/reset-password?token=");
+            org.assertj.core.api.Assertions.assertThat(sent.getAllValues().get(1).getText())
+                    .contains("https://supplybase.example/reset-password?token=");
+        }
+
+        @Test
         @DisplayName("silently does nothing for an identifier nobody has")
         void unknownIdentifierSilent() {
             when(users.findByEmailIgnoreCase("ghost@example.com")).thenReturn(Optional.empty());
