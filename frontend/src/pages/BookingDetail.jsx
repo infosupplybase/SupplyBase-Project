@@ -239,7 +239,9 @@ export default function BookingDetail() {
                       {booking.visitFeePaise != null && (
                         <li>
                           <Icon name="info" size={15} />
-                          {booking.itemsTotalPaise != null && booking.visitFeePaise === booking.itemsTotalPaise
+                          {booking.paidAt
+                            ? `Amount: ${formatRupees(booking.visitFeePaise / 100)}`
+                            : booking.itemsTotalPaise != null && booking.visitFeePaise === booking.itemsTotalPaise
                             ? `Paid on the day of the visit: ${formatRupees(booking.visitFeePaise / 100)}`
                             : `Home visit fee: ${formatRupees(booking.visitFeePaise / 100)}`}
                         </li>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import SlotPicker from '../components/booking/SlotPicker';
@@ -10,7 +11,7 @@ import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 // The same form and checks as every other booking flow.
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
-import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
+import { getSpaceBySlug, getDesignBySlug, interiorColourNames, HOME_VISIT_FEE } from '../data/interiorCatalog';
 import { formatVisitDate, formatVisitTime } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import PayBookingButton from '../components/payment/PayBookingButton';
@@ -38,13 +39,21 @@ export default function InteriorBooking({
   designSlug: propDesignSlug,
 
   selectedPanelName,
-  selectedColorName,
+  selectedColorName: popupColourName,
   referenceImage,
 
   onBack,
   onStepChange,
 }) {
   const params = useParams();
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  // The colour picked on the design page arrives as ?colour=Walnut; only the
+  // catalogue's own names are accepted. The Services pop-up passes its own.
+  const pageColour = searchParams.get('colour');
+  const selectedColorName =
+    popupColourName ||
+    (!modal && Object.values(interiorColourNames).includes(pageColour) ? pageColour : null);
 
 const spaceSlug = propSpaceSlug || params.spaceSlug;
 const designSlug = propDesignSlug || params.designSlug;
@@ -65,6 +74,18 @@ const designSlug = propDesignSlug || params.designSlug;
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  // A signed-in customer starts with their own name, phone and email.
+  useEffect(() => {
+    if (user) {
+      setForm((f) => ({
+        ...f,
+        name: f.name || user.fullName || '',
+        phone: f.phone || user.phone || '',
+        email: f.email || user.email || '',
+      }));
+    }
+  }, [user]);
   // Once booked, every step shows the confirmation (Back included), so the
   // same booking cannot be sent twice.
   const shownStep = receipt ? 2 : step;
@@ -111,7 +132,11 @@ const designSlug = propDesignSlug || params.designSlug;
     const notesParts = [`Selected design: ${selectedLabel}.`];
     // The living-room panel and colour picked in the booking pop-up, so staff
     // know exactly what the customer chose.
-    if (selectedColorName) notesParts.push(`Panel: ${selectedPanelName || '-'}, colour: ${selectedColorName}.`);
+    if (selectedPanelName && selectedColorName) {
+      notesParts.push(`Panel: ${selectedPanelName}, colour: ${selectedColorName}.`);
+    } else if (selectedColorName) {
+      notesParts.push(`Colour: ${selectedColorName}.`);
+    }
     if (String(form.notes || '').trim()) notesParts.push(form.notes.trim());
 
     setBusy(true);
@@ -196,7 +221,7 @@ if (modal) {
     (design || space).image
   }
   alt={
-    selectedColorName
+    selectedPanelName && selectedColorName
       ? `${selectedPanelName} - ${selectedColorName}`
       : (design || space).name
   }
@@ -238,7 +263,7 @@ if (modal) {
           {shownStep === 0 && (
             <div className="ibc-form-panel">
 
-{selectedColorName && (
+{selectedPanelName && selectedColorName && (
   <div
     className="
       mb-5
@@ -315,7 +340,7 @@ if (modal) {
               <span className="ibc-confirm-icon">
                 <Icon name="check" size={30} />
               </span>
-              <h2>Booking Confirmed!</h2>
+              <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
               <p>Our expert will visit your home.</p>
 
               <div className="ibc-confirm-details">
@@ -356,19 +381,14 @@ if (modal) {
                 onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
               />
 
-              <Link
-  to="/dashboard"
-  className="btn btn-dark ibc-form-submit"
->
-  View Booking
-</Link>
-
-<Link
-  to="/"
-  className="btn btn-ghost ibc-form-submit mb-2"
->
-  Back to Home
-</Link>
+              <div className="ibc-confirm-actions">
+                <Link to="/dashboard/bookings" className="btn btn-dark ibc-form-submit">
+                  View Booking
+                </Link>
+                <Link to="/" className="btn btn-ghost ibc-form-submit">
+                  Back to Home
+                </Link>
+              </div>
             </div>
           )}
         </div>

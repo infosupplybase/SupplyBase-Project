@@ -496,10 +496,20 @@ export default function AdminBookings() {
                     {formatDay(selected.preferredDate)} · {visitTime(selected) || 'no time chosen'}
                   </dd>
                 </div>
-                <div>
-                  <dt>To pay at the visit</dt>
-                  <dd>{formatRupees(selected.visitFeePaise)}</dd>
-                </div>
+                {selected.paidAt ? (
+                  <div>
+                    <dt>Paid online</dt>
+                    <dd>
+                      {formatRupees(selected.visitFeePaise)} on {formatDate(selected.paidAt)}. Nothing to
+                      collect at the visit.
+                    </dd>
+                  </div>
+                ) : (
+                  <div>
+                    <dt>To pay at the visit</dt>
+                    <dd>{formatRupees(selected.visitFeePaise)}</dd>
+                  </div>
+                )}
                 {selected.propertyType && (
                   <div>
                     <dt>Property</dt>

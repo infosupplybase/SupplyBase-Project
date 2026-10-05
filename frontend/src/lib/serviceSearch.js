@@ -12,8 +12,9 @@ import { dedupeItems } from '../hooks/usePlumbingCatalogue';
  * and the electrician's sub-services, but not the jobs listed inside the
  * other services — so "toilet", "tap", "drain", "terrace" or "false ceiling"
  * found nothing even though we do them. This covers those: the painting,
- * waterproofing and POP options and every plumbing job, each with the page
- * that opens it. Results have the same shape as the catalogue's, plus a
+ * waterproofing and POP options, every plumbing job, and the Interior by
+ * Choice spaces and designs ("study", "mandir", "entrance door"), each with
+ * the page that opens it. Results have the same shape as the catalogue's, plus a
  * `route`.
  */
 
@@ -25,6 +26,17 @@ const fromContent = (items, icon) =>
     icon: item.icon || icon,
     route: item.route,
   }));
+
+// Extra words for each Interior by Choice space, so "entrance door" or
+// "pooja" finds the right gallery.
+const interiorSpaceWords = {
+  'tv-wall': 'TV unit and wall panel designs',
+  'bed-back-wall': 'Bedroom headboard wall designs',
+  'living-room': 'Living room wall panel designs',
+  entrance: 'Entrance door and foyer designs',
+  study: 'Study table and study room designs',
+  mandir: 'Mandir and pooja unit designs',
+};
 
 // Static, so it costs nothing to build once.
 const staticEntries = [
@@ -40,6 +52,40 @@ const staticEntries = [
     route: `/services/plumbing/${tab.slug}`,
   })),
 ];
+
+// The Interior by Choice catalogue is large, so it loads with the first search
+// rather than with the home page.
+let interiorRequest = null;
+
+function loadInteriorEntries() {
+  if (!interiorRequest) {
+    interiorRequest = import('../data/interiorCatalog')
+      .then(({ interiorDesigns, interiorSpaces }) => [
+        ...interiorSpaces.map((space) => ({
+          slug: `/interior-by-choice/${space.slug}`,
+          name: `${space.name} designs`,
+          tagline: `Interior by Choice · ${interiorSpaceWords[space.slug] || space.name}`,
+          icon: 'sofa',
+          route: `/interior-by-choice/${space.slug}`,
+        })),
+        ...interiorDesigns.map((design) => {
+          const space = interiorSpaces.find((s) => s.slug === design.spaceSlug);
+          return {
+            slug: `/interior-by-choice/${design.spaceSlug}/${design.slug}`,
+            name: design.name,
+            tagline: `Interior by Choice · ${interiorSpaceWords[design.spaceSlug] || space?.name || ''}`,
+            icon: 'sofa',
+            route: `/interior-by-choice/${design.spaceSlug}/${design.slug}`,
+          };
+        }),
+      ])
+      .catch(() => {
+        interiorRequest = null;
+        return [];
+      });
+  }
+  return interiorRequest;
+}
 
 // The plumbing jobs are priced items in the catalogue, fetched once.
 let plumbingEntries = null;
@@ -86,8 +132,8 @@ export async function searchSubServices(query, limit = 6) {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   if (!words.length) return [];
 
-  const plumbing = await loadPlumbingEntries();
-  const hits = [...staticEntries, ...plumbing].filter((entry) => matches(entry, words));
+  const [plumbing, interior] = await Promise.all([loadPlumbingEntries(), loadInteriorEntries()]);
+  const hits = [...staticEntries, ...plumbing, ...interior].filter((entry) => matches(entry, words));
 
   const inName = (entry) => words.every((word) => entry.name.toLowerCase().includes(word));
   hits.sort((a, b) => Number(inName(b)) - Number(inName(a)));

@@ -12,6 +12,12 @@
   // Google's placeholder ID: do nothing until the real one is filled in.
   if (!/^G-[A-Z0-9]+$/.test(MEASUREMENT_ID) || MEASUREMENT_ID === 'G-XXXXXXXXXX') return;
 
+  // Password-reset and email-verification links carry a secret ?token= in
+  // the address, and GA4 sends the full address with every hit. These pages
+  // are only ever opened from an emailed link (a full page load), so not
+  // starting GA here keeps those tokens out of Google Analytics.
+  if (/^\/(reset-password|verify-email)\/?$/.test(window.location.pathname)) return;
+
   var loader = document.createElement('script');
   loader.async = true;
   loader.src = 'https://www.googletagmanager.com/gtag/js?id=' + MEASUREMENT_ID;
