@@ -22,7 +22,8 @@ import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
-import { wpCategories } from '../data/waterproofingContent';
+import { wpCatalogueService, wpCategories } from '../data/waterproofingContent';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 
 
@@ -176,21 +177,6 @@ export default function ServiceBooking({
         if (!result || !Array.isArray(result.questions)) {
           throw new Error('Invalid service form received from server.');
         }
-
-        /*
-         * Debug information.
-         *
-         * This also helps identify duplicate question keys such as "notes".
-         */
-        console.log(
-          'SERVICE FORM QUESTIONS:',
-          result.questions.map((q, index) => ({
-            index,
-            key: q.key,
-            text: q.text,
-            inputType: q.inputType,
-          }))
-        );
 
         setForm(result);
 
@@ -347,11 +333,7 @@ const stageQuestions = useMemo(() => {
           text: 'Which waterproofing service do you need?',
           inputType: 'SINGLE',
           options: wpCategories.map((category) => {
-            const catalogueName = category.slug === 'interior-wall'
-              ? 'Wall Waterproofing'
-              : category.slug === 'exterior-wall'
-                ? 'External Waterproofing'
-                : category.name;
+            const catalogueName = wpCatalogueService(category.slug, category.name);
             const option = catalogueServiceQuestion?.options?.find((item) =>
               item.value === catalogueName || item.label === catalogueName
             );
@@ -1164,6 +1146,13 @@ function Summary({
           <strong>
             Site Visit &amp; Quotation Fee
           </strong>
+
+          {/* The amount "before you pay" refers to. */}
+          {category.visitFeeDisplay && (
+            <span className="fee-panel-amount">
+              {category.visitFeeDisplay}
+            </span>
+          )}
         </div>
 
         <ul className="fee-includes">
@@ -1290,6 +1279,8 @@ function Confirmation({
                 </dd>
               </div>
             </dl>
+
+            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
             <Link
               to="/dashboard"

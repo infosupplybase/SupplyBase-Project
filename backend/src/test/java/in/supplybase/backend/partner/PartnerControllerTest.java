@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -26,10 +27,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import in.supplybase.backend.auth.AuthenticatedUser;
@@ -42,7 +45,6 @@ import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.partner.dto.PartnerProfileResponse;
 import in.supplybase.backend.partner.dto.PartnerSummaryResponse;
 import in.supplybase.backend.support.WebSecurityTestConfig;
-import org.springframework.mock.web.MockMultipartFile;
 
 /**
  * {@code @WebMvcTest} slice with the real security rules: the apply endpoint
@@ -88,144 +90,100 @@ class PartnerControllerTest {
     @DisplayName("POST /api/partners/apply — public")
     class Apply {
 
-        @Test
-@DisplayName("201s with tokens, without being signed in")
-void worksAnonymously() throws Exception {
-    var user = new UserResponse(
-            7L, "Ravi Kumar", "ravi@example.com", "9820011223",
-            null, null, null, null, null, null,
-            Role.CUSTOMER, null, true, true, false
-    );
+        private static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F' };
 
-    when(service.apply(any(), any(), any(), any(), any()))
-            .thenReturn(AuthResponse.of("access", "refresh", 900, user));
+        private static MockMultipartFile photo(String part) {
+            return new MockMultipartFile(part, part + ".jpg", MediaType.IMAGE_JPEG_VALUE, JPEG);
+        }
 
-    MockMultipartFile request = new MockMultipartFile(
-            "request",
-            "",
-            MediaType.APPLICATION_JSON_VALUE,
-            APPLY_JSON.getBytes()
-    );
+        /** The application as the partners app sends it: JSON part + three photos. */
+        private MockMultipartHttpServletRequestBuilder apply(String json, String... photoParts) {
+            var request = multipart("/api/partners/apply")
+                    .file(new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, json.getBytes()));
+            for (String part : photoParts) {
+                request.file(photo(part));
+            }
+            return request;
+        }
 
-    MockMultipartFile aadhaarFront = new MockMultipartFile(
-            "aadhaarFront",
-            "aadhaar-front.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "front".getBytes()
-    );
-
-    MockMultipartFile aadhaarBack = new MockMultipartFile(
-            "aadhaarBack",
-            "aadhaar-back.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "back".getBytes()
-    );
-
-    MockMultipartFile panFront = new MockMultipartFile(
-            "panFront",
-            "pan-front.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "pan".getBytes()
-    );
-
-    mockMvc.perform(multipart("/api/partners/apply")
-                    .file(request)
-                    .file(aadhaarFront)
-                    .file(aadhaarBack)
-                    .file(panFront))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.accessToken").value("access"))
-            .andExpect(jsonPath("$.user.role").value("CUSTOMER"));
-}
+        private static final String[] ALL_DOCUMENTS = { "aadhaarFront", "aadhaarBack", "panFront" };
 
         @Test
-@DisplayName("400s when required fields are missing")
-void missingFields() throws Exception {
+        @DisplayName("201s with tokens, without being signed in")
+        void worksAnonymously() throws Exception {
+            var user = new UserResponse(7L, "Ravi Kumar", "ravi@example.com", "9820011223", null, null, null,
+                    null, null, null, Role.CUSTOMER, null, true, true, false);
+            when(service.apply(any(), any(), any())).thenReturn(AuthResponse.of("access", "refresh", 900, user));
 
-    MockMultipartFile request = new MockMultipartFile(
-            "request",
-            "",
-            MediaType.APPLICATION_JSON_VALUE,
-            "{}".getBytes()
-    );
-
-    MockMultipartFile aadhaarFront = new MockMultipartFile(
-            "aadhaarFront",
-            "aadhaar-front.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "front".getBytes()
-    );
-
-    MockMultipartFile aadhaarBack = new MockMultipartFile(
-            "aadhaarBack",
-            "aadhaar-back.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "back".getBytes()
-    );
-
-    MockMultipartFile panFront = new MockMultipartFile(
-            "panFront",
-            "pan-front.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "pan".getBytes()
-    );
-
-    mockMvc.perform(multipart("/api/partners/apply")
-                    .file(request)
-                    .file(aadhaarFront)
-                    .file(aadhaarBack)
-                    .file(panFront))
-            .andExpect(status().isBadRequest());
-
-    verify(service, never()).apply(any(), any(), any(), any(), any());
-}
+            mockMvc.perform(apply(APPLY_JSON, ALL_DOCUMENTS))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.accessToken").value("access"))
+                    .andExpect(jsonPath("$.user.role").value("CUSTOMER"));
+        }
 
         @Test
-@DisplayName("400s on an impossible amount of experience")
-void absurdExperience() throws Exception {
+        @DisplayName("400s when required fields are missing")
+        void missingFields() throws Exception {
+            mockMvc.perform(apply("{}", ALL_DOCUMENTS))
+                    .andExpect(status().isBadRequest());
 
-    String invalidJson = APPLY_JSON.replace(
-            "\"experienceYears\":6",
-            "\"experienceYears\":99"
-    );
+            verify(service, never()).apply(any(), any(), any());
+        }
 
-    MockMultipartFile request = new MockMultipartFile(
-            "request",
-            "",
-            MediaType.APPLICATION_JSON_VALUE,
-            invalidJson.getBytes()
-    );
+        @Test
+        @DisplayName("400s on an impossible amount of experience")
+        void absurdExperience() throws Exception {
+            mockMvc.perform(apply(APPLY_JSON.replace("\"experienceYears\":6", "\"experienceYears\":99"), ALL_DOCUMENTS))
+                    .andExpect(status().isBadRequest());
 
-    MockMultipartFile aadhaarFront = new MockMultipartFile(
-            "aadhaarFront",
-            "aadhaar-front.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "front".getBytes()
-    );
+            verify(service, never()).apply(any(), any(), any());
+        }
 
-    MockMultipartFile aadhaarBack = new MockMultipartFile(
-            "aadhaarBack",
-            "aadhaar-back.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "back".getBytes()
-    );
+        @Test
+        @DisplayName("400s when the PAN card photo is missing")
+        void missingDocument() throws Exception {
+            mockMvc.perform(apply(APPLY_JSON, "aadhaarFront", "aadhaarBack"))
+                    .andExpect(status().isBadRequest());
 
-    MockMultipartFile panFront = new MockMultipartFile(
-            "panFront",
-            "pan-front.jpg",
-            MediaType.IMAGE_JPEG_VALUE,
-            "pan".getBytes()
-    );
+            verify(service, never()).apply(any(), any(), any());
+        }
+    }
 
-    mockMvc.perform(multipart("/api/partners/apply")
-                    .file(request)
-                    .file(aadhaarFront)
-                    .file(aadhaarBack)
-                    .file(panFront))
-            .andExpect(status().isBadRequest());
+    @Nested
+    @DisplayName("POST /api/partners/me/apply — a signed-in customer's own account")
+    class ApplyWithAccount {
 
-    verify(service, never()).apply(any(), any(), any(), any(), any());
-}
+        private static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F' };
+        private static final String JSON = "{\"primaryTrade\":\"electrical\",\"experienceYears\":6,\"city\":\"Thane\"}";
+
+        private MockMultipartHttpServletRequestBuilder applyWithAccount() {
+            var request = multipart("/api/partners/me/apply")
+                    .file(new MockMultipartFile("request", "", MediaType.APPLICATION_JSON_VALUE, JSON.getBytes()));
+            for (String part : new String[] { "aadhaarFront", "aadhaarBack", "panFront" }) {
+                request.file(new MockMultipartFile(part, part + ".jpg", MediaType.IMAGE_JPEG_VALUE, JPEG));
+            }
+            return request;
+        }
+
+        @Test
+        @DisplayName("401s when not signed in")
+        void anonymous() throws Exception {
+            mockMvc.perform(applyWithAccount()).andExpect(status().isUnauthorized());
+
+            verify(service, never()).applyWithAccount(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("201s with the new application, for the signed-in account's id")
+        void appliesForSignedInAccount() throws Exception {
+            when(service.applyWithAccount(eq(7L), any(), any())).thenReturn(new PartnerProfileResponse(
+                    PartnerStatus.PENDING, "electrical", "Electrical", 6, "Thane", null, null, null,
+                    Instant.now(), null));
+
+            mockMvc.perform(applyWithAccount().with(asUser(7L, Role.CUSTOMER)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.status").value("PENDING"));
+        }
     }
 
     @Nested

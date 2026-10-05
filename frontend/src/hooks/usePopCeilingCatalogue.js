@@ -1,35 +1,55 @@
 import { useEffect, useMemo, useState } from 'react';
 import api, { friendlyError } from '../lib/api';
 
-/**
- * Fetches the pop-ceiling-design category's live form once
- * (GET /api/catalogue/services/pop-ceiling-design/form) and exposes it by
- * question key — same pattern as usePaintingCatalogue, without the
- * tier/colour grouping helpers POP doesn't need. Names, hints (including
- * the add-ons' "₹X / sq. ft." rate text) and option lists all come from
- * here — see V16's migration comment on why no option carries a numeric
- * price_paise.
- */
+let cachedForm = null;
+let pendingRequest = null;
+
+function loadPopCeilingForm() {
+  if (cachedForm) {
+    return Promise.resolve(cachedForm);
+  }
+
+  if (!pendingRequest) {
+    pendingRequest = api
+      .serviceForm('pop-ceiling-design')
+      .then((result) => {
+        cachedForm = result;
+        return result;
+      })
+      .finally(() => {
+        pendingRequest = null;
+      });
+  }
+
+  return pendingRequest;
+}
+
 export default function usePopCeilingCatalogue() {
-  const [form, setForm] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState(() => cachedForm);
+  const [loading, setLoading] = useState(() => !cachedForm);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError('');
-    api
-      .serviceForm('pop-ceiling-design')
+
+    loadPopCeilingForm()
       .then((result) => {
-        if (!cancelled) setForm(result);
+        if (cancelled) return;
+
+        setForm(result);
+        setError('');
       })
       .catch((err) => {
-        if (!cancelled) setError(friendlyError(err));
+        if (!cancelled) {
+          setError(friendlyError(err));
+        }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       });
+
     return () => {
       cancelled = true;
     };
@@ -37,11 +57,16 @@ export default function usePopCeilingCatalogue() {
 
   const byKey = useMemo(() => {
     const map = new Map();
-    (form?.questions || []).forEach((q) => map.set(q.key, q));
+
+    (form?.questions || []).forEach((question) => {
+      map.set(question.key, question);
+    });
+
     return map;
   }, [form]);
 
-  const optionsFor = (questionKey) => byKey.get(questionKey)?.options || [];
+  const optionsFor = (questionKey) =>
+    byKey.get(questionKey)?.options || [];
 
   return {
     category: form?.category,

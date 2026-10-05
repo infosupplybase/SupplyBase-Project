@@ -343,17 +343,30 @@ header,
 footer {
   min-width: 0;
 }
+p,
+a,
+span,
+label {
+  overflow-wrap: anywhere;
+}
+/* Headings and buttons only break a word that cannot fit on a line of its
+   own, and then with a hyphen ("WATERPROOF-ING"), never mid-word without
+   one. "anywhere" also let a flex row squeeze a short button label down to
+   one letter per line ("Edi / t") on a phone. */
 h1,
 h2,
 h3,
 h4,
 h5,
-p,
-a,
-span,
-button,
-label {
-  overflow-wrap: anywhere;
+button {
+  overflow-wrap: break-word;
+}
+h1,
+h2,
+h3,
+h4,
+h5 {
+  hyphens: auto;
 }
 /* The navbar location button itself is styled in header.css. */
 
@@ -556,6 +569,8 @@ gmp-place-autocomplete {
   --gmpx-color-on-surface: #222222;
   --gmpx-color-on-surface-variant: #666666;
   --gmpx-color-primary: #e49a00;
+  /* Google follows the visitor's dark-mode setting otherwise (black box). */
+  color-scheme: light;
 }
 
 
@@ -1201,7 +1216,8 @@ gmp-place-autocomplete {
 .booking-address-inputs input:focus {
   border-color: #e5a11a;
 
-  box-shadow: 0 0 0 2px rgba(229, 161, 26, 0.08);
+  /* the input has outline: none, so this ring is its only focus cue */
+  box-shadow: 0 0 0 3px rgba(229, 161, 26, 0.35);
 }
 
 
@@ -1256,5 +1272,343 @@ gmp-place-autocomplete {
     padding: 0 11px;
 
     font-size: 13px;
+  }
+}
+
+/* =========================================================
+   BOOKING LOCATION - ADD / SAVED ADDRESSES (SavedAddressPicker)
+   ========================================================= */
+
+.loc-book {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.loc-book-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.loc-book-title {
+  margin: 0 0 12px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.loc-book-search {
+  min-height: 44px;
+  border: 1px solid #d8d8d8;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: #fff;
+}
+
+.loc-book-search:focus-within {
+  border-color: var(--gold-dark);
+  box-shadow: 0 0 0 3px var(--gold-a24);
+}
+
+.loc-book-search gmp-place-autocomplete {
+  display: block;
+  width: 100%;
+  color-scheme: light;
+  --gmpx-color-surface: #ffffff;
+  --gmpx-color-on-surface: #222222;
+  --gmpx-color-on-surface-variant: #666666;
+  --gmpx-color-primary: var(--gold-dark);
+}
+
+.loc-book-alt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.loc-book-alt button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius-pill);
+  background: var(--gold-a08);
+  color: var(--gold-deep);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loc-book-alt button:hover:not(:disabled) {
+  background: var(--gold-a24);
+}
+
+.loc-book-alt button:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+
+.loc-book-error {
+  margin: 10px 0 0;
+  color: #d93025;
+  font-size: 12px;
+}
+
+.loc-book-resolved {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-alt);
+}
+
+.loc-book-place {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.loc-book-place > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--gold-dark);
+}
+
+.loc-book-address {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.loc-book-coords {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.booking-address-field .loc-book-label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: none;
+}
+
+.loc-book-resolved input {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid #d8d8d8;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: #333;
+  font-size: 14px;
+  outline: none;
+}
+
+.loc-book-resolved input:focus {
+  border-color: var(--gold-dark);
+  box-shadow: 0 0 0 3px var(--gold-a24);
+}
+
+.loc-book-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.loc-book-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.loc-book-primary {
+  min-height: 40px;
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loc-book-primary:hover {
+  background: var(--gold-light);
+}
+
+.loc-book-cancel {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.loc-book-cancel:hover {
+  text-decoration: underline;
+}
+
+.loc-book-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  border: 1px dashed var(--gold-dark);
+  border-radius: var(--radius);
+  background: var(--gold-a08);
+  color: var(--gold-deep);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loc-book-add:hover {
+  background: var(--gold-a24);
+}
+
+.loc-book-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.loc-book-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 4px 4px;
+}
+
+.loc-book-item + .loc-book-item {
+  border-top: 1px solid var(--border);
+}
+
+.loc-book-item.active {
+  background: var(--gold-a08);
+}
+
+.loc-book-item-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.loc-book-radio {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #c8c8c8;
+  border-radius: 50%;
+}
+
+.loc-book-item.active .loc-book-radio {
+  border-color: var(--gold-dark);
+  box-shadow: inset 0 0 0 4px #fff;
+  background: var(--gold-dark);
+}
+
+.loc-book-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.loc-book-item-text strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.loc-book-item-text span {
+  overflow: hidden;
+  font-size: 12px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.loc-book-item-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.loc-book-item-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.loc-book-delete:hover {
+  color: #d93025;
+}
+
+@media (max-width: 600px) {
+  .loc-book-card {
+    padding: 14px 12px;
+  }
+
+  .loc-book-resolved {
+    padding: 12px;
+  }
+}
+
+
+/* Header "Your location" popup built on SavedAddressPicker */
+
+.loc-book-modal-body {
+  overflow-y: auto;
+  padding: 4px 22px 22px;
+}
+
+.loc-book-modal-body .loc-book {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .loc-book-modal-body {
+    padding: 4px 16px 16px;
   }
 }

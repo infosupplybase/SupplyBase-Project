@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
 import BrandPicker from '../components/waterproofing/BrandPicker';
+import TerraceSlider from '../components/waterproofing/TerraceSlider';
 import RateTable from '../components/waterproofing/RateTable';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import useWaterproofingCatalogue from '../hooks/useWaterproofingCatalogue';
-import { wpFlows } from '../data/waterproofingContent';
+import { wpCatalogueService, wpFlows } from '../data/waterproofingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
@@ -18,6 +19,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 
 /**
@@ -32,6 +34,14 @@ import ModalFoot from '../components/services/ModalFoot';
  * have one) -> Details/Schedule/Confirm. See V17's migration comment for
  * why every booking here shows the flat ₹99 fee regardless of brand.
  */
+// Each flow's own photo needs a different crop to keep the work in frame.
+const HERO_CLASS_BY_FLOW = {
+  'exterior-wall': 'pnt-hero-exterior-waterproofing',
+  terrace: 'pnt-hero-terrace-waterproofing',
+  'water-tank': 'pnt-hero-water-tank-waterproofing',
+  basement: 'pnt-hero-basement-waterproofing',
+};
+
 export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = false, onBackToCategories, onStepChange }) {
   const { flowSlug: routeFlowSlug } = useParams();
   const flowSlug = flowSlugProp || routeFlowSlug;
@@ -56,28 +66,6 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const [submitError, setSubmitError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
-
-  const terraceSlides = [
-    '/assets/waterproofing/terrace-slider/terrace-4.png',
-    '/assets/waterproofing/terrace-slider/terrace-3.png',
-    '/assets/waterproofing/terrace-slider/terrace-5.png',
-    '/assets/waterproofing/terrace-slider/terrace-1.png',
-    '/assets/waterproofing/terrace-slider/terrace-2.png',
-  ];
-
-  const [terraceSlide, setTerraceSlide] = useState(0);
-const [terraceTransition, setTerraceTransition] = useState(true);
-
-  useEffect(() => {
-  if (flowSlug !== 'terrace' || stage !== 0) return;
-
-  const timer = setInterval(() => {
-    setTerraceTransition(true);
-    setTerraceSlide((current) => current + 1);
-  }, 4000);
-
-  return () => clearInterval(timer);
-}, [flowSlug, stage]);
 
   // STAGES: 0 intro, 1 work stages, 2 brand, 3 rates, [4 benefits], then
   // DETAILS/SCHEDULE/CONFIRM. Computed once per flow since only some flows
@@ -148,7 +136,13 @@ const [terraceTransition, setTerraceTransition] = useState(true);
     setBusy(true);
     setSubmitError('');
     try {
-      const flat = [];
+      // The service itself, so staff see which job this is (Terrace, Water
+      // Tank...), not just the brand.
+      const flat = [{
+        key: 'service_needed',
+        value: wpCatalogueService(flowSlug, flow.title),
+        label: flowSlug === 'bathroom-floor' ? 'Bathroom Floor Waterproofing' : flow.title,
+      }];
       if (brand) {
         flat.push({ key: 'wp_brand', value: brand, label: brandLabel || brand });
       }
@@ -203,7 +197,7 @@ const [terraceTransition, setTerraceTransition] = useState(true);
   }
 
   /* -------------------------------------------------------------- intro */
-  if (stage === 0) {
+  if (stage === 0 && !receipt) {
     return (
       <>
         {modal && (
@@ -214,49 +208,7 @@ const [terraceTransition, setTerraceTransition] = useState(true);
           </div>
         )}
         {flowSlug === 'terrace' ? (
-          <div className="wp-terrace-slider">
-            <div
-  className="wp-terrace-slider-track"
-  style={{
-    transform: `translateX(-${terraceSlide * 100}%)`,
-    transition: terraceTransition ? 'transform 0.7s ease-in-out' : 'none',
-  }}
-  onTransitionEnd={() => {
-    if (terraceSlide === terraceSlides.length) {
-      setTerraceTransition(false);
-      setTerraceSlide(0);
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTerraceTransition(true);
-        });
-      });
-    }
-  }}
->
-  {[...terraceSlides, terraceSlides[0]].map((image, index) => (
-    <img
-      key={`${image}-${index}`}
-      src={image}
-      alt={`SupplyBase Terrace Waterproofing ${(index % terraceSlides.length) + 1}`}
-      className="wp-terrace-slide-image"
-    />
-  ))}
-</div>
-
-            <div className="wp-terrace-slider-dots">
-              {terraceSlides.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  className={`wp-terrace-slider-dot ${terraceSlide === index ? 'active' : ''
-                    }`}
-                  onClick={() => setTerraceSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+          <TerraceSlider title={flow.title} />
         ) : (
           <PaintingHero
             eyebrow="PROFESSIONAL"
@@ -264,6 +216,7 @@ const [terraceTransition, setTerraceTransition] = useState(true);
             tagline={flow.heroTagline}
             image={flow.intro.image}
             trustPoints={[]}
+            className={HERO_CLASS_BY_FLOW[flow.slug] || ''}
           />
         )}
         <section className="pnt-section">
@@ -290,7 +243,9 @@ const [terraceTransition, setTerraceTransition] = useState(true);
   }
 
   /* --------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
       <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
@@ -315,6 +270,8 @@ const [terraceTransition, setTerraceTransition] = useState(true);
                 <Icon name="info" size={17} />
                 <span>{receipt.message}</span>
               </div>
+
+              <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
               <p className="question-hint" style={{ marginTop: 10 }}>
                 Our team will contact you shortly to confirm the details.
               </p>

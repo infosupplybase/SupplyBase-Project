@@ -1337,3 +1337,10 @@
     box-sizing: border-box;
   }
 }
+/* Breadcrumb links are small text; keep each one at least 24px tall so it
+   is easy to tap on a phone. */
+.breadcrumbs a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}

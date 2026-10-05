@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import PageHero from '../components/ui/PageHero';
@@ -10,21 +11,67 @@ import ProcessSection from '../components/home/ProcessSection';
 
 import { company, whyUsPoints } from '../data/siteConfig';
 
+/**
+ * The about-us clip (1.6 MB). It used to autoplay on load, so every phone
+ * that opened /about downloaded all of it even if nobody scrolled down to
+ * it. Now nothing is fetched until it is on screen, it pauses when scrolled
+ * away, and it does not start by itself for people who ask for reduced
+ * motion (the controls still play it).
+ */
+function AboutVideo() {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || typeof IntersectionObserver === 'undefined') return undefined;
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!reduceMotion) video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.25 }
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={ref}
+      className="supplybase-video"
+      muted
+      loop
+      playsInline
+      controls
+      preload="none"
+      aria-label="Supplybase team at work"
+    >
+      <source src="/assets/hero/aboutus.mp4" type="video/mp4" />
+      Your browser does not support video.
+    </video>
+  );
+}
+
 const pillars = [
   {
     title: 'Design',
-    image: '/assets/services/architectural-design.webp',
-    text: 'Architectural planning, 2D/3D designs, elevations, and working drawings.',
+    image: '/assets/services/interior-design.webp',
+    text: 'Interior designs, ready-made room looks and POP ceiling layouts, planned with you at a home visit.',
   },
   {
-    title: 'Build',
-    image: '/assets/services/construction.webp',
-    text: 'RCC, masonry, plastering, electrical, plumbing, and all essential building work.',
+    title: 'Repair',
+    image: '/assets/services/waterproofing.avif',
+    text: 'Waterproofing, plumbing and electrical work by trained, verified professionals.',
   },
   {
     title: 'Finish',
-    image: '/assets/services/interior-design.jpeg',
-    text: 'Ceiling, furniture, painting, flooring, and final touch-ups for a perfect handover.',
+    image: '/assets/services/painting.webp',
+    text: 'Painting, ceilings and final touch-ups for a clean handover.',
   },
 ];
 
@@ -63,16 +110,16 @@ export default function About() {
                 </h2>
 
                 <p className="text-[var(--grey-600)] mb-3">
-                  Most construction projects go wrong in the gaps - between
+                  Most home projects go wrong in the gaps - between
                   design, people, and execution. Supplybase exists to close
                   those gaps.
                 </p>
 
                 <p className="text-[var(--grey-600)] mb-0">
                   Supplybase brings the entire project together under one team.
-                  We handle drawings, labour, materials, and project management.
+                  We handle the site visit, labour, materials, and supervision.
                   You get one contract, one point of contact, and clear
-                  accountability. From the first sketch to handover, we manage
+                  accountability. From the first visit to handover, we manage
                   it all.
                 </p>
 
@@ -107,21 +154,7 @@ export default function About() {
                 delay={120}
               >
                 <div className="split-media w-full max-w-md">
-                  <video
-                    className="supplybase-video"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    controls
-                    preload="metadata"
-                  >
-                    <source
-                      src="/assets/hero/aboutus.mp4"
-                      type="video/mp4"
-                    />
-                    Your browser does not support video.
-                  </video>
+                  <AboutVideo />
                 </div>
               </Reveal>
 
@@ -138,7 +171,7 @@ export default function About() {
             center
             eyebrow="WHAT WE DO"
             title="THREE STAGES, ONE TEAM"
-            text="Design, construction and finishing are handled in-house, so nothing is lost in handover between trades."
+            text="Design, repairs and finishing are handled by one team, so nothing is lost in handover between trades."
           />
 
           <div className="value-grid">

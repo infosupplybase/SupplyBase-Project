@@ -87,6 +87,7 @@ export default function ElectricalTab({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Search ${group.name.toLowerCase()}`}
+              aria-label={`Search ${group.name}`}
             />
           </div>
 

@@ -59,22 +59,27 @@ public class PartnerProfile {
     @Column(name = "service_areas", length = 300)
     private String serviceAreas;
 
-    @Column(length = 120)
-private String languages;
+        @Column(length = 120)
+        private String languages;
 
-@Column(name = "aadhaar_front_path", length = 500)
-private String aadhaarFrontPath;
+    /**
+     * Storage keys (in the private uploads folder) of the identity photos sent
+     * with the application. Never put in an API response; null for partners
+     * who applied before documents were asked for.
+     */
+    @Column(name = "aadhaar_front_path", length = 500)
+    private String aadhaarFrontPath;
 
-@Column(name = "aadhaar_back_path", length = 500)
-private String aadhaarBackPath;
+    @Column(name = "aadhaar_back_path", length = 500)
+    private String aadhaarBackPath;
 
-@Column(name = "pan_front_path", length = 500)
-private String panFrontPath;
+    @Column(name = "pan_front_path", length = 500)
+    private String panFrontPath;
 
-@Enumerated(EnumType.STRING)
-@Column(nullable = false, length = 20)
-@Builder.Default
-private PartnerStatus status = PartnerStatus.PENDING;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
+    private PartnerStatus status = PartnerStatus.PENDING;
 
     /** The reason for a rejection or suspension. Shown to the partner. */
     @Column(name = "review_note", length = 500)

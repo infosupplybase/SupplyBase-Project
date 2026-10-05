@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useFormBack, useHistoryState } from '../../hooks/useHistoryState';
 import Icon from '../ui/Icon';
 import { ModalFooterContext } from './ModalFoot';
@@ -9,6 +8,16 @@ import {
   interiorSpaces,
   getDesignsBySpace,
   getDesignBySlug,
+  livingRoomSubOptions,
+  livingRoomColorImages,
+  livingRoomDescriptions,
+  livingRoomFeatures,
+  livingRoomGalleryImages,
+
+  mandirImages,
+  mandirDescriptions,
+  mandirGroups,
+
   HOME_VISIT_FEE,
 } from '../../data/interiorCatalog';
 import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
@@ -25,7 +34,7 @@ import PlumbingCart from '../../pages/PlumbingCart';
 import PlumbingCheckout from '../../pages/PlumbingCheckout';
 import PlumbingConsultationList from '../../pages/PlumbingConsultationList';
 import PlumbingConsultationBook from '../../pages/PlumbingConsultationBook';
-import OtherServicesCategory from '../../pages/OtherServicesCategory';
+import AcServices from '../../pages/AcServices';
 
 import WaterproofingFlow from '../../pages/WaterproofingFlow';
 import WaterproofingBathroom from '../../pages/WaterproofingBathroom';
@@ -39,73 +48,17 @@ import { getElectricalGroup } from '../../data/electricalContent';
 
 
 /**
- * Opens the "Book a service" modal, shared by every page that lets someone
- * pick a service and book it: the Services page's own grid and the
- * homepage's Popular Services tiles both render this component so the
- * booking flow is identical (same catalogue, same steps) no matter which
- * page you started from.
- *
- * Usage: const booking = useServiceBookingModal(); ... onClick={() =>
- * booking.open(service)} ... {booking.service && <ServiceBookingModal
- * key={booking.openToken} service={booking.service} onClose={booking.close}
- * />}
- *
- * Which screen the booking is on lives in the browser's history (see
- * hooks/useHistoryState): opening it and every screen inside it are history
- * entries, so the browser's Back button goes back one screen (and closes the
- * booking from its first screen) and a refresh reopens it where it was.
- * `key={booking.openToken}` still remounts the modal fresh for each new
- * booking, so a half-finished sub-flow never leaks into the next one.
+ * The "Book a service" modal's content: the booking flow for the chosen
+ * service. Opened and closed with useServiceBookingModal (its own file, so the
+ * pages that show service tiles do not have to load this whole component
+ * until someone actually opens a booking).
  */
-export function useServiceBookingModal() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const entry = (location.state && location.state.bookingModal) || null;
-
-  return {
-    service: entry ? entry.service : null,
-    // Stable for as long as this booking is open (every screen inside it
-    // shares the entry it was opened from), new for the next one.
-    openToken: entry ? entry.base : 0,
-    open: (nextService) => {
-      const base = (window.history.state && window.history.state.idx) || 0;
-      const usr = (window.history.state && window.history.state.usr) || {};
-      const { pathname, search, hash } = window.location;
-      // A history entry of its own: Back closes the booking instead of
-      // leaving the page, and a refresh reopens it where it was.
-      navigate(
-        { pathname, search, hash },
-        { state: { ...stripBooking(usr), bookingModal: { service: nextService, base }, __formPush: true } }
-      );
-    },
-    close: () => {
-      const idx = window.history.state && window.history.state.idx;
-      const base = entry && entry.base;
-      if (typeof idx === 'number' && typeof base === 'number' && idx > base) {
-        // Unwind every screen of this booking in one go, back to the page
-        // as it was before it opened.
-        navigate(base - idx);
-      } else {
-        const usr = (window.history.state && window.history.state.usr) || {};
-        const { pathname, search, hash } = window.location;
-        navigate({ pathname, search, hash }, { replace: true, state: stripBooking(usr) });
-      }
-    },
-  };
-}
-
-/** The history state with this booking's screens and forms removed. */
-function stripBooking(usr) {
-  const out = {};
-  Object.keys(usr).forEach((k) => {
-    if (k !== 'bookingModal' && k !== '__formPush' && !k.startsWith('bm:') && !k.startsWith('f:')) out[k] = usr[k];
-  });
-  return out;
-}
-
 export default function ServiceBookingModal({ service, onClose }) {
   const [selectedInteriorSpace, setSelectedInteriorSpace] = useHistoryState('bm:interiorSpace', null, { push: true });
   const [selectedInteriorDesign, setSelectedInteriorDesign] = useHistoryState('bm:interiorDesign', null, { push: true });
+  const [selectedLivingRoomOption, setSelectedLivingRoomOption] = useHistoryState('bm:livingRoomOption', null, { push: true });
+  const [selectedLivingRoomColor, setSelectedLivingRoomColor] = useHistoryState('bm:livingRoomColor', null, { push: true });
+  const [isLivingRoomSaved, setIsLivingRoomSaved] = useState(false);
   const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
@@ -121,7 +74,6 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [electricalTab, setElectricalTab] = useHistoryState('bm:electricalTab', null, { push: true });
   const [electricalView, setElectricalView] = useHistoryState('bm:electricalView', 'category', { push: true });
   const [selectedPlumbingConsultation, setSelectedPlumbingConsultation] = useHistoryState('bm:plumbingConsultation', null, { push: true });
-  const [selectedOtherService, setSelectedOtherService] = useHistoryState('bm:otherService', null, { push: true });
   const [selectedWaterproofingPage, setSelectedWaterproofingPage] = useHistoryState('bm:waterproofingPage', null, { push: true });
 
   // Every in-app BACK goes back through history, exactly like the
@@ -149,10 +101,11 @@ export default function ServiceBookingModal({ service, onClose }) {
 
   // Inside a Painting or POP flow the flow shows its own title bar, so the
   // pop-up's "Book a service" header gives way to a spacer under the close
-  // button (yash's layout).
+  // button (yash's layout). AC Services always draws its own bar.
   const hideMainHeader =
     (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
-    (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow));
+    (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow)) ||
+    service.slug === 'ac-services';
 
   const openWaterproofingService = (route) => {
     const target = new URL(route, window.location.origin);
@@ -198,11 +151,13 @@ export default function ServiceBookingModal({ service, onClose }) {
         bg-black/65
         backdrop-blur-[3px]
         p-4
+        max-sm:p-2.5
       "
       onClick={onClose}
     >
       <div
         className={`
+          ${service.slug === 'ac-services' ? 'booking-pop-ac-layout' : ''}
           relative
           w-full
           flex
@@ -218,10 +173,11 @@ export default function ServiceBookingModal({ service, onClose }) {
           max-sm:max-h-[92vh]
           max-sm:rounded-xl
         `}
-        // Painting keeps one steady height while its steps change size.
+        // Painting and AC Services keep one steady height while their steps
+        // change size.
         style={{
           maxWidth: modalMaxWidth,
-          ...(service.slug === 'painting'
+          ...(service.slug === 'painting' || service.slug === 'ac-services'
             ? { height: '88dvh', maxHeight: '88dvh' }
             : null),
         }}
@@ -272,7 +228,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           <div className="h-14 shrink-0" aria-hidden="true" />
         ) : waterproofingFlowOpen ? null : (
         <>
-        <div className="shrink-0 px-6 pt-6 pr-16">
+        <div className="shrink-0 px-6 pt-6 pr-16 max-sm:px-4 max-sm:pr-16">
           <p
             className="
               mb-1
@@ -314,7 +270,7 @@ export default function ServiceBookingModal({ service, onClose }) {
             flex-auto
             overflow-y-auto
 
-            ${waterproofingFlowOpen ? '!px-0 !pb-0' : 'px-6 pb-6'}
+            ${waterproofingFlowOpen ? '!px-0 !pb-0' : 'px-6 pb-6 max-sm:px-4'}
 
             max-sm:flex-1
 
@@ -324,21 +280,56 @@ export default function ServiceBookingModal({ service, onClose }) {
         >
           {service.slug === 'interior-by-choice' ? (
             <>
-              {/* ========================================= */}
-              {/* DESIGN DETAIL */}
-              {/* ========================================= */}
-
               {showInteriorBooking ? (
                 <InteriorBooking
-                  modal={true}
-                  spaceSlug={selectedInteriorSpace}
-                  designSlug={selectedInteriorDesign}
-                  onBack={() => {
-                    formBack(() => setShowInteriorBooking(false));
-                    scrollModalToTop();
-                  }}
-                  onStepChange={scrollModalToTop}
-                />
+modal={true}
+
+spaceSlug={
+  selectedInteriorSpace
+}
+
+designSlug={
+  selectedInteriorDesign
+}
+
+selectedPanelName={
+  selectedInteriorSpace === 'living-room'
+    ? selectedLivingRoomOption
+    : null
+}
+
+selectedColorName={
+  selectedInteriorSpace === 'living-room'
+    ? selectedLivingRoomColor
+    : null
+}
+
+referenceImage={
+  selectedInteriorSpace === 'living-room' &&
+  selectedLivingRoomOption &&
+  selectedLivingRoomColor
+    ? livingRoomColorImages?.[
+        selectedLivingRoomOption
+      ]?.[
+        selectedLivingRoomColor
+      ]
+    : null
+}
+
+onBack={() => {
+  formBack(() =>
+    setShowInteriorBooking(
+      false
+    )
+  );
+
+  scrollModalToTop();
+}}
+
+onStepChange={
+  scrollModalToTop
+}
+/>
               ) : selectedInteriorSpace &&
                 selectedInteriorDesign ? (
                 <div className="pb-2 md:pb-8">
@@ -359,7 +350,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                     if (!design) {
                       return (
                         <p className="ibc-empty">
-                          Design details could not be loaded.
+                          Design details could not
+                          be loaded.
                         </p>
                       );
                     }
@@ -368,18 +360,22 @@ export default function ServiceBookingModal({ service, onClose }) {
                       <>
                         <button
                           type="button"
-                          className="btn btn-ghost btn-sm mb-4"
+                          className="
+                            btn
+                            btn-ghost
+                            btn-sm
+                            mb-4
+                          "
                           onClick={() => {
-                            formBack(() => setSelectedInteriorDesign(null));
+                            formBack(() =>
+                              setSelectedInteriorDesign(
+                                null
+                              )
+                            );
 
                             scrollModalToTop();
                           }}
                         >
-                          {/* <Icon
-                            name="arrow-left"
-                            size={16}
-                          /> */}
-
                           BACK
                         </button>
 
@@ -391,27 +387,25 @@ export default function ServiceBookingModal({ service, onClose }) {
                             md:grid-cols-2
                           "
                         >
-                          {/* DESIGN IMAGE */}
-
                           <div
-                            className="
-                              overflow-hidden
-                              rounded-xl
-                            "
+                            className={`ibc-modal-design-media ${
+                              design.spaceSlug === 'entrance'
+                                ? 'ibc-modal-design-media--entrance'
+                                : ''
+                            }`}
                           >
-                            <img loading="lazy" decoding="async"
+                            <img
+                              loading="lazy"
+                              decoding="async"
                               src={design.image}
                               alt={design.name}
-                              className="
-                                h-auto
-                                max-h-[420px]
-                                w-full
-                                object-cover
-                              "
+                              className={`h-auto max-h-[420px] w-full ${
+                                design.spaceSlug === 'entrance'
+                                  ? 'object-contain'
+                                  : 'object-cover'
+                              }`}
                             />
                           </div>
-
-                          {/* DESIGN INFORMATION */}
 
                           <div>
                             <p
@@ -458,7 +452,8 @@ export default function ServiceBookingModal({ service, onClose }) {
                                 text-gray-900
                               "
                             >
-                              ₹{design.pricePerSqft} / sq.ft.
+                              {design.priceRange ||
+                                `₹${design.pricePerSqft} / sq.ft.`}
                             </p>
 
                             {design.description && (
@@ -470,30 +465,30 @@ export default function ServiceBookingModal({ service, onClose }) {
                                   text-gray-600
                                 "
                               >
-                                {design.description}
+                                {
+                                  design.description
+                                }
                               </p>
                             )}
 
                             <button
                               type="button"
                               className="
-    btn
-    btn-primary
-    mt-6
-    w-full
-    md:w-auto
-  "
+                                btn
+                                btn-primary
+                                mt-6
+                                w-full
+                                md:w-auto
+                              "
                               onClick={() => {
-                                setShowInteriorBooking(true);
+                                setShowInteriorBooking(
+                                  true
+                                );
+
                                 scrollModalToTop();
                               }}
                             >
                               CUSTOMISE THIS DESIGN
-
-                              {/* <Icon
-                                name="arrow-right"
-                                size={17}
-                              /> */}
                             </button>
                           </div>
                         </div>
@@ -503,63 +498,99 @@ export default function ServiceBookingModal({ service, onClose }) {
                 </div>
               ) : selectedInteriorSpace ? (
                 <>
-                  {/* ========================================= */}
-                  {/* DESIGN GALLERY */}
-                  {/* ========================================= */}
-
                   <div className="pb-2 md:pb-8">
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm mb-4"
-                      onClick={() => {
-                        formBack(() => {
-                          setSelectedInteriorSpace(null);
-                          setSelectedInteriorDesign(null);
-                        });
+                    {!(
+                      selectedInteriorSpace ===
+                        'living-room' &&
+                      (selectedLivingRoomOption ||
+                        selectedLivingRoomColor)
+                    ) && (
+                      <>
+                        <button
+                          type="button"
+                          className="
+                            btn
+                            btn-ghost
+                            btn-sm
+                            mb-4
+                          "
+                          onClick={() => {
+                            formBack(() => {
+                              if (
+                                selectedLivingRoomColor
+                              ) {
+                                setSelectedLivingRoomColor(
+                                  null
+                                );
+                                return;
+                              }
 
-                        scrollModalToTop();
-                      }}
-                    >
-                      {/* <Icon
-                        name="arrow-left"
-                        size={16}
-                      /> */}
+                              if (
+                                selectedLivingRoomOption
+                              ) {
+                                setSelectedLivingRoomOption(
+                                  null
+                                );
+                                return;
+                              }
 
-                      BACK
-                    </button>
-
-                    {/* SPACE FILTER */}
-
-                    <div className="ibc-filter-row">
-                      {interiorSpaces.map(
-                        (space) => (
-                          <button
-                            key={space.slug}
-                            type="button"
-                            className={`ibc-filter-chip ${space.slug ===
-                              selectedInteriorSpace
-                              ? 'active'
-                              : ''
-                              }`}
-                            onClick={() => {
                               setSelectedInteriorSpace(
-                                space.slug
+                                null
                               );
 
                               setSelectedInteriorDesign(
                                 null
                               );
+                            });
 
-                              scrollModalToTop();
-                            }}
-                          >
-                            {space.name}
-                          </button>
-                        )
-                      )}
-                    </div>
+                            scrollModalToTop();
+                          }}
+                        >
+                          BACK
+                        </button>
 
-                    {/* DESIGN CARDS */}
+                        <div className="ibc-filter-row">
+                          {interiorSpaces.map(
+                            (space) => (
+                              <button
+                                key={space.slug}
+                                type="button"
+                                className={`
+                                  ibc-filter-chip
+                                  ${
+                                    space.slug ===
+                                    selectedInteriorSpace
+                                      ? 'active'
+                                      : ''
+                                  }
+                                `}
+                                onClick={() => {
+                                  setSelectedInteriorSpace(
+                                    space.slug
+                                  );
+
+                                  setSelectedInteriorDesign(
+                                    null
+                                  );
+
+                                  setSelectedLivingRoomOption(
+                                    null
+                                  );
+
+                                  setSelectedLivingRoomColor(
+                                    null
+                                  );
+
+                                  scrollModalToTop();
+                                }}
+                              >
+                                {space.name}
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </>
+                    )}
 
                     {getDesignsBySpace(
                       selectedInteriorSpace
@@ -570,133 +601,1251 @@ export default function ServiceBookingModal({ service, onClose }) {
                         visit and our designer will
                         bring options for you.
                       </p>
-                    ) : (
-                      <div className="ibc-design-grid">
+                    ) : selectedInteriorSpace ===
+                      'living-room' ? (
+
+                      /*
+                       * ==================================================
+                       * LIVING ROOM
+                       * SECOND PAGE + COLOUR PAGE
+                       * ==================================================
+                       */
+
+                      selectedLivingRoomColor ? (
+                        <div className="pb-2 md:pb-8">
+                          {(() => {
+                            const selectedDesign =
+                              getDesignsBySpace(
+                                'living-room'
+                              ).find(
+                                (design) =>
+                                  design.name ===
+                                  selectedLivingRoomOption
+                              );
+
+                            const selectedColorImage =
+                              livingRoomColorImages?.[
+                                selectedLivingRoomOption
+                              ]?.[
+                                selectedLivingRoomColor
+                              ] ||
+                              selectedDesign?.image;
+
+                            const colorOptions =
+                              livingRoomSubOptions[
+                                selectedLivingRoomOption
+                              ] || [];
+
+                            const galleryImages = [
+                              selectedColorImage,
+                              selectedDesign?.image,
+                              selectedColorImage,
+                            ].filter(Boolean);
+
+                            return (
+                              <>
+                                <div className="mb-5 flex items-center justify-between gap-3">
+                                  <button
+                                    type="button"
+                                    className="
+                                      flex
+                                      h-10
+                                      w-10
+                                      shrink-0
+                                      items-center
+                                      justify-center
+                                      rounded-full
+                                      border
+                                      border-gray-200
+                                      bg-white
+                                      text-gray-900
+                                      shadow-sm
+                                    "
+                                    onClick={() => {
+                                      formBack(() =>
+                                        setSelectedLivingRoomColor(
+                                          null
+                                        )
+                                      );
+
+                                      scrollModalToTop();
+                                    }}
+                                    aria-label="Back to panel details"
+                                  >
+                                    <Icon
+                                      name="arrow-left"
+                                      size={21}
+                                    />
+                                  </button>
+
+                                  <h3 className="flex-1 text-center text-xl font-bold text-gray-950">
+                                    {
+                                      selectedLivingRoomOption
+                                    }
+                                  </h3>
+
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className="
+                                        text-2xl
+                                        leading-none
+                                        text-gray-900
+                                      "
+                                      aria-hidden="true"
+                                    >
+                                      ↗
+                                    </span>
+
+                                    <span
+                                      className="
+                                        text-3xl
+                                        leading-none
+                                        text-gray-900
+                                      "
+                                      aria-hidden="true"
+                                    >
+                                      ♡
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="mb-5">
+                                  <h4 className="text-2xl font-bold text-gray-950">
+                                    Choose Your Colour
+                                  </h4>
+
+                                  <p className="mt-1 text-sm leading-5 text-gray-600">
+                                    Select a colour to see how it looks in your living room.
+                                  </p>
+                                </div>
+
+                                <div
+                                  className="
+                                    mb-5
+                                    grid
+                                    grid-cols-4
+                                    gap-x-3
+                                    gap-y-4
+                                    sm:grid-cols-4
+                                  "
+                                >
+                                  {colorOptions.map(
+                                    (option) => {
+                                      // const image =
+                                      //   livingRoomColorImages?.[
+                                      //     selectedLivingRoomOption
+                                      //   ]?.[option] ||
+                                      //   selectedDesign?.image;
+
+                                      const active =
+                                        option ===
+                                        selectedLivingRoomColor;
+
+                                      return (
+                                        <button
+                                          key={option}
+                                          type="button"
+                                          className="flex min-w-0 flex-col items-center"
+                                          onClick={() => {
+                                            setSelectedLivingRoomColor(
+                                              option
+                                            );
+
+                                            scrollModalToTop();
+                                          }}
+                                        >
+                                          <span
+                                            className={`
+                                              block
+                                              h-[68px]
+                                              w-[68px]
+                                              overflow-hidden
+                                              rounded-full
+                                              border
+                                              bg-gray-200
+                                              bg-cover
+                                              bg-center
+                                              shadow-sm
+                                              transition
+                                              sm:h-[76px]
+                                              sm:w-[76px]
+                                              ${
+                                                active
+                                                  ? 'border-[3px] border-[#8f5528] p-[3px]'
+                                                  : 'border border-gray-200'
+                                              }
+                                            `}
+                                            style={{
+                                              backgroundColor:
+                                                {
+                                                  'Natural Oak':
+                                                    '#d7b083',
+                                                  Teak:
+                                                    '#a96532',
+                                                  Walnut:
+                                                    '#75411f',
+                                                  Wenge:
+                                                    '#2b211b',
+                                                  Coffee:
+                                                    '#7b5035',
+                                                  'White Oak':
+                                                    '#ead7bc',
+                                                  'Grey Wood':
+                                                    '#9b9b9b',
+                                                  'Mocha Brown':
+                                                    '#7a4b2d',
+                                                  'Pecan Brown':
+                                                    '#a66a3f',
+                                                  'Marble White':
+                                                    '#e9e5df',
+                                                  Black:
+                                                    '#202020',
+                                                  White:
+                                                    '#f5f5f5',
+                                                  'Dark Grey':
+                                                    '#555555',
+                                                  'Light Grey':
+                                                    '#bcbcbc',
+                                                }[option] ||
+                                                '#c9b7a4',
+
+                                            }}
+                                          >
+                                           
+                                          </span>
+
+                                          <span
+                                            className="
+                                              mt-2
+                                              line-clamp-2
+                                              text-center
+                                              text-xs
+                                              font-medium
+                                              leading-4
+                                              text-gray-900
+                                            "
+                                          >
+                                            {option}
+                                          </span>
+                                        </button>
+                                      );
+                                    }
+                                  )}
+                                </div>
+
+                                <div
+                                  className="
+                                    overflow-hidden
+                                    rounded-2xl
+                                    bg-gray-100
+                                    shadow-sm
+                                  "
+                                >
+                                  <img
+                                    src={selectedColorImage}
+                                    alt={`${selectedLivingRoomOption} - ${selectedLivingRoomColor}`}
+                                    className="
+                                      block
+                                      h-[260px]
+                                      w-full
+                                      object-cover
+                                      sm:h-[360px]
+                                    "
+                                    loading="eager"
+                                    decoding="async"
+                                    onError={(event) => {
+                                      if (
+                                        selectedDesign?.image &&
+                                        !event.currentTarget
+                                          .dataset
+                                          .fallbackApplied
+                                      ) {
+                                        event.currentTarget.dataset.fallbackApplied =
+                                          'true';
+
+                                        event.currentTarget.src =
+                                          selectedDesign.image;
+                                      }
+                                    }}
+                                  />
+                                </div>
+
+                                <div
+                                  className="
+                                    relative
+                                    -mt-10
+                                    ml-4
+                                    mb-5
+                                    w-fit
+                                    rounded-xl
+                                    border
+                                    border-gray-200
+                                    bg-white
+                                    px-4
+                                    py-2
+                                    shadow-md
+                                  "
+                                >
+                                  <span className="mr-2 inline-block h-7 w-7 rounded-full bg-[#c99560] align-middle" />
+
+                                  <span className="align-middle text-sm font-semibold text-gray-900">
+                                    {
+                                      selectedLivingRoomColor
+                                    }
+                                  </span>
+                                </div>
+
+                                <div className="mb-6 grid grid-cols-3 gap-3">
+                                  {galleryImages.map(
+                                    (image, index) => (
+                                      <button
+                                        key={`${image}-${index}`}
+                                        type="button"
+                                        className="
+                                          overflow-hidden
+                                          rounded-xl
+                                          border
+                                          border-gray-200
+                                          bg-gray-100
+                                          shadow-sm
+                                        "
+                                        onClick={() => {
+                                          const targetColor =
+                                            index === 0
+                                              ? selectedLivingRoomColor
+                                              : null;
+
+                                          if (
+                                            targetColor
+                                          ) {
+                                            setSelectedLivingRoomColor(
+                                              targetColor
+                                            );
+                                          }
+
+                                          scrollModalToTop();
+                                        }}
+                                      >
+                                        <img
+                                          src={image}
+                                          alt={`${selectedLivingRoomOption} preview ${index + 1}`}
+                                          className="
+                                            h-[86px]
+                                            w-full
+                                            object-cover
+                                            sm:h-[105px]
+                                          "
+                                          loading="lazy"
+                                          decoding="async"
+                                          onError={(event) => {
+                                            if (
+                                              selectedDesign?.image &&
+                                              !event.currentTarget
+                                                .dataset
+                                                .fallbackApplied
+                                            ) {
+                                              event.currentTarget.dataset.fallbackApplied =
+                                                'true';
+
+                                              event.currentTarget.src =
+                                                selectedDesign.image;
+                                            }
+                                          }}
+                                        />
+                                      </button>
+                                    )
+                                  )}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  className="
+                                    btn
+                                    btn-primary
+                                    flex
+                                    w-full
+                                    items-center
+                                    justify-between
+                                    gap-3
+                                  "
+                                  onClick={() => {
+                                    const selectedDesign =
+                                      getDesignsBySpace(
+                                        'living-room'
+                                      ).find(
+                                        (design) =>
+                                          design.name ===
+                                          selectedLivingRoomOption
+                                      );
+
+                                    if (
+                                      selectedDesign?.slug
+                                    ) {
+                                      setSelectedInteriorDesign(
+                                        selectedDesign.slug
+                                      );
+
+                                      setShowInteriorBooking(
+                                        true
+                                      );
+                                    }
+
+                                    scrollModalToTop();
+                                  }}
+                                >
+                                  <span>
+                                    BOOK A ₹
+                                    {HOME_VISIT_FEE}{' '}
+                                    HOME VISIT
+                                  </span>
+
+                                  <span className="text-xl">
+                                    →
+                                  </span>
+                                </button>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      ) : selectedLivingRoomOption ? (
+                        <div className="pb-2 md:pb-8">
+                          {(() => {
+                            const selectedDesign =
+                              getDesignsBySpace(
+                                'living-room'
+                              ).find(
+                                (design) =>
+                                  design.name ===
+                                  selectedLivingRoomOption
+                              );
+
+                            const heroImage =
+                              selectedDesign?.image ||
+                              '/assets/projects/Living_room.webp';
+
+                            const description =
+                              livingRoomDescriptions?.[
+                                selectedLivingRoomOption
+                              ] ||
+                              'A warm and stylish wall finish designed for modern living rooms.';
+
+                            const gallery =
+                              livingRoomGalleryImages?.[
+                                selectedLivingRoomOption
+                              ] || [heroImage];
+
+                            return (
+                              <>
+                                <div className="mb-4 flex items-center justify-between gap-3">
+                                  <button
+                                    type="button"
+                                    className="
+                                      flex
+                                      h-10
+                                      w-10
+                                      shrink-0
+                                      items-center
+                                      justify-center
+                                      rounded-full
+                                      text-gray-900
+                                    "
+                                    onClick={() => {
+                                      formBack(() => {
+                                        setSelectedLivingRoomOption(
+                                          null
+                                        );
+
+                                        setSelectedLivingRoomColor(
+                                          null
+                                        );
+                                      });
+
+                                      scrollModalToTop();
+                                    }}
+                                    aria-label="Back to living room"
+                                  >
+                                    <Icon
+                                      name="arrow-left"
+                                      size={24}
+                                    />
+                                  </button>
+
+                                  <h3 className="flex-1 text-center text-xl font-bold text-gray-950">
+                                    {
+                                      selectedLivingRoomOption
+                                    }
+                                  </h3>
+
+                                  <button
+type="button"
+onClick={() =>
+  setIsLivingRoomSaved(
+    (previous) => !previous
+  )
+}
+className="
+  flex
+  h-10
+  w-10
+  items-center
+  justify-center
+  rounded-full
+  text-3xl
+  leading-none
+  transition
+  duration-200
+  hover:bg-gray-100
+  active:scale-90
+"
+aria-label={
+  isLivingRoomSaved
+    ? 'Remove from saved'
+    : 'Save design'
+}
+>
+<span
+  className={
+    isLivingRoomSaved
+      ? 'text-[#9A5B2D]'
+      : 'text-gray-900'
+  }
+>
+  {isLivingRoomSaved ? '♥' : '♡'}
+</span>
+</button>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  className="
+                                    block
+                                    w-full
+                                    overflow-hidden
+                                    rounded-2xl
+                                    bg-gray-100
+                                    shadow-sm
+                                  "
+                                  onClick={() => {
+                                    const firstColor =
+                                      livingRoomSubOptions[
+                                        selectedLivingRoomOption
+                                      ]?.[0];
+
+                                    if (firstColor) {
+                                      setSelectedLivingRoomColor(
+                                        firstColor
+                                      );
+                                    }
+
+                                    scrollModalToTop();
+                                  }}
+                                  aria-label="Choose colour"
+                                >
+                                  <img
+                                    src={`${heroImage}?v=20261003`}
+                                    alt={
+                                      selectedLivingRoomOption
+                                    }
+                                    className="
+                                      block
+                                      h-[270px]
+                                      w-full
+                                      object-cover
+                                      sm:h-[390px]
+                                    "
+                                    loading="eager"
+                                    decoding="async"
+                                  />
+                                </button>
+
+                                <div className="flex items-center justify-center gap-2 py-3">
+                                  {[0, 1, 2, 3, 4].map(
+                                    (dot) => (
+                                      <span
+                                        key={dot}
+                                        className={`
+                                          block
+                                          h-2.5
+                                          w-2.5
+                                          rounded-full
+                                          ${
+                                            dot === 0
+                                              ? 'bg-gray-900'
+                                              : 'bg-gray-300'
+                                          }
+                                        `}
+                                      />
+                                    )
+                                  )}
+                                </div>
+
+                                <div className="px-1">
+                                  <h4 className="text-3xl font-bold leading-tight text-gray-950">
+                                    {
+                                      selectedLivingRoomOption
+                                    }
+                                  </h4>
+
+                                  <p className="mt-2 text-base leading-6 text-gray-600">
+                                    {description}
+                                  </p>
+                                </div>
+
+                                <div
+                                  className="
+                                    mt-6
+                                    grid
+                                    grid-cols-4
+                                    divide-x
+                                    divide-gray-200
+                                    border-y
+                                    border-gray-100
+                                    py-4
+                                  "
+                                >
+                                  {(
+                                    livingRoomFeatures ||
+                                    []
+                                  ).map(
+                                    (feature) => (
+                                      <div
+                                        key={`${feature.label}-${feature.sublabel}`}
+                                        className="
+                                          flex
+                                          min-w-0
+                                          flex-col
+                                          items-center
+                                          px-2
+                                          text-center
+                                        "
+                                      >
+                                        <Icon
+                                          name={
+                                            feature.icon
+                                          }
+                                          size={28}
+                                        />
+
+                                        <span className="mt-2 text-xs font-medium leading-4 text-gray-800 sm:text-sm">
+                                          {feature.label}
+                                          <br />
+                                          {
+                                            feature.sublabel
+                                          }
+                                        </span>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+
+                                <button
+type="button"
+className="
+  mt-5
+  flex
+  w-full
+  items-center
+  justify-between
+  gap-3
+  rounded-xl
+  border
+  border-[#9A5B2D]
+  bg-white
+  px-5
+  py-4
+  text-left
+  transition
+  duration-200
+  hover:bg-[#fff8f2]
+  active:scale-[0.99]
+"
+onClick={() => {
+  const firstColor =
+    livingRoomSubOptions[
+      selectedLivingRoomOption
+    ]?.[0];
+
+  if (firstColor) {
+    setSelectedLivingRoomColor(firstColor);
+  }
+
+  scrollModalToTop();
+}}
+>
+<div>
+  <span className="block text-base font-bold text-gray-950">
+    Choose Your Colour
+  </span>
+
+  <span className="mt-1 block text-xs text-gray-500">
+    Select a colour to see how it looks in your living room.
+  </span>
+</div>
+
+<span
+  className="
+    flex
+    h-9
+    w-9
+    shrink-0
+    items-center
+    justify-center
+    rounded-full
+    bg-[#9A5B2D]
+    text-lg
+    text-white
+  "
+>
+  →
+</span>
+</button>
+
+                                <button
+                                  type="button"
+                                  className="
+                                    btn
+                                    btn-primary
+                                    mt-5
+                                    flex
+                                    w-full
+                                    items-center
+                                    justify-between
+                                    gap-3
+                                  "
+                                  onClick={() => {
+                                    if (
+                                      selectedDesign?.slug
+                                    ) {
+                                      setSelectedInteriorDesign(
+                                        selectedDesign.slug
+                                      );
+
+                                      setShowInteriorBooking(
+                                        true
+                                      );
+                                    }
+
+                                    scrollModalToTop();
+                                  }}
+                                >
+                                  <span>
+                                    BOOK A ₹
+                                    {HOME_VISIT_FEE}{' '}
+                                    HOME VISIT
+                                  </span>
+
+                                  <span className="text-xl">
+                                    →
+                                  </span>
+                                </button>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      ) : (
+                        <div className="living-room-options">
+                          {getDesignsBySpace(
+                            selectedInteriorSpace
+                          ).map(
+                            (design) => (
+                              <button
+                                key={design.slug}
+                                type="button"
+                                className="
+                                  living-room-option-card
+                                "
+                                onClick={() => {
+                                  if (
+                                    selectedInteriorSpace ===
+                                      'living-room' &&
+                                    livingRoomSubOptions[
+                                      design.name
+                                    ]
+                                  ) {
+                                    setSelectedLivingRoomOption(
+                                      design.name
+                                    );
+
+                                    setSelectedLivingRoomColor(
+                                      null
+                                    );
+
+                                    scrollModalToTop();
+
+                                    return;
+                                  }
+
+                                  setSelectedInteriorDesign(
+                                    design.slug
+                                  );
+
+                                  scrollModalToTop();
+                                }}
+                              >
+                                <div className="living-room-option-image">
+                                  <img
+                                    src={`${design.image}?v=20260930`}
+                                    alt={design.name}
+                                    loading="eager"
+                                    decoding="async"
+                                  />
+                                </div>
+
+                                <div className="living-room-option-content">
+                                  <strong>
+                                    {design.name}
+                                  </strong>
+
+                                  <span>
+                                    {design.slug ===
+                                    'fluted-panel'
+                                      ? 'Modern vertical lines for a stylish look'
+                                      : design.slug ===
+                                        'wooden-panel'
+                                        ? 'Warm wood finish for a rich look'
+                                        : design.slug ===
+                                          'marble-and-fluted-panel'
+                                          ? 'Marble with fluted panels for a premium look'
+                                          : design.slug ===
+                                            'plain-panel'
+                                            ? 'Simple and clean wall design'
+                                            : 'Unique patterns for a modern look'}
+                                  </span>
+                                </div>
+
+                                <span className="living-room-option-arrow">
+                                  <Icon
+                                    name="arrow-right"
+                                    size={18}
+                                  />
+                                </span>
+                              </button>
+                            )
+                          )}
+                        </div>
+                      )
+
+
+) : selectedInteriorSpace === 'mandir' ? (
+  <div className="space-y-8">
+
+    {/* =================================
+        BASIC MANDIR DESIGNS
+        ================================= */}
+
+    <section>
+
+      <div className="mb-5">
+        <h3 className="text-2xl font-bold text-gray-950">
+          Basic Mandir Designs
+        </h3>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Simple • Elegant • Functional
+        </p>
+
+        <div className="mt-4 inline-flex rounded-lg bg-[#fff7ed] px-4 py-2">
+          <span className="text-sm font-semibold text-[#9A5B2D]">
+            ₹8,000 – ₹18,000
+          </span>
+        </div>
+      </div>
+
+
+      <div className="grid grid-cols-2 gap-4">
+
+        {mandirGroups.basic.map((name) => {
+
+          const design = getDesignsBySpace(
+            'mandir'
+          ).find(
+            (item) => item.name === name
+          );
+
+          if (!design) return null;
+
+          return (
+            <button
+              key={design.slug}
+              type="button"
+              className="
+                overflow-hidden
+                rounded-2xl
+                bg-white
+                text-left
+                shadow-sm
+                ring-1
+                ring-gray-200
+                transition
+                duration-200
+                hover:-translate-y-1
+                hover:shadow-lg
+              "
+              onClick={() => {
+                setSelectedInteriorDesign(
+                  design.slug
+                );
+
+                scrollModalToTop();
+              }}
+            >
+
+              <div
+                className="
+                  aspect-[4/3]
+                  w-full
+                  overflow-hidden
+                  bg-gray-100
+                "
+              >
+                <img
+                  src={design.image}
+                  alt={design.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="
+                    h-full!
+                    w-full
+                    object-cover
+                  "
+                />
+              </div>
+
+              <div className="p-4">
+
+                <h4 className="text-base font-bold text-gray-950">
+                  {design.name}
+                </h4>
+
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {mandirDescriptions[design.name]}
+                </p>
+
+              </div>
+
+            </button>
+          );
+        })}
+
+      </div>
+
+    </section>
+
+
+    {/* =================================
+        PREMIUM MANDIR DESIGNS
+        ================================= */}
+
+    <section>
+
+      <div className="mb-5">
+
+        <h3 className="text-2xl font-bold text-gray-950">
+          Premium Mandir Designs
+        </h3>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Luxurious • Modern • Customizable
+        </p>
+
+        <div className="mt-4 inline-flex rounded-lg bg-[#fff7ed] px-4 py-2">
+          <span className="text-sm font-semibold text-[#9A5B2D]">
+            ₹25,000 – ₹75,000
+          </span>
+        </div>
+
+      </div>
+
+
+      <div className="grid grid-cols-2 gap-4">
+
+        {mandirGroups.premium.map((name) => {
+
+          const design = getDesignsBySpace(
+            'mandir'
+          ).find(
+            (item) => item.name === name
+          );
+
+          if (!design) return null;
+
+          return (
+            <button
+              key={design.slug}
+              type="button"
+              className="
+                overflow-hidden
+                rounded-2xl
+                bg-white
+                text-left
+                shadow-sm
+                ring-1
+                ring-gray-200
+                transition
+                duration-200
+                hover:-translate-y-1
+                hover:shadow-lg
+              "
+              onClick={() => {
+                setSelectedInteriorDesign(
+                  design.slug
+                );
+
+                scrollModalToTop();
+              }}
+            >
+
+              <div
+                className="
+                  aspect-[4/3]
+                  w-full
+                  overflow-hidden
+                  bg-gray-100
+                "
+              >
+                <img
+                  src={design.image}
+                  alt={design.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="
+                    h-full!
+                    w-full
+                    object-cover
+                  "
+                />
+              </div>
+
+              <div className="p-4">
+
+                <h4 className="text-base font-bold text-gray-950">
+                  {design.name}
+                </h4>
+
+                <p className="mt-1 text-xs leading-5 text-gray-500">
+                  {mandirDescriptions[design.name]}
+                </p>
+
+              </div>
+
+            </button>
+          );
+        })}
+
+      </div>
+
+    </section>
+
+
+    {/* =================================
+        BENEFITS
+        ================================= */}
+
+    <section className="rounded-2xl bg-[#faf7f3] p-5">
+
+      <div className="grid grid-cols-2 gap-4">
+
+        <div>
+          
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+              <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span>High Quality Materials
+          </p>
+        </div>
+
+
+        <div>
+         
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+            <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span> Custom Sizes & Designs
+          </p>
+        </div>
+
+
+        <div>
+          
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+            <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span> Professional Installation
+          </p>
+        </div>
+
+
+        <div>
+         
+
+          <p className="mt-1 text-sm font-semibold text-gray-950">
+            <span className="text-xl text-[#9A5B2D]">
+            ✓
+          </span> Expert Site Visit
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    {/* =================================
+        BOOK A SITE VISIT BUTTON
+        ================================= */}
+
+    <button
+      type="button"
+      className="
+        btn
+        btn-primary
+        w-full
+      "
+      onClick={() => {
+
+        setSelectedInteriorDesign(null);
+
+        setShowInteriorBooking(true);
+
+        scrollModalToTop();
+
+      }}
+    >
+      Book a Site Visit for your Mandir
+    </button>
+
+  </div>
+) : (
+
+
+  <div
+                        className={`ibc-design-grid ${
+                          selectedInteriorSpace === 'entrance'
+                            ? 'ibc-design-grid--entrance'
+                            : selectedInteriorSpace === 'bed-back-wall'
+                              ? 'ibc-design-grid--bed-back-wall'
+                              : ''
+                        }`}
+                      >
                         {getDesignsBySpace(
                           selectedInteriorSpace
-                        ).map((design) => (
-                          <div
-                            key={design.slug}
-                            className="ibc-design-card"
-                          >
-                            <button
-                              type="button"
-                              className="
-                                ibc-design-media
-                                !block
-                                !w-full
-                                !border-0
-                                !p-0
-                              "
-                              onClick={() => {
-                                setSelectedInteriorDesign(
-                                  design.slug
-                                );
-
-                                scrollModalToTop();
-                              }}
+                        ).map(
+                          (design) => (
+                            <div
+                              key={design.slug}
+                              className={`ibc-design-card ${
+                                selectedInteriorSpace === 'entrance'
+                                  ? 'ibc-design-card--entrance'
+                                  : ''
+                              }`}
                             >
-                              <img
-                                src={design.image}
-                                alt={design.name}
-                                loading="lazy"
-                              />
-                            </button>
+                              <button
+                                type="button"
+                                className="
+                                  ibc-design-media
+                                  !block
+                                  !w-full
+                                  !border-0
+                                  !p-0
+                                "
+                                onClick={() => {
+                                  setSelectedInteriorDesign(
+                                    design.slug
+                                  );
 
-                            <button
-                              type="button"
-                              className="
-                                ibc-design-body
-                                !w-full
-                                !border-0
-                                !text-left
-                              "
-                              onClick={() => {
-                                setSelectedInteriorDesign(
-                                  design.slug
-                                );
+                                  scrollModalToTop();
+                                }}
+                              >
+                                <img
+                                  src={design.image}
+                                  alt={design.name}
+                                  loading="lazy"
+                                  decoding="async"
+                                  onError={(event) => {
+                                    event.currentTarget.onerror =
+                                      null;
 
-                                scrollModalToTop();
-                              }}
-                            >
-                              <span className="ibc-design-name">
-                                {design.name}
-                              </span>
+                                    const currentSpace =
+                                      interiorSpaces.find(
+                                        (item) =>
+                                          item.slug ===
+                                          selectedInteriorSpace
+                                      );
 
-                              <span className="ibc-design-price">
-                                ₹{design.pricePerSqft}{' '}
-                                / sq.ft.
-                              </span>
-                            </button>
-                          </div>
-                        ))}
+                                    if (
+                                      currentSpace
+                                    ) {
+                                      event.currentTarget.src =
+                                        currentSpace.image;
+                                    }
+                                  }}
+                                />
+                              </button>
+
+                              <button
+                                type="button"
+                                className="
+                                  ibc-design-body
+                                  !w-full
+                                  !border-0
+                                  !text-left
+                                "
+                                onClick={() => {
+                                  setSelectedInteriorDesign(
+                                    design.slug
+                                  );
+
+                                  scrollModalToTop();
+                                }}
+                              >
+                                <span className="ibc-design-name">
+                                  {design.name}
+                                </span>
+
+                                <span className="ibc-design-price">
+                                  {design.priceRange ||
+                                    `₹${design.pricePerSqft} / sq.ft.`}
+                                </span>
+                              </button>
+                            </div>
+                          )
+                        )}
                       </div>
                     )}
 
-                    <button
-                      type="button"
-                      className="
-    btn
-    btn-primary
-    ibc-customise-cta
-  "
-                      onClick={() => {
-                        setSelectedInteriorDesign(null);
-                        setShowInteriorBooking(true);
-                        scrollModalToTop();
-                      }}
-                    >
-                      Customise Your Design
+                   {!selectedLivingRoomOption &&
+                    !selectedLivingRoomColor &&
+                    selectedInteriorSpace !== 'mandir' && (
+                        <button
+                          type="button"
+                          className="
+                            btn
+                            btn-primary
+                            ibc-customise-cta
+                          "
+                          onClick={() => {
+                            setSelectedInteriorDesign(
+                              null
+                            );
 
-                      {/* <Icon
-                        name="arrow-right"
-                        size={17}
-                      /> */}
-                    </button>
+                            setShowInteriorBooking(
+                              true
+                            );
+
+                            scrollModalToTop();
+                          }}
+                        >
+                          Customise Your Design
+                        </button>
+                      )}
                   </div>
                 </>
               ) : (
                 <>
-                  {/* ========================================= */}
-                  {/* CHOOSE SPACE */}
-                  {/* ========================================= */}
-
                   <div className="pb-2 md:pb-8">
-                    {/* <div
-                      className="
-                        mb-5
-                        rounded-xl
-                        border
-                        border-amber-200
-                        bg-amber-50
-                        p-4
-                      "
-                    >
-                      <p
-                        className="
-                          text-sm
-                          font-semibold
-                          text-gray-900
-                        "
-                      >
-                        Book a Home Visit at just ₹
-                        {HOME_VISIT_FEE}
-                      </p>
-
-                      <p
-                        className="
-                          mt-1
-                          text-sm
-                          leading-6
-                          text-gray-600
-                        "
-                      >
-                        Get expert advice,
-                        measurement and a custom
-                        design as per your choice.
-                      </p>
-                    </div> */}
-
                     <h3
                       className="
                         mb-4
@@ -711,9 +1860,9 @@ export default function ServiceBookingModal({ service, onClose }) {
                     <div
                       className="
                         grid
-                        grid-cols-1
+                        grid-cols-2
                         gap-4
-                        sm:grid-cols-2
+                        sm:grid-cols-3
                       "
                     >
                       {interiorSpaces.map(
@@ -730,34 +1879,40 @@ export default function ServiceBookingModal({ service, onClose }) {
                                 null
                               );
 
+                              setSelectedLivingRoomOption(
+                                null
+                              );
+
+                              setSelectedLivingRoomColor(
+                                null
+                              );
+
                               scrollModalToTop();
                             }}
                             className="
                               group
                               relative
+                              aspect-square
+                              w-full
                               overflow-hidden
                               rounded-xl
-                              border
-                              border-gray-200
-                              bg-white
                               text-left
-                              shadow-sm
-                              transition
-                              hover:-translate-y-1
-                              hover:shadow-lg
                             "
                           >
-                            <img loading="lazy" decoding="async"
+                            {/* h-full! so global.css's img { height: auto } can't shrink a non-square photo and leave a gap. */}
+                            <img
+                              loading="lazy"
+                              decoding="async"
                               src={space.image}
                               alt={space.name}
                               className="
-                                h-[170px]
+                                absolute
+                                inset-0
+                                h-full!
                                 w-full
                                 object-cover
-
                                 transition
                                 duration-300
-
                                 group-hover:scale-105
                               "
                             />
@@ -776,9 +1931,9 @@ export default function ServiceBookingModal({ service, onClose }) {
                             <span
                               className="
                                 absolute
-                                bottom-3
-                                left-4
-                                text-base
+                                bottom-2
+                                left-3
+                                text-sm
                                 font-semibold
                                 text-white
                               "
@@ -1086,23 +2241,12 @@ export default function ServiceBookingModal({ service, onClose }) {
               />
             ) : null}
             </div>
-          ) : service.slug === 'other-services' ? (
-            selectedOtherService ? (
-              <ServiceBooking
-                serviceSlug={selectedOtherService}
-                modal={true}
-                onClose={onClose}
-                onStepChange={scrollModalToTop}
-              />
-            ) : (
-              <OtherServicesCategory
-                modal={true}
-                onSelectService={(serviceSlug) => {
-                  setSelectedOtherService(serviceSlug);
-                  scrollModalToTop();
-                }}
-              />
-            )
+          ) : service.slug === 'ac-services' ? (
+            <AcServices
+              modal={true}
+              onClose={onClose}
+              onStepChange={scrollModalToTop}
+            />
           ) : (
             <ServiceBooking
               serviceSlug={service.slug}

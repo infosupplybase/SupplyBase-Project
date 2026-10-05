@@ -11,8 +11,7 @@ export const popHomeTypeImages = {
     '/assets/services/architectural-design/villa-bungalow.webp',
   'Villa / Bungalow':
     '/assets/services/architectural-design/villa-bungalow.webp',
-  duplex:
-    'https://images.squarespace-cdn.com/content/v1/5db15c735ac5482d25b56a59/1717586845197-BL4PI97N191MRAB1SFCQ/IMG_1283.jpg',
+  duplex: '/assets/projects/grand_foyer.webp',
   Office: '/assets/waterproofing/hero/office.webp',
   Shop: '/assets/waterproofing/hero/shop.webp',
   'Shop / Commercial': '/assets/waterproofing/hero/shop.webp',

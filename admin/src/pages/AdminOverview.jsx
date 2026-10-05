@@ -7,7 +7,7 @@ import { EmptyState, ErrorBanner } from '../components/admin/TableStates';
 import { useAttention } from '../context/AttentionContext';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
-import { bookingTone, label, timeAgo, todayIso } from '../lib/format';
+import { bookingTone, label, timeAgo, todayIso, visitTime } from '../lib/format';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -172,7 +172,7 @@ export default function AdminOverview() {
               {today.map((b) => (
                 <li key={b.id}>
                   <Link to={`/bookings?open=${b.id}&mode=day`} className="admin-list-item">
-                    <span className="admin-list-time">{b.preferredSlot || '—'}</span>
+                    <span className="admin-list-time">{visitTime(b) || '—'}</span>
                     <span className="admin-list-main">
                       <strong>{b.name}</strong>
                       <span>

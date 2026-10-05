@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -93,6 +94,25 @@ class CatalogueControllerTest {
             mockMvc.perform(get("/api/catalogue/services"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].slug").value("plumbing"));
+        }
+    }
+
+    @Nested
+    @DisplayName("HEAD on the public catalogue (what uptime monitors send)")
+    class HeadRequests {
+
+        @Test
+        @DisplayName("200s for an anonymous caller, like GET")
+        void publicHeadAllowed() throws Exception {
+            when(catalogueService.listCategories()).thenReturn(List.of(sampleCategory()));
+
+            mockMvc.perform(head("/api/catalogue/services")).andExpect(status().isOk());
+        }
+
+        @Test
+        @DisplayName("still 401s on a protected path")
+        void protectedHeadStaysClosed() throws Exception {
+            mockMvc.perform(head("/api/admin/catalogue/categories")).andExpect(status().isUnauthorized());
         }
     }
 

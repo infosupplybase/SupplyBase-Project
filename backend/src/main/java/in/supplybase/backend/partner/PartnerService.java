@@ -28,8 +28,8 @@ import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
-import org.springframework.web.multipart.MultipartFile;
 import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
+import in.supplybase.backend.partner.dto.ApplyWithAccountRequest;
 import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.partner.dto.PartnerJobResponse;
 import in.supplybase.backend.partner.dto.PartnerProfileResponse;
@@ -62,18 +62,18 @@ public class PartnerService {
     private final BookingRepository bookings;
     private final ServiceCategoryRepository categories;
     private final AuthService authService;
-    private final FileStorageService fileStorageService;
+    private final FileStorageService files;
 
     public PartnerService(PartnerProfileRepository partners, UserRepository users,
-                      BookingRepository bookings, ServiceCategoryRepository categories,
-                      AuthService authService, FileStorageService fileStorageService) {
-    this.partners = partners;
-    this.users = users;
-    this.bookings = bookings;
-    this.categories = categories;
-    this.authService = authService;
-    this.fileStorageService = fileStorageService;
-}
+                          BookingRepository bookings, ServiceCategoryRepository categories,
+                          AuthService authService, FileStorageService files) {
+        this.partners = partners;
+        this.users = users;
+        this.bookings = bookings;
+        this.categories = categories;
+        this.authService = authService;
+        this.files = files;
+    }
 
     /* ------------------------------------------------------------ partner */
 
@@ -81,51 +81,101 @@ public class PartnerService {
      * Creates the login and a PENDING application together, so a failure in
      * either leaves nothing behind. Sign-up rate limiting, duplicate email and
      * phone checks all come from {@link AuthService#register}.
+     *
+     * The Aadhaar and PAN photos are stored under partners/{userId}/documents
+     * in the private uploads folder; only their storage keys go on the profile.
+     */
+        @Transactional
+    public AuthResponse apply(
+            ApplyAsPartnerRequest request,
+            PartnerDocuments documents,
+            String clientIp) {
+
+        String trade = requireTrade(request.primaryTrade());
+
+        // Checked before the account is created so a bad trade, or a file
+        // that is not a photo, never costs anyone a sign-up attempt.
+        documents.requirePhotos();
+
+        AuthResponse auth = authService.register(
+                new RegisterRequest(
+                        request.fullName(),
+                        request.email(),
+                        request.phone(),
+                        request.password()
+                ),
+                clientIp
+        );
+
+        saveApplication(
+                users.getReferenceById(auth.user().id()),
+                trade,
+                request.experienceYears(),
+                request.city(),
+                request.serviceAreas(),
+                request.languages(),
+                documents
+        );
+
+        return auth;
+    }
+
+    /**
+     * A signed-in customer applying on the account they already have. Applying
+     * through {@link #apply} would try to create a second account with the same
+     * email and phone and be refused, so this attaches a PENDING application to
+     * the existing login instead. The role stays CUSTOMER until an admin
+     * approves it, exactly as for a new applicant.
      */
     @Transactional
-    public AuthResponse apply(
-        ApplyAsPartnerRequest request,
-        MultipartFile aadhaarFront,
-        MultipartFile aadhaarBack,
-        MultipartFile panFront,
-        String clientIp) {
-        String trade = request.primaryTrade().trim();
-        // Checked before the account is created so a bad trade never costs
-        // anyone a sign-up attempt.
+    public PartnerProfileResponse applyWithAccount(Long userId, ApplyWithAccountRequest request,
+                                                   PartnerDocuments documents) {
+        String trade = requireTrade(request.primaryTrade());
+        documents.requirePhotos();
+
+        User user = users.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("That account"));
+        if (user.getRole() != Role.CUSTOMER) {
+            throw ApiException.badRequest("This account cannot apply as a partner.");
+        }
+        if (partners.findByUserId(userId).isPresent()) {
+            throw ApiException.conflict("You have already applied. Your application is on your dashboard.");
+        }
+
+        PartnerProfile profile = saveApplication(user, trade, request.experienceYears(), request.city(),
+                request.serviceAreas(), request.languages(), documents);
+        return PartnerProfileResponse.from(profile, tradeLabels().get(profile.getPrimaryTrade()));
+    }
+
+    /** The trade slug, if it is one of the top-level services customers can book. */
+    private String requireTrade(String primaryTrade) {
+        String trade = primaryTrade.trim();
         categories.findBySlugAndActiveTrue(trade)
                 .filter(category -> category.getParentSlug() == null)
                 .orElseThrow(() -> ApiException.badRequest("Please choose one of the listed trades."));
+        return trade;
+    }
 
-        AuthResponse auth = authService.register(
-                new RegisterRequest(request.fullName(), request.email(), request.phone(), request.password()),
-                clientIp);
-
-        User user = users.getReferenceById(auth.user().id());
-
-        String documentDirectory = "partners/" + auth.user().id() + "/documents";
-
-FileStorageService.StoredFile storedAadhaarFront =
-        fileStorageService.store(aadhaarFront, documentDirectory);
-
-FileStorageService.StoredFile storedAadhaarBack =
-        fileStorageService.store(aadhaarBack, documentDirectory);
-
-FileStorageService.StoredFile storedPanFront =
-        fileStorageService.store(panFront, documentDirectory);
-
-        partners.save(PartnerProfile.builder()
+    /**
+     * Stores the Aadhaar and PAN photos under partners/{userId}/documents in the
+     * private uploads folder and saves a PENDING application pointing at them.
+     */
+    private PartnerProfile saveApplication(User user, String trade, Integer experienceYears, String city,
+                                           String serviceAreas, String languages, PartnerDocuments documents) {
+        String folder = "partners/" + user.getId() + "/documents";
+        return partners.save(PartnerProfile.builder()
                 .user(user)
                 .primaryTrade(trade)
-                .experienceYears(request.experienceYears())
-                .city(request.city().trim())
-                .serviceAreas(blankToNull(request.serviceAreas()))
-                .languages(blankToNull(request.languages()))
-.aadhaarFrontPath(storedAadhaarFront.storageKey())
-.aadhaarBackPath(storedAadhaarBack.storageKey())
-.panFrontPath(storedPanFront.storageKey())
-.status(PartnerStatus.PENDING)
+                .experienceYears(experienceYears)
+                .city(city.trim())
+                .serviceAreas(blankToNull(serviceAreas))
+                .languages(blankToNull(languages))
+                .aadhaarFrontPath(files.store(documents.aadhaarFront(), folder).storageKey())
+                .aadhaarBackPath(files.store(documents.aadhaarBack(), folder).storageKey())
+                .panFrontPath(files.store(documents.panFront(), folder).storageKey())
+                .status(PartnerStatus.PENDING)
+
                 .build());
-        return auth;
     }
 
     /** The signed-in user's own application, or 404 if they never applied. */
@@ -134,7 +184,6 @@ FileStorageService.StoredFile storedPanFront =
         PartnerProfile profile = partners.findByUserId(userId)
                 .orElseThrow(() -> ApiException.notFound("A partner application for this account"));
         return PartnerProfileResponse.from(profile, tradeLabels().get(profile.getPrimaryTrade()));
-    }
 
     /* -------------------------------------------------------------- admin */
 

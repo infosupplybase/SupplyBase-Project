@@ -13,7 +13,8 @@ preview/out
 # local editor / agent config (machine-specific paths)
 .claude
 /.metadata/
-# Private uploaded documents
+# Uploaded files (customer photos, partner ID documents) - never commit
 backend/uploads/
-# Generated backend build/copy
+
+# Eclipse/VS Code Java build output
 backend/bin/

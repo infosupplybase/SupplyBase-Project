@@ -14,6 +14,7 @@ import { composeAddress, emptyDetails, validateDetails as checkDetails } from '.
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -312,7 +313,7 @@ export default function ElectricianService() {
   if (!intro) return <Navigate to="/services/electrical" replace />;
 
   /* ---------------------------------------------------------- intro splash */
-  if (!started) {
+  if (!started && !receipt) {
     return (
       <div className="elc-intro-wrap">
         <div className="elc-intro-hero">
@@ -506,7 +507,7 @@ export default function ElectricianService() {
               )}
               {stage === CONFIRM ? (
                 <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'BOOKING…' : 'PAY & CONFIRM BOOKING'}
+                  {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
@@ -549,7 +550,7 @@ function FileField({ question, files, onPick, onRemove, error }) {
       <input
         id={inputId}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp"
         multiple
         onChange={onPick}
         style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
@@ -578,7 +579,7 @@ function ElectricianSummary({ category, form, answers, date, time, estimate }) {
     <div style={{ marginTop: 26 }}>
       <div className="wizard-card-head">
         <h2>Booking Summary</h2>
-        <p>Please check everything before you pay.</p>
+        <p>Please check everything before you confirm.</p>
       </div>
 
       <dl className="review-list">
@@ -680,6 +681,8 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
                 <dd>{details.address}, {details.city}</dd>
               </div>
             </dl>
+
+            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
             {fileCount > 0 && (
               <p className="elc-upload-status">

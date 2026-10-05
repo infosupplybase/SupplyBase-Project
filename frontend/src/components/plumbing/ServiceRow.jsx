@@ -1,5 +1,5 @@
 import Icon from '../ui/Icon';
-import { formatRupees } from '../../lib/money';
+import { formatItemPrice } from '../../lib/money';
 import { useCart } from '../../context/CartContext';
 import { ITEM_ICON_OVERRIDES, ITEM_IMAGES } from '../../data/plumbingContent';
 
@@ -44,7 +44,7 @@ export default function ServiceRow({ item, group }) {
         <span className="plb-row-name">{item.label}</span>
         <p className="plb-row-desc">{item.hint}</p>
         <div className="plb-row-price">
-          {formatRupees(item.price)} <span>(Actual pricing)</span>
+          {formatItemPrice(item.price)} {item.price > 0 && <span>(Actual pricing)</span>}
         </div>
       </div>
 

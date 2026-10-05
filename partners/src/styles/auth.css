@@ -494,6 +494,33 @@ body:has(.auth-screen-embedded)::-webkit-scrollbar,
 }
 
 /* Partner document upload */
+
+/* ------------------------------------------------- identity documents
+   Aadhaar (front and back) and PAN photos on the application (Mandar).
+   The real file input stays in the page (visually hidden) so it can be
+   reached with the keyboard; the label next to it is what people see. */
+
+.partner-documents {
+  display: grid;
+  gap: 12px;
+}
+
+.partner-documents-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--auth-text-mute);
+}
+
+.partner-documents-note svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--auth-gold);
+}
+
 .partner-document-upload {
   width: 100%;
   min-height: var(--control-h);
@@ -507,9 +534,24 @@ body:has(.auth-screen-embedded)::-webkit-scrollbar,
   overflow: hidden;
 }
 
-/* Hide native browser file input */
-.auth-field .partner-document-input {
-  display: none;
+.auth-field input.partner-document-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.partner-document-upload:focus-within {
+  border-color: var(--auth-gold);
+  box-shadow: 0 0 0 3px rgba(245, 208, 51, 0.16);
+}
+
+.auth-field.error .partner-document-upload {
+  border-color: #c24545;
 }
 
 .partner-document-button {
@@ -569,4 +611,25 @@ body:has(.auth-screen-embedded)::-webkit-scrollbar,
   .partner-document-upload {
     min-width: 0;
   }
+}
+
+/* "New to Supplybase Partners? Apply to join" and "Customer login" under the
+   sign-in button — copied from the customer site's account page, where the
+   same class is styled; here it had no styles, so the lines sat flush
+   against the button as plain white text with no visible links. */
+.auth-switch {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--auth-text-soft);
+}
+
+.auth-switch + .auth-switch {
+  margin-top: 8px;
+}
+
+.auth-switch a {
+  color: var(--auth-gold);
+  font-weight: 700;
 }

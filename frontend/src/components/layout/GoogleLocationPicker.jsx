@@ -19,9 +19,22 @@ const DEFAULT_CENTER = {
 let googleMapsPromise = null;
 
 /*
+ * Google does not throw when it rejects the key (billing switched off, the key
+ * limited to other websites, a required API not enabled): it calls the global
+ * gm_authFailure and the map shows its own error instead of tiles. We listen
+ * for that so the picker can tell the customer to type their address instead
+ * of leaving them with a broken map.
+ */
+let mapsAuthFailed = false;
+export const mapsKeyRejected = () => mapsAuthFailed;
+export const MAPS_AUTH_FAILED = 'supplybase:maps-auth-failed';
+const MAPS_UNAVAILABLE_MESSAGE =
+  'The map is not available right now. Please close this and type your address instead.';
+
+/*
  * Load Google Maps JavaScript API
  */
-function loadGoogleMaps() {
+export function loadGoogleMaps() {
   if (window.google?.maps) {
     return Promise.resolve(window.google.maps);
   }
@@ -37,6 +50,11 @@ function loadGoogleMaps() {
   if (googleMapsPromise) {
     return googleMapsPromise;
   }
+
+  window.gm_authFailure = () => {
+    mapsAuthFailed = true;
+    window.dispatchEvent(new Event(MAPS_AUTH_FAILED));
+  };
 
   googleMapsPromise = new Promise((resolve, reject) => {
     const existingScript = document.querySelector(
@@ -125,7 +143,7 @@ function geolocationMessage(geoError) {
  * or null if it cannot say (the key may not have the Geocoding API enabled),
  * in which case callers fall back to the bare coordinates.
  */
-async function reverseGeocode(latitude, longitude) {
+export async function reverseGeocode(latitude, longitude) {
   try {
     const googleMaps = await loadGoogleMaps();
     const { Geocoder } = await googleMaps.importLibrary('geocoding');
@@ -269,6 +287,23 @@ export default function GoogleLocationPicker({
 
     setError('');
   };
+
+  /*
+   * Google rejected the key: say so and point to the typed address.
+   */
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const showUnavailable = () => {
+      setMapLoading(false);
+      setError(MAPS_UNAVAILABLE_MESSAGE);
+    };
+
+    if (mapsAuthFailed) showUnavailable();
+    window.addEventListener(MAPS_AUTH_FAILED, showUnavailable);
+
+    return () => window.removeEventListener(MAPS_AUTH_FAILED, showUnavailable);
+  }, [open]);
 
   /*
    * Initialize Google Maps
@@ -761,7 +796,7 @@ export default function GoogleLocationPicker({
             aria-label="Close location picker"
           >
             <Icon
-              name="x"
+              name="close"
               size={22}
             />
           </button>
@@ -789,7 +824,7 @@ export default function GoogleLocationPicker({
               aria-label="Clear search"
             >
               <Icon
-                name="x"
+                name="close"
                 size={16}
               />
             </button>

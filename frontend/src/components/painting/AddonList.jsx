@@ -5,12 +5,6 @@ import { ITEM_ICON_OVERRIDES } from '../../data/paintingContent';
 
 const TEXTURE_IMAGE = '/assets/projects/Stone_texture.webp';
 
-const CLEANING_IMAGE =
-  'https://images.squarespace-cdn.com/content/v1/6453d23ab5f3007cff4aa827/63fe1953-7434-4c63-81c6-92f6a86c0de4/limpieza-pisos.jpg';
-
-const SHIFTING_IMAGE =
-  'https://www.engler-umzuege.de/upload/large/umzug2_large_znjyXxr6Ub.jpg';
-
 const addonImages = {
   'ceiling-painting': '/assets/pop-ceiling/types/flat-ceiling.webp',
   'doors-windows-painting':
@@ -23,8 +17,6 @@ const addonImages = {
   'texture-feature-wall': TEXTURE_IMAGE,
   'texture-wall': TEXTURE_IMAGE,
   'feature-wall': TEXTURE_IMAGE,
-  'deep-cleaning': CLEANING_IMAGE,
-  'furniture-shifting': SHIFTING_IMAGE,
 };
 
 function getAddonImage(option) {
@@ -39,14 +31,8 @@ function getAddonImage(option) {
     return TEXTURE_IMAGE;
   }
 
-  if (label.includes('cleaning')) {
-    return CLEANING_IMAGE;
-  }
-
-  if (label.includes('furniture') && label.includes('shift')) {
-    return SHIFTING_IMAGE;
-  }
-
+  // Deep Cleaning and Furniture Shifting have no photo of our own yet, so
+  // they show their icon (see AddonRow) instead of another company's picture.
   return null;
 }
 

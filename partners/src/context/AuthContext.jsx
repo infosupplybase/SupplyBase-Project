@@ -179,8 +179,7 @@ export function AuthProvider({ children }) {
       login: async (identifier, password, remember = false) =>
         adopt(await api.login(identifier.trim(), password), remember),
       /** Creates the login and the PENDING application together, and signs in for this browser session. */
-      applyAsPartner: async (form, documents) =>
-  adopt(await api.apply(form, documents), false),
+      applyAsPartner: async (form, documents) => adopt(await api.apply(form, documents), false),
       logout,
       refreshUser,
     }),

@@ -135,8 +135,8 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        String identifierKey = request.identifier() == null ? "" : request.identifier().trim().toLowerCase();
-        if (!rateLimiter.tryAcquire("login:" + identifierKey, LOGIN_MAX, LOGIN_WINDOW)) {
+        String loginKey = "login:" + rateLimitKey(request.identifier());
+        if (!rateLimiter.tryAcquire(loginKey, LOGIN_MAX, LOGIN_WINDOW)) {
             throw ApiException.tooManyRequests("Too many attempts. Please wait a while and try again.");
         }
 
@@ -153,7 +153,24 @@ public class AuthService {
         if (!user.isEnabled()) {
             throw ApiException.forbidden("This account has been switched off. Please contact us.");
         }
+        // Only failed attempts count: a person who signs in often must not
+        // lock themselves out.
+        rateLimiter.reset(loginKey);
         return issueTokens(user);
+    }
+
+    /**
+     * The account a sign-in box refers to, for rate limiting. Keyed on what
+     * was typed, "98765 43210", "+919876543210" and "9876543210" would each
+     * get their own budget, so one account could be guessed at without limit.
+     */
+    private static String rateLimitKey(String identifier) {
+        String trimmed = identifier == null ? "" : identifier.trim().toLowerCase();
+        if (PhoneNumbers.looksLikeEmail(trimmed)) {
+            return trimmed;
+        }
+        String phone = PhoneNumbers.normaliseOrNull(trimmed);
+        return phone != null ? phone : trimmed;
     }
 
     /**
@@ -285,8 +302,7 @@ public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
      */
     @Transactional
     public void forgotPassword(String identifier) {
-        String identifierKey = identifier == null ? "" : identifier.trim().toLowerCase();
-        if (!rateLimiter.tryAcquire("forgot-password:" + identifierKey,
+        if (!rateLimiter.tryAcquire("forgot-password:" + rateLimitKey(identifier),
                 FORGOT_PASSWORD_MAX, FORGOT_PASSWORD_WINDOW)) {
             throw ApiException.tooManyRequests("Too many attempts. Please wait a while and try again.");
         }

@@ -26,12 +26,10 @@
  *   "restored room" side of the benefits section; the "damp/before" side
  *   uses the existing wall-crack/wall-stain/wall-mould icons (added for
  *   Painting) rather than a fabricated damp-wall photo.
- * - Water Tank and Basement: NO existing photo in this project is a
- *   defensible match (no tank or basement/parking photography exists
- *   anywhere in the asset library) — these two intros reuse WP_HERO_IMAGE
- *   (the same house exterior as the category hero) rather than a
- *   stretched or mismatched photo. Flagged in the delivery report as a
- *   genuine asset gap: neither section has photography specific to it.
+ * - Water Tank: uses the existing frontend/public/assets/waterproofing/
+ *   watertank.webp image of a worker coating a tank interior.
+ * - Basement: uses the existing frontend/public/assets/waterproofing/
+ *   basement.webp image of basement wall waterproofing work.
  * - Brand cards: the project's own real Dr. Fixit / Asian Paints / Berger
  *   logo files (materials/dr-fixit.png, asian-paints.png,
  *   berger-paints.jpg) — no product packshots are shown at all, which is
@@ -88,6 +86,20 @@ export const wpBathroomServices = [
   // { slug: 'tile-resealing', name: 'Tile Re-sealing', tagline: 'Protects existing tiles and grout lines.', icon: 'layers', route: '/booking/waterproofing?preselect=Bathroom%20Tile%20Re-sealing' },
 ];
 
+/**
+ * The catalogue's service_needed value for each waterproofing flow (see
+ * V6/V17). Most flows share their name with the catalogue option; the walls
+ * and the bathroom floor are stored under an older, broader name.
+ */
+const WP_CATALOGUE_SERVICE = {
+  'interior-wall': 'Wall Waterproofing',
+  'exterior-wall': 'External Waterproofing',
+  'bathroom-floor': 'Bathroom Waterproofing',
+};
+
+/** The service_needed value a booking from this flow is stored under. */
+export const wpCatalogueService = (slug, name) => WP_CATALOGUE_SERVICE[slug] || name;
+
 const FEE_NOTE = 'Rates are indicative and may vary based on site condition, area and material selection. For projects above ₹5,000, a ₹99 home visit fee applies — adjusted in your final bill if you proceed.';
 
 /**
@@ -105,7 +117,7 @@ export const wpFlows = {
     title: 'Terrace Waterproofing',
     heroTagline: 'Leak-Free Roofs. Happier Homes.',
     intro: {
-      image: WP_HERO_IMAGE,
+      image: '/assets/waterproofing/hero/Preventive-waterproofing.webp',
       heading: 'Terrace waterproofing protects your home from rainwater, heat and structural damage.',
       text: 'We use premium materials and proven techniques to ensure a durable, leak-free terrace for years.',
       points: [
@@ -131,7 +143,7 @@ export const wpFlows = {
     title: 'Exterior Wall Waterproofing',
     heroTagline: 'Leak-Free Walls. Stronger Homes.',
     intro: {
-      image: WP_HERO_IMAGE,
+      image: '/assets/waterproofing/hero/wall.webp',
       heading: 'Exterior wall waterproofing protects your home from rainwater penetration, wall cracks, dampness and paint peeling.',
       text: 'We use premium materials and proven techniques to ensure a durable and beautiful finish.',
       points: [
@@ -223,7 +235,7 @@ export const wpFlows = {
     title: 'Water Tank Waterproofing',
     heroTagline: 'Clean Water. Healthy Living.',
     intro: {
-      image: WP_HERO_IMAGE,
+      image: '/assets/waterproofing/watertank.webp',
       heading: 'Protect your overhead and underground water tanks from leakage, seepage and contamination.',
       text: 'Suitable for overhead water tanks (RCC/Plastic), underground sump tanks — residential, commercial and industrial, new and existing.',
       points: [
@@ -261,7 +273,7 @@ export const wpFlows = {
     title: 'Basement Waterproofing',
     heroTagline: 'Leak-Free Spaces. Longer Life.',
     intro: {
-      image: WP_HERO_IMAGE,
+      image: '/assets/waterproofing/basement.webp',
       heading: 'Protect your valuable space from water seepage, dampness and structural damage.',
       text: 'Ideal for residential and commercial basements, parking areas, storage spaces, lift pits and machine rooms.',
       points: [

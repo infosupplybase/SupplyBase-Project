@@ -126,7 +126,20 @@ async function send(path, { method = 'GET', body, auth = true } = {}) {
  * on the backend for the phone-number check that stands in for a login).
  */
 async function uploadFile(path, formData) {
-  const response = await fetch(`${BASE_URL}${path}`, { method: 'POST', body: formData });
+  // A booking's photos are uploaded as the signed-in customer who made it, so
+  // the token goes along (and is refreshed once if it has just aged out).
+  const post = () => {
+    const token = getAccessToken();
+    return fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      body: formData,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+  };
+  let response = await post();
+  if (response.status === 401 && getRefreshToken() && (await refreshTokens())) {
+    response = await post();
+  }
   let payload = null;
   try {
     payload = await response.json();
@@ -203,6 +216,14 @@ updateProfile: (profile) =>
   forgotPassword: (identifier) =>
     request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
 
+  /** Sets a new password with the token from the emailed reset link. */
+  resetPassword: (token, newPassword) =>
+    request('/api/auth/reset-password', { method: 'POST', auth: false, body: { token, newPassword } }),
+
+  /** Marks the address verified with the token from the emailed link. */
+  verifyEmail: (token) =>
+    request('/api/auth/verify-email', { method: 'POST', auth: false, body: { token } }),
+
   /** Re-sends the sign-up verification email to the signed-in user's own address. */
   sendVerificationEmail: () => request('/api/auth/send-verification', { method: 'POST' }),
 
@@ -253,6 +274,23 @@ updateProfile: (profile) =>
   },
 
   myBookings: () => request('/api/bookings/mine'),
+
+  /* --------------------------------------------------------- payments */
+
+  /** Opens (or reuses) the Razorpay order for a booking's fee. The amount is the server's, never ours. */
+  startBookingPayment: (bookingNumber) =>
+    request(`/api/payments/bookings/${encodeURIComponent(bookingNumber)}/order`, { method: 'POST' }),
+
+  /** Hands checkout's signed result to the server, which verifies it before marking anything paid. */
+  verifyPayment: ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) =>
+    request('/api/payments/verify', {
+      method: 'POST',
+      body: {
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+      },
+    }),
 
   /** One booking in full, including the real answers given in the wizard. */
   booking: (id) => request(`/api/bookings/${id}`),

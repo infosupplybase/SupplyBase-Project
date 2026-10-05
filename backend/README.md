@@ -128,6 +128,7 @@ Signed in — send `Authorization: Bearer <accessToken>`:
 | `GET` | `/api/projects/{id}` | One project (yours, or any if staff) |
 | `GET` | `/api/payments/mine` | What I owe and what I have paid |
 | `POST` | `/api/payments/{id}/order` | Start checkout — returns a Razorpay order |
+| `POST` | `/api/payments/bookings/{bookingNumber}/order` | Start checkout for a booking's fee (amount comes from the booking) |
 | `POST` | `/api/payments/verify` | Confirm a completed checkout |
 
 Staff only (`ADMIN` or `MANAGER`) — everything under `/api/admin`:
@@ -249,6 +250,6 @@ only class that imports the SDK, so changing or adding a gateway is one file.
 - [x] `STORAGE_ROOT_DIR` already persists — `docker-compose.prod.yml` mounts
       it as a named Docker volume (`supplybase-uploads`) on the VPS, which
       survives container restarts and rebuilds
-- [ ] Set `springdoc.api-docs.enabled=false` (or otherwise gate it) — API docs
-      at `/swagger-ui.html` and `/v3/api-docs` are open by default for local
-      development convenience
+- [x] API docs at `/swagger-ui.html` and `/v3/api-docs` are off unless
+      `API_DOCS_ENABLED=true` (turn it on in `backend/.env` for local
+      development only; leave it unset on the production server)

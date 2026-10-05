@@ -3,10 +3,12 @@ package in.supplybase.backend.booking;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,6 +45,7 @@ import in.supplybase.backend.catalogue.ServiceOption;
 import in.supplybase.backend.catalogue.ServiceOptionRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
+import in.supplybase.backend.common.PhotoUploads;
 import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
 import in.supplybase.backend.config.AppProperties;
@@ -52,8 +55,12 @@ public class BookingService {
 
     private static final Logger log = LoggerFactory.getLogger(BookingService.class);
 
-    /** A real person does not book six site visits in an hour; a bot does. */
-    private static final int MAX_PER_PHONE_PER_HOUR = 5;
+    /**
+     * A real person does not book six visits for one service in an hour; a
+     * bot does. Counted per service, so someone booking a plumber, an
+     * electrician and a painter in one sitting is not stopped.
+     */
+    private static final int MAX_PER_PHONE_PER_SERVICE_PER_HOUR = 5;
 
     /**
      * The plumbing cart's pricing rule (from the approved rate card): actual
@@ -68,6 +75,9 @@ public class BookingService {
     private static final String PLUMBING_SLUG = "plumbing";
     private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
     private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+    // Joins a question key and an option value into one lookup key. Both the
+    // map that is built and every lookup into it must use this same constant.
+    private static final String OPTION_KEY_SEPARATOR = "\u0000";
 
     /**
      * Painting's itemised answer keys (see V15) — priced the same way
@@ -83,6 +93,10 @@ public class BookingService {
             "home_type", "full_home_painting_type", "full_home_product", "full_home_addon",
             "few_walls_painting_type", "few_walls_product", "few_walls_addon",
             "renovation_repair", "renovation_addon");
+
+    // paintingBhkPricing: package prices are read from the database.
+    @org.springframework.beans.factory.annotation.Autowired
+    private in.supplybase.backend.catalogue.PaintingProductPriceRepository paintingPrices;
 
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
@@ -127,11 +141,12 @@ public class BookingService {
         ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
         String phone = PhoneNumbers.normalise(request.phone());
 
-        long recent = bookings.countByPhoneAndCreatedAtAfter(
-                phone, Instant.now().minus(Duration.ofHours(1)));
-        if (recent >= MAX_PER_PHONE_PER_HOUR) {
-            throw ApiException.badRequest(
-                    "We already have your booking. Please call us if it is urgent.");
+        long recent = bookings.countByPhoneAndCategoryAndCreatedAtAfter(
+                phone, category, Instant.now().minus(Duration.ofHours(1)));
+        if (recent >= MAX_PER_PHONE_PER_SERVICE_PER_HOUR) {
+            throw ApiException.badRequest("You have made " + MAX_PER_PHONE_PER_SERVICE_PER_HOUR
+                    + " " + category.getName() + " bookings from this number in the last hour."
+                    + " Please call us if you need another one now.");
         }
 
         // Reserving before saving means a full slot fails the whole request
@@ -191,7 +206,9 @@ public class BookingService {
         }
 
         notifyStaff(saved);
-        return BookingReceipt.from(saved);
+        BookingReceipt receipt = BookingReceipt.from(saved);
+        emailCustomer(saved, receipt);
+        return receipt;
     }
 
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
@@ -228,9 +245,73 @@ public class BookingService {
             if (option.getOptionValue() != null) {
                 allowedByKey.computeIfAbsent(option.getQuestionKey(), k -> new HashSet<>())
                         .add(option.getOptionValue());
-                optionByKeyAndValue.put(option.getQuestionKey() + " " + option.getOptionValue(), option);
+                optionByKeyAndValue.put(option.getQuestionKey() + OPTION_KEY_SEPARATOR + option.getOptionValue(), option);
             }
         }
+
+        Map<String, String> paintingSelections = new HashMap<>();
+        boolean paintingBooking = "painting".equals(category.getSlug());
+
+        if (paintingBooking) {
+            Set<String> singleKeys = Set.of(
+                    "home_type", "paint_brand", "few_walls_area", "few_walls_ceiling_type",
+                    "full_home_painting_type", "full_home_product",
+                    "few_walls_painting_type", "few_walls_product");
+
+            Set<String> seenAnswers = new HashSet<>();
+            for (CreateBookingRequest.AnswerInput input : submitted) {
+                String identity = input.key() + "\u0000" + input.value();
+                if (!seenAnswers.add(identity)) {
+                    throw ApiException.badRequest("The same painting option was submitted twice.");
+                }
+                if (singleKeys.contains(input.key())
+                        && paintingSelections.putIfAbsent(input.key(), input.value()) != null) {
+                    throw ApiException.badRequest("Choose only one option for each painting question.");
+                }
+            }
+
+            if (paintingSelections.containsKey("full_home_product")
+                    && paintingSelections.containsKey("few_walls_product")) {
+                throw ApiException.badRequest("Choose one painting journey.");
+            }
+
+            if (paintingSelections.containsKey("full_home_product")
+                    && (!paintingSelections.containsKey("home_type")
+                        || !paintingSelections.containsKey("paint_brand")
+                        || !paintingSelections.containsKey("full_home_painting_type"))) {
+                throw ApiException.badRequest("Choose your home, painting type and brand.");
+            }
+        }
+
+        if (paintingBooking
+                && paintingSelections.containsKey("few_walls_product")
+                && (!paintingSelections.containsKey("few_walls_area")
+                    || !paintingSelections.containsKey("paint_brand"))) {
+            throw ApiException.badRequest("Choose your walls and paint brand.");
+        }
+
+        if (paintingBooking
+                && paintingSelections.containsKey("few_walls_product")
+                && "ceiling-paint".equals(paintingSelections.get("few_walls_area"))
+                && !Set.of("plain-ceiling", "design-ceiling").contains(
+                        paintingSelections.getOrDefault("few_walls_ceiling_type", ""))) {
+            throw ApiException.badRequest("Choose Plain Ceiling or Design Ceiling.");
+        }
+
+        boolean renovationSiteQuote = paintingBooking
+                && ("renovation-painting".equals(
+                            paintingSelections.get("full_home_painting_type"))
+                    || submitted.stream().anyMatch(
+                            input -> "renovation_area".equals(input.key())));
+
+        boolean paintingSiteQuote = paintingBooking
+                && (("unfurnished-home".equals(
+                            paintingSelections.get("full_home_painting_type"))
+                        && "independent-house".equals(
+                            paintingSelections.get("home_type")))
+                    || ("multiple-walls".equals(
+                            paintingSelections.get("few_walls_area"))
+                        && paintingSelections.containsKey("few_walls_product")));
 
         List<BookingAnswer> rows = new ArrayList<>();
         long itemsTotalPaise = 0L;
@@ -260,12 +341,60 @@ public class BookingService {
                     .answerValue(input.value())
                     .answerLabel(input.label());
 
-            if ("cart_item".equals(input.key()) || PAINTING_PRICED_KEYS.contains(input.key())) {
-                ServiceOption matched = optionByKeyAndValue.get(input.key() + " " + input.value());
-                if (matched != null && matched.getPricePaise() != null) {
-                    int quantity = input.quantity() == null ? 1 : Math.max(1, input.quantity());
-                    long lineTotal = matched.getPricePaise() * quantity;
-                    row.quantity(quantity).unitPricePaise(matched.getPricePaise()).lineTotalPaise(lineTotal);
+            if ("cart_item".equals(input.key())
+                    || (paintingBooking && PAINTING_PRICED_KEYS.contains(input.key()))) {
+                ServiceOption matched = optionByKeyAndValue.get(
+                        input.key() + OPTION_KEY_SEPARATOR + input.value());
+
+                Long unitPricePaise = matched == null ? null : matched.getPricePaise();
+
+                // Home and painting type identify the package; they are not extra charges.
+                if (paintingBooking && Set.of(
+                        "home_type", "full_home_painting_type",
+                        "few_walls_painting_type").contains(input.key())) {
+                    unitPricePaise = null;
+                }
+
+                if (paintingBooking && Set.of(
+                        "full_home_product", "few_walls_product").contains(input.key())) {
+                    String productBrand = input.value().startsWith("berger-")
+                            ? "berger" : "asian-paints";
+
+                    if (!productBrand.equals(paintingSelections.get("paint_brand"))) {
+                        throw ApiException.badRequest(
+                                "Choose a product from your selected paint brand.");
+                    }
+
+                    boolean fewWalls = "few_walls_product".equals(input.key());
+                    boolean ceiling = fewWalls && "ceiling-paint".equals(
+                            paintingSelections.get("few_walls_area"));
+                    unitPricePaise = null;
+
+                    if (!paintingSiteQuote) {
+                        unitPricePaise = paintingPrices
+                                .findByFlowKeyAndPaintingTypeAndBrandAndHomeTypeAndProductValue(
+                                        input.key(),
+                                        fewWalls ? (ceiling ? "ceiling-painting" : "wall-painting")
+                                                : paintingSelections.get("full_home_painting_type"),
+                                        paintingSelections.get("paint_brand"),
+                                        fewWalls ? (ceiling
+                                                ? paintingSelections.get("few_walls_ceiling_type")
+                                                : paintingSelections.get("few_walls_area"))
+                                                : paintingSelections.get("home_type"),
+                                        input.value())
+                                .map(in.supplybase.backend.catalogue.PaintingProductPrice::getPricePaise)
+                                .orElse(null);
+                    }
+                }
+
+                if (unitPricePaise != null) {
+                    // A painting package or selected add-on is counted once.
+                    int quantity = paintingBooking ? 1
+                            : input.quantity() == null ? 1 : Math.max(1, input.quantity());
+                    long lineTotal = unitPricePaise * quantity;
+                    row.quantity(quantity)
+                            .unitPricePaise(unitPricePaise)
+                            .lineTotalPaise(lineTotal);
                     itemsTotalPaise += lineTotal;
                 }
             } else if ("consultation_type".equals(input.key())) {
@@ -275,7 +404,7 @@ public class BookingService {
             rows.add(row.build());
         }
         answers.saveAll(rows);
-        return new CartPricing(itemsTotalPaise, hasConsultationAnswer);
+        return new CartPricing((paintingSiteQuote || renovationSiteQuote) ? 0L : itemsTotalPaise, hasConsultationAnswer);
     }
 
     /* ------------------------------------------------------------- reads */
@@ -295,7 +424,12 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingResponse> forDate(LocalDate date) {
+        // In visit-time order: the picked time on new bookings, the old
+        // morning/afternoon lane (already the query's order) on legacy ones.
         return bookings.findByPreferredDateOrderByPreferredSlotAsc(date).stream()
+                .sorted(java.util.Comparator.comparing(
+                        (Booking b) -> b.getAppointmentSlot() == null ? null : b.getAppointmentSlot().getSlotTime(),
+                        java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
                 .map(BookingResponse::from)
                 .toList();
     }
@@ -565,24 +699,27 @@ public class BookingService {
     }
 
     /**
-     * The booking wizard's own upload call, for the two services that collect
-     * photos of the problem or the appliance. Booking creation is public and
-     * usually anonymous, so this cannot require a signed-in owner the way
-     * {@link #listFiles} does — instead it trusts whoever holds both the
-     * booking number (BookingReceipt deliberately withholds the numeric id —
-     * see its own javadoc — so this takes the human-readable number instead)
-     * and the phone number on the booking, the same proof-of-ownership shape
-     * the create endpoint's own rate limit already relies on.
+     * The booking wizard's own photo upload, keyed by the booking NUMBER (what
+     * BookingReceipt hands back; it withholds the numeric id).
+     *
+     * A booking is always made by a signed-in customer now, so the upload
+     * needs that same customer (or staff) - it used to be open to anyone
+     * who held the booking number plus its phone number. Only JPEG, PNG and
+     * WebP photos are taken ({@link PhotoUploads}), at most
+     * {@link PhotoUploads#MAX_PHOTOS_PER_BOOKING} per booking, and they are
+     * always stored as PHOTO whatever the caller says.
      */
     @Transactional
-    public BookingFileResponse uploadOwnFile(String bookingNumber, String phone, String kind, MultipartFile file) {
+    public BookingFileResponse uploadOwnFile(String bookingNumber, AuthenticatedUser viewer, MultipartFile file) {
         Booking booking = bookings.findByBookingNumber(bookingNumber)
                 .orElseThrow(() -> ApiException.notFound("That booking"));
-        if (!booking.getPhone().equals(PhoneNumbers.normalise(phone))) {
-            throw ApiException.notFound("That booking");
+        checkAccess(booking, viewer);
+        PhotoUploads.require(file);
+        if (files.countByBookingIdAndKind(booking.getId(), "PHOTO") >= PhotoUploads.MAX_PHOTOS_PER_BOOKING) {
+            throw ApiException.badRequest("This booking already has the most photos it can hold ("
+                    + PhotoUploads.MAX_PHOTOS_PER_BOOKING + ").");
         }
-        Long uploaderId = booking.getUser() != null ? booking.getUser().getId() : null;
-        return uploadFile(booking.getId(), kind, file, uploaderId);
+        return uploadFile(booking.getId(), "PHOTO", file, viewer.id());
     }
 
     @Transactional(readOnly = true)
@@ -655,6 +792,56 @@ public class BookingService {
             sender.send(message);
         } catch (Exception ex) {
             log.warn("Could not email booking {} — it is saved regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    private static final DateTimeFormatter EMAIL_DATE =
+            DateTimeFormatter.ofPattern("EEE, d MMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter EMAIL_TIME =
+            DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
+
+    /**
+     * Confirms the booking to the customer, at the email given on the form or
+     * else their account's. Same switch as the staff email (ENQUIRY_EMAIL),
+     * and best effort the same way: a mail failure never fails the booking.
+     */
+    private void emailCustomer(Booking booking, BookingReceipt receipt) {
+        if (!props.notifications().emailEnabled()) {
+            return;
+        }
+        String to = booking.getEmail() != null ? booking.getEmail()
+                : booking.getUser() != null ? blankToNull(booking.getUser().getEmail()) : null;
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (to == null || sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Your Supplybase booking %s — %s".formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel()));
+            String when = (booking.getPreferredDate() == null ? "—" : booking.getPreferredDate().format(EMAIL_DATE))
+                    + (receipt.time() == null ? "" : ", " + receipt.time().format(EMAIL_TIME));
+            message.setText((
+                    "Hello %s,\n\n"
+                    + "Thank you for booking with Supplybase.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Visit:     %s\n"
+                    + "Address:   %s, %s %s\n"
+                    + "Visit fee: %s\n\n"
+                    + "%s\n\n"
+                    + "%s"
+                    + "Need to change something? Just reply to this email.\n").formatted(
+                    booking.getName(), booking.getBookingNumber(), booking.getServiceLabel(), when,
+                    orDash(booking.getAddress()), orDash(booking.getCity()), orDash(booking.getPincode()),
+                    receipt.visitFeeDisplay(), receipt.message(),
+                    booking.getUser() == null ? ""
+                            : "See your booking any time: " + props.frontendUrl() + "/dashboard/bookings\n\n"));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email booking {} to the customer — it is saved regardless",
                     booking.getBookingNumber(), ex);
         }
     }

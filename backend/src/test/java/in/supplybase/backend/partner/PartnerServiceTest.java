@@ -3,6 +3,7 @@ package in.supplybase.backend.partner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockMultipartFile;
 
 import in.supplybase.backend.auth.AuthService;
 import in.supplybase.backend.auth.Role;
@@ -33,10 +35,10 @@ import in.supplybase.backend.booking.BookingRepository;
 import in.supplybase.backend.catalogue.ServiceCategory;
 import in.supplybase.backend.catalogue.ServiceCategoryRepository;
 import in.supplybase.backend.common.ApiException;
-import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
-import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 import in.supplybase.backend.common.FileStorageService;
-import org.springframework.mock.web.MockMultipartFile; 
+import in.supplybase.backend.partner.dto.ApplyAsPartnerRequest;
+import in.supplybase.backend.partner.dto.ApplyWithAccountRequest;
+import in.supplybase.backend.partner.dto.PartnerDetailResponse;
 
 /**
  * The rules that matter for partners: nobody becomes a PROFESSIONAL by
@@ -61,19 +63,28 @@ class PartnerServiceTest {
     @Mock
     private AuthService authService;
     @Mock
-private FileStorageService fileStorageService;
+    private FileStorageService files;
 
     private PartnerService service;
 
+    private static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F' };
+
+    private static PartnerDocuments photos() {
+        return new PartnerDocuments(
+                new MockMultipartFile("aadhaarFront", "front.jpg", "image/jpeg", JPEG),
+                new MockMultipartFile("aadhaarBack", "back.jpg", "image/jpeg", JPEG),
+                new MockMultipartFile("panFront", "pan.jpg", "image/jpeg", JPEG));
+    }
+
     @BeforeEach
     void setUp() {
-        service = new PartnerService(
+    service = new PartnerService(
         partners,
         users,
         bookings,
         categories,
         authService,
-        fileStorageService
+        files
 );
         when(categories.findAllByOrderBySortOrderAsc()).thenReturn(List.of(category("electrical", "Electrical", null)));
         when(bookings.findByAssignedProfessionalIdOrderByCreatedAtDesc(any())).thenReturn(List.of());
@@ -118,33 +129,12 @@ private FileStorageService fileStorageService;
                     .thenReturn(Optional.of(category("electrical", "Electrical", null)));
             when(authService.register(any(RegisterRequest.class), any())).thenReturn(authFor(7L));
             when(users.getReferenceById(7L)).thenReturn(user(7L, Role.CUSTOMER));
+            when(files.store(any(), eq("partners/7/documents"))).thenReturn(
+                    new FileStorageService.StoredFile("partners/7/documents/a.jpg", "a.jpg", "image/jpeg", 8),
+                    new FileStorageService.StoredFile("partners/7/documents/b.jpg", "b.jpg", "image/jpeg", 8),
+                    new FileStorageService.StoredFile("partners/7/documents/c.jpg", "c.jpg", "image/jpeg", 8));
 
-            MockMultipartFile aadhaarFront =
-        new MockMultipartFile("aadhaarFront", "aadhaar-front.jpg", "image/jpeg", "front".getBytes());
-
-MockMultipartFile aadhaarBack =
-        new MockMultipartFile("aadhaarBack", "aadhaar-back.jpg", "image/jpeg", "back".getBytes());
-
-MockMultipartFile panFront =
-        new MockMultipartFile("panFront", "pan-front.jpg", "image/jpeg", "pan".getBytes());
-
-when(fileStorageService.store(any(), any()))
-        .thenReturn(
-                new FileStorageService.StoredFile(
-                        "partners/test/document.jpg",
-                        "document.jpg",
-                        "image/jpeg",
-                        4
-                )
-        );
-
-AuthResponse result = service.apply(
-        applyRequest("electrical"),
-        aadhaarFront,
-        aadhaarBack,
-        panFront,
-        "1.2.3.4"
-);
+            AuthResponse result = service.apply(applyRequest("electrical"), photos(), "1.2.3.4");
 
             ArgumentCaptor<PartnerProfile> saved = ArgumentCaptor.forClass(PartnerProfile.class);
             verify(partners).save(saved.capture());
@@ -153,7 +143,29 @@ AuthResponse result = service.apply(
             assertThat(saved.getValue().getCity()).isEqualTo("Thane");
             assertThat(saved.getValue().getServiceAreas()).isNull();
             assertThat(saved.getValue().getUser().getRole()).isEqualTo(Role.CUSTOMER);
+            assertThat(saved.getValue().getAadhaarFrontPath()).isEqualTo("partners/7/documents/a.jpg");
+            assertThat(saved.getValue().getAadhaarBackPath()).isEqualTo("partners/7/documents/b.jpg");
+            assertThat(saved.getValue().getPanFrontPath()).isEqualTo("partners/7/documents/c.jpg");
             assertThat(result.user().role()).isEqualTo(Role.CUSTOMER);
+        }
+
+        @Test
+        @DisplayName("refuses a document that is not a photo before creating any account")
+        void rejectsNonPhotoDocument() {
+            when(categories.findBySlugAndActiveTrue("electrical"))
+                    .thenReturn(Optional.of(category("electrical", "Electrical", null)));
+            var documents = new PartnerDocuments(
+                    new MockMultipartFile("aadhaarFront", "front.jpg", "image/jpeg", JPEG),
+                    new MockMultipartFile("aadhaarBack", "back.jpg", "image/jpeg", JPEG),
+                    new MockMultipartFile("panFront", "pan.jpg", "image/jpeg", "<html></html>".getBytes()));
+
+            assertThatThrownBy(() -> service.apply(applyRequest("electrical"), documents, "1.2.3.4"))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessageContaining("PAN card");
+
+            verify(authService, never()).register(any(), any());
+            verify(files, never()).store(any(), any());
+            verify(partners, never()).save(any());
         }
 
         @Test
@@ -161,7 +173,7 @@ AuthResponse result = service.apply(
         void rejectsUnknownTrade() {
             when(categories.findBySlugAndActiveTrue("astrology")).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> service.apply(applyRequest("astrology"), null, null, null, "1.2.3.4"))
+            assertThatThrownBy(() -> service.apply(applyRequest("astrology"), photos(), "1.2.3.4"))
                     .isInstanceOf(ApiException.class)
                     .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 
@@ -175,11 +187,70 @@ AuthResponse result = service.apply(
             when(categories.findBySlugAndActiveTrue("wiring"))
                     .thenReturn(Optional.of(category("wiring", "Wiring", "electrical")));
 
-            assertThatThrownBy(() -> service.apply(applyRequest("wiring"), null, null, null, "1.2.3.4"))
+            assertThatThrownBy(() -> service.apply(applyRequest("wiring"), photos(), "1.2.3.4"))
                     .isInstanceOf(ApiException.class)
                     .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
 
             verify(authService, never()).register(any(), any());
+        }
+    }
+
+    @Nested
+    @DisplayName("applyWithAccount — a signed-in customer applying on their own account")
+    class ApplyWithAccount {
+
+        private final ApplyWithAccountRequest request =
+                new ApplyWithAccountRequest("electrical", 6, "  Thane  ", "Thane West", " ");
+
+        @BeforeEach
+        void knownTrade() {
+            when(categories.findBySlugAndActiveTrue("electrical"))
+                    .thenReturn(Optional.of(category("electrical", "Electrical", null)));
+            when(partners.save(any(PartnerProfile.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(files.store(any(), eq("partners/7/documents"))).thenReturn(
+                    new FileStorageService.StoredFile("partners/7/documents/a.jpg", "a.jpg", "image/jpeg", 8));
+        }
+
+        @Test
+        @DisplayName("attaches a PENDING application to the existing login, creating no new account")
+        void attachesToExistingAccount() {
+            when(users.findById(7L)).thenReturn(Optional.of(user(7L, Role.CUSTOMER)));
+            when(partners.findByUserId(7L)).thenReturn(Optional.empty());
+
+            var result = service.applyWithAccount(7L, request, photos());
+
+            ArgumentCaptor<PartnerProfile> saved = ArgumentCaptor.forClass(PartnerProfile.class);
+            verify(partners).save(saved.capture());
+            assertThat(saved.getValue().getUser().getId()).isEqualTo(7L);
+            assertThat(saved.getValue().getUser().getRole()).isEqualTo(Role.CUSTOMER);
+            assertThat(saved.getValue().getStatus()).isEqualTo(PartnerStatus.PENDING);
+            assertThat(saved.getValue().getCity()).isEqualTo("Thane");
+            assertThat(saved.getValue().getLanguages()).isNull();
+            assertThat(result.status()).isEqualTo(PartnerStatus.PENDING);
+            verify(authService, never()).register(any(), any());
+        }
+
+        @Test
+        @DisplayName("409s a customer who has already applied")
+        void refusesSecondApplication() {
+            when(users.findById(7L)).thenReturn(Optional.of(user(7L, Role.CUSTOMER)));
+            when(partners.findByUserId(7L)).thenReturn(Optional.of(PartnerProfile.builder().build()));
+
+            assertThatThrownBy(() -> service.applyWithAccount(7L, request, photos()))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.CONFLICT);
+            verify(partners, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("refuses an admin account")
+        void refusesAdmin() {
+            when(users.findById(7L)).thenReturn(Optional.of(user(7L, Role.ADMIN)));
+
+            assertThatThrownBy(() -> service.applyWithAccount(7L, request, photos()))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+            verify(partners, never()).save(any());
         }
     }
 

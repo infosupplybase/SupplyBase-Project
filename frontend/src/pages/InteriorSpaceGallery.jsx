@@ -53,13 +53,25 @@ export default function InteriorSpaceGallery() {
           {designs.length === 0 ? (
             <p className="ibc-empty">More designs for this space are on the way. Book a home visit and our designer will bring options for you.</p>
           ) : (
-            <div className="ibc-design-grid">
+            <div
+              className={`ibc-design-grid ${
+                spaceSlug === 'entrance'
+                  ? 'ibc-design-grid--entrance'
+                  : spaceSlug === 'bed-back-wall'
+                    ? 'ibc-design-grid--bed-back-wall'
+                    : ''
+              }`}
+            >
               {designs.map((design, i) => (
                 <Reveal key={design.slug} delay={i * 40}>
-                  <div className="ibc-design-card">
+                    <div
+                      className={`ibc-design-card ${
+                        spaceSlug === 'entrance' ? 'ibc-design-card--entrance' : ''
+                      }`}
+                    >
                     <Link to={`/interior-by-choice/${spaceSlug}/${design.slug}`} className="ibc-design-media">
-                      <img src={design.image} alt={design.name} loading="lazy" />
-                    </Link>
+                      <img src={design.image} alt={design.name} loading="lazy" onError={(e) => { e.currentTarget.onerror = null;
+                       e.currentTarget.src = design.fallbackImage; }}/></Link>
                     <button
                       type="button"
                       className={`ibc-wishlist ${wishlist.has(design.slug) ? 'active' : ''}`}
@@ -70,7 +82,9 @@ export default function InteriorSpaceGallery() {
                     </button>
                     <Link to={`/interior-by-choice/${spaceSlug}/${design.slug}`} className="ibc-design-body">
                       <span className="ibc-design-name">{design.name}</span>
-                      <span className="ibc-design-price">₹{design.pricePerSqft} / sq.ft.</span>
+                      <span className="ibc-design-price">
+                        {design.priceRange || `₹${design.pricePerSqft} / sq.ft.`}
+                      </span>
                     </Link>
                   </div>
                 </Reveal>

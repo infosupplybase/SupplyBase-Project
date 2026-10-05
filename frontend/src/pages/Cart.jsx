@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import { useCart } from '../context/CartContext';
-import { formatRupees } from '../lib/money';
+import { formatRupees, formatItemPrice } from '../lib/money';
 
 export default function Cart() {
     const plumbing = useCart('plumbing');
@@ -49,6 +49,7 @@ export default function Cart() {
                     <CartGroup
                         title="Plumbing"
                         cart={plumbing}
+                        checkoutTo="/services/plumbing/checkout"
                     />
                 )}
 
@@ -56,6 +57,7 @@ export default function Cart() {
                     <CartGroup
                         title="Electrical"
                         cart={electrical}
+                        checkoutTo="/services/electrical/checkout"
                     />
                 )}
 
@@ -70,20 +72,13 @@ export default function Cart() {
                         </strong>
                     </div>
 
-                    <Link
-                        to="/checkout"
-                        className="btn btn-primary !w-[80%] !mx-auto !flex !justify-center md:!w-[280px]"
-                    >
-                        Proceed to Checkout
-                        <Icon name="arrow-right" size={17} />
-                    </Link>
                 </div>
             </div>
         </section>
     );
 }
 
-function CartGroup({ title, cart }) {
+function CartGroup({ title, cart, checkoutTo }) {
     const {
         items,
         count,
@@ -120,7 +115,7 @@ function CartGroup({ title, cart }) {
                             )}
 
                             <div className="plb-row-price">
-                                {formatRupees(item.unitPricePaise / 100)}
+                                {formatItemPrice(item.unitPricePaise / 100)}
                                 <span> × {item.quantity}</span>
                             </div>
                         </div>
@@ -161,7 +156,7 @@ function CartGroup({ title, cart }) {
                             </div>
 
                             <span className="plb-cart-row-total">
-                                {formatRupees(
+                                {formatItemPrice(
                                     (item.unitPricePaise * item.quantity) / 100
                                 )}
                             </span>
@@ -187,6 +182,15 @@ function CartGroup({ title, cart }) {
                 </strong>
             </div>
 
+            {/* Plumbing and electrical each have their own checkout, so each
+                group gets its own button (there is no combined /checkout). */}
+            <Link
+                to={checkoutTo}
+                className="btn btn-primary !w-[80%] !mx-auto !flex !justify-center md:!w-[280px]"
+            >
+                Check out {title.toLowerCase()}
+                <Icon name="arrow-right" size={17} />
+            </Link>
         </div>
     );
 }

@@ -209,12 +209,8 @@
   border-radius: var(--radius-sm);
   padding: var(--space-3) var(--space-4);
 }
-@media (max-width: 767px) {
-  .wp-terrace-slider-dots {
-    display: none;
-  }
-}
-/* Terrace Waterproofing slider pagination */
+
+/* Terrace waterproofing banner carousel (components/waterproofing/TerraceSlider) */
 .wp-terrace-slider {
   position: relative;
   width: 100%;
@@ -224,7 +220,6 @@
 .wp-terrace-slider-track {
   display: flex;
   width: 100%;
-  transition: transform 1s ease-in-out;
 }
 
 .wp-terrace-slide-image {
@@ -261,7 +256,7 @@
   background: #f5d033;
 }
 
-/* Hide pagination on mobile only */
-  .wp-terrace-slider-dots {
-    display: none;
-  }
+/* Dots are hidden on every screen size; the slides still advance. */
+.wp-terrace-slider-dots {
+  display: none;
+}

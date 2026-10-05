@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import { getSpaceBySlug, getDesignBySlug, interiorFeatures, HOME_VISIT_FEE } from '../data/interiorCatalog';
+import { whatsappHref } from '../lib/contact';
 
 /**
  * /interior-by-choice/:spaceSlug/:designSlug — one design's detail page:
@@ -17,6 +18,8 @@ export default function InteriorDesignDetail() {
   const [shared, setShared] = useState(false);
 
   if (!space || !design) return <Navigate to="/interior-by-choice" replace />;
+
+  const quoteMessage = `Hello Supplybase, I would like a quote for the ${design.name}. Estimated range: ${design.priceRange}. Please arrange a measurement and consultation.`;
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -52,8 +55,13 @@ export default function InteriorDesignDetail() {
 
       <section className="ibc-section">
         <div className="container container-narrow">
-          <div className="ibc-detail-media">
-            <img src={design.image} alt={design.name} />
+          <div
+            className={`ibc-detail-media ${
+              design.spaceSlug === 'entrance' ? 'ibc-detail-media--entrance' : ''
+            }`}
+          >
+           <img src={design.image} alt={design.name} onError={(e) => { e.currentTarget.onerror = null;
+           e.currentTarget.src = design.fallbackImage;}}/>
           </div>
 
           <div className="ibc-detail-head">
@@ -61,37 +69,54 @@ export default function InteriorDesignDetail() {
               <h2>{design.name}</h2>
               <p className="ibc-detail-tagline">{design.tagline}</p>
             </div>
-            <span className="ibc-detail-price">₹{design.pricePerSqft} / sq.ft.</span>
+            <span className="ibc-detail-price">
+              {design.priceRange || `₹${design.pricePerSqft} / sq.ft.`}
+            </span>
           </div>
 
-          <div className="ibc-detail-block">
-            <h3>Available Colours</h3>
-            <div className="ibc-swatch-row">
-              {design.colours.map((hex, i) => (
-                <button
-                  key={hex}
-                  type="button"
-                  className={`ibc-swatch ${i === activeColour ? 'active' : ''}`}
-                  style={{ background: hex }}
-                  aria-label={`Colour option ${i + 1}`}
-                  onClick={() => setActiveColour(i)}
-                />
-              ))}
+          {design.description && (
+            <p className="ibc-detail-description">{design.description}</p>
+          )}
+
+          {design.priceRange && (
+            <p className="ibc-estimate-note">
+              Estimated range only. Final pricing depends on measurements,
+              materials, design customisation and site conditions.
+            </p>
+          )}
+
+          {design.colours.length > 0 && (
+            <div className="ibc-detail-block">
+              <h3>Available Colours</h3>
+              <div className="ibc-swatch-row">
+                {design.colours.map((hex, i) => (
+                  <button
+                    key={hex}
+                    type="button"
+                    className={`ibc-swatch ${i === activeColour ? 'active' : ''}`}
+                    style={{ background: hex }}
+                    aria-label={`Colour option ${i + 1}`}
+                    onClick={() => setActiveColour(i)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="ibc-feature-row">
-            {design.features.map((key) => {
-              const f = interiorFeatures[key];
-              if (!f) return null;
-              return (
-                <div className="ibc-feature" key={key}>
-                  <Icon name={f.icon} size={20} />
-                  <span>{f.label}</span>
-                </div>
-              );
-            })}
-          </div>
+          {design.features.length > 0 && (
+            <div className="ibc-feature-row">
+              {design.features.map((key) => {
+                const f = interiorFeatures[key];
+                if (!f) return null;
+                return (
+                  <div className="ibc-feature" key={key}>
+                    <Icon name={f.icon} size={20} />
+                    <span>{f.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="ibc-detail-block">
             <h3>Material Details</h3>
@@ -112,8 +137,21 @@ export default function InteriorDesignDetail() {
               <Icon name="share" size={17} />
               {shared ? 'Link Copied' : 'Share'}
             </button>
+            {design.priceRange && (
+              <a
+                href={whatsappHref(quoteMessage)}
+                className="btn btn-whatsapp"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Icon name="whatsapp" size={17} />
+                Get Quote on WhatsApp
+              </a>
+            )}
             <Link to={`/interior-by-choice/${spaceSlug}/${designSlug}/book`} className="btn btn-primary">
-              Book Home Visit – ₹{HOME_VISIT_FEE}
+              {design.priceRange
+                ? `Book a Consultation – ₹${HOME_VISIT_FEE}`
+                : `Book Home Visit – ₹${HOME_VISIT_FEE}`}
             </Link>
           </div>
         </div>

@@ -15,6 +15,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -61,12 +62,13 @@ const TRADES = {
     scope: 'f:elc-checkout',
     cartPath: '/services/electrical/cart',
     serviceSlug: electricalServiceFor,
+    // The label is what the booking pages show, so it carries the quantity
+    // and price too: the server has no catalogue price to add them from.
     answers: (items) =>
-      items.map((item) => ({
-        key: 'requirements',
-        value: `${item.name} × ${item.quantity} — ${formatRupees((item.unitPricePaise * item.quantity) / 100)}`.slice(0, 400),
-        label: item.name,
-      })),
+      items.map((item) => {
+        const line = `${item.name} × ${item.quantity} — ${formatRupees((item.unitPricePaise * item.quantity) / 100)}`;
+        return { key: 'requirements', value: line.slice(0, 400), label: line.slice(0, 300) };
+      }),
     arrival: 'Our electrician will arrive in this window.',
     help: 'Hello Supplybase, I need help with my electrical cart checkout.',
     backLabel: 'BACK TO ELECTRICAL',
@@ -192,7 +194,11 @@ export default function PlumbingCheckout({
     e.preventDefault();
     const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    // The fields are not on the Confirm step: go back to where they are.
+    if (Object.keys(nextErrors).length > 0) {
+      setStage(DETAILS, { push: false });
+      return;
+    }
     // Every booking needs an account: ask now, over this form (LoginGate).
     if (!(await ensureLogin(details))) return;
 
@@ -379,6 +385,7 @@ export default function PlumbingCheckout({
                 </button>
               ) : (
                 <button
+  key="continue"
   type="button"
   className="btn btn-primary !m-0 !w-auto !min-w-[100px] !flex !justify-center !px-4"
   onClick={goNext}
@@ -407,8 +414,8 @@ function CartSummary({ items, subtotalPaise, date, time, showsFees }) {
         {overThreshold ? (
           <>
             Your selected services total <strong>{formatRupees(subtotalPaise / 100)}</strong>, which is above ₹5,000.
-            Pay the <strong>₹99 home visit fee</strong> now to confirm — it will be adjusted into your final bill of{' '}
-            {formatRupees(subtotalPaise / 100)} if you proceed with the work.
+            The <strong>₹99 home visit fee</strong> is paid to our team on the day of the visit — it will be adjusted
+            into your final bill of {formatRupees(subtotalPaise / 100)} if you proceed with the work.
           </>
         ) : (
           <>
@@ -528,6 +535,8 @@ function CheckoutConfirmation({
                 <dd>{details.city}</dd>
               </div>
             </dl>
+
+            <PayBookingButton bookingNumber={receipt.bookingNumber} amountDisplay={receipt.visitFeeDisplay} />
 
             {!modal && (
               <Link to="/dashboard" className="btn btn-primary btn-block">
