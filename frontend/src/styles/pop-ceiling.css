@@ -303,3 +303,41 @@
   /* The top bar's phone sizes are set with its desktop rules above; it no
      longer needs right padding for the close button (it stops short of it). */
 }
+/* POP modal side spacing */
+
+.booking-pop-ceiling-layout .bm-scroll {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+.booking-pop-ceiling-layout .painting-modal-scope,
+.booking-pop-ceiling-layout .pop-modal-scope,
+.booking-pop-ceiling-layout .pnt-flow-shell,
+.booking-pop-ceiling-layout .painting-modal-scope .container {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
+}
+
+.booking-pop-ceiling-layout .bm-foot {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+.booking-pop-ceiling-layout .pop-modal-actions {
+  width: 100% !important;
+  max-width: none !important;
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
+}
+
+@media (max-width: 600px) {
+  .booking-pop-ceiling-layout .bm-scroll,
+  .booking-pop-ceiling-layout .bm-foot {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
