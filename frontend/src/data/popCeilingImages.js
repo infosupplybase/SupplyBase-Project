@@ -50,10 +50,8 @@ export const popDesignStyleImages = {
   'flat-ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
   'Flat Ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
 
-  'double-layer-ceiling':
-    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
-  'Double Layer Ceiling':
-    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+  'double-layer-ceiling': '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+  'Double Layer Ceiling': '/assets/pop-ceiling/types/double-layer-ceiling.webp',
 
   'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
   'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
@@ -61,28 +59,11 @@ export const popDesignStyleImages = {
   'border-ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
   'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
 
-  'non-drop-ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
-  'Non Drop Ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
+  'profile-pop': '/assets/pop-ceiling/types/profile-pop.jpg',
+  'Profile POP': '/assets/pop-ceiling/types/profile-pop.jpg',
 
-  'recessed-ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
-  'Recessed Ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
-
-  simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
-  Simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
-  'simple-elegant': '/assets/pop-ceiling/hero/false-ceiling.webp',
-  'Simple & Elegant': '/assets/pop-ceiling/hero/false-ceiling.webp',
-  modern: '/assets/projects/modern-interior.webp',
-  Modern: '/assets/projects/modern-interior.webp',
-  classic: '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
-  Classic: '/assets/pop-ceiling/hero/gypsum-ceiling.webp',
-  luxury: '/assets/projects/Living_room.webp',
-  Luxury: '/assets/projects/Living_room.webp',
-  'cove-ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
-  'Cove Ceiling': '/assets/pop-ceiling/hero/living-room-cove.webp',
-  'tray-ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
-  'Tray Ceiling': '/assets/pop-ceiling/hero/trayceiling.webp',
-  'custom-design': '/assets/pop-ceiling/hero/custom.webp',
-  'Custom Design': '/assets/pop-ceiling/hero/custom.webp',
+  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop.jpg',
+  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop.jpg',
 };
 
 export const popAddonImages = {

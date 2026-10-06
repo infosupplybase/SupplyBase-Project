@@ -98,6 +98,9 @@ public class BookingService {
     @org.springframework.beans.factory.annotation.Autowired
     private in.supplybase.backend.catalogue.PaintingProductPriceRepository paintingPrices;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private in.supplybase.backend.catalogue.PopCeilingPricingService popCeilingPricing;
+
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
     private final UserRepository users;
@@ -249,6 +252,42 @@ public class BookingService {
             }
         }
 
+        boolean popBooking = "pop-ceiling-design".equals(category.getSlug());
+        Map<String, String> popSelections = new HashMap<>();
+
+        if (popBooking) {
+            Set<String> popSingleKeys = Set.of(
+                    "pop_home_type", "pop_home_design_style",
+                    "pop_room_type", "pop_room_design_style");
+
+            for (CreateBookingRequest.AnswerInput input : submitted) {
+                if (popSingleKeys.contains(input.key())
+                        && popSelections.putIfAbsent(input.key(), input.value()) != null) {
+                    throw ApiException.badRequest(
+                            "Choose only one option for each POP question.");
+                }
+            }
+
+            boolean homeJourney = popSelections.containsKey("pop_home_type")
+                    || popSelections.containsKey("pop_home_design_style");
+            boolean roomJourney = popSelections.containsKey("pop_room_type")
+                    || popSelections.containsKey("pop_room_design_style");
+
+            if (homeJourney && roomJourney) {
+                throw ApiException.badRequest("Choose one POP journey.");
+            }
+            if (roomJourney
+                    && (!popSelections.containsKey("pop_room_type")
+                        || !popSelections.containsKey("pop_room_design_style"))) {
+                throw ApiException.badRequest("Choose your room and ceiling type.");
+            }
+            if (homeJourney
+                    && (!popSelections.containsKey("pop_home_type")
+                        || !popSelections.containsKey("pop_home_design_style"))) {
+                throw ApiException.badRequest("Choose your home and ceiling type.");
+            }
+        }
+
         Map<String, String> paintingSelections = new HashMap<>();
         boolean paintingBooking = "painting".equals(category.getSlug());
 
@@ -340,6 +379,39 @@ public class BookingService {
                     .questionText(question.getQuestionText())
                     .answerValue(input.value())
                     .answerLabel(input.label());
+
+            if (popBooking && "pop_room_design_style".equals(input.key())) {
+                Long startingPrice = popCeilingPricing.findRoomPricePaise(
+                        popSelections.get("pop_room_type"));
+
+                if (startingPrice == null) {
+                    throw ApiException.badRequest(
+                            "Pricing is unavailable for this room selection.");
+                }
+
+                row.quantity(1)
+                        .unitPricePaise(startingPrice)
+                        .lineTotalPaise(startingPrice);
+                itemsTotalPaise += startingPrice;
+            }
+
+            if (popBooking && "pop_home_design_style".equals(input.key())) {
+                String homeType = popSelections.get("pop_home_type");
+
+                if (!"4bhk".equals(homeType)) {
+                    Long startingPrice = popCeilingPricing.findPricePaise(
+                            homeType, input.value());
+                    if (startingPrice == null) {
+                        throw ApiException.badRequest(
+                                "Pricing is unavailable for this POP selection.");
+                    }
+
+                    row.quantity(1)
+                            .unitPricePaise(startingPrice)
+                            .lineTotalPaise(startingPrice);
+                    itemsTotalPaise += startingPrice;
+                }
+            }
 
             if ("cart_item".equals(input.key())
                     || (paintingBooking && PAINTING_PRICED_KEYS.contains(input.key()))) {
