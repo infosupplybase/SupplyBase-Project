@@ -53,6 +53,9 @@ export default function InteriorDesignDetail() {
     }
   };
 
+  // TV wall designs carry what's included and the exclusions from the catalogue.
+  const tvDetails = design.spaceSlug === 'tv-wall' ? design.tvDetails : null;
+
   return (
     <>
       <PageHero
@@ -90,11 +93,46 @@ export default function InteriorDesignDetail() {
             <p className="ibc-detail-description">{design.description}</p>
           )}
 
-          {design.priceRange && (
-            <p className="ibc-estimate-note">
-              Estimated range only. Final pricing depends on measurements,
-              materials, design customisation and site conditions.
-            </p>
+          {tvDetails ? (
+            <>
+              {tvDetails.included?.length > 0 && (
+                <section className="ibc-tv-pdf-section">
+                  <h3>What's Included</h3>
+                  <div className="ibc-tv-included-grid">
+                    {tvDetails.included.map((item) => (
+                      <div key={item} className="ibc-tv-included-card">
+                        <span className="ibc-tv-check">✓</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              <section className="ibc-tv-price-box">
+                <span>Estimated Price</span>
+                <strong>{design.priceRange}</strong>
+                <p>
+                  Final price depends on actual dimensions, material selection,
+                  hardware and site measurements. A detailed quotation will be
+                  provided after consultation.
+                </p>
+              </section>
+
+              {tvDetails.exclusions && (
+                <section className="ibc-tv-exclusions">
+                  <strong>Exclusions</strong>
+                  <p>{tvDetails.exclusions}</p>
+                </section>
+              )}
+            </>
+          ) : (
+            design.priceRange && (
+              <p className="ibc-estimate-note">
+                Estimated range only. Final pricing depends on measurements,
+                materials, design customisation and site conditions.
+              </p>
+            )
           )}
 
           {design.colours.length > 0 && (
