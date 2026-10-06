@@ -50,10 +50,8 @@ export const popDesignStyleImages = {
   'flat-ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
   'Flat Ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
 
-  'double-layer-ceiling':
-    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
-  'Double Layer Ceiling':
-    '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+  'double-layer-ceiling': '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+  'Double Layer Ceiling': '/assets/pop-ceiling/types/double-layer-ceiling.webp',
 
   'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
   'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
@@ -61,11 +59,11 @@ export const popDesignStyleImages = {
   'border-ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
   'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
 
-  'non-drop-ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
-  'Non Drop Ceiling': '/assets/pop-ceiling/types/non-drop-ceiling.webp',
+  'profile-pop': '/assets/pop-ceiling/types/profile-pop.webp',
+  'Profile POP': '/assets/pop-ceiling/types/profile-pop.webp',
 
-  'recessed-ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
-  'Recessed Ceiling': '/assets/pop-ceiling/types/recessed-ceiling.webp',
+  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop.webp',
+  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop.webp',
 
   simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
   Simple: '/assets/pop-ceiling/hero/false-ceiling.webp',

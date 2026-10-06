@@ -55,7 +55,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const flowSlug = propFlowSlug || params.flowSlug;
   const flow = popFlows[flowSlug];
   const { user } = useAuth();
-  const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
+  const { category, loading, error: loadError, optionsFor, startingPriceFor } = usePopCeilingCatalogue();
 
   // This form's step and answers live in the browser's history (see
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
@@ -77,6 +77,22 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   const configSteps = useMemo(() => flow?.steps || [], [flow]);
+
+  const fullHomePop = configSteps.some(
+    (item) => item.questionKey === 'pop_home_type'
+  );
+
+  const popStartingPricePaise = fullHomePop
+    ? startingPriceFor(
+        answers.pop_home_type,
+        answers.pop_home_design_style
+      )
+    : answers.pop_room_type && answers.pop_room_design_style
+      ? startingPriceFor(
+          `room:${answers.pop_room_type}`,
+          answers.pop_room_design_style
+        )
+      : null;
   const DETAILS = 1 + configSteps.length;
   const SCHEDULE = DETAILS + 1;
   const CONFIRM = SCHEDULE + 1;
@@ -141,7 +157,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   };
 
   const validateStep = (step) => {
-    if ((step.type === 'option' || step.type === 'style') && !answers[step.questionKey]) {
+    if ((step.type === 'option' || step.type === 'style') && !optionsFor(step.questionKey).some((option) => option.value === answers[step.questionKey])) {
       setErrors({ [step.questionKey]: 'Please choose an option' });
       if (modal) setChoiceError('Choose an option to continue.');
       return false;
@@ -544,7 +560,9 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
             <EstimateSummary
               rows={resolved}
               whatsIncluded={flow.whatsIncluded}
-              itemsTotalPaise={null}
+              itemsTotalPaise={popStartingPricePaise}
+              startingFrom={popStartingPricePaise != null}
+              siteVisitQuote={fullHomePop && popStartingPricePaise == null}
               onEditStep={jumpToStep}
             />
           )}
