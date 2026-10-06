@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import customerReviews from "../../data/customerReviews";
 
 function Stars({ rating }) {
@@ -92,8 +93,7 @@ export default function CustomerReviews() {
     setCurrentSlide(0);
   };
 
-  // Nothing to show until real reviews are added to data/customerReviews.js.
-  if (reviews.length === 0) return null;
+  const hasReviews = reviews.length > 0;
 
   return (
     <section className="customer-reviews" id="customer-reviews">
@@ -110,90 +110,104 @@ export default function CustomerReviews() {
           </p>
         </div>
 
-        <div className="review-filters">
-          <button
-            type="button"
-            className={selectedRating === "all" ? "active" : ""}
-            onClick={() => changeRating("all")}
-          >
-            ALL
-          </button>
+        {hasReviews ? (
+          <>
+            <div className="review-filters">
+              <button
+                type="button"
+                className={selectedRating === "all" ? "active" : ""}
+                onClick={() => changeRating("all")}
+              >
+                ALL
+              </button>
 
-          {[5, 4, 3, 2, 1].map((rating) => (
-            <button
-              type="button"
-              key={rating}
-              className={selectedRating === String(rating) ? "active" : ""}
-              onClick={() => changeRating(String(rating))}
-            >
-              {"★".repeat(rating)}
-            </button>
-          ))}
-        </div>
+              {[5, 4, 3, 2, 1].map((rating) => (
+                <button
+                  type="button"
+                  key={rating}
+                  className={selectedRating === String(rating) ? "active" : ""}
+                  onClick={() => changeRating(String(rating))}
+                >
+                  {"★".repeat(rating)}
+                </button>
+              ))}
+            </div>
 
-        <div className="review-slider-wrapper">
-          <button
-            type="button"
-            className="review-arrow review-arrow-left"
-            onClick={goToPreviousSlide}
-            aria-label="Previous reviews"
-          >
-            ‹
-          </button>
+            <div className="review-slider-wrapper">
+              <button
+                type="button"
+                className="review-arrow review-arrow-left"
+                onClick={goToPreviousSlide}
+                aria-label="Previous reviews"
+              >
+                ‹
+              </button>
 
-          <div className="review-grid">
-            {currentReviews.map((item) => (
-              <article className="review-card" key={item.id}>
-                <span className="quote-mark">“</span>
+              <div className="review-grid">
+                {currentReviews.map((item) => (
+                  <article className="review-card" key={item.id}>
+                    <span className="quote-mark">“</span>
 
-                <Stars rating={Number(item.rating)} />
+                    <Stars rating={Number(item.rating)} />
 
-                <p className="review-text">{item.review}</p>
+                    <p className="review-text">{item.review}</p>
 
-                <div className="review-client">
-                  <div className="client-avatar">
-                    {item.name.charAt(0).toUpperCase()}
-                  </div>
+                    <div className="review-client">
+                      <div className="client-avatar">
+                        {item.name.charAt(0).toUpperCase()}
+                      </div>
 
-                  <div className="client-info">
-                    <strong>{item.name}</strong>
+                      <div className="client-info">
+                        <strong>{item.name}</strong>
 
-                    {item.location && (
-                      <span className="client-location">
-                        {item.location}
-                      </span>
-                    )}
+                        {item.location && (
+                          <span className="client-location">
+                            {item.location}
+                          </span>
+                        )}
 
-                    {item.verified && (
-                      <span className="verified">✓ Verified Client</span>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))}
+                        {item.verified && (
+                          <span className="verified">✓ Verified Client</span>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="review-arrow review-arrow-right"
+                onClick={goToNextSlide}
+                aria-label="Next reviews"
+              >
+                ›
+              </button>
+            </div>
+
+            <div className="review-dots">
+              {Array.from({ length: totalSlides }).map((_, index) => (
+                <button
+                  type="button"
+                  key={index}
+                  className={index === safeCurrentSlide ? "active" : ""}
+                  onClick={() => goToSlide(index)}
+                  aria-label={`Go to review slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="reviews-empty">
+            <p>
+              We are collecting reviews from our first customers. Book a
+              service and yours could be the first story here.
+            </p>
+            <Link to="/services" className="reviews-empty__cta">
+              Book a service
+            </Link>
           </div>
-
-          <button
-            type="button"
-            className="review-arrow review-arrow-right"
-            onClick={goToNextSlide}
-            aria-label="Next reviews"
-          >
-            ›
-          </button>
-        </div>
-
-        <div className="review-dots">
-          {Array.from({ length: totalSlides }).map((_, index) => (
-            <button
-              type="button"
-              key={index}
-              className={index === safeCurrentSlide ? "active" : ""}
-              onClick={() => goToSlide(index)}
-              aria-label={`Go to review slide ${index + 1}`}
-            />
-          ))}
-        </div>
+        )}
       </div>
 
     </section>

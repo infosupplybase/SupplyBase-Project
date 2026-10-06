@@ -1083,3 +1083,26 @@
   }
 }
 
+
+/* Client Stories before any reviews are added */
+.customer-reviews .reviews-empty {
+  max-width: 560px;
+  margin: 24px auto 0;
+  text-align: center;
+}
+
+.customer-reviews .reviews-empty p {
+  margin: 0 0 18px;
+  line-height: 1.6;
+  color: #555;
+}
+
+.customer-reviews .reviews-empty__cta {
+  display: inline-block;
+  padding: 12px 26px;
+  border-radius: 999px;
+  background: #171717;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
