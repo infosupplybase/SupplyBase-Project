@@ -38,8 +38,8 @@
  *   the delivery report).
  */
 
-export const WP_HERO_IMAGE = '/assets/waterproofing/curated-v2/terrace-service.webp';
-export const WP_BATHROOM_IMAGE = '/assets/waterproofing/curated-v2/bathroom-service.webp';
+export const WP_HERO_IMAGE = '/assets/waterproofing/curated-v2/terrace-service-v3.webp';
+export const WP_BATHROOM_IMAGE = '/assets/waterproofing/curated-v2/bathroom-service-v3.webp';
 
 export const wpOverviewIntro = {
   eyebrow: 'WATERPROOFING',
@@ -170,7 +170,7 @@ export const wpFlows = {
     title: 'Floor Waterproofing',
     heroTagline: 'Keep Your Bathroom Dry. Stop Leaks Before They Start.',
     intro: {
-      image: '/assets/waterproofing/curated-v2/bathroom-service.webp',
+      image: '/assets/waterproofing/curated-v2/bathroom-service-v3.webp',
       heading: 'Special waterproofing treatment that protects bathroom floors from water seepage and leakage.',
       text: 'Suitable for new and existing bathrooms — homes, apartments and villas, all types of tiles and finishes.',
       points: [

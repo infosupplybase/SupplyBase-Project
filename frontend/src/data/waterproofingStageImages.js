@@ -8,12 +8,12 @@ export const wpStageImages = {
     "Drainage & Finishing": "/assets/waterproofing/curated-v2/terrace-drainage-finishing.webp"
   },
   "exterior-wall": {
-    "Wall Inspection": "/assets/waterproofing/curated-v2/exterior-inspection.webp",
-    "Surface Cleaning": "/assets/waterproofing/curated-v2/exterior-cleaning.webp",
-    "Crack & Joint Treatment": "/assets/waterproofing/curated-v2/exterior-crack-treatment.webp",
-    "Waterproof Coating Application": "/assets/waterproofing/curated-v2/exterior-coating.webp",
-    "Exterior Paint / Finish (Optional)": "/assets/waterproofing/curated-v2/exterior-paint-finish.webp",
-    "Final Inspection": "/assets/waterproofing/curated-v2/exterior-final-inspection.webp"
+    "Wall Inspection": "/assets/waterproofing/curated-v2/exterior-inspection-v3.webp",
+    "Surface Cleaning": "/assets/waterproofing/curated-v2/exterior-cleaning-v3.webp",
+    "Crack & Joint Treatment": "/assets/waterproofing/curated-v2/exterior-crack-treatment-v3.webp",
+    "Waterproof Coating Application": "/assets/waterproofing/curated-v2/exterior-coating-v3.webp",
+    "Exterior Paint / Finish (Optional)": "/assets/waterproofing/curated-v2/exterior-paint-finish-v3.webp",
+    "Final Inspection": "/assets/waterproofing/curated-v2/exterior-final-inspection-v3.webp"
   },
   "bathroom-floor": {
     "Floor Waterproofing": "/assets/waterproofing/curated-v2/floor-waterproofing.webp",
@@ -32,19 +32,19 @@ export const wpStageImages = {
     "Finishing & Paint (Optional)": "/assets/waterproofing/curated-v2/finishing-paint.webp"
   },
   "water-tank": {
-    "Tank Inspection & Leakage Check": "/assets/waterproofing/curated-v2/tank-inspection.webp",
-    "Tank Cleaning": "/assets/waterproofing/curated-v2/tank-cleaning.webp",
-    "Crack Repair & Surface Preparation": "/assets/waterproofing/curated-v2/tank-crack-repair.webp",
-    "Waterproof Coating Application": "/assets/waterproofing/curated-v2/tank-coating.webp",
-    "Pipe & Joint Sealing": "/assets/waterproofing/curated-v2/tank-pipe-sealing.webp",
-    "Final Testing": "/assets/waterproofing/curated-v2/tank-final-testing.webp"
+    "Tank Inspection & Leakage Check": "/assets/waterproofing/curated-v2/tank-inspection-v3.webp",
+    "Tank Cleaning": "/assets/waterproofing/curated-v2/tank-cleaning-v3.webp",
+    "Crack Repair & Surface Preparation": "/assets/waterproofing/curated-v2/tank-crack-repair-v3.webp",
+    "Waterproof Coating Application": "/assets/waterproofing/curated-v2/tank-coating-v3.webp",
+    "Pipe & Joint Sealing": "/assets/waterproofing/curated-v2/tank-pipe-sealing-v3.webp",
+    "Final Testing": "/assets/waterproofing/curated-v2/tank-final-testing-v3.webp"
   },
   "basement": {
-    "Leakage Inspection": "/assets/waterproofing/curated-v2/basement-leak-inspection.webp",
-    "Crack & Joint Treatment": "/assets/waterproofing/curated-v2/basement-crack-treatment.webp",
-    "Wall & Floor Waterproofing": "/assets/waterproofing/curated-v2/basement-wall-floor.webp",
-    "Injection Grouting": "/assets/waterproofing/curated-v2/basement-injection-grouting.webp",
-    "Drainage System": "/assets/waterproofing/curated-v2/basement-drainage.webp",
-    "Pressure Side Waterproofing": "/assets/waterproofing/curated-v2/basement-pressure-side.webp"
+    "Leakage Inspection": "/assets/waterproofing/curated-v2/basement-leak-inspection-v3.webp",
+    "Crack & Joint Treatment": "/assets/waterproofing/curated-v2/basement-crack-treatment-v3.webp",
+    "Wall & Floor Waterproofing": "/assets/waterproofing/curated-v2/basement-wall-floor-v3.webp",
+    "Injection Grouting": "/assets/waterproofing/curated-v2/basement-injection-grouting-v3.webp",
+    "Drainage System": "/assets/waterproofing/curated-v2/basement-drainage-v3.webp",
+    "Pressure Side Waterproofing": "/assets/waterproofing/curated-v2/basement-pressure-side-v3.webp"
   }
 };
