@@ -62,13 +62,15 @@ export default function Home() {
       </section>
       */}
 
+      {/* Beautiful Spaces, Better Living */}
+      <ConsultationBanner />
+
       {/* --------------------------------------------------------- stats */}
       <StatsSection />
 
-      {/* Client Stories — hidden until data/customerReviews.js has real reviews. */}
+      {/* Client Stories — shows a book-a-service note until
+          data/customerReviews.js has real reviews. */}
       <CustomerReviews />
-
-      <ConsultationBanner />
 
       <CtaBand />
     </div>
