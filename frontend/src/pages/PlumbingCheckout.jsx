@@ -339,14 +339,14 @@ export default function PlumbingCheckout({
               {(stage > 0 || modal) && (
   <button
     type="button"
-    className="btn btn-ghost btn-back !m-0 !w-full !justify-center"
+    className="btn btn-ghost btn-back !m-0 !w-auto !min-w-[140px] !max-w-[180px] !flex-none !justify-center"
     onClick={goBack}
   >
     BACK
   </button>
 )}
               {stage === CONFIRM ? (
-                <button key="submit" type="submit" className="btn btn-primary !m-0 !w-full !justify-center" disabled={busy}>
+                <button key="submit" type="submit" className="btn btn-primary !m-0 !w-auto !min-w-[160px] !flex-1 !justify-center" disabled={busy}>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
@@ -354,7 +354,7 @@ export default function PlumbingCheckout({
                 <button
   key="continue"
   type="button"
-  className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center"
+  className="btn btn-primary !m-0 !w-auto !min-w-[160px] !flex-1 !justify-center"
   onClick={goNext}
 >
                   CONTINUE
