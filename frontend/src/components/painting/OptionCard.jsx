@@ -38,7 +38,8 @@ const renovationImages = {
 };
 
 const UNFURNISHED_IMAGE = '/assets/painting/hero/painter-roller.webp';
-const RENOVATION_IMAGE = '/assets/projects/villa-renovation.webp';
+const RENOVATION_IMAGE =
+  'https://www.firstplacehousepainting.com/wp-content/uploads/2020/04/paint-renovation-scaled.jpg';
 
 const packageImages = {
   'unfurnished-home': UNFURNISHED_IMAGE,
@@ -74,26 +75,59 @@ function findOptionImage(name, option) {
     .toLowerCase()
     .replace(/[_-]+/g, ' ');
 
+  /*
+   * Few Walls -> Ceiling Type
+   *
+   * Plain Ceiling -> real ceiling image
+   * Design Ceiling -> real designer ceiling image
+   */
+  if (name === 'few_walls_ceiling_type') {
+    if (/plain/.test(text)) {
+      return '/assets/pop-ceiling/types/flat-ceiling.webp';
+    }
+
+    if (/design|designer|false ceiling|false-ceiling/.test(text)) {
+      return '/assets/pop-ceiling/hero/designer-ceiling.webp';
+    }
+
+    return '/assets/pop-ceiling/types/flat-ceiling.webp';
+  }
+
   const isPaintingType =
     name === 'full_home_painting_type' ||
     name === 'few_walls_painting_type';
 
   if (isPaintingType) {
-    // Match the displayed label first so each package uses its own photo.
-    if (/renovation/.test(label)) return RENOVATION_IMAGE;
-    if (/unfurnished/.test(label)) return UNFURNISHED_IMAGE;
+    if (/renovation/.test(label)) {
+      return RENOVATION_IMAGE;
+    }
+
+    if (/unfurnished/.test(label)) {
+      return UNFURNISHED_IMAGE;
+    }
 
     const mappedImage = packageImages[option.value];
-    if (mappedImage) return mappedImage;
 
-    if (/renovation/.test(text)) return RENOVATION_IMAGE;
-    if (/unfurnished/.test(text)) return UNFURNISHED_IMAGE;
+    if (mappedImage) {
+      return mappedImage;
+    }
+
+    if (/renovation/.test(text)) {
+      return RENOVATION_IMAGE;
+    }
+
+    if (/unfurnished/.test(text)) {
+      return UNFURNISHED_IMAGE;
+    }
 
     return null;
   }
 
   const directImage = imagesByQuestion[name]?.[option.value];
-  if (directImage) return directImage;
+
+  if (directImage) {
+    return directImage;
+  }
 
   if (name === 'home_type') {
     const bhk = text.match(/([1-4])\s*bhk/);
@@ -111,27 +145,35 @@ function findOptionImage(name, option) {
     if (/\btv\b|television/.test(text)) {
       return roomImages['tv-wall'];
     }
+
     if (/living/.test(text)) {
       return roomImages['living-room'];
     }
+
     if (/kids|children/.test(text)) {
       return roomImages['kids-room'];
     }
+
     if (/bedroom/.test(text)) {
       return roomImages.bedroom;
     }
+
     if (/kitchen/.test(text)) {
       return roomImages.kitchen;
     }
+
     if (/dining/.test(text)) {
       return roomImages['dining-room'];
     }
+
     if (/ceiling/.test(text)) {
       return roomImages.ceiling;
     }
+
     if (/study|office/.test(text)) {
       return roomImages['study-home-office'];
     }
+
     if (/other/.test(text)) {
       return roomImages['other-area'];
     }
@@ -141,18 +183,23 @@ function findOptionImage(name, option) {
     if (/full home|entire home/.test(text)) {
       return renovationImages['full-home'];
     }
+
     if (/few walls/.test(text)) {
       return renovationImages['few-walls'];
     }
+
     if (/single room/.test(text)) {
       return renovationImages['single-room'];
     }
+
     if (/ceiling/.test(text)) {
       return renovationImages.ceiling;
     }
+
     if (/exterior|outer wall/.test(text)) {
       return renovationImages['exterior-walls'];
     }
+
     if (/staircase|common area|passage|lobby/.test(text)) {
       return renovationImages['staircase-common-area'];
     }
@@ -196,20 +243,20 @@ export default function OptionCard({
           aria-hidden="true"
           style={{
             display: 'block',
-            width: 88,
-            height: 72,
+            width: name === 'few_walls_ceiling_type' ? 120 : 88,
+            height: name === 'few_walls_ceiling_type' ? 88 : 72,
             flexShrink: 0,
             overflow: 'hidden',
             borderRadius: 10,
+            background: '#f5f1e8',
           }}
         >
           <img
             src={image}
             alt=""
-            width={88}
-            height={72}
             loading="lazy"
             decoding="async"
+            referrerPolicy="no-referrer"
             onError={() => setFailedImage(image)}
             style={{
               display: 'block',
@@ -226,11 +273,18 @@ export default function OptionCard({
         </span>
       )}
 
-      <span className="pnt-option-body" style={{ minWidth: 0 }}>
-        <span className="pnt-option-label">{option.label}</span>
+      <span
+        className="pnt-option-body"
+        style={{ minWidth: 0 }}
+      >
+        <span className="pnt-option-label">
+          {option.label}
+        </span>
 
         {option.hint && (
-          <span className="pnt-option-hint">{option.hint}</span>
+          <span className="pnt-option-hint">
+            {option.hint}
+          </span>
         )}
 
         {option.price != null && (
@@ -240,7 +294,10 @@ export default function OptionCard({
         )}
       </span>
 
-      <span className="pnt-option-radio" aria-hidden="true" />
+      <span
+        className="pnt-option-radio"
+        aria-hidden="true"
+      />
     </label>
   );
 }

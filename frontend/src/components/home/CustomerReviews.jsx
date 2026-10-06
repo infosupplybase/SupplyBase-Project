@@ -59,7 +59,6 @@ const names = [
   "Priti Jain",
   "Sanjay More",
   "Ritu Rao",
-  "Varun Gupta",
   "Neel Singh",
   "Maya Nair",
   "Rajat Patil",
@@ -199,7 +198,10 @@ function createDefaultReviews() {
 
 function Stars({ rating }) {
   return (
-    <div className="review-stars" aria-label={`${rating} out of 5 stars`}>
+    <div
+      className="review-stars"
+      aria-label={`${rating} out of 5 stars`}
+    >
       {[1, 2, 3, 4, 5].map((star) => (
         <span
           key={star}
@@ -213,12 +215,13 @@ function Stars({ rating }) {
 }
 
 export default function CustomerReviews() {
-  const defaultReviews = useMemo(() => createDefaultReviews(), []);
-
   const [reviews, setReviews] = useState(() => {
     try {
-      const savedVersion = localStorage.getItem("customerReviewsVersion");
-      const savedReviews = localStorage.getItem("customerReviews");
+      const savedVersion =
+        localStorage.getItem("customerReviewsVersion");
+
+      const savedReviews =
+        localStorage.getItem("customerReviews");
 
       if (savedVersion !== REVIEW_VERSION || !savedReviews) {
         return createDefaultReviews();
@@ -231,7 +234,7 @@ export default function CustomerReviews() {
       }
 
       return parsed;
-    } catch (error) {
+    } catch {
       return createDefaultReviews();
     }
   });
@@ -248,8 +251,15 @@ export default function CustomerReviews() {
   });
 
   useEffect(() => {
-    localStorage.setItem("customerReviewsVersion", REVIEW_VERSION);
-    localStorage.setItem("customerReviews", JSON.stringify(reviews));
+    localStorage.setItem(
+      "customerReviewsVersion",
+      REVIEW_VERSION
+    );
+
+    localStorage.setItem(
+      "customerReviews",
+      JSON.stringify(reviews)
+    );
   }, [reviews]);
 
   const filteredReviews = useMemo(() => {
@@ -257,14 +267,14 @@ export default function CustomerReviews() {
 
     if (selectedRating !== "all") {
       result = result.filter(
-        (item) => Number(item.rating) === Number(selectedRating)
+        (item) =>
+          Number(item.rating) === Number(selectedRating)
       );
     }
 
-    // ALL me rating descending rahegi:
-    // 5 -> 4 -> 3 -> 2 -> 1
     result.sort((a, b) => {
-      const ratingDifference = Number(b.rating) - Number(a.rating);
+      const ratingDifference =
+        Number(b.rating) - Number(a.rating);
 
       if (ratingDifference !== 0) {
         return ratingDifference;
@@ -280,18 +290,17 @@ export default function CustomerReviews() {
 
   const totalSlides = Math.max(
     1,
-    Math.ceil(filteredReviews.length / REVIEWS_PER_SLIDE)
+    Math.ceil(
+      filteredReviews.length / REVIEWS_PER_SLIDE
+    )
   );
 
-  /*
-    IMPORTANT:
-    currentSlide ko kabhi invalid value nahi hone denge.
-    Isse last ke baad blank page nahi aayega.
-  */
   const safeCurrentSlide =
-    ((currentSlide % totalSlides) + totalSlides) % totalSlides;
+    ((currentSlide % totalSlides) + totalSlides) %
+    totalSlides;
 
-  const startIndex = safeCurrentSlide * REVIEWS_PER_SLIDE;
+  const startIndex =
+    safeCurrentSlide * REVIEWS_PER_SLIDE;
 
   const currentReviews = filteredReviews.slice(
     startIndex,
@@ -299,22 +308,25 @@ export default function CustomerReviews() {
   );
 
   const goToNextSlide = () => {
-    setCurrentSlide((prev) => {
+    setCurrentSlide((previous) => {
       if (totalSlides <= 1) {
         return 0;
       }
 
-      return (prev + 1) % totalSlides;
+      return (previous + 1) % totalSlides;
     });
   };
 
   const goToPreviousSlide = () => {
-    setCurrentSlide((prev) => {
+    setCurrentSlide((previous) => {
       if (totalSlides <= 1) {
         return 0;
       }
 
-      return (prev - 1 + totalSlides) % totalSlides;
+      return (
+        (previous - 1 + totalSlides) %
+        totalSlides
+      );
     });
   };
 
@@ -354,7 +366,10 @@ export default function CustomerReviews() {
       verified: false,
     };
 
-    setReviews((previous) => [newReview, ...previous]);
+    setReviews((previous) => [
+      newReview,
+      ...previous,
+    ]);
 
     setForm({
       name: "",
@@ -369,24 +384,35 @@ export default function CustomerReviews() {
   };
 
   return (
-    <section className="customer-reviews" id="customer-reviews">
+    <section
+      className="customer-reviews"
+      id="customer-reviews"
+    >
       <div className="container">
+
         <div className="reviews-heading">
-          <span className="reviews-label">CLIENT STORIES</span>
+          <span className="reviews-label">
+            CLIENT STORIES
+          </span>
 
           <h2>
             What Our <span>Clients Say</span>
           </h2>
 
           <p>
-            Real experiences from clients who trusted us with their spaces.
+            Real experiences from clients who trusted us
+            with their spaces.
           </p>
         </div>
 
         <div className="review-filters">
           <button
             type="button"
-            className={selectedRating === "all" ? "active" : ""}
+            className={
+              selectedRating === "all"
+                ? "active"
+                : ""
+            }
             onClick={() => changeRating("all")}
           >
             ALL
@@ -396,8 +422,14 @@ export default function CustomerReviews() {
             <button
               type="button"
               key={rating}
-              className={selectedRating === String(rating) ? "active" : ""}
-              onClick={() => changeRating(String(rating))}
+              className={
+                selectedRating === String(rating)
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                changeRating(String(rating))
+              }
             >
               {"★".repeat(rating)}
             </button>
@@ -405,6 +437,7 @@ export default function CustomerReviews() {
         </div>
 
         <div className="review-slider-wrapper">
+
           <button
             type="button"
             className="review-arrow review-arrow-left"
@@ -416,20 +449,34 @@ export default function CustomerReviews() {
 
           <div className="review-grid">
             {currentReviews.map((item) => (
-              <article className="review-card" key={item.id}>
-                <span className="quote-mark">“</span>
+              <article
+                className="review-card"
+                key={item.id}
+              >
+                <span className="quote-mark">
+                  “
+                </span>
 
-                <Stars rating={Number(item.rating)} />
+                <Stars
+                  rating={Number(item.rating)}
+                />
 
-                <p className="review-text">{item.review}</p>
+                <p className="review-text">
+                  {item.review}
+                </p>
 
                 <div className="review-client">
+
                   <div className="client-avatar">
-                    {item.name.charAt(0).toUpperCase()}
+                    {item.name
+                      .charAt(0)
+                      .toUpperCase()}
                   </div>
 
                   <div className="client-info">
-                    <strong>{item.name}</strong>
+                    <strong>
+                      {item.name}
+                    </strong>
 
                     {item.location && (
                       <span className="client-location">
@@ -438,9 +485,12 @@ export default function CustomerReviews() {
                     )}
 
                     {item.verified && (
-                      <span className="verified">✓ Verified Client</span>
+                      <span className="verified">
+                        ✓ Verified Client
+                      </span>
                     )}
                   </div>
+
                 </div>
               </article>
             ))}
@@ -454,16 +504,25 @@ export default function CustomerReviews() {
           >
             ›
           </button>
+
         </div>
 
         <div className="review-dots">
-          {Array.from({ length: totalSlides }).map((_, index) => (
+          {Array.from({
+            length: totalSlides,
+          }).map((_, index) => (
             <button
               type="button"
               key={index}
-              className={index === safeCurrentSlide ? "active" : ""}
+              className={
+                index === safeCurrentSlide
+                  ? "active"
+                  : ""
+              }
               onClick={() => goToSlide(index)}
-              aria-label={`Go to review slide ${index + 1}`}
+              aria-label={`Go to review slide ${
+                index + 1
+              }`}
             />
           ))}
         </div>
@@ -477,6 +536,7 @@ export default function CustomerReviews() {
             Write a Review
           </button>
         </div>
+
       </div>
 
       {showModal && (
@@ -486,7 +546,9 @@ export default function CustomerReviews() {
         >
           <div
             className="review-modal"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
             <button
               type="button"
@@ -500,12 +562,17 @@ export default function CustomerReviews() {
             <h2>Write a Review</h2>
 
             <p className="modal-description">
-              Share your experience with our design team.
+              Share your experience with our design
+              team.
             </p>
 
             <form onSubmit={handleSubmit}>
+
               <div className="form-group">
-                <label className="modal-label" htmlFor="review-name">
+                <label
+                  className="modal-label"
+                  htmlFor="review-name"
+                >
                   Your Name
                 </label>
 
@@ -521,7 +588,10 @@ export default function CustomerReviews() {
               </div>
 
               <div className="form-group">
-                <label className="modal-label" htmlFor="review-location">
+                <label
+                  className="modal-label"
+                  htmlFor="review-location"
+                >
                   Location
                 </label>
 
@@ -536,7 +606,10 @@ export default function CustomerReviews() {
               </div>
 
               <div className="form-group">
-                <label className="modal-label" htmlFor="review-rating">
+                <label
+                  className="modal-label"
+                  htmlFor="review-rating"
+                >
                   Rating
                 </label>
 
@@ -547,16 +620,33 @@ export default function CustomerReviews() {
                   onChange={handleInputChange}
                   className="rating-select"
                 >
-                  <option value="5">★★★★★ — Excellent</option>
-                  <option value="4">★★★★ — Very Good</option>
-                  <option value="3">★★★ — Good</option>
-                  <option value="2">★★ — Average</option>
-                  <option value="1">★ — Poor</option>
+                  <option value="5">
+                    ★★★★★ — Excellent
+                  </option>
+
+                  <option value="4">
+                    ★★★★ — Very Good
+                  </option>
+
+                  <option value="3">
+                    ★★★ — Good
+                  </option>
+
+                  <option value="2">
+                    ★★ — Average
+                  </option>
+
+                  <option value="1">
+                    ★ — Poor
+                  </option>
                 </select>
               </div>
 
               <div className="form-group">
-                <label className="modal-label" htmlFor="review-message">
+                <label
+                  className="modal-label"
+                  htmlFor="review-message"
+                >
                   Your Review
                 </label>
 
@@ -571,9 +661,13 @@ export default function CustomerReviews() {
                 />
               </div>
 
-              <button type="submit" className="submit-review-btn">
+              <button
+                type="submit"
+                className="submit-review-btn"
+              >
                 Submit Review
               </button>
+
             </form>
           </div>
         </div>

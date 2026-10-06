@@ -27,7 +27,22 @@ public record AppProperties(
         // Local-disk root for uploaded files (project documents, booking
         // files). See FileStorageService for why this is local disk and what
         // that means on Render/Railway.
-        String storageRootDir) {
+        String storageRootDir,
+        // Where the partners app runs, so a partner's reset-password link
+        // opens the partners site rather than the customer one.
+        String partnersUrl) {
+
+    @ConstructorBinding
+    public AppProperties {
+    }
+
+    /** Without a partners URL; partner links then fall back to frontendUrl. */
+    public AppProperties(List<String> corsAllowedOrigins, Jwt jwt, Razorpay razorpay, Google google,
+            Notifications notifications, String frontendUrl, Bootstrap bootstrap, Booking booking,
+            String storageRootDir) {
+        this(corsAllowedOrigins, jwt, razorpay, google, notifications, frontendUrl, bootstrap, booking,
+                storageRootDir, null);
+    }
 
     public record Jwt(String secret, long accessTokenMinutes, long refreshTokenDays, String issuer) {
     }

@@ -103,6 +103,8 @@ app:
   # The single frontend origin used to build links emailed out (password
   # reset, email verification). Not a CORS list, just one URL.
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  # The partners app's origin, for links emailed to partners (password reset).
+  partners-url: ${PARTNERS_URL:http://localhost:3002}
   jwt:
     # No fixed fallback on purpose — see JwtService.resolveSecret for why a
     # value baked in here would itself be a security hole. Left unset, a

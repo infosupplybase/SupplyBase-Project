@@ -214,7 +214,7 @@ updateProfile: (profile) =>
 
   /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
   forgotPassword: (identifier) =>
-    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier, app: 'customer' }, }),
 
   /** Sets a new password with the token from the emailed reset link. */
   resetPassword: (token, newPassword) =>

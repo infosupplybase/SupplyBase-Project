@@ -244,7 +244,17 @@ export const api = {
 
   /** Password reset email — always succeeds, whether or not the account exists. */
   forgotPassword: (identifier) =>
-    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+  request('/api/auth/forgot-password', {
+    method: 'POST',
+    auth: false,
+    body: { identifier, app: 'partner' }
+  }),
+  resetPassword: (token, newPassword) =>
+  request('/api/auth/reset-password', {
+    method: 'POST',
+    auth: false,
+    body: { token, newPassword }
+  }),
 
   /** The service catalogue; the apply form's trade list is its main categories. */
   services: () => request('/api/catalogue/services', { auth: false }),

@@ -318,7 +318,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("swallows a thrown exception and still returns 200")
         void swallowsServiceException() throws Exception {
-            doThrow(new RuntimeException("boom")).when(authService).forgotPassword(any());
+            doThrow(new RuntimeException("boom")).when(authService).forgotPassword(any(), any());
 
             mockMvc.perform(post("/api/auth/forgot-password")
                             .contentType(MediaType.APPLICATION_JSON)

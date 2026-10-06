@@ -1,12 +1,10 @@
 /* =========================================================================
-   SUPPLYBASE PROJECTS — HOME HERO, SEARCH, POPULAR SERVICES, CONSULTATION
-   The reference-matched sections at the top of the home page: photographic
-   hero with a soft white gradient (not the dark scrim hero.css uses
-   elsewhere), a search bar, a seven-card service grid, and a dark
-   consultation banner.
+   SUPPLYBASE PROJECTS — HOME PAGE
+   Hero, Search, Popular Services, Consultation Banner
+   Customer Reviews
    ========================================================================= */
 
-/* ------------------------------------------------------------------ hero */
+/* ------------------------------------------------------------------ HERO */
 
 .home-hero {
   position: relative;
@@ -17,19 +15,8 @@
   padding-bottom: 60px;
   background: #0c0e14;
   overflow: visible;
-  /* No isolation/z-index here on purpose: .home-hero-inner's z-index:2
-     needs to keep winning against later normal-flow siblings (Popular
-     Services) at the root stacking context so the search-results dropdown,
-     which intentionally overflows past the hero's bottom edge, still
-     paints on top of that section instead of getting painted over by it. */
 }
 
-/* overflow:hidden lives here, not on .home-hero itself — this box is
-   inset:0 so it clips the background photo identically, but keeping it off
-   .home-hero means the search results dropdown (a descendant positioned
-   absolutely below the search input) can extend past the hero's bottom
-   edge instead of being clipped and appearing to vanish behind the
-   Popular Services section underneath it. */
 .home-hero-media {
   position: absolute;
   inset: 0;
@@ -45,13 +32,9 @@
   display: block;
 }
 
-/* A dark, photographic scrim — strongest over the text on the left,
-   fading out toward the right so the house itself still reads clearly,
-   plus a gentle bottom fade so the section resolves into what follows. */
 .home-hero-gradient {
   position: absolute;
   inset: 0;
-
   background:
     linear-gradient(
       100deg,
@@ -65,7 +48,6 @@
       rgba(8, 10, 16, 0.5) 0%,
       rgba(8, 10, 16, 0) 30%
     );
-
   z-index: 1;
 }
 
@@ -85,21 +67,19 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-
   margin-bottom: var(--space-4);
   padding: 6px 16px;
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: var(--radius-pill);
-
   color: #fff;
   font-family: var(--font-display);
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(6px);
+  box-shadow: var(--depth-inset-top), 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .home-hero h1 {
@@ -108,8 +88,6 @@
   line-height: 1.1;
   margin-bottom: var(--space-4);
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
-  /* Title case, not the site-wide h1 default of all-caps — matches the
-     approved reference mockup for this one heading. */
   text-transform: none;
 }
 
@@ -125,7 +103,7 @@
   margin-bottom: var(--space-6);
 }
 
-/* ---------------------------------------------------------------- search */
+/* ---------------------------------------------------------------- SEARCH */
 
 .home-search {
   position: relative;
@@ -133,7 +111,7 @@
   width: min(680px, 100%);
   max-width: 680px;
   margin-top: 40px;
-  }
+}
 
 .home-search-icon {
   position: absolute;
@@ -151,7 +129,7 @@
   border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-pill);
   background: var(--white);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
   font-size: 15px;
   color: var(--ink);
 }
@@ -223,7 +201,7 @@
   margin-top: 1px;
 }
 
-/* ------------------------------------------------------- popular services */
+/* ------------------------------------------------------- POPULAR SERVICES */
 
 .popular-services {
   padding: var(--space-8) 0 var(--space-7);
@@ -233,20 +211,11 @@
 .popular-services-title {
   font-size: clamp(22px, 3vw, 30px);
   margin-bottom: var(--space-5);
-  /* Title case, not the site-wide h2 default of all-caps — matches the
-     approved reference mockup for this one heading. */
   text-transform: none;
 }
 
 .service-tile-grid {
   display: grid;
-  /* minmax(0, 1fr), not a bare 1fr — a bare 1fr is shorthand for
-     minmax(auto, 1fr), so a column whose cells happen to hold a longer
-     unbreakable word (e.g. "Waterproofing") floors at that word's
-     min-content width instead of splitting the row evenly, making every
-     card in that column wider than its neighbours. minmax(0, 1fr) removes
-     the content-based floor so all four (or eight) columns are always
-     exactly equal. */
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
@@ -257,9 +226,6 @@
   }
 }
 
-/* A plain grid, not auto-fit/stretch: seven items in a four-wide grid
-   naturally leave the last row's three tiles their own column width — never
-   an empty eighth cell, never the final row stretched to fill it. */
 .service-tile {
   display: flex;
   flex-direction: column;
@@ -267,35 +233,32 @@
   gap: 8px;
   padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
-  background: var(--white);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  border: 1px solid rgba(15, 15, 15, 0.06);
   text-align: center;
-  transition: box-shadow var(--t-fast) var(--ease), transform var(--t-fast) var(--ease),
+  transition:
+    box-shadow var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease),
     border-color var(--t-fast) var(--ease);
 }
 
 .service-tile:hover,
 .service-tile:focus-visible {
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--depth-inset-top), var(--shadow-lg);
   border-color: var(--gold-a40);
-  transform: translateY(-3px);
+  transform: translateY(-8px) scale(1.015);
 }
 
 .service-tile-photo {
   position: relative;
   width: 100%;
-  /* Slightly shorter than square so the card as a whole reads wider than
-     tall at four-across. */
   aspect-ratio: 11 / 10;
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--light-bg);
-  /* Forces its own compositing layer — WebKit/Safari can otherwise fail to
-     clip a transformed child (the scaled img below) to this box's own
-     border-radius, letting its square corners paint outside the rounded
-     photo and the card border around it. */
   transform: translateZ(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .service-tile-photo img {
@@ -303,26 +266,21 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  /* The source photos (/assets/popular-services/*.png) already have their
-     own rounded top corners baked in with a flat white fill — scaling up
-     slightly crops that border out of frame so only this container's own
-     border-radius shows, instead of two mismatched roundings stacking. */
   transform: scale(1.14);
-  /* Belt and braces alongside overflow:hidden + translateZ(0) above — if a
-     browser still fails to clip the scaled image to the container, the
-     image is rounded to the same radius regardless. */
   border-radius: inherit;
 }
 
-/* Only reachable if a category is ever missing hero_image entirely — every
-   one of the eight main categories has a real photo today. */
 .service-tile-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(120% 120% at 30% 20%, #23303a 0%, #0e1318 70%);
+  background: radial-gradient(
+    120% 120% at 30% 20%,
+    #23303a 0%,
+    #0e1318 70%
+  );
   color: var(--gold);
 }
 
@@ -330,52 +288,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Two lines, not three: only "POP Ceiling & Design" ever needs a third
-     line, and CSS Grid already sizes each ROW to its own tallest cell —
-     that one card's row still grows to fit it without this reservation
-     forcing every OTHER row (most names are one or two lines) to carry
-     the same empty space underneath a short label. */
   min-height: calc(1.3em * 2);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
-  /* A four-across mobile card (eight-across on desktop) is too narrow for
-     "Waterproofing" or "Electrician" to fit on one line. hyphens: manual
-     (not auto) breaks ONLY at the explicit soft hyphens PopularServices.jsx
-     inserts for those two labels (Water­proofing, Electri­cian) — auto's
-     per-browser dictionary guess is inconsistent and, on some phones,
-     chooses an ugly point ("Waterproof-ing") instead. overflow-wrap stays
-     as a fallback for anything a soft hyphen doesn't cover. */
   hyphens: manual;
   -webkit-hyphens: manual;
   overflow-wrap: break-word;
-}
-
-@media (max-width: 400px) {
-  .service-tile-name {
-    font-size: 12.5px;
-  }
-}
-
-/* One more round of the same shorter/wider adjustment, phone-only — still
-   fine at 480px and up (tablets, desktop), but a card at four-across on a
-   narrow phone needed to give up a bit more height to stay comfortably
-   inside the viewport. Placed after the base .service-tile* rules above so
-   it actually wins the cascade (same specificity, later source order). */
-@media (max-width: 479px) {
-  .service-tile-grid {
-    gap: 4px;
-  }
-
-  .service-tile {
-    gap: 4px;
-    padding: 8px 4px;
-  }
-
-  .service-tile-photo {
-    aspect-ratio: 4 / 3;
-  }
 }
 
 .service-tile-skeleton {
@@ -387,44 +307,27 @@
 }
 
 @keyframes sbPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
 }
 
-/* -------------------------------------------------------------- responsive */
+/* -------------------------------------------------------------- DESKTOP */
 
 @media (min-width: 1024px) {
   .service-tile-grid {
-    /* All eight in one row, filling the full section width edge to edge —
-       the four-over-four stack is a mobile-width concession, not the
-       desktop layout. */
     grid-template-columns: repeat(8, minmax(0, 1fr));
   }
 }
 
-/* Three-across only on the narrowest phones (iPhone SE and similar,
-   ≤359px) — four columns at that width leaves each tile too small for its
-   photo, icon and label to read at all. Every other phone size keeps four
-   per row, always two rows of four for today's eight categories — see the
-   manual break points on the label text itself (PopularServices.jsx) for
-   how long single-word labels stay readable at that width instead. */
-@media (max-width: 359px) {
-  .service-tile-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-
-
-/* -----------------------------------------------------------mobile hero */
-  
-
-/* ----------------------------------------------------------- mobile hero */
-
-/* ----------------------------------------------------------- mobile hero */
+/* -------------------------------------------------------------- MOBILE */
 
 @media (max-width: 768px) {
-
   .home-hero {
     min-height: 0;
     height: auto;
@@ -433,14 +336,10 @@
     overflow: visible;
   }
 
-  /* HOUSE IMAGE — same full-bleed cover as desktop, just shorter */
   .home-hero-media img {
     object-position: center 65%;
   }
 
-  /* A single, stronger scrim on mobile: the text now spans the full
-     width over the photo instead of sitting beside it, so it needs even
-     contrast everywhere rather than a left-to-right fade. */
   .home-hero-gradient {
     background:
       linear-gradient(
@@ -451,7 +350,6 @@
       );
   }
 
-  /* HERO CONTENT */
   .home-hero-inner {
     position: relative;
     z-index: 2;
@@ -460,7 +358,6 @@
     padding-right: 15px;
   }
 
-  /* TEXT */
   .home-hero-copy {
     position: relative;
     z-index: 3;
@@ -486,14 +383,11 @@
     margin-bottom: 0;
   }
 
-  /* SEARCH */
   .home-search {
     position: relative;
     z-index: 5;
-
     width: 100%;
     max-width: none;
-
     margin-top: 20px;
     margin-bottom: 0;
   }
@@ -501,13 +395,10 @@
   .home-search input {
     width: 100%;
     height: 54px;
-
     padding-left: 48px;
-
     font-size: 13px;
   }
 
-  /* POPULAR SERVICES */
   .popular-services {
     margin-top: 0;
     padding-top: 8px;
@@ -518,7 +409,33 @@
     margin-bottom: 10px;
   }
 }
-/* ------------------------------------------------------- consultation cta */
+
+@media (max-width: 479px) {
+  .service-tile-grid {
+    gap: 4px;
+  }
+
+  .service-tile {
+    gap: 4px;
+    padding: 8px 4px;
+  }
+
+  .service-tile-photo {
+    aspect-ratio: 4 / 3;
+  }
+
+  .service-tile-name {
+    font-size: 12.5px;
+  }
+}
+
+@media (max-width: 359px) {
+  .service-tile-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ------------------------------------------------------- CONSULTATION CTA */
 
 .consult-banner {
   position: relative;
@@ -574,66 +491,23 @@
   width: fit-content;
 }
 
+.consult-banner-cta.btn {
+  box-shadow: var(--depth-inset-top), var(--shadow-gold);
+}
+
 @media (max-width: 767px) {
   .consult-banner {
     min-height: 300px;
   }
+
   .consult-banner-inner {
     padding: var(--space-7) var(--gutter);
   }
 }
 
-/* =========================================================================
-   "ELEVATED DEPTH" 3D — HOME PAGE'S OWN ELEMENTS
-
-   The site-wide half of this look (buttons, WhySupplybaseStats, CtaBand)
-   now lives unscoped in buttons.css / WhySupplybaseStats.css and the
-   --shadow-* tokens in variables.css. What's left here is only the styling
-   for elements that are exclusive to the home page (HomeHero, PopularServices,
-   ConsultationBanner aren't imported anywhere else), restated as a raised
-   surface: layered ambient shadows, a soft inset top highlight, and a
-   firmer hover lift than the rest of the site's cards get.
-   ========================================================================= */
-
-/* ------------------------------------------------------- popular services */
-
-.service-tile {
-  background: linear-gradient(180deg, #ffffff 0%, #faf9f6 100%);
-  border-color: rgba(15, 15, 15, 0.06);
-  box-shadow: var(--depth-inset-top), var(--shadow-sm);
-}
-
-.service-tile:hover,
-.service-tile:focus-visible {
-  transform: translateY(-8px) scale(1.015);
-  box-shadow: var(--depth-inset-top), var(--shadow-lg);
-  border-color: var(--gold-a40);
-}
-
-.service-tile-photo {
-  box-shadow: var(--shadow-sm);
-}
-
-/* ------------------------------------------------------------------ hero */
-
-.home-hero-eyebrow {
-  box-shadow: var(--depth-inset-top), 0 6px 16px rgba(0, 0, 0, 0.3);
-}
-
-.home-search input {
-  box-shadow: var(--depth-inset-top), var(--shadow-lg);
-}
-
-/* ------------------------------------------------------- consultation cta */
-
-.consult-banner-cta.btn {
-  box-shadow: var(--depth-inset-top), var(--shadow-gold);
-}
-
-
-/* =========================
+/* ================================================================
    CUSTOMER REVIEWS
-========================= */
+   ================================================================ */
 
 .customer-reviews {
   padding: 100px 0;
@@ -737,7 +611,9 @@
   border: 1px solid #e5ded2;
   border-radius: 18px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
 }
@@ -1010,9 +886,9 @@
   background: #b08d57;
 }
 
-/* =========================
+/* ================================================================
    RESPONSIVE
-========================= */
+   ================================================================ */
 
 @media (max-width: 1200px) {
   .review-grid {
@@ -1082,4 +958,3 @@
     padding: 25px 20px;
   }
 }
-

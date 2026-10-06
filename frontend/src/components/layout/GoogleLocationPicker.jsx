@@ -140,25 +140,23 @@ function geolocationMessage(geoError) {
 
 /**
  * The street address, city and pincode at a point, from Google's Geocoder —
- * or null if it cannot say (the key may not have the Geocoding API enabled),
- * in which case callers fall back to the bare coordinates.
+ * or null if it cannot say (the key may not have the Geocoding API enabled).
  */
-export async function reverseGeocode(latitude, longitude) {
+async function geocoderAddress(googleMaps, latitude, longitude) {
   try {
-    const googleMaps = await loadGoogleMaps();
     const { Geocoder } = await googleMaps.importLibrary('geocoding');
     const { results } = await new Geocoder().geocode({
       location: { lat: latitude, lng: longitude },
     });
     // A plus-code result ("4XQ7+2C Kalyan") is useless to a visiting team.
     const best = (results || []).find((r) => !r.types?.includes('plus_code')) || results?.[0];
-    if (!best) return null;
+    if (!best?.formatted_address) return null;
 
     const part = (type) =>
       best.address_components?.find((c) => c.types.includes(type))?.long_name || '';
 
     return {
-      address: best.formatted_address || '',
+      address: best.formatted_address,
       city:
         part('locality') ||
         part('administrative_area_level_3') ||
@@ -166,9 +164,62 @@ export async function reverseGeocode(latitude, longitude) {
       pincode: part('postal_code'),
     };
   } catch (err) {
+    console.warn('Geocoder lookup failed:', err);
+    return null;
+  }
+}
+
+/**
+ * The address of the nearest named place, from the Places API (New) — the
+ * same API the address search box uses, so it still works when the key has
+ * no Geocoding API.
+ */
+async function nearbyPlaceAddress(googleMaps, latitude, longitude) {
+  try {
+    const { Place, SearchNearbyRankPreference } = await googleMaps.importLibrary('places');
+    const { places } = await Place.searchNearby({
+      fields: ['formattedAddress', 'addressComponents'],
+      locationRestriction: { center: { lat: latitude, lng: longitude }, radius: 150 },
+      rankPreference: SearchNearbyRankPreference.DISTANCE,
+      maxResultCount: 5,
+    });
+    const best = (places || []).find((p) => p.formattedAddress);
+    if (!best) return null;
+
+    const part = (type) =>
+      best.addressComponents?.find((c) => c.types.includes(type))?.longText || '';
+
+    return {
+      address: best.formattedAddress,
+      city:
+        part('locality') ||
+        part('administrative_area_level_3') ||
+        part('administrative_area_level_2'),
+      pincode: part('postal_code'),
+    };
+  } catch (err) {
+    console.warn('Nearby place lookup failed:', err);
+    return null;
+  }
+}
+
+/**
+ * The street address, city and pincode at a point: Google's Geocoder first,
+ * then the nearest place from the Places API. Null if neither can say.
+ */
+export async function reverseGeocode(latitude, longitude) {
+  let googleMaps;
+  try {
+    googleMaps = await loadGoogleMaps();
+  } catch (err) {
     console.warn('Reverse geocoding failed:', err);
     return null;
   }
+
+  return (
+    (await geocoderAddress(googleMaps, latitude, longitude)) ||
+    (await nearbyPlaceAddress(googleMaps, latitude, longitude))
+  );
 }
 
 /**
@@ -194,14 +245,18 @@ export async function getCurrentLocation() {
   const { latitude, longitude } = coords;
   const place = await reverseGeocode(latitude, longitude);
 
+  if (!place?.address) {
+    throw new Error(
+      'We found your position but could not identify its address. Please search for your area or landmark.'
+    );
+  }
+
   return {
-    address:
-      place?.address ||
-      `Current location (${latitude.toFixed(5)}, ${longitude.toFixed(5)})`,
+    address: place.address,
     latitude,
     longitude,
-    city: place?.city || '',
-    pincode: place?.pincode || '',
+    city: place.city || '',
+    pincode: place.pincode || '',
   };
 }
 
@@ -210,6 +265,7 @@ export default function GoogleLocationPicker({
   onClose,
   onSelect,
 }) {
+
   const mapRef = useRef(null);
   const searchContainerRef = useRef(null);
 
@@ -233,11 +289,25 @@ export default function GoogleLocationPicker({
   /*
    * Update selected location
    */
-  const updateSelectedLocation = (
+  const updateSelectedLocation = async (
     latitude,
     longitude,
     address
   ) => {
+    if (!address || /^(Selected|Current) location\s*\(/i.test(address)) {
+      const place = await reverseGeocode(latitude, longitude);
+
+      if (!place?.address) {
+        setSelectedLocation(null);
+        setError(
+          'Could not identify this address. Please search for your area or landmark.'
+        );
+        return;
+      }
+
+      address = place.address;
+    }
+
     if (
       !mapInstanceRef.current ||
       !window.google?.maps
@@ -711,6 +781,7 @@ export default function GoogleLocationPicker({
    */
   useEffect(() => {
     if (!open) {
+
       setError('');
       setSelectedLocation(null);
       setLocationLoading(false);
@@ -853,7 +924,12 @@ export default function GoogleLocationPicker({
         </button>
 
         {/* MAP */}
-        <div className="google-location-map-wrapper">
+
+
+        <div
+          className="google-location-map-wrapper"
+          style={{ display: 'none' }}
+        >
           <div
             ref={mapRef}
             className="google-location-map"
