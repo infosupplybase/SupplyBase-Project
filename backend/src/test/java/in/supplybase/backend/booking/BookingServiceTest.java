@@ -996,6 +996,82 @@ class BookingServiceTest {
     }
 
     @Nested
+    @DisplayName("cancelMine")
+    class CancelMine {
+
+        private final AuthenticatedUser owner = new AuthenticatedUser(7L, "owner@example.com", Role.CUSTOMER);
+        private final AuthenticatedUser stranger = new AuthenticatedUser(8L, "stranger@example.com", Role.CUSTOMER);
+
+        private Booking ownBooking(BookingStatus status) {
+            return Booking.builder().id(1L).bookingNumber("SB-1").user(User.builder().id(7L).build())
+                    .visitFeePaise(9900L).status(status).build();
+        }
+
+        @Test
+        @DisplayName("cancels, records the reason and frees the visit slot")
+        void cancelsAndReleasesTheSlot() {
+            AppointmentSlot slot = AppointmentSlot.builder().id(9L).capacity(3).bookedCount(1).build();
+            Booking booking = ownBooking(BookingStatus.CONFIRMED);
+            booking.setAppointmentSlot(slot);
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            BookingResponse response = service.cancelMine(1L, "  Plans changed ", owner);
+
+            assertThat(response.status()).isEqualTo(BookingStatus.CANCELLED);
+            assertThat(response.cancelledReason()).isEqualTo("Cancelled by the customer: Plans changed");
+            assertThat(booking.getAdminNotes()).isNull();
+            verify(appointments).release(slot);
+        }
+
+        @Test
+        @DisplayName("a booking paid online is not refunded but marked REFUND DUE for staff")
+        void paidBookingIsMarkedRefundDue() {
+            Booking booking = ownBooking(BookingStatus.SITE_VISIT_SCHEDULED);
+            booking.setPaidAt(Instant.now());
+            booking.setAdminNotes("Gate code 1234");
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            BookingResponse response = service.cancelMine(1L, null, owner);
+
+            assertThat(response.cancelledReason()).isEqualTo("Cancelled by the customer.");
+            assertThat(booking.getAdminNotes()).startsWith("REFUND DUE:").contains("₹99.00")
+                    .endsWith("Gate code 1234");
+        }
+
+        @Test
+        @DisplayName("once the work is scheduled it is a phone call, not a button")
+        void refusesOnceWorkIsScheduled() {
+            for (BookingStatus status : List.of(BookingStatus.WORK_SCHEDULED,
+                    BookingStatus.WORK_IN_PROGRESS, BookingStatus.WORK_COMPLETED, BookingStatus.CANCELLED)) {
+                when(bookings.findById(1L)).thenReturn(Optional.of(ownBooking(status)));
+
+                assertThatThrownBy(() -> service.cancelMine(1L, null, owner))
+                        .isInstanceOf(ApiException.class)
+                        .extracting(ex -> ((ApiException) ex).getStatus())
+                        .isEqualTo(HttpStatus.CONFLICT);
+            }
+            verify(bookings, never()).save(any());
+            verifyNoInteractions(appointments);
+        }
+
+        @Test
+        @DisplayName("a stranger gets 404, not 403")
+        void strangerGetsNotFound() {
+            when(bookings.findById(1L)).thenReturn(Optional.of(ownBooking(BookingStatus.CONFIRMED)));
+
+            assertThatThrownBy(() -> service.cancelMine(1L, null, stranger))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+            verify(bookings, never()).save(any());
+        }
+    }
+
+    @Nested
     @DisplayName("updateMine")
     class UpdateMine {
 
