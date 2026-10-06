@@ -32,17 +32,11 @@ const slides = [
   },
 ];
 
-const loopSlides = [...slides, slides[0]];
-
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
-  const [position, setPosition] = useState(0);
-  const [transitionEnabled, setTransitionEnabled] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [interacting, setInteracting] = useState(false);
-  // Holds still while the pointer is over the banner or the search has focus.
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
   const startTouch = useRef(null);
 
   useEffect(() => {
@@ -54,17 +48,16 @@ export default function HeroSlider() {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || interacting || hovered || focused) return undefined;
+    if (reducedMotion || interacting || searchFocused) return undefined;
 
-    const timer = window.setTimeout(() => {
+    const timer = window.setInterval(() => {
       if (!document.hidden) {
-        setTransitionEnabled(true);
-        setPosition((current) => current + 1);
+        setActive((current) => (current + 1) % slides.length);
       }
-    }, 4500);
+    }, 4000);
 
-    return () => window.clearTimeout(timer);
-  }, [active, reducedMotion, interacting, hovered, focused]);
+    return () => window.clearInterval(timer);
+  }, [active, reducedMotion, interacting, searchFocused]);
 
   // Keep the full artwork below the site header.
   useLayoutEffect(() => {
@@ -108,14 +101,6 @@ export default function HeroSlider() {
     <section
       className="sb-home-banner sb-final-banner"
       aria-label="SupplyBase service offers"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onFocusCapture={() => setFocused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) {
-          setFocused(false);
-        }
-      }}
       style={{
         '--banner-ratio': `${current.width} / ${current.height}`,
         '--mobile-banner-ratio': `${current.mobileWidth} / ${current.mobileHeight}`,
@@ -139,12 +124,9 @@ export default function HeroSlider() {
             const dy = touch.clientY - start.y;
 
             if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-              // Move the track itself; the slide settles in onTransitionEnd.
-              setTransitionEnabled(true);
-              setPosition((current) => {
-                const from = current % slides.length;
-                return dx < 0 ? from + 1 : (from - 1 + slides.length) % slides.length;
-              });
+              setActive((index) =>
+                (index + (dx < 0 ? 1 : -1) + slides.length) % slides.length
+              );
             }
           }
 
@@ -158,60 +140,34 @@ export default function HeroSlider() {
       >
         <div
           className="sb-final-banner__track"
-          style={{
-            transform: `translate3d(-${position * 100}%, 0, 0)`,
-            transition: transitionEnabled
-              ? 'transform 900ms cubic-bezier(0.22, 1, 0.36, 1)'
-              : 'none',
-            willChange: 'transform',
-          }}
-          onTransitionEnd={(event) => {
-            if (event.propertyName !== 'transform') return;
-
-            if (position === slides.length) {
-              setTransitionEnabled(false);
-              setPosition(0);
-              setActive(0);
-
-              requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                  setTransitionEnabled(true);
-                });
-              });
-
-              return;
-            }
-
-            setActive(position);
-          }}
+          style={{ transform: `translateX(-${active * 100}%)` }}
         >
-          {loopSlides.map((slide, index) => (
-            <picture
-              key={`${slide.src}-${index}`}
-              className="sb-final-banner__image"
-              aria-hidden={
-                (position === slides.length ? 0 : position) !==
-                index % slides.length
-              }
-            >
-              <source
-                media="(max-width: 767px)"
-                srcSet={slide.mobileSrc}
-                width={slide.mobileWidth}
-                height={slide.mobileHeight}
-              />
-              <img
-                src={slide.src}
-                alt={slide.alt}
-                width={slide.width}
-                height={slide.height}
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-                draggable={false}
-              />
-            </picture>
-          ))}
+        {slides.map((slide, index) => (
+          <picture
+            key={slide.src}
+            className={`sb-final-banner__image ${
+              active === index ? 'is-active' : ''
+            }`}
+            aria-hidden={active !== index}
+          >
+            <source
+              media="(max-width: 767px)"
+              srcSet={slide.mobileSrc}
+              width={slide.mobileWidth}
+              height={slide.mobileHeight}
+            />
+            <img
+              src={slide.src}
+              alt={slide.alt}
+              width={slide.width}
+              height={slide.height}
+              loading="eager"
+              fetchPriority={index === 0 ? 'high' : 'auto'}
+              decoding="async"
+              draggable={false}
+            />
+          </picture>
+        ))}
         </div>
       </div>
 
@@ -219,8 +175,29 @@ export default function HeroSlider() {
         Home services in Mumbai: painting, waterproofing, plumbing, electrical, AC servicing, POP ceilings and interiors
       </h1>
 
-      <div className="sb-final-banner__search">
+      <div
+        className="sb-final-banner__search"
+        onFocusCapture={() => setSearchFocused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setSearchFocused(false);
+          }
+        }}
+      >
         <HomeHero />
+      </div>
+
+      <div className="sb-final-banner__dots" style={{ '--image-height': `${current.height / current.width * 100}vw` }} aria-label="Choose banner">
+        {slides.map((slide, index) => (
+          <button
+            key={slide.src}
+            type="button"
+            className={active === index ? 'is-active' : ''}
+            aria-label={`Show banner ${index + 1}`}
+            aria-current={active === index ? 'true' : undefined}
+            onClick={() => setActive(index)}
+          />
+        ))}
       </div>
     </section>
   );
