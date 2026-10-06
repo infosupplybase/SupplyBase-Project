@@ -9,14 +9,10 @@ import CtaBand from '../components/ui/CtaBand';
 export default function Home() {
   return (
     <div className="page-home">
-
-      {/* Hero */}
       <HeroSlider />
 
-      {/* Popular Services */}
       <PopularServices />
 
-      {/* How Booking Works */}
       <section
         className="home-how"
         aria-label="How booking works"
@@ -26,18 +22,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Beautiful Spaces - Better Living */}
       <ConsultationBanner />
 
-      {/* Why Supplybase / Stats */}
       <StatsSection />
 
-      {/* Customer Reviews */}
       <CustomerReviews />
 
-      {/* Final CTA */}
       <CtaBand />
-
     </div>
   );
 }

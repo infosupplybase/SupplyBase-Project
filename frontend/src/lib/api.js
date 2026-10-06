@@ -298,6 +298,13 @@ updateProfile: (profile) =>
   /** One booking in full, including the real answers given in the wizard. */
   booking: (id) => request(`/api/bookings/${id}`),
 
+  /** A customer cancelling their own booking, with an optional reason. */
+  cancelBooking: (id, reason) =>
+    request(`/api/bookings/${id}/cancel`, {
+      method: 'POST',
+      body: { reason: reason && reason.trim() ? reason.trim() : null },
+    }),
+
   /** A customer editing their own booking's contact details or address. */
   updateBooking: (id, details) =>
     request(`/api/bookings/${id}`, {

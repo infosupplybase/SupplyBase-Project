@@ -496,6 +496,15 @@ export default function AdminBookings() {
                     {formatDay(selected.preferredDate)} · {visitTime(selected) || 'no time chosen'}
                   </dd>
                 </div>
+                {selected.status === 'CANCELLED' && (
+                  <div>
+                    <dt>Cancelled</dt>
+                    <dd>
+                      {selected.cancelledReason || 'No reason recorded.'}
+                      {selected.paidAt ? ' Paid online: refund it from Payments if not done yet.' : ''}
+                    </dd>
+                  </div>
+                )}
                 {selected.paidAt ? (
                   <div>
                     <dt>Paid online</dt>

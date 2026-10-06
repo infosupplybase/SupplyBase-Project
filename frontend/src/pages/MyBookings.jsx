@@ -5,8 +5,9 @@ import Icon from '../components/ui/Icon';
 import Reveal from '../components/ui/Reveal';
 import AccountTabs from '../components/account/AccountTabs';
 import AccountSidebar from '../components/account/AccountSidebar';
+import CancelBookingDialog from '../components/account/CancelBookingDialog';
 import api, { friendlyError } from '../lib/api';
-import { bookingStatusLabel, bookingStatusTone } from '../lib/bookingStatus';
+import { bookingStatusLabel, bookingStatusTone, isCustomerCancellable } from '../lib/bookingStatus';
 import { bookingVisitTime } from '../lib/visitTime';
 
 const formatDate = (value) =>
@@ -23,6 +24,7 @@ const formatDate = (value) =>
 export default function MyBookings() {
   const [bookings, setBookings] = useState(null);
   const [error, setError] = useState('');
+  const [cancelling, setCancelling] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -38,6 +40,11 @@ export default function MyBookings() {
       cancelled = true;
     };
   }, []);
+
+  const onCancelled = (updated) => {
+    setBookings((list) => list.map((b) => (b.id === updated.id ? { ...b, ...updated } : b)));
+    setCancelling(null);
+  };
 
   const sorted = bookings
     ? [...bookings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -82,7 +89,7 @@ export default function MyBookings() {
               {sorted && sorted.length > 0 && (
                 <div className="acct-booking-list">
                   {sorted.map((b, i) => (
-                    <Reveal key={b.id} delay={i * 40}>
+                    <Reveal key={b.id} delay={i * 40} className="acct-booking-item">
                       <Link to={`/dashboard/bookings/${b.id}`} className="acct-booking-card acct-booking-card-link">
                         <div className="acct-booking-top">
                           <div>
@@ -122,6 +129,18 @@ export default function MyBookings() {
                           <Icon name="arrow-right" size={15} />
                         </span>
                       </Link>
+                      {/* A sibling of the card link, not inside it: a button
+                          can't live inside an <a>. Sits over the card's
+                          "View details" row. */}
+                      {isCustomerCancellable(b.status) && (
+                        <button
+                          type="button"
+                          className="acct-booking-cancel"
+                          onClick={() => setCancelling(b)}
+                        >
+                          Cancel booking
+                        </button>
+                      )}
                     </Reveal>
                   ))}
                 </div>
@@ -132,6 +151,8 @@ export default function MyBookings() {
           </div>
         </div>
       </section>
+
+      <CancelBookingDialog booking={cancelling} onCancelled={onCancelled} onClose={() => setCancelling(null)} />
     </>
   );
 }
