@@ -216,6 +216,7 @@ export default function PlumbingCheckout({
   if (receipt) {
     return (
       <CheckoutConfirmation
+        trade={trade}
         receipt={receipt}
         details={details}
         config={config}
@@ -427,6 +428,7 @@ function CartSummary({ items, subtotalPaise, date, time, showsFees }) {
 }
 
 function CheckoutConfirmation({
+  trade,
   receipt,
   details,
   config,
@@ -435,6 +437,10 @@ function CheckoutConfirmation({
   onPaid,
 }) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
+  // The cart's single Checkout button books plumbing first; electrical items
+  // still in the cart are the next booking.
+  const electricalLeft = useCart('electrical').count;
+  const nextCheckout = trade === 'plumbing' && electricalLeft > 0 && !modal;
   return (
     <div
       className={
@@ -510,7 +516,12 @@ function CheckoutConfirmation({
               onPaid={onPaid}
             />
 
-            {!modal && (
+            {nextCheckout && (
+              <Link to="/services/electrical/checkout" className="btn btn-primary btn-block">
+                NEXT: BOOK YOUR ELECTRICAL ITEMS ({electricalLeft})
+              </Link>
+            )}
+            {!modal && !nextCheckout && (
               <Link to="/dashboard" className="btn btn-primary btn-block">
                 GO TO DASHBOARD
               </Link>

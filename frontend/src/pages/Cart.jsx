@@ -49,7 +49,6 @@ export default function Cart() {
                     <CartGroup
                         title="Plumbing"
                         cart={plumbing}
-                        checkoutTo="/services/plumbing/checkout"
                     />
                 )}
 
@@ -57,7 +56,6 @@ export default function Cart() {
                     <CartGroup
                         title="Electrical"
                         cart={electrical}
-                        checkoutTo="/services/electrical/checkout"
                     />
                 )}
 
@@ -72,14 +70,27 @@ export default function Cart() {
                         </strong>
                     </div>
 
-
+                    {/* One button for the whole cart. Plumbing and electrical
+                        are booked separately, so with both it starts with
+                        plumbing and the confirmation leads on to electrical. */}
+                    <Link
+                        to={
+                            plumbing.count > 0
+                                ? '/services/plumbing/checkout'
+                                : '/services/electrical/checkout'
+                        }
+                        className="btn btn-primary !w-[80%] !mx-auto !flex !justify-center md:!w-[280px]"
+                    >
+                        Checkout
+                        <Icon name="arrow-right" size={17} />
+                    </Link>
                 </div>
             </div>
         </section>
     );
 }
 
-function CartGroup({ title, cart, checkoutTo }) {
+function CartGroup({ title, cart }) {
     const {
         items,
         count,
@@ -183,15 +194,6 @@ function CartGroup({ title, cart, checkoutTo }) {
                 </strong>
             </div>
 
-            {/* Plumbing and electrical each have their own checkout, so each
-                group gets its own button (there is no combined /checkout). */}
-            <Link
-                to={checkoutTo}
-                className="btn btn-primary !w-[80%] !mx-auto !flex !justify-center md:!w-[280px]"
-            >
-                Check out {title.toLowerCase()}
-                <Icon name="arrow-right" size={17} />
-            </Link>
         </div>
     );
 }
