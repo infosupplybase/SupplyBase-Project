@@ -15,9 +15,36 @@ const SEARCH_UNAVAILABLE =
 const coords = (place) =>
   `${Number(place.latitude).toFixed(6)}, ${Number(place.longitude).toFixed(6)}`;
 
-/** A typed search box backed by Google Places; calls onPick with a draft. */
+/** The typed text with the part Google matched in bold. */
+function Highlighted({ text }) {
+  if (!text) return null;
+  const value = text.text || '';
+  const matches = text.matches || [];
+  if (!matches.length) return value;
+
+  const pieces = [];
+  let at = 0;
+  matches.forEach(({ startOffset, endOffset }, index) => {
+    if (startOffset > at) pieces.push(value.slice(at, startOffset));
+    pieces.push(<strong key={index}>{value.slice(startOffset, endOffset)}</strong>);
+    at = endOffset;
+  });
+  if (at < value.length) pieces.push(value.slice(at));
+  return pieces;
+}
+
+/**
+ * A typed search box backed by Google Places: suggestions open under the box
+ * while the customer types, and picking one calls onPick with a draft.
+ */
 function PlaceSearch({ onPick, onError }) {
-  const containerRef = useRef(null);
+  const [query, setQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [highlight, setHighlight] = useState(-1);
+  const [open, setOpen] = useState(false);
+  const placesRef = useRef(null);
+  const sessionRef = useRef(null);
+  const requestRef = useRef(0);
   const onPickRef = useRef(onPick);
   const onErrorRef = useRef(onError);
   onPickRef.current = onPick;
@@ -25,71 +52,186 @@ function PlaceSearch({ onPick, onError }) {
 
   useEffect(() => {
     let cancelled = false;
-    let element = null;
-
     const fail = () => onErrorRef.current(SEARCH_UNAVAILABLE);
     if (mapsKeyRejected()) fail();
     window.addEventListener(MAPS_AUTH_FAILED, fail);
 
-    const handleSelect = async (event) => {
-      try {
-        const place = event.placePrediction?.toPlace();
-        if (!place) return;
-        await place.fetchFields({
-          fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'],
-        });
-        if (!place.location) {
-          onErrorRef.current('That place has no map position. Please try a nearby landmark.');
-          return;
-        }
-        const part = (type) =>
-          place.addressComponents?.find((c) => c.types?.includes(type))?.longText || '';
-        const latitude = place.location.lat();
-        const longitude = place.location.lng();
-        onPickRef.current({
-          address: place.formattedAddress || place.displayName || coords({ latitude, longitude }),
-          latitude,
-          longitude,
-          city:
-            part('locality') ||
-            part('administrative_area_level_3') ||
-            part('administrative_area_level_2'),
-          pincode: part('postal_code'),
-          suggestedLabel: place.displayName || '',
-        });
-      } catch (err) {
-        console.error('Place lookup failed:', err);
-        onErrorRef.current('Could not look up that address. Please try again.');
-      }
-    };
-
-    (async () => {
-      try {
-        const maps = await loadGoogleMaps();
-        const { PlaceAutocompleteElement } = await maps.importLibrary('places');
-        if (cancelled || !containerRef.current) return;
-        element = new PlaceAutocompleteElement();
-        element.placeholder = 'Type your address, building or landmark';
-        element.includedRegionCodes = ['in'];
-        element.addEventListener('gmp-select', handleSelect);
-        containerRef.current.replaceChildren(element);
-      } catch (err) {
+    loadGoogleMaps()
+      .then((maps) => maps.importLibrary('places'))
+      .then((places) => {
+        if (!cancelled) placesRef.current = places;
+      })
+      .catch((err) => {
         console.error('Address search failed to load:', err);
         if (!cancelled) fail();
-      }
-    })();
+      });
 
     return () => {
       cancelled = true;
       window.removeEventListener(MAPS_AUTH_FAILED, fail);
-      if (element) {
-        element.removeEventListener('gmp-select', handleSelect);
-        element.remove();
-      }
     };
   }, []);
 
-  return <div ref={containerRef} className="loc-book-search" />;
+  // Ask Google for suggestions a moment after the customer stops typing.
+  useEffect(() => {
+    const text = query.trim();
+    if (text.length < 2) {
+      setSuggestions([]);
+      return undefined;
+    }
+
+    const request = ++requestRef.current;
+    const timer = window.setTimeout(async () => {
+      const places = placesRef.current;
+      if (!places) return;
+      try {
+        if (!sessionRef.current) sessionRef.current = new places.AutocompleteSessionToken();
+        const { suggestions: found } =
+          await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+            input: text,
+            includedRegionCodes: ['in'],
+            sessionToken: sessionRef.current,
+          });
+        if (request !== requestRef.current) return;
+        setSuggestions((found || []).map((s) => s.placePrediction).filter(Boolean));
+        setHighlight(-1);
+        setOpen(true);
+      } catch (err) {
+        console.error('Address suggestions failed:', err);
+        if (request === requestRef.current) {
+          setSuggestions([]);
+          onErrorRef.current(SEARCH_UNAVAILABLE);
+        }
+      }
+    }, 250);
+
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  const choose = async (prediction) => {
+    setOpen(false);
+    setSuggestions([]);
+    setQuery(prediction.text?.text || '');
+    try {
+      const place = prediction.toPlace();
+      await place.fetchFields({
+        fields: ['displayName', 'formattedAddress', 'location', 'addressComponents'],
+      });
+      // The session ends with the details lookup; the next search starts a new one.
+      sessionRef.current = null;
+      if (!place.location) {
+        onErrorRef.current('That place has no map position. Please try a nearby landmark.');
+        return;
+      }
+      const part = (type) =>
+        place.addressComponents?.find((c) => c.types?.includes(type))?.longText || '';
+      const latitude = place.location.lat();
+      const longitude = place.location.lng();
+      onPickRef.current({
+        address: place.formattedAddress || place.displayName || coords({ latitude, longitude }),
+        latitude,
+        longitude,
+        city:
+          part('locality') ||
+          part('administrative_area_level_3') ||
+          part('administrative_area_level_2'),
+        pincode: part('postal_code'),
+        suggestedLabel: place.displayName || '',
+      });
+    } catch (err) {
+      console.error('Place lookup failed:', err);
+      onErrorRef.current('Could not look up that address. Please try again.');
+    }
+  };
+
+  const showList = open && suggestions.length > 0;
+
+  return (
+    <div
+      className="loc-book-search"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+      }}
+    >
+      <div className="loc-book-search__field">
+        <Icon name="search" size={18} />
+        <input
+          type="text"
+          value={query}
+          placeholder="Type your address, building or landmark"
+          aria-label="Search for your address"
+          role="combobox"
+          aria-expanded={showList}
+          aria-autocomplete="list"
+          autoComplete="off"
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+            onErrorRef.current('');
+          }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(event) => {
+            if (!showList) return;
+            if (event.key === 'ArrowDown') {
+              event.preventDefault();
+              setHighlight((i) => (i + 1) % suggestions.length);
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault();
+              setHighlight((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+            } else if (event.key === 'Enter' && highlight >= 0) {
+              event.preventDefault();
+              choose(suggestions[highlight]);
+            } else if (event.key === 'Escape') {
+              setOpen(false);
+            }
+          }}
+        />
+        {query && (
+          <button
+            type="button"
+            className="loc-book-search__clear"
+            aria-label="Clear search"
+            onClick={() => {
+              setQuery('');
+              setSuggestions([]);
+            }}
+          >
+            <Icon name="close" size={16} />
+          </button>
+        )}
+      </div>
+
+      {showList && (
+        <ul className="loc-book-suggestions" role="listbox" aria-label="Address suggestions">
+          {suggestions.map((prediction, index) => (
+            <li key={prediction.placeId || index} role="presentation">
+              <button
+                type="button"
+                role="option"
+                aria-selected={index === highlight}
+                className={index === highlight ? 'is-active' : ''}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => choose(prediction)}
+              >
+                <span className="loc-book-suggestions__pin" aria-hidden="true">
+                  <Icon name="map-pin" size={16} />
+                </span>
+                <span className="loc-book-suggestions__text">
+                  <span className="loc-book-suggestions__main">
+                    <Highlighted text={prediction.mainText || prediction.text} />
+                  </span>
+                  {prediction.secondaryText?.text && (
+                    <span className="loc-book-suggestions__sub">{prediction.secondaryText.text}</span>
+                  )}
+                </span>
+              </button>
+            </li>
+          ))}
+          <li className="loc-book-suggestions__credit" role="presentation">powered by Google</li>
+        </ul>
+      )}
+    </div>
+  );
 }
 
 /**
