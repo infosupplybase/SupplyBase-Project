@@ -13,24 +13,32 @@ export default function Home() {
   return (
     <div className="page-home">
 
+      {/* Hero */}
       <HeroSlider />
 
+      {/* Popular Services */}
       <PopularServices />
 
-      <section className="home-how" aria-label="How booking works">
+      {/* How Booking Works */}
+      <section
+        className="home-how"
+        aria-label="How booking works"
+      >
         <div className="container">
           <HowBookingWorks />
         </div>
       </section>
 
-      {/* Stats Section */}
-      <StatsSection />
-
-      {/* Customer Reviews - directly below Stats */}
-      <CustomerReviews />
-
+      {/* Beautiful Spaces - Better Living */}
       <ConsultationBanner />
 
+      {/* Why Supplybase / Stats */}
+      <StatsSection />
+
+      {/* Customer Reviews */}
+      <CustomerReviews />
+
+      {/* Final CTA */}
       <CtaBand />
 
     </div>
