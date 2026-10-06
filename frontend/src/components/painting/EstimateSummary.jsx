@@ -10,7 +10,7 @@ import { formatRupees } from '../../lib/money';
  * the Few Walls reference's own numbering bug) — this summary always
  * reflects every selection, in the flow's real order.
  */
-export default function EstimateSummary({ rows, whatsIncluded, itemsTotalPaise, onEditStep, siteVisitQuote = false }) {
+export default function EstimateSummary({ rows, whatsIncluded, itemsTotalPaise, onEditStep, siteVisitQuote = false, startingFrom = false }) {
   const total = itemsTotalPaise != null ? itemsTotalPaise / 100 : null;
 
   return (
@@ -72,7 +72,7 @@ export default function EstimateSummary({ rows, whatsIncluded, itemsTotalPaise, 
           {siteVisitQuote
             ? 'Price will be confirmed during the site visit'
             : total != null
-              ? formatRupees(total)
+              ? (startingFrom ? 'Starts from ' : '') + formatRupees(total)
               : 'To be confirmed on site visit'}
         </strong>
       </div>
