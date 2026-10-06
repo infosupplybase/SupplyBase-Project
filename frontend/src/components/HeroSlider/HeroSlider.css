@@ -370,19 +370,3 @@ picture.sb-final-banner__image img {
     bottom: 7% !important;
   }
 }
-/* Pause / play, on the artwork's bottom-right corner (top-right on phones,
-   where the search box sits over the bottom of the artwork). */
-.sb-final-banner__pause {
-  right: 12px;
-  bottom: 8px;
-}
-
-@media (max-width: 767px) {
-  .sb-final-banner__pause {
-    top: 8px;
-    right: 8px;
-    bottom: auto;
-    width: 30px;
-    height: 30px;
-  }
-}
