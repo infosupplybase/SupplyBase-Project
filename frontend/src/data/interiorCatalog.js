@@ -88,57 +88,36 @@ export const interiorFeatures = {
 
 const subDesignNames = {
   'tv-wall': [
-    'Modern Minimal',
-    'Marble Luxury',
-    'Wood & White',
-    'Stone Texture',
-    'Classic Elegant',
-    'Contemporary Colour',
-    'Fluted Luxe',
-    'Warm Walnut',
-    'Charcoal Frame',
-    'Beige Calm',
-    'Oak Slat',
-    'Grey Stone',
-    'Black & Brass',
-    'Ivory Panel',
-    'Earthy Modern',
-    'Linear Luxe',
-    'Urban Concrete',
-    'Natural Veneer',
-    'Soft Taupe',
-    'Bold Black',
-    'Terracotta Accent',
-    'Sage & Oak',
-    'Cream & Walnut',
-    'Mocha Modern',
-    'Minimal Grid',
-    'Vertical Rhythm',
-    'Floating Console',
-    'Backlit Marble',
-    'Dark Wood Luxe',
-    'Sandstone Modern',
-    'Monochrome Edge',
-    'Light Oak Frame',
-    'Textured Beige',
-    'Graphite Stone',
-    'Warm Grey Luxe',
-    'White Oak Minimal',
-    'Bronze Detail',
-    'Japandi TV Wall',
-    'Scandinavian Slat',
-    'Contemporary Classic',
-    'Luxury Flute',
-    'Soft Contrast',
-    'Statement Marble',
-    'Rustic Modern',
-    'Clean Geometry',
-    'Modern Arch',
-    'Natural Stone Luxe',
-    'Slimline Modern',
-    'Warm Contemporary',
-    'Signature TV Wall',
+    'Marble Frame TV Unit',
+    'Vertical Slat TV Unit',
+    'Walnut Marble Luxe TV Unit',
+    'Floating Walnut TV Unit',
+    'Walnut Slat TV Unit',
+    'Walnut Slat TV Unit',
+    'Sage & Walnut Fluted TV Unit',
+    'Sage Fluted TV Unit',
+    'Warm Minimalist TV Unit',
+    'Charcoal & Walnut Floating TV Unit',
+    'Modern Walnut & Slat TV Unit',
+    'Walnut Slat & Textured Panel TV Unit',
+    'Contemporary Wood Panel TV Unit',
+    'Premium TV Unit Design',
+    'Modern Fluted TV Unit',
+    'Minimal TV Unit',
+    'Contemporary Fluted TV Unit',
+    'Luxury Panelled TV Unit',
+    'Contemporary Wood Panel TV Unit',
+    'Modern Fluted TV Unit',
+    'Premium Wooden TV Unit',
+    'Modern Panelled TV Unit',
+    'Contemporary Fluted TV Unit',
+    'Modern Fluted TV Unit',
+    'Modern Fluted TV Unit',
+    'Contemporary TV Wall Unit',
+    'Modern Fluted TV Unit',
+    'Modern Fluted TV Unit',
   ],
+
 
   'bed-back-wall': [
     'Soft Minimal',
@@ -712,6 +691,45 @@ const slugify = (value) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
+
+    /*
+ * TV WALL IMAGE MAP
+ * -----------------------------------------
+ * One photo per design, in the same order as the
+ * TV wall names in subDesignNames.
+ */
+
+const tvWallImageMap = [
+  '/assets/projects/interior-by-choice/tv-wall/1.webp',
+  '/assets/projects/interior-by-choice/tv-wall/2.webp',
+  '/assets/projects/interior-by-choice/tv-wall/3.webp',
+  '/assets/projects/interior-by-choice/tv-wall/4.webp',
+  '/assets/projects/interior-by-choice/tv-wall/5.webp',
+  '/assets/projects/interior-by-choice/tv-wall/6.webp',
+  '/assets/projects/interior-by-choice/tv-wall/7.webp',
+  '/assets/projects/interior-by-choice/tv-wall/8.webp',
+  '/assets/projects/interior-by-choice/tv-wall/9.webp',
+  '/assets/projects/interior-by-choice/tv-wall/10.webp',
+  '/assets/projects/interior-by-choice/tv-wall/11.webp',
+  '/assets/projects/interior-by-choice/tv-wall/12.webp',
+  '/assets/projects/interior-by-choice/tv-wall/13.webp',
+  '/assets/projects/interior-by-choice/tv-wall/14.webp',
+  '/assets/projects/interior-by-choice/tv-wall/15.webp',
+  '/assets/projects/interior-by-choice/tv-wall/16.webp',
+  '/assets/projects/interior-by-choice/tv-wall/17.webp',
+  '/assets/projects/interior-by-choice/tv-wall/18.webp',
+  '/assets/projects/interior-by-choice/tv-wall/19.webp',
+  '/assets/projects/interior-by-choice/tv-wall/20.webp',
+  '/assets/projects/interior-by-choice/tv-wall/21.webp',
+  '/assets/projects/interior-by-choice/tv-wall/22.webp',
+  '/assets/projects/interior-by-choice/tv-wall/23.webp',
+  '/assets/projects/interior-by-choice/tv-wall/24.webp',
+  '/assets/projects/interior-by-choice/tv-wall/25.webp',
+  '/assets/projects/interior-by-choice/tv-wall/26.webp',
+  '/assets/projects/interior-by-choice/tv-wall/27.webp',
+  '/assets/projects/interior-by-choice/tv-wall/28.webp',
+];
+
 const tvEstimatedPrices = [
   // 1–28 : PDF मधले exact prices
   '₹65,000 – ₹1,05,000',
@@ -1034,6 +1052,489 @@ const studyDescriptions = [
 ];
 
 /* =========================================================
+   TV WALL — PDF DESIGN DETAILS
+   ========================================================= */
+
+export const tvWallDetails = [  {
+    description:
+      'A modern and luxurious TV unit with vertical wooden slat panels, a premium marble-look feature panel and warm LED lighting designed to elevate your living space.',
+
+    included: [
+      'Vertical Slat Wall Panels',
+      'Marble-Look Feature Panel',
+      'Floating TV Cabinet with Storage',
+      'Premium Finishing',
+      'LED Profile Lighting',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains, electrical points/wiring and other loose items are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit with vertical wood slat panels, ambient LED lighting and sleek floating cabinet detailing designed to create a warm and sophisticated living space.',
+
+    included: [
+      'Vertical Slat Wall Panels',
+      'Feature Wall Finish',
+      'Wall Sconces (2 Nos.)',
+      'Floating TV Cabinet with Storage',
+      'LED Profile Lighting',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, soundbar, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A refined living-room TV unit combining warm walnut fluted detailing, illuminated display shelves, a marble feature panel and a sleek floating storage console.',
+
+    included: [
+      'Vertical Walnut Fluted Panels',
+      'Marble-Look TV Back Panel',
+      'Illuminated Display Shelves',
+      'Wall-Mounted TV Setup',
+      'Floating Storage Console',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, loose electrical appliances and electrical rewiring are not included.',
+  },
+
+  {
+    description:
+      'A modern floating TV unit with a sleek wall-mounted cabinet and LED-lit floating shelves, designed to bring warmth, style and functionality to your living space.',
+
+    included: [
+      'Floating Wall Shelf with LED Light',
+      'LED Profile Lighting',
+      'Floating TV Cabinet',
+      'Wall-Mounted TV Setup',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A contemporary and elegant TV unit featuring vertical wooden slat panels, floating shelves and a sleek floating cabinet, designed to bring warmth, texture and functionality.',
+
+    included: [
+      'Vertical Slat Wall Panels',
+      'TV Back Wall Finish',
+      'Floating Shelves',
+      'Floating TV Cabinet with Storage',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit with vertical walnut slat panels, warm wall sconces and a sleek floating cabinet designed to create a stylish and minimal look.',
+
+    included: [
+      'Vertical Slat Feature Wall',
+      'TV Back Wall Finish',
+      'Wall Sconces (2 Nos.)',
+      'Floating TV Cabinet with Storage',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A contemporary TV unit blending natural vertical fluted wood detailing with a muted sage-green wall panel and sleek floating console, designed for a calm and functional living space.',
+
+    included: [
+      'Vertical Fluted Wood Panel',
+      'Sage Green Wall Panel',
+      'Wall-Mounted TV Setup',
+      'Four-Door Storage Console',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit featuring vertical fluted panels and a sleek floating cabinet in a soft sage-green finish, designed for a contemporary living space.',
+
+    included: [
+      'Vertical Fluted Wood Panel',
+      'TV Back Panel Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A sleek and contemporary TV unit featuring vertical fluted panels and a minimal floating cabinet, designed to bring elegance and functionality to your living space.',
+
+    included: [
+      'Vertical Fluted Wood Panel',
+      'TV Back Panel Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A refined contemporary TV wall combining a textured feature finish, warm wood slat detailing and integrated ambient lighting for a sophisticated living-room look.',
+
+    included: [
+      'Textured Feature Wall',
+      'Vertical Wood Slat Panel',
+      'Floating TV Console',
+      'Integrated LED Lighting',
+      'Wall-Mounted TV Setup',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A sleek and modern floating TV unit with a bold charcoal backdrop, vertical walnut slat panel, floating display shelf and premium contemporary detailing.',
+
+    included: [
+      'Charcoal TV Back Panel',
+      'Vertical Walnut Slat Panel',
+      'Floating Display Shelf',
+      'Floating TV Console',
+      'Open Storage Niche',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A clean contemporary media wall combining warm wood finishes, a floating console, open display and integrated ambient lighting.',
+
+    included: [
+      'Vertical Slat Feature Panel',
+      'Floating Display Shelf',
+      'Wall-Mounted TV Setup',
+      'Floating TV Console',
+      'Integrated LED Lighting',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A refined contemporary TV wall combining walnut slat detailing, a textured statement panel, floating storage console and integrated ambient lighting.',
+
+    included: [
+      'Walnut Slat Feature Panel',
+      'Textured Wall Finish',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'TV Mounting & Finish',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, gaming devices, accessories, decor items and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A refined contemporary media wall combining warm wood panels, a sleek floating console, integrated ambient lighting and a linear fireplace feature.',
+
+    included: [
+      'Wood Panel Feature Wall',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'Linear Fireplace Feature',
+      'TV Mounting & Finish',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, electrical points/wiring and loose items are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A luxurious contemporary TV unit with vertical wooden fluted panels, marble finish, warm LED lighting and a floating console designed for an elegant living space.',
+
+    included: [
+      'Fluted Wood Feature Wall',
+      'Marble Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Stylish Shelves',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit design featuring a full-height warm wood slat feature wall, a TV wall-mounted panel and a floating cabinet.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Finish',
+      'Floating TV Cabinet',
+      'Premium Wood Finish',
+      'Installation & Finishing',
+      'Design Consultation',
+    ],
+
+    exclusions:
+      'Television, soundbar/audio equipment, decor accessories and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A clean and modern TV unit design with a premium marble-finish panel, warm LED lighting and a floating wooden cabinet for a minimal contemporary look.',
+
+    included: [
+      'Marble Finish TV Panel',
+      'Wooden Accent Panel',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Installation & Finishing',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A warm and sophisticated TV unit featuring a vertical wooden fluted panel, sleek wall-mounted cabinet and minimal, modern aesthetic perfect for contemporary homes.',
+
+    included: [
+      'Fluted Feature Wall',
+      'Floating TV Cabinet',
+      'TV Back Panel & Wall Finish',
+      'Styling Guidance',
+      'Installation & Finishing',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A premium and elegant TV unit featuring a marble-finish back panel with warm LED lighting, vertical wood panels and a floating cabinet that creates a sophisticated timeless look.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Premium Finish & Materials',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A refined contemporary media wall combining warm wood panels, a sleek floating console, integrated ambient lighting and a linear fireplace feature.',
+
+    included: [
+      'Wood Panel Feature Wall',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'Linear Fireplace Feature',
+      'TV Mounting & Finish',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, electrical points/wiring and loose items are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit design featuring a full-height warm wood slat feature wall, a TV wall-mounted panel and a floating cabinet.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Finish',
+      'Floating TV Cabinet',
+      'Premium Wood Finish',
+      'Installation & Finishing',
+      'Design Consultation',
+    ],
+
+    exclusions:
+      'Television, soundbar/audio equipment, decor accessories and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A sophisticated TV unit design featuring full-height wooden fluted panels and a floating wooden cabinet with open storage, creating a warm and modern look.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'Premium Materials',
+      'Installation & Finishing',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A stylish and contemporary TV unit design combining a combination of wood fluted panels and a premium marble-finish panel, paired with a floating cabinet.',
+
+    included: [
+      'Fluted Feature Panel',
+      'Marble Finish Panel',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'Premium Materials',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant full-height fluted feature wall with a sleek wall-mounted cabinet, floating storage and premium detailing for contemporary homes.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'Wall Display',
+      'Premium Finish & Materials',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A sleek and contemporary TV unit featuring a vertical fluted wood panel and a floating cabinet in a rich matte finish, creating a minimal yet elegant design.',
+
+    included: [
+      'Fluted Feature Wall',
+      'Floating TV Cabinet',
+      'Premium Matte Finish',
+      'Installation & Finishing',
+      'Styling Guidance',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A stylish and space-efficient TV unit featuring elegant vertical fluted panels, open shelving and a sleek floating cabinet, finished in a warm wood tone.',
+
+    included: [
+      'Fluted Wall Panels',
+      'Open Shelves',
+      'Floating TV Cabinet',
+      'Premium Materials',
+      'LED Profile Lighting',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A sleek and contemporary TV unit featuring a full-height fluted wood wall panel with a floating TV cabinet, creating a deep and premium modern look.',
+
+    included: [
+      'Fluted / Slatted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'Premium Wood Finish',
+      'Installation & Finishing',
+      'Design Consultation',
+    ],
+
+    exclusions:
+      'Television, accessories, decor items and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A perfect blend of minimal design and warm aesthetics. This modern TV unit features a sleek floating cabinet with a wood-accented top, small matte shutters and clean fluted wall panels.',
+
+    included: [
+      'Fluted Feature Wall',
+      'LED Profile Lighting',
+      'Floating TV Cabinet',
+      'Premium Finish',
+      'Styling Guidance',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, accessories, decor items and electrical points/wiring are not included unless specifically quoted.',
+  },
+];
+
+
+
+/* =========================================================
    INTERIOR DESIGNS
    ========================================================= */
 
@@ -1060,14 +1561,18 @@ export const interiorDesigns =
 
 
 
-        const dedicatedImage =
-  space.slug === 'living-room'
-    ? livingRoomImages[name]
-    : space.slug === 'mandir'
-      ? mandirImages[name]
-      : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
-          name
-        )}.webp`;
+const dedicatedImage =
+  space.slug === 'tv-wall'
+    ? tvWallImageMap[index]
+    : space.slug === 'living-room'
+      ? livingRoomImages[name]
+      : space.slug === 'mandir'
+        ? mandirImages[name]
+        : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
+            name
+          )}.webp`;
+
+
         const entranceDetails =
           space.slug === 'entrance'
             ? entranceDoorDetails[index]
@@ -1078,26 +1583,29 @@ export const interiorDesigns =
             : null;
 
         return {
-          slug: slugify(name),
+  slug:
+    space.slug === 'tv-wall'
+      ? `${slugify(name)}-${index + 1}`
+      : slugify(name),
 
-          spaceSlug: space.slug,
+  spaceSlug: space.slug,
 
-          name,
+  name,
 
-          tagline:
-            entranceDetails?.tagline ||
-            taglines[space.slug],
+  tagline:
+    entranceDetails?.tagline ||
+    taglines[space.slug],
 
-pricePerSqft,
+  pricePerSqft,
 
-         estimatedPrice:
-  space.slug === 'study'
-    ? studyEstimatedPrices[index]
-    : space.slug === 'tv-wall'
-      ? tvEstimatedPrices[index]
-      : space.slug === 'mandir'
-        ? mandirEstimatedPrices[index]
-        : null,
+  estimatedPrice:
+    space.slug === 'study'
+      ? studyEstimatedPrices[index]
+      : space.slug === 'tv-wall'
+        ? tvEstimatedPrices[index]
+        : space.slug === 'mandir'
+          ? mandirEstimatedPrices[index]
+          : null,
 
           // The list, the design page and the booking pop-up all read
           // this, so study, TV wall and mandir show their estimate everywhere.
@@ -1112,51 +1620,74 @@ pricePerSqft,
                   ? mandirEstimatedPrices[index]
                   : undefined),
 
-          description:
-            space.slug === 'study'
-              ? studyDescriptions[index]
-              : entranceDetails?.description ||
-                bedBackWallDetail?.description,
+  description:
+    space.slug === 'tv-wall'
+      ? tvWallDetails[index]?.description
+      : space.slug === 'study'
+        ? studyDescriptions[index]
+        : entranceDetails?.description ||
+          bedBackWallDetail?.description,
 
-          image: entranceDetails
-            ? `/assets/projects/interior-by-choice/entrance/door-${String(
-                entranceDetails.pdfPage
-              ).padStart(2, '0')}.webp`
-            : bedBackWallDetail
-              ? `/assets/projects/interior-by-choice/bed-back-wall/design-${String(
-                  index + 1
-                ).padStart(2, '0')}.webp`
-            : dedicatedImage,
+  tvDetails:
+    space.slug === 'tv-wall'
+      ? tvWallDetails[index]
+      : null,
 
-          galleryImages:
-  space.slug === 'study'
-    ? studyGalleryImages[name]
-    : null,
+  image: entranceDetails
+    ? `/assets/projects/interior-by-choice/entrance/door-${String(
+        entranceDetails.pdfPage
+      ).padStart(2, '0')}.webp`
+    : bedBackWallDetail
+      ? `/assets/projects/interior-by-choice/bed-back-wall/design-${String(
+          index + 1
+        ).padStart(2, '0')}.webp`
+      : dedicatedImage,
 
-          fallbackImage:
-            space.image,
+  galleryImages:
+    space.slug === 'study'
+      ? studyGalleryImages[name]
+      : null,
 
-          colours:
-            space.slug === 'entrance'
-              ? []
-              : [
-                  '#efe9e2',
-                  '#d8c9b0',
-                  '#6b4a34',
-                  '#2e2e2e',
-                ],
+  fallbackImage:
+    space.image,
 
-          features:
-            preset.features,
+  colours:
+    space.slug === 'entrance'
+      ? []
+      : [
+          '#efe9e2',
+          '#d8c9b0',
+          '#6b4a34',
+          '#2e2e2e',
+        ],
 
-          materialDetails:
-            preset.materialDetails,
-        };
+  features:
+    preset.features,
+
+  materialDetails:
+    preset.materialDetails,
+};
       }
     )
   );
 
+/* TV WALL — colour options (first = no tint, shows the original image) */
+export const tvWallColours = [
+  { name: 'Original', hex: null },
+  { name: 'Natural Oak', hex: '#d7b083' },
+  { name: 'Walnut', hex: '#75411f' },
+  { name: 'Wenge', hex: '#2b211b' },
+  { name: 'White Oak', hex: '#ead7bc' },
+  { name: 'Sage Green', hex: '#9caf88' },
+  { name: 'Charcoal', hex: '#3a3a3a' },
+];
 
+/*
+ * Optional real colour photos. Leave empty to use the tint preview.
+ * Key = design slug, then colour name, e.g.
+ * 'marble-frame-tv-unit-1': { Walnut: '/assets/.../1-walnut.png' }
+ */
+export const tvWallColourImages = {};
 
 
 /* =========================================================
