@@ -39,7 +39,10 @@ public record BookingResponse(
         Instant paidAt,
         // When the customer first opened online checkout; null if they never
         // did. Only such a booking can be auto-cancelled (BookingExpiryJob).
-        Instant onlineCheckoutAt) {
+        Instant onlineCheckoutAt,
+        // Why it was cancelled (by the customer, staff or the expiry job);
+        // null on a booking that is not cancelled.
+        String cancelledReason) {
 
     public static BookingResponse from(Booking b) {
         return from(b, List.of());
@@ -64,7 +67,8 @@ public record BookingResponse(
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getPhone(),
                 answers,
                 b.getPaidAt(),
-                b.getOnlineCheckoutAt());
+                b.getOnlineCheckoutAt(),
+                b.getCancelledReason());
     }
 
 }
