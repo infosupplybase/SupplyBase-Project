@@ -32,8 +32,12 @@ const slides = [
   },
 ];
 
+const loopSlides = [...slides, slides[0]];
+
 export default function HeroSlider() {
   const [active, setActive] = useState(0);
+  const [position, setPosition] = useState(0);
+  const [transitionEnabled, setTransitionEnabled] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [interacting, setInteracting] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
@@ -50,13 +54,14 @@ export default function HeroSlider() {
   useEffect(() => {
     if (reducedMotion || interacting || searchFocused) return undefined;
 
-    const timer = window.setInterval(() => {
+    const timer = window.setTimeout(() => {
       if (!document.hidden) {
-        setActive((current) => (current + 1) % slides.length);
+        setTransitionEnabled(true);
+        setPosition((current) => current + 1);
       }
-    }, 4000);
+    }, 4500);
 
-    return () => window.clearInterval(timer);
+    return () => window.clearTimeout(timer);
   }, [active, reducedMotion, interacting, searchFocused]);
 
   // Keep the full artwork below the site header.
@@ -74,7 +79,7 @@ export default function HeroSlider() {
 
       const overlap =
         headerRect.top <= bannerRect.top &&
-        headerRect.bottom > bannerRect.top
+          headerRect.bottom > bannerRect.top
           ? headerRect.bottom - bannerRect.top
           : 0;
 
@@ -143,34 +148,60 @@ export default function HeroSlider() {
       >
         <div
           className="sb-final-banner__track"
-          style={{ transform: `translateX(-${active * 100}%)` }}
+          style={{
+            transform: `translate3d(-${position * 100}%, 0, 0)`,
+            transition: transitionEnabled
+              ? 'transform 900ms cubic-bezier(0.22, 1, 0.36, 1)'
+              : 'none',
+            willChange: 'transform',
+          }}
+          onTransitionEnd={(event) => {
+            if (event.propertyName !== 'transform') return;
+
+            if (position === slides.length) {
+              setTransitionEnabled(false);
+              setPosition(0);
+              setActive(0);
+
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  setTransitionEnabled(true);
+                });
+              });
+
+              return;
+            }
+
+            setActive(position);
+          }}
         >
-        {slides.map((slide, index) => (
-          <picture
-            key={slide.src}
-            className={`sb-final-banner__image ${
-              active === index ? 'is-active' : ''
-            }`}
-            aria-hidden={active !== index}
-          >
-            <source
-              media="(max-width: 767px)"
-              srcSet={slide.mobileSrc}
-              width={slide.mobileWidth}
-              height={slide.mobileHeight}
-            />
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width={slide.width}
-              height={slide.height}
-              loading="eager"
-              fetchpriority={index === 0 ? 'high' : 'auto'}
-              decoding="async"
-              draggable={false}
-            />
-          </picture>
-        ))}
+          {loopSlides.map((slide, index) => (
+            <picture
+              key={`${slide.src}-${index}`}
+              className="sb-final-banner__image"
+              aria-hidden={
+                (position === slides.length ? 0 : position) !==
+                index % slides.length
+              }
+            >
+              <source
+                media="(max-width: 767px)"
+                srcSet={slide.mobileSrc}
+                width={slide.mobileWidth}
+                height={slide.mobileHeight}
+              />
+              <img
+                src={slide.src}
+                alt={slide.alt}
+                width={slide.width}
+                height={slide.height}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
+                draggable={false}
+              />
+            </picture>
+          ))}
         </div>
       </div>
 
@@ -186,18 +217,7 @@ export default function HeroSlider() {
         <HomeHero />
       </div>
 
-      <div className="sb-final-banner__dots" style={{ '--image-height': `${current.height / current.width * 100}vw` }} aria-label="Choose banner">
-        {slides.map((slide, index) => (
-          <button
-            key={slide.src}
-            type="button"
-            className={active === index ? 'is-active' : ''}
-            aria-label={`Show banner ${index + 1}`}
-            aria-current={active === index ? 'true' : undefined}
-            onClick={() => setActive(index)}
-          />
-        ))}
-      </div>
+
     </section>
   );
 }
