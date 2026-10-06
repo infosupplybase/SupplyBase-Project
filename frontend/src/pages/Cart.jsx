@@ -17,10 +17,15 @@ export default function Cart() {
             <section className="plb-section global-cart-page">
                 <div className="container container-narrow plb-cart-empty">
                     <Icon name="shopping-bag" size={40} />
+
                     <h1>Your cart is empty</h1>
+
                     <p>Add a service to get started.</p>
 
-                    <Link to="/services" className="btn btn-primary">
+                    <Link
+                        to="/services"
+                        className="btn btn-primary"
+                    >
                         Browse Services
                     </Link>
                 </div>
@@ -31,8 +36,12 @@ export default function Cart() {
     return (
         <section className="plb-section global-cart-page">
             <div className="container container-narrow">
+
                 <div className="plb-cart-head">
-                    <Link to="/services" className="plb-back-link">
+                    <Link
+                        to="/services"
+                        className="plb-back-link"
+                    >
                         <Icon name="arrow-left" size={18} />
                         Continue browsing
                     </Link>
@@ -45,26 +54,32 @@ export default function Cart() {
                     </h1>
                 </div>
 
+                {/* Plumbing */}
                 {plumbing.count > 0 && (
                     <CartGroup
                         title="Plumbing"
                         cart={plumbing}
-                        checkoutTo="/services/plumbing/checkout"
                     />
                 )}
 
+                {/* Electrical */}
                 {electrical.count > 0 && (
                     <CartGroup
                         title="Electrical"
                         cart={electrical}
-                        checkoutTo="/services/electrical/checkout"
                     />
                 )}
 
+                {/* =========================
+                    COMBINED TOTAL
+                ========================= */}
+
                 <div className="plb-cart-summary">
+
                     <div className="plb-cart-summary-row">
                         <span>
-                            Total ({totalCount} item{totalCount > 1 ? 's' : ''})
+                            Total ({totalCount} item
+                            {totalCount > 1 ? 's' : ''})
                         </span>
 
                         <strong>
@@ -72,14 +87,33 @@ export default function Cart() {
                         </strong>
                     </div>
 
+                    {/* ONE CHECKOUT BUTTON ONLY */}
+
+                    <Link
+                        to="/checkout"
+                        className="btn btn-primary !w-[80%] !mx-auto !flex !justify-center md:!w-[280px]"
+                    >
+                        Checkout
+                        <Icon
+                            name="arrow-right"
+                            size={17}
+                        />
+                    </Link>
 
                 </div>
+
             </div>
         </section>
     );
 }
 
-function CartGroup({ title, cart, checkoutTo }) {
+
+/* =====================================================
+   CART GROUP
+===================================================== */
+
+function CartGroup({ title, cart }) {
+
     const {
         items,
         count,
@@ -89,22 +123,40 @@ function CartGroup({ title, cart, checkoutTo }) {
     } = cart;
 
     return (
-        <div className="plb-cart-summary" style={{ marginBottom: 24 }}>
+        <div
+            className="plb-cart-summary"
+            style={{ marginBottom: 24 }}
+        >
+
+            {/* CATEGORY HEADER */}
+
             <div className="plb-cart-summary-row">
-                <strong>{title}</strong>
+
+                <strong>
+                    {title}
+                </strong>
 
                 <span>
-                    {count} item{count > 1 ? 's' : ''}
+                    {count} item
+                    {count > 1 ? 's' : ''}
                 </span>
+
             </div>
 
+
+            {/* ITEMS */}
+
             <div className="plb-list">
+
                 {items.map((item) => (
+
                     <div
                         className="plb-row plb-cart-row"
                         key={item.itemSlug}
                     >
+
                         <div className="plb-row-body">
+
                             <span className="plb-row-name">
                                 {item.name}
                             </span>
@@ -116,17 +168,33 @@ function CartGroup({ title, cart, checkoutTo }) {
                             )}
 
                             <div className="plb-row-price">
-                                {formatItemPrice(item.unitPricePaise / 100)}
-                                <span> × {item.quantity}</span>
+
+                                {formatItemPrice(
+                                    item.unitPricePaise / 100
+                                )}
+
+                                <span>
+                                    {' × '}
+                                    {item.quantity}
+                                </span>
+
                             </div>
+
                         </div>
 
+
+                        {/* ACTIONS */}
+
                         <div className="plb-cart-row-actions">
+
+                            {/* QUANTITY */}
+
                             <div
                                 className="plb-qty"
                                 role="group"
                                 aria-label={`${item.name} quantity`}
                             >
+
                                 <button
                                     type="button"
                                     onClick={() =>
@@ -140,7 +208,9 @@ function CartGroup({ title, cart, checkoutTo }) {
                                     −
                                 </button>
 
-                                <span>{item.quantity}</span>
+                                <span>
+                                    {item.quantity}
+                                </span>
 
                                 <button
                                     type="button"
@@ -154,44 +224,65 @@ function CartGroup({ title, cart, checkoutTo }) {
                                 >
                                     +
                                 </button>
+
                             </div>
 
+
+                            {/* ITEM TOTAL */}
+
                             <span className="plb-cart-row-total">
+
                                 {formatItemPrice(
-                                    (item.unitPricePaise * item.quantity) / 100
+                                    (
+                                        item.unitPricePaise *
+                                        item.quantity
+                                    ) / 100
                                 )}
+
                             </span>
+
+
+                            {/* REMOVE */}
 
                             <button
                                 type="button"
                                 className="plb-cart-row-remove"
-                                onClick={() => removeItem(item.itemSlug)}
+                                onClick={() =>
+                                    removeItem(item.itemSlug)
+                                }
                                 aria-label={`Remove ${item.name}`}
                             >
-                                <Icon name="close" size={16} />
+                                <Icon
+                                    name="close"
+                                    size={16}
+                                />
                             </button>
+
                         </div>
+
                     </div>
+
                 ))}
+
             </div>
+
+
+            {/* CATEGORY SUBTOTAL */}
 
             <div className="plb-cart-summary-row">
-                <span>Subtotal</span>
+
+                <span>
+                    Subtotal
+                </span>
 
                 <strong>
-                    {formatRupees(subtotalPaise / 100)}
+                    {formatRupees(
+                        subtotalPaise / 100
+                    )}
                 </strong>
+
             </div>
 
-            {/* Plumbing and electrical each have their own checkout, so each
-                group gets its own button (there is no combined /checkout). */}
-            <Link
-                to={checkoutTo}
-                className="btn btn-primary !w-[80%] !mx-auto !flex !justify-center md:!w-[280px]"
-            >
-                Check out {title.toLowerCase()}
-                <Icon name="arrow-right" size={17} />
-            </Link>
         </div>
     );
 }
