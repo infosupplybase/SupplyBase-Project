@@ -74,6 +74,14 @@ function findOptionImage(name, option) {
     .toLowerCase()
     .replace(/[_-]+/g, ' ');
 
+  // Few Walls -> Ceiling Type: plain or designer ceiling photo.
+  if (name === 'few_walls_ceiling_type') {
+    if (/design|false ceiling/.test(text)) {
+      return '/assets/pop-ceiling/hero/designer-ceiling.webp';
+    }
+    return '/assets/pop-ceiling/types/flat-ceiling.webp';
+  }
+
   const isPaintingType =
     name === 'full_home_painting_type' ||
     name === 'few_walls_painting_type';
@@ -172,6 +180,7 @@ export default function OptionCard({
 
   const image = findOptionImage(name, option);
   const showImage = Boolean(image && failedImage !== image);
+  const isCeilingType = name === 'few_walls_ceiling_type';
 
   const fallbackIcon =
     icon ||
@@ -196,18 +205,19 @@ export default function OptionCard({
           aria-hidden="true"
           style={{
             display: 'block',
-            width: 88,
-            height: 72,
+            width: isCeilingType ? 120 : 88,
+            height: isCeilingType ? 88 : 72,
             flexShrink: 0,
             overflow: 'hidden',
             borderRadius: 10,
+            background: '#f5f1e8',
           }}
         >
           <img
             src={image}
             alt=""
-            width={88}
-            height={72}
+            width={isCeilingType ? 120 : 88}
+            height={isCeilingType ? 88 : 72}
             loading="lazy"
             decoding="async"
             onError={() => setFailedImage(image)}
