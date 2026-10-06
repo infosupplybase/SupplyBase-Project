@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import HomeHero from '../home/HomeHero';
-import CarouselPauseButton from '../ui/CarouselPauseButton';
 import './HeroSlider.css';
 
 const slides = [
@@ -41,11 +40,9 @@ export default function HeroSlider() {
   const [transitionEnabled, setTransitionEnabled] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [interacting, setInteracting] = useState(false);
-  // Holds still while the pointer is over the banner or anything in it
-  // (dots, search) has focus, and whenever the visitor pressed Pause.
+  // Holds still while the pointer is over the banner or the search has focus.
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const [paused, setPaused] = useState(false);
   const startTouch = useRef(null);
 
   useEffect(() => {
@@ -57,7 +54,7 @@ export default function HeroSlider() {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || interacting || hovered || focused || paused) return undefined;
+    if (reducedMotion || interacting || hovered || focused) return undefined;
 
     const timer = window.setTimeout(() => {
       if (!document.hidden) {
@@ -67,7 +64,7 @@ export default function HeroSlider() {
     }, 4500);
 
     return () => window.clearTimeout(timer);
-  }, [active, reducedMotion, interacting, hovered, focused, paused]);
+  }, [active, reducedMotion, interacting, hovered, focused]);
 
   // Keep the full artwork below the site header.
   useLayoutEffect(() => {
@@ -79,14 +76,11 @@ export default function HeroSlider() {
     const alignBanner = () => {
       banner.style.setProperty('margin-top', '0px', 'important');
 
-      const headerRect = header.getBoundingClientRect();
-      const bannerRect = banner.getBoundingClientRect();
-
-      const overlap =
-        headerRect.top <= bannerRect.top &&
-          headerRect.bottom > bannerRect.top
-          ? headerRect.bottom - bannerRect.top
-          : 0;
+      // Page coordinates, so the result is the same however far the
+      // visitor has scrolled (the header is fixed, the banner is not).
+      const headerBottom = header.getBoundingClientRect().bottom;
+      const bannerTop = banner.getBoundingClientRect().top + window.scrollY;
+      const overlap = Math.max(0, headerBottom - bannerTop);
 
       banner.style.setProperty(
         'margin-top',
@@ -228,15 +222,6 @@ export default function HeroSlider() {
       <div className="sb-final-banner__search">
         <HomeHero />
       </div>
-
-      {!reducedMotion && (
-        <CarouselPauseButton
-          className="sb-final-banner__pause"
-          paused={paused}
-          onToggle={() => setPaused((p) => !p)}
-          label="banner slides"
-        />
-      )}
     </section>
   );
 }
