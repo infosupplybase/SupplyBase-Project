@@ -4,8 +4,8 @@ import './HeroSlider.css';
 
 const slides = [
   {
-    src: '/assets/home-slider/1.jpeg',
-    mobileSrc: '/assets/home-slider/4.jpeg',
+    src: '/assets/home-slider/1.webp',
+    mobileSrc: '/assets/home-slider/4.webp',
     mobileWidth: 1455,
     mobileHeight: 1081,
     width: 2048,
@@ -13,8 +13,8 @@ const slides = [
     alt: 'SupplyBase painting services: Fresh Walls, Brighter Spaces. Get 5% off.',
   },
   {
-    src: '/assets/home-slider/2.png',
-    mobileSrc: '/assets/home-slider/5.jpeg',
+    src: '/assets/home-slider/2.webp',
+    mobileSrc: '/assets/home-slider/5.webp',
     mobileWidth: 1454,
     mobileHeight: 1082,
     width: 2170,
@@ -22,8 +22,8 @@ const slides = [
     alt: 'SupplyBase POP and ceiling designs: Stylish Ceilings for Modern Homes. Get 5% off.',
   },
   {
-    src: '/assets/home-slider/3.jpeg',
-    mobileSrc: '/assets/home-slider/6.jpeg',
+    src: '/assets/home-slider/3.webp',
+    mobileSrc: '/assets/home-slider/6.webp',
     mobileWidth: 1455,
     mobileHeight: 1081,
     width: 2048,
@@ -69,14 +69,11 @@ export default function HeroSlider() {
     const alignBanner = () => {
       banner.style.setProperty('margin-top', '0px', 'important');
 
-      const headerRect = header.getBoundingClientRect();
-      const bannerRect = banner.getBoundingClientRect();
-
-      const overlap =
-        headerRect.top <= bannerRect.top &&
-        headerRect.bottom > bannerRect.top
-          ? headerRect.bottom - bannerRect.top
-          : 0;
+      // Page coordinates, so the result is the same however far the
+      // visitor has scrolled (the header is fixed, the banner is not).
+      const headerBottom = header.getBoundingClientRect().bottom;
+      const bannerTop = banner.getBoundingClientRect().top + window.scrollY;
+      const overlap = Math.max(0, headerBottom - bannerTop);
 
       banner.style.setProperty(
         'margin-top',
@@ -165,7 +162,7 @@ export default function HeroSlider() {
               width={slide.width}
               height={slide.height}
               loading="eager"
-              fetchpriority={index === 0 ? 'high' : 'auto'}
+              fetchPriority={index === 0 ? 'high' : 'auto'}
               decoding="async"
               draggable={false}
             />
@@ -173,6 +170,10 @@ export default function HeroSlider() {
         ))}
         </div>
       </div>
+
+      <h1 className="sr-only">
+        Home services in Mumbai: painting, waterproofing, plumbing, electrical, AC servicing, POP ceilings and interiors
+      </h1>
 
       <div
         className="sb-final-banner__search"

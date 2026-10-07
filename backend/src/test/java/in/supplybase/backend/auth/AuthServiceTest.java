@@ -234,6 +234,32 @@ class AuthServiceTest {
         }
 
         @Test
+        @DisplayName("an account's phone and email share one attempt budget")
+        void oneBudgetPerAccount() {
+            User user = customer(7L);
+            when(users.findByEmailIgnoreCase("existing@example.com")).thenReturn(Optional.of(user));
+            when(users.findByPhone("9820011223")).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
+
+            assertThatThrownBy(() -> service.login(new LoginRequest("existing@example.com", "wrong")));
+            assertThatThrownBy(() -> service.login(new LoginRequest("98200 11223", "wrong")));
+
+            verify(rateLimiter, times(2)).tryAcquire(eq("login:user:7"), anyInt(), any(Duration.class));
+        }
+
+        @Test
+        @DisplayName("a password over BCrypt's 72 bytes is a wrong password, not a 500")
+        void overlongPasswordIsWrong() {
+            User user = customer(1L);
+            when(users.findByEmailIgnoreCase("existing@example.com")).thenReturn(Optional.of(user));
+
+            assertThatThrownBy(() -> service.login(new LoginRequest("existing@example.com", "é".repeat(40))))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.UNAUTHORIZED);
+            verify(passwordEncoder, never()).matches(anyString(), anyString());
+        }
+
+        @Test
         @DisplayName("is rejected once the per-identifier login rate limit is hit")
         void rateLimited() {
             when(rateLimiter.tryAcquire(anyString(), anyInt(), any(Duration.class))).thenReturn(false);
@@ -450,6 +476,29 @@ class AuthServiceTest {
         }
 
         @Test
+        @DisplayName("sends a partner's reset link to the partners site, a customer's to the main site")
+        void resetLinkFollowsTheApp() {
+            props = new AppProperties(List.of(), null, null, null, null,
+                    "https://supplybase.example", null, null, null, "https://partners.supplybase.example");
+            service = new AuthService(users, refreshTokens, passwordResetTokens, emailVerificationTokens,
+                    passwordEncoder, jwtService, googleVerifier, rateLimiter, props, mailSender);
+            JavaMailSender sender = org.mockito.Mockito.mock(JavaMailSender.class);
+            when(mailSender.getIfAvailable()).thenReturn(sender);
+            when(users.findByEmailIgnoreCase("existing@example.com")).thenReturn(Optional.of(customer(1L)));
+
+            service.forgotPassword("existing@example.com", "partner");
+            service.forgotPassword("existing@example.com", "customer");
+
+            org.mockito.ArgumentCaptor<org.springframework.mail.SimpleMailMessage> sent =
+                    org.mockito.ArgumentCaptor.forClass(org.springframework.mail.SimpleMailMessage.class);
+            verify(sender, org.mockito.Mockito.times(2)).send(sent.capture());
+            org.assertj.core.api.Assertions.assertThat(sent.getAllValues().get(0).getText())
+                    .contains("https://partners.supplybase.example/reset-password?token=");
+            org.assertj.core.api.Assertions.assertThat(sent.getAllValues().get(1).getText())
+                    .contains("https://supplybase.example/reset-password?token=");
+        }
+
+        @Test
         @DisplayName("silently does nothing for an identifier nobody has")
         void unknownIdentifierSilent() {
             when(users.findByEmailIgnoreCase("ghost@example.com")).thenReturn(Optional.empty());
@@ -500,6 +549,37 @@ class AuthServiceTest {
             assertThat(user.getPasswordHash()).isEqualTo("bcrypt-hash");
             assertThat(stored.getUsedAt()).isNotNull();
             verify(refreshTokens).revokeAllForUser(1L);
+        }
+
+        @Test
+        @DisplayName("a used link for an address that is already verified succeeds, not 'invalid'")
+        void usedTokenOnVerifiedAccount() {
+            User user = customer(1L);
+            user.setEmailVerified(true);
+            EmailVerificationToken stored = EmailVerificationToken.builder()
+                    .id(1L).user(user).tokenHash("hashed-token")
+                    .usedAt(Instant.now().minusSeconds(60))
+                    .expiresAt(Instant.now().plusSeconds(3600)).build();
+            when(emailVerificationTokens.findByTokenHash("hashed-token")).thenReturn(Optional.of(stored));
+
+            service.verifyEmail("raw-token");
+
+            verify(emailVerificationTokens, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("an expired, unused link is still refused")
+        void expiredUnusedToken() {
+            User user = customer(1L);
+            user.setEmailVerified(false);
+            EmailVerificationToken stored = EmailVerificationToken.builder()
+                    .id(1L).user(user).tokenHash("hashed-token")
+                    .expiresAt(Instant.now().minusSeconds(60)).build();
+            when(emailVerificationTokens.findByTokenHash("hashed-token")).thenReturn(Optional.of(stored));
+
+            assertThatThrownBy(() -> service.verifyEmail("raw-token"))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
         }
 
         @Test
@@ -572,6 +652,37 @@ class AuthServiceTest {
 
             assertThat(user.isEmailVerified()).isTrue();
             assertThat(stored.getUsedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("a used link for an address that is already verified succeeds, not 'invalid'")
+        void usedTokenOnVerifiedAccount() {
+            User user = customer(1L);
+            user.setEmailVerified(true);
+            EmailVerificationToken stored = EmailVerificationToken.builder()
+                    .id(1L).user(user).tokenHash("hashed-token")
+                    .usedAt(Instant.now().minusSeconds(60))
+                    .expiresAt(Instant.now().plusSeconds(3600)).build();
+            when(emailVerificationTokens.findByTokenHash("hashed-token")).thenReturn(Optional.of(stored));
+
+            service.verifyEmail("raw-token");
+
+            verify(emailVerificationTokens, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("an expired, unused link is still refused")
+        void expiredUnusedToken() {
+            User user = customer(1L);
+            user.setEmailVerified(false);
+            EmailVerificationToken stored = EmailVerificationToken.builder()
+                    .id(1L).user(user).tokenHash("hashed-token")
+                    .expiresAt(Instant.now().minusSeconds(60)).build();
+            when(emailVerificationTokens.findByTokenHash("hashed-token")).thenReturn(Optional.of(stored));
+
+            assertThatThrownBy(() -> service.verifyEmail("raw-token"))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
         }
 
         @Test

@@ -36,6 +36,14 @@ export const interiorSpaces = [
   },
 ];
 
+/** Names for the design-page colour swatches, shown to the customer and sent with the booking. */
+export const interiorColourNames = {
+  '#efe9e2': 'Ivory',
+  '#d8c9b0': 'Beige',
+  '#6b4a34': 'Walnut',
+  '#2e2e2e': 'Charcoal',
+};
+
 export const interiorFeatures = {
   waterproof: {
     icon: 'droplet',
@@ -56,61 +64,60 @@ export const interiorFeatures = {
     icon: 'award',
     label: '5 Years Warranty',
   },
+
+  'premium-wood': {
+    icon: 'layers',
+    label: 'Premium Wood Finish',
+  },
+
+  'designer-panel': {
+    icon: 'blueprint',
+    label: 'Designer Panel',
+  },
+
+  'durable-hardware': {
+    icon: 'key',
+    label: 'Durable Hardware',
+  },
+
+  installation: {
+    icon: 'check-circle',
+    label: 'Installation & Finishing',
+  },
 };
 
 const subDesignNames = {
   'tv-wall': [
-    'Modern Minimal',
-    'Marble Luxury',
-    'Wood & White',
-    'Stone Texture',
-    'Classic Elegant',
-    'Contemporary Colour',
-    'Fluted Luxe',
-    'Warm Walnut',
-    'Charcoal Frame',
-    'Beige Calm',
-    'Oak Slat',
-    'Grey Stone',
-    'Black & Brass',
-    'Ivory Panel',
-    'Earthy Modern',
-    'Linear Luxe',
-    'Urban Concrete',
-    'Natural Veneer',
-    'Soft Taupe',
-    'Bold Black',
-    'Terracotta Accent',
-    'Sage & Oak',
-    'Cream & Walnut',
-    'Mocha Modern',
-    'Minimal Grid',
-    'Vertical Rhythm',
-    'Floating Console',
-    'Backlit Marble',
-    'Dark Wood Luxe',
-    'Sandstone Modern',
-    'Monochrome Edge',
-    'Light Oak Frame',
-    'Textured Beige',
-    'Graphite Stone',
-    'Warm Grey Luxe',
-    'White Oak Minimal',
-    'Bronze Detail',
-    'Japandi TV Wall',
-    'Scandinavian Slat',
-    'Contemporary Classic',
-    'Luxury Flute',
-    'Soft Contrast',
-    'Statement Marble',
-    'Rustic Modern',
-    'Clean Geometry',
-    'Modern Arch',
-    'Natural Stone Luxe',
-    'Slimline Modern',
-    'Warm Contemporary',
-    'Signature TV Wall',
+    'Marble Frame TV Unit',
+    'Vertical Slat TV Unit',
+    'Walnut Marble Luxe TV Unit',
+    'Floating Walnut TV Unit',
+    'Walnut Slat TV Unit',
+    'Walnut Slat TV Unit',
+    'Sage & Walnut Fluted TV Unit',
+    'Sage Fluted TV Unit',
+    'Warm Minimalist TV Unit',
+    'Charcoal & Walnut Floating TV Unit',
+    'Modern Walnut & Slat TV Unit',
+    'Walnut Slat & Textured Panel TV Unit',
+    'Contemporary Wood Panel TV Unit',
+    'Premium TV Unit Design',
+    'Modern Fluted TV Unit',
+    'Minimal TV Unit',
+    'Contemporary Fluted TV Unit',
+    'Luxury Panelled TV Unit',
+    'Contemporary Wood Panel TV Unit',
+    'Modern Fluted TV Unit',
+    'Premium Wooden TV Unit',
+    'Modern Panelled TV Unit',
+    'Contemporary Fluted TV Unit',
+    'Modern Fluted TV Unit',
+    'Modern Fluted TV Unit',
+    'Contemporary TV Wall Unit',
+    'Modern Fluted TV Unit',
+    'Modern Fluted TV Unit',
   ],
+
 
   'bed-back-wall': [
     'Soft Minimal',
@@ -123,46 +130,6 @@ const subDesignNames = {
     'Earthy Bedroom',
     'Modern Panel',
     'Luxury Upholstery',
-    'Vertical Wood',
-    'Stone & Wood',
-    'Taupe Harmony',
-    'Charcoal Luxe',
-    'Cream & Oak',
-    'Japandi Bedroom',
-    'Scandinavian Calm',
-    'Contemporary Warmth',
-    'Natural Veneer',
-    'Soft Grey',
-    'Mocha Retreat',
-    'Sage Bedroom',
-    'Blush Neutral',
-    'Textured Headboard',
-    'Floating Bed Wall',
-    'Backlit Luxe',
-    'Minimal Arch',
-    'Modern Classic',
-    'Warm Walnut',
-    'Sand Beige',
-    'Elegant Flute',
-    'Urban Bedroom',
-    'Graphite & Oak',
-    'White Wood Calm',
-    'Cocoa Luxe',
-    'Linear Headboard',
-    'Hotel Minimal',
-    'Earth Tone Retreat',
-    'Black Accent',
-    'Cream Stone',
-    'Modern Symmetry',
-    'Oak & Beige',
-    'Soft Luxury',
-    'Statement Headboard',
-    'Natural Calm',
-    'Contemporary Classic',
-    'Warm Modern',
-    'Quiet Luxury',
-    'Signature Bedroom',
-    'Dreamy Minimal',
   ],
 
   'living-room': [
@@ -174,165 +141,102 @@ const subDesignNames = {
   ],
 
   entrance: [
-    'Grand Foyer',
-    'Minimal Welcome',
-    'Warm Entry',
-    'Modern Console',
-    'Luxury Foyer',
-    'Fluted Entrance',
-    'Wood & Stone Entry',
-    'Beige Welcome',
-    'Classic Entry',
-    'Contemporary Foyer',
-    'Japandi Entry',
-    'Scandinavian Welcome',
-    'Natural Oak Entry',
-    'Marble Console',
-    'Statement Mirror Wall',
-    'Backlit Entrance',
-    'Archway Welcome',
-    'Modern Classic Entry',
-    'Taupe Foyer',
-    'Charcoal Entry',
-    'Warm Walnut Foyer',
-    'Cream Stone Entry',
-    'Elegant Flute',
-    'Urban Welcome',
-    'Earthy Entrance',
-    'Black & Brass Entry',
-    'Ivory Foyer',
-    'Soft Grey Welcome',
-    'Mocha Entry',
-    'Linear Console',
-    'Hotel Style Foyer',
-    'Slimline Entry',
-    'Textured Welcome',
-    'Oak & Beige Entry',
-    'Graphite Foyer',
-    'Natural Veneer Entry',
-    'Quiet Luxury Foyer',
-    'Modern Heritage Entry',
-    'Sage Accent Entry',
-    'Terracotta Welcome',
-    'Clean Geometry Entry',
-    'Contemporary Classic Foyer',
-    'Warm Minimal Entry',
-    'Luxury Arch Entry',
-    'Stone Luxe Foyer',
-    'Soft Contrast Entry',
-    'Signature Entrance',
-    'Premium Welcome',
-    'Refined Foyer',
-    'Statement Entry',
+    'Warli Art Wooden Entrance Door',
+    'Contemporary LED Entrance Door',
+    'Mandala Carved Wooden Entrance Door',
+    'Arched Cane & Jali Entrance Door',
+    'Glass & Grill Modern Entrance Door',
+    'Jali Panel Wooden Entrance Door',
+    'Vertical Groove Wooden Entrance Door',
+    'Geometric Wood Panel Entrance Door',
+    'Arched Ribbed Wooden Door',
+    'Wood & Mesh Panel Entrance Door',
+    'Vertical Glass Inlay Entrance Door',
+    'Diagonal Glass Inlay Entrance Door',
+    'Geometric Panel Wooden Entrance Door',
+    'Hexagon Panel Wooden Entrance Door',
+    'Arched Glass-Grill Entrance Door',
+    'Traditional Metal Jali Entrance Door',
+    'Contemporary Grill Panel Entrance Door',
+    'Vertical Slat Glass Entrance Door',
+    'Carved Leaf Pattern Entrance Door',
+    'Curved Slat Wooden Entrance Door',
+    'Geometric Glass-Grill Entrance Door',
+    'Carved Metal-Accent Entrance Door',
+    'Modern Geometric Designer Door',
+    'Beige Vertical-Grille Entrance Door',
+    'Fluted Panel Modern Entrance Door',
+    'Geometric Fluted Wooden Door',
+    'Premium Fluted Wooden Entrance Door',
   ],
 
-  study: [
-    'Focus Minimal',
-    'Executive Wood',
-    'Modern Study',
-    'Warm Workroom',
-    'Japandi Study',
-    'Scandinavian Desk Wall',
-    'Walnut Office',
-    'Beige Study',
-    'Charcoal Executive',
-    'Natural Veneer Study',
-    'Fluted Workspace',
-    'Stone & Wood Study',
-    'Contemporary Office',
-    'Classic Library',
-    'Quiet Luxury Study',
-    'Minimalist Work Wall',
-    'Oak & Black Study',
-    'Cream & Walnut',
-    'Graphite Workspace',
-    'Soft Grey Office',
-    'Earthy Study',
-    'Hotel Executive',
-    'Backlit Study',
-    'Floating Desk Wall',
-    'Modern Shelving',
-    'Elegant Study',
-    'Urban Workspace',
-    'Warm Contemporary',
-    'Ivory Office',
-    'Mocha Study',
-    'Linear Workspace',
-    'Sage Study',
-    'Black & Brass Office',
-    'White Oak Study',
-    'Textured Study',
-    'Modern Heritage Office',
-    'Compact Study',
-    'Premium Workroom',
-    'Clean Geometry Study',
-    'Statement Library',
-    'Natural Calm Study',
-    'Contemporary Classic Study',
-    'Warm Minimal Workspace',
-    'Luxury Home Office',
-    'Refined Executive',
-    'Signature Study',
-    'Creative Workspace',
-    'Timeless Study',
-    'Grand Library',
-    'Smart Minimal Study',
-  ],
+'study': [
+  'Modern Study Workstation',
+  'Modern Study Table',
+  'Minimalist Study Desk',
+  'Modern Wooden Study Table',
+  'Modern Study Desk',
+],
 
-  mandir: [
-    'Traditional Mandir',
-    'Modern Mandir',
-    'Marble Mandir',
-    'Wooden Mandir',
-    'Backlit Mandir',
-    'Fluted Mandir',
-    'Minimal Pooja',
-    'Luxury Pooja',
-    'Compact Mandir',
-    'Grand Pooja',
-    'Warm Wood Mandir',
-    'White Marble Mandir',
-    'Stone Mandir',
-    'Brass Accent Mandir',
-    'Arch Mandir',
-    'Jaali Mandir',
-    'Contemporary Pooja',
-    'Classic Pooja Room',
-    'Japandi Mandir',
-    'Ivory Mandir',
-    'Walnut Pooja',
-    'Cream & Gold Mandir',
-    'Beige Mandir',
-    'Black & Brass Pooja',
-    'Temple Arch',
-    'Floating Mandir',
-    'Vertical Flute Mandir',
-    'Natural Stone Pooja',
-    'Soft Light Mandir',
-    'Elegant Pooja',
-    'Modern Heritage Mandir',
-    'Carved Wood Mandir',
-    'Minimal Arch Pooja',
-    'Warm Marble Mandir',
-    'Sandalwood Mandir',
-    'Statement Mandir',
-    'Sacred Niche',
-    'Contemporary Classic Pooja',
-    'Premium Pooja Wall',
-    'Quiet Luxury Mandir',
-    'Natural Wood Pooja',
-    'Textured Marble Mandir',
-    'Gold Detail Mandir',
-    'Slimline Mandir',
-    'Corner Mandir',
-    'Family Pooja Room',
-    'Traditional Luxe Mandir',
-    'Modern Spiritual',
-    'Signature Mandir',
-    'Grand Temple Wall',
-  ],
+ 'mandir': [
+  'Wall Mounted Mandir',
+  'Floor Standing Mandir',
+  'Corner Mandir',
+  'Open Shelf Mandir',
+  'Modern Premium Mandir',
+  'Wooden Carved Mandir',
+  'Marble Mandir',
+  'Contemporary Premium Mandir',
+],
 };
 
+
+export const studyGalleryImages = {
+  'Modern Study Workstation': {
+    front :
+      '/assets/projects/interior-by-choice/study/modern-study-workstation-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-study-workstation-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-study-workstation-detail.webp',
+  },
+
+  'Modern Study Table': {
+    front:
+      '/assets/projects/interior-by-choice/study/modern-study-table-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-study-table-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-study-table-detail.webp',
+  },
+
+  'Minimalist Study Desk': {
+    front:
+      '/assets/projects/interior-by-choice/study/minimalist-study-desk-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/minimalist-study-desk-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/minimalist-study-desk-detail.webp',
+  },
+
+  'Modern Wooden Study Table': {
+    front:
+      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-detail.webp',
+  },
+
+  'Modern Study Desk': {
+    front:
+      '/assets/projects/interior-by-choice/study/modern-study-desk-front.webp',
+    side:
+      '/assets/projects/interior-by-choice/study/modern-study-desk-side.webp',
+    detail:
+      '/assets/projects/interior-by-choice/study/modern-study-desk-detail.webp',
+  },
+};
 /* =========================================================
    LIVING ROOM SUB OPTIONS
    ========================================================= */
@@ -406,6 +310,87 @@ const livingRoomImages = {
 
   'Designer Panel':
     '/assets/projects/interior-by-choice/living-room/designer-panel.webp',
+};
+
+
+
+/* =========================================================
+   MANDIR IMAGES
+   ========================================================= */
+
+export const mandirImages = {
+  'Wall Mounted Mandir':
+    '/assets/projects/interior-by-choice/mandir/wall-mounted-mandir.webp',
+
+  'Floor Standing Mandir':
+    '/assets/projects/interior-by-choice/mandir/floor-standing-mandir.webp',
+
+  'Corner Mandir':
+    '/assets/projects/interior-by-choice/mandir/corner-mandir.webp',
+
+  'Open Shelf Mandir':
+    '/assets/projects/interior-by-choice/mandir/open-shelf-mandir.webp',
+
+  'Modern Premium Mandir':
+    '/assets/projects/interior-by-choice/mandir/modern-premium-mandir.webp',
+
+  'Wooden Carved Mandir':
+    '/assets/projects/interior-by-choice/mandir/wooden-carved-mandir.webp',
+
+  'Marble Mandir':
+    '/assets/projects/interior-by-choice/mandir/marble-mandir.webp',
+
+  'Contemporary Premium Mandir':
+    '/assets/projects/interior-by-choice/mandir/contemporary-premium-mandir.webp',
+};
+
+
+
+/* =========================================================
+   MANDIR DESCRIPTIONS
+   ========================================================= */
+
+export const mandirDescriptions = {
+  'Wall Mounted Mandir':
+    'Compact design, ideal for small spaces.',
+
+  'Floor Standing Mandir':
+    'Classic and clean look with storage.',
+
+  'Corner Mandir':
+    'Space-saving design for compact homes.',
+
+  'Open Shelf Mandir':
+    'Minimal style with open shelves.',
+
+  'Modern Premium Mandir':
+    'Marble finish, LED lighting, premium look.',
+
+  'Wooden Carved Mandir':
+    'Traditional design with intricate detailing.',
+
+  'Marble Mandir':
+    'Premium finish, elegant and durable.',
+
+  'Contemporary Premium Mandir':
+    'Stylish, modern and space efficient.',
+};
+
+
+export const mandirGroups = {
+  basic: [
+    'Wall Mounted Mandir',
+    'Floor Standing Mandir',
+    'Corner Mandir',
+    'Open Shelf Mandir',
+  ],
+
+  premium: [
+    'Modern Premium Mandir',
+    'Wooden Carved Mandir',
+    'Marble Mandir',
+    'Contemporary Premium Mandir',
+  ],
 };
 
 /* =========================================================
@@ -649,16 +634,18 @@ const designPresets = {
 
   'entrance': {
     features: [
-      'waterproof',
-      'easy-clean',
-      'warranty',
+      'premium-wood',
+      'designer-panel',
+      'durable-hardware',
+      'installation',
     ],
 
     materialDetails: {
-      'Panel Type': 'Veneer / Stone / MDF Mix',
-      Thickness: '8 mm / 12 mm',
-      Finish: 'Matte / Satin',
-      'Installation Time': '1–3 Days',
+      Finish: 'Premium wood finish',
+      Design: 'Custom designer panel',
+      Hardware: 'Durable door hardware',
+      Lighting: 'LED lighting optional',
+      Installation: 'Installation and finishing included',
     },
   },
 
@@ -704,6 +691,121 @@ const slugify = (value) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 
+
+    /*
+ * TV WALL IMAGE MAP
+ * -----------------------------------------
+ * One photo per design, in the same order as the
+ * TV wall names in subDesignNames.
+ */
+
+const tvWallImageMap = [
+  '/assets/projects/interior-by-choice/tv-wall/1.webp',
+  '/assets/projects/interior-by-choice/tv-wall/2.webp',
+  '/assets/projects/interior-by-choice/tv-wall/3.webp',
+  '/assets/projects/interior-by-choice/tv-wall/4.webp',
+  '/assets/projects/interior-by-choice/tv-wall/5.webp',
+  '/assets/projects/interior-by-choice/tv-wall/6.webp',
+  '/assets/projects/interior-by-choice/tv-wall/7.webp',
+  '/assets/projects/interior-by-choice/tv-wall/8.webp',
+  '/assets/projects/interior-by-choice/tv-wall/9.webp',
+  '/assets/projects/interior-by-choice/tv-wall/10.webp',
+  '/assets/projects/interior-by-choice/tv-wall/11.webp',
+  '/assets/projects/interior-by-choice/tv-wall/12.webp',
+  '/assets/projects/interior-by-choice/tv-wall/13.webp',
+  '/assets/projects/interior-by-choice/tv-wall/14.webp',
+  '/assets/projects/interior-by-choice/tv-wall/15.webp',
+  '/assets/projects/interior-by-choice/tv-wall/16.webp',
+  '/assets/projects/interior-by-choice/tv-wall/17.webp',
+  '/assets/projects/interior-by-choice/tv-wall/18.webp',
+  '/assets/projects/interior-by-choice/tv-wall/19.webp',
+  '/assets/projects/interior-by-choice/tv-wall/20.webp',
+  '/assets/projects/interior-by-choice/tv-wall/21.webp',
+  '/assets/projects/interior-by-choice/tv-wall/22.webp',
+  '/assets/projects/interior-by-choice/tv-wall/23.webp',
+  '/assets/projects/interior-by-choice/tv-wall/24.webp',
+  '/assets/projects/interior-by-choice/tv-wall/25.webp',
+  '/assets/projects/interior-by-choice/tv-wall/26.webp',
+  '/assets/projects/interior-by-choice/tv-wall/27.webp',
+  '/assets/projects/interior-by-choice/tv-wall/28.webp',
+];
+
+const tvEstimatedPrices = [
+  // 1–28 : PDF मधले exact prices
+  '₹65,000 – ₹1,05,000',
+  '₹55,000 – ₹95,000',
+  '₹60,000 – ₹1,00,000',
+  '₹40,000 – ₹75,000',
+  '₹50,000 – ₹90,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹80,000',
+  '₹45,000 – ₹85,000',
+  '₹40,000 – ₹75,000',
+  '₹40,000 – ₹70,000',
+  '₹32,000 – ₹55,000',
+  '₹38,000 – ₹65,000',
+  '₹42,000 – ₹72,000',
+  '₹55,000 – ₹95,000',
+  '₹45,000 – ₹85,000',
+  '₹35,000 – ₹60,000',
+  '₹28,000 – ₹55,000',
+  '₹32,000 – ₹58,000',
+  '₹45,000 – ₹85,000',
+  '₹55,000 – ₹95,000',
+  '₹35,000 – ₹60,000',
+  '₹32,000 – ₹58,000',
+  '₹38,000 – ₹70,000',
+  '₹35,000 – ₹60,000',
+  '₹28,000 – ₹50,000',
+  '₹25,000 – ₹45,000',
+  '₹30,000 – ₹55,000',
+  '₹25,000 – ₹45,000',
+
+  // 29–50 : Estimated prices
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹75,000',
+  '₹32,000 – ₹55,000',
+  '₹35,000 – ₹60,000',
+  '₹40,000 – ₹65,000',
+  '₹38,000 – ₹65,000',
+  '₹45,000 – ₹80,000',
+  '₹35,000 – ₹60,000',
+  '₹30,000 – ₹50,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹75,000',
+  '₹35,000 – ₹60,000',
+  '₹50,000 – ₹85,000',
+  '₹35,000 – ₹60,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹80,000',
+  '₹38,000 – ₹65,000',
+  '₹30,000 – ₹55,000',
+  '₹40,000 – ₹70,000',
+  '₹45,000 – ₹75,000',
+  '₹35,000 – ₹60,000',
+  '₹40,000 – ₹70,000',
+];
+
+
+    const studyEstimatedPrices = [
+  '₹18,000 – ₹35,000', // Modern Study Workstation
+  '₹12,000 – ₹28,000', // Modern Study Table
+  '₹12,000 – ₹28,000', // Minimalist Study Desk
+  '₹15,000 – ₹30,000', // Modern Wooden Study Table
+  '₹18,000 – ₹35,000', // Modern Study Desk
+];
+
+const mandirEstimatedPrices = [
+  '₹8,000 – ₹18,000',   // Wall Mounted Mandir
+  '₹8,000 – ₹18,000',   // Floor Standing Mandir
+  '₹8,000 – ₹18,000',   // Corner Mandir
+  '₹8,000 – ₹18,000',   // Open Shelf Mandir
+  '₹25,000 – ₹75,000',  // Modern Premium Mandir
+  '₹25,000 – ₹75,000',  // Wooden Carved Mandir
+  '₹25,000 – ₹75,000',  // Marble Mandir
+  '₹25,000 – ₹75,000',  // Contemporary Premium Mandir
+];
+
 const basePrices = {
   'tv-wall': 699,
   'bed-back-wall': 799,
@@ -733,6 +835,705 @@ const taglines = {
     'A peaceful, beautifully finished pooja space.',
 };
 
+const entranceDoorDetails = [
+  {
+    pdfPage: 1,
+    priceRange: '₹70,000 – ₹1,60,000',
+    tagline: 'A perfect blend of tradition, culture and modern elegance.',
+    description: 'A premium wooden entrance with intricate Warli art, clean lines and a high-quality finish.',
+  },
+  {
+    pdfPage: 2,
+    priceRange: '₹70,000 – ₹1,50,000',
+    tagline: 'Modern design with a luxurious finish.',
+    description: 'A contemporary wooden door with a patterned panel, LED lighting and premium hardware.',
+  },
+  {
+    pdfPage: 3,
+    priceRange: '₹65,000 – ₹1,40,000',
+    tagline: 'Traditional artistry meets modern elegance.',
+    description: 'An elegant wooden entrance with a carved mandala panel and a refined premium finish.',
+  },
+  {
+    pdfPage: 4,
+    priceRange: '₹70,000 – ₹1,50,000',
+    tagline: 'Traditional craftsmanship with a timeless arch.',
+    description: 'An arched wooden entrance featuring a cane and jali panel with warm lighting.',
+  },
+  {
+    pdfPage: 5,
+    priceRange: '₹60,000 – ₹1,20,000',
+    tagline: 'Modern design with timeless elegance.',
+    description: 'A glass-and-grill entrance with an openable mesh panel and contemporary hardware.',
+  },
+  {
+    pdfPage: 6,
+    priceRange: '₹55,000 – ₹1,20,000',
+    tagline: 'Warm wood with a distinctive jali detail.',
+    description: 'A rich wooden finish paired with a decorative jali panel, clean lines and a statement handle.',
+  },
+  {
+    pdfPage: 7,
+    priceRange: '₹60,000 – ₹1,25,000',
+    tagline: 'Modern design with natural wood warmth.',
+    description: 'A wooden entrance with vertical grooves, a modern cut-out detail and clean contemporary lines.',
+  },
+  {
+    pdfPage: 8,
+    priceRange: '₹55,000 – ₹1,20,000',
+    tagline: 'A contemporary geometric statement.',
+    description: 'A stylish wooden panel door with geometric detailing and refined modern hardware.',
+  },
+  {
+    pdfPage: 9,
+    priceRange: '₹50,000 – ₹1,10,000',
+    tagline: 'A sleek arch with a warm wooden finish.',
+    description: 'A modern wooden door with an arched ribbed panel and a minimal, polished look.',
+  },
+  {
+    pdfPage: 10,
+    priceRange: '₹60,000 – ₹1,20,000',
+    tagline: 'Modern detailing for a welcoming entrance.',
+    description: 'A wooden entrance with panel detailing, mesh inserts, clean lines and contemporary hardware.',
+  },
+  {
+    pdfPage: 11,
+    priceRange: '₹55,000 – ₹1,15,000',
+    tagline: 'Bright, clean lines with vertical glass inlays.',
+    description: 'A modern wooden door with vertical glass inlays, a clean finish and contemporary hardware.',
+  },
+  {
+    pdfPage: 12,
+    priceRange: '₹50,000 – ₹1,10,000',
+    tagline: 'A bold diagonal design with glass accents.',
+    description: 'A warm wooden entrance with diagonal panel detailing, glass inserts and modern hardware.',
+  },
+  {
+    pdfPage: 13,
+    priceRange: '₹45,000 – ₹1,00,000',
+    tagline: 'Modern geometry with an understated finish.',
+    description: 'A wooden entrance with a geometric panel design, clean lines and a warm finish.',
+  },
+  {
+    pdfPage: 14,
+    priceRange: '₹60,000 – ₹1,25,000',
+    tagline: 'A striking geometric pattern in natural wood.',
+    description: 'A contemporary wooden door with a distinctive hexagon panel and elegant detailing.',
+  },
+  {
+    pdfPage: 15,
+    priceRange: '₹50,000 – ₹1,00,000',
+    tagline: 'An elegant arch with glass and grill details.',
+    description: 'A sleek wooden entrance with an arched glass-grill panel and a timeless finish.',
+  },
+  {
+    pdfPage: 16,
+    priceRange: '₹55,000 – ₹1,10,000',
+    tagline: 'Traditional patterns meet modern metalwork.',
+    description: 'A wooden entrance with an intricately designed metal panel and contemporary hardware.',
+  },
+  {
+    pdfPage: 18,
+    priceRange: '₹45,000 – ₹95,000',
+    tagline: 'A contemporary grill design with clean lines.',
+    description: 'A modern wooden entrance with a geometric grill panel and a warm, understated finish.',
+  },
+  {
+    pdfPage: 19,
+    priceRange: '₹50,000 – ₹1,00,000',
+    tagline: 'Vertical slats and glass create a bright welcome.',
+    description: 'A natural wood-finish entrance with a vertical slat glass panel and modern hardware.',
+  },
+  {
+    pdfPage: 21,
+    priceRange: '₹50,000 – ₹1,20,000',
+    tagline: 'A carved leaf detail with a natural finish.',
+    description: 'A wooden entrance featuring a beautifully carved leaf pattern and clean panel detailing.',
+  },
+  {
+    pdfPage: 22,
+    priceRange: '₹60,000 – ₹1,25,000',
+    tagline: 'Contemporary curves meet vertical wood slats.',
+    description: 'A sleek wooden entrance with vertical slat detailing, a curved design and modern hardware.',
+  },
+  {
+    pdfPage: 23,
+    priceRange: '₹55,000 – ₹1,10,000',
+    tagline: 'Geometric glass and grill details, in a warm finish.',
+    description: 'A modern wooden door with geometric glass-grill detailing and a secure, refined finish.',
+  },
+  {
+    pdfPage: 24,
+    priceRange: '₹65,000 – ₹1,40,000',
+    tagline: 'Detailed carving with contemporary metal accents.',
+    description: 'A designer entrance combining carved details, metal accents and a vertical glass grill.',
+  },
+  {
+    pdfPage: 25,
+    priceRange: '₹40,000 – ₹85,000',
+    tagline: 'Contemporary geometry with a matte finish.',
+    description: 'A geometric inlay door with a rich matte finish and modern smart hardware.',
+  },
+  {
+    pdfPage: 26,
+    priceRange: '₹45,000 – ₹95,000',
+    tagline: 'Premium aesthetics with a soft beige finish.',
+    description: 'A wood-toned designer door with a vertical grille and contemporary hardware.',
+  },
+  {
+    pdfPage: 27,
+    priceRange: '₹60,000 – ₹1,20,000',
+    tagline: 'Fluted panels and modern metalwork.',
+    description: 'A contemporary entrance with vertical fluted panels, a wooden handle and a stylish metal grill.',
+  },
+  {
+    pdfPage: 28,
+    priceRange: '₹40,000 – ₹85,000',
+    tagline: 'Geometric detailing on a modern fluted door.',
+    description: 'A modern wooden door with vertical fluted panels and geometric design details.',
+  },
+  {
+    pdfPage: 29,
+    priceRange: '₹55,000 – ₹1,20,000',
+    tagline: 'A premium finish with added character and durability.',
+    description: 'A wooden entrance with vertical fluted panels, geometric detailing and a warm finish.',
+  },
+];
+
+const bedBackWallDetails = [
+  {
+    priceRange: '₹45,000 – ₹75,000',
+    description: 'Soft neutral panels and warm lighting create a calm, minimal bedroom backdrop.',
+  },
+  {
+    priceRange: '₹50,000 – ₹85,000',
+    description: 'Rich wood panelling brings classic warmth and a timeless finish to the bedroom.',
+  },
+  {
+    priceRange: '₹60,000 – ₹1,00,000',
+    description: 'Upholstered geometric panels and balanced bedside lighting create a refined hotel-inspired look.',
+  },
+  {
+    priceRange: '₹50,000 – ₹85,000',
+    description: 'Warm beige panels and soft lighting bring a relaxed, welcoming feel to the room.',
+  },
+  {
+    priceRange: '₹65,000 – ₹1,05,000',
+    description: 'A fluted headboard wall adds texture and a distinctive architectural detail.',
+  },
+  {
+    priceRange: '₹55,000 – ₹95,000',
+    description: 'A bold walnut feature wall pairs natural wood grain with warm ambient lighting.',
+  },
+  {
+    priceRange: '₹50,000 – ₹85,000',
+    description: 'An ivory arched feature wall and subtle lighting create a light, elegant bedroom.',
+  },
+  {
+    priceRange: '₹55,000 – ₹90,000',
+    description: 'Earthy green tones and natural textures give the bedroom a calm, grounded character.',
+  },
+  {
+    priceRange: '₹60,000 – ₹1,00,000',
+    description: 'Clean geometric panels in layered neutral tones create a contemporary focal wall.',
+  },
+  {
+    priceRange: '₹70,000 – ₹1,20,000',
+    description: 'Soft upholstered panels and blush-toned accents create a plush, luxurious headboard wall.',
+  },
+];
+
+const studyDescriptions = [
+  'A practical study setup with dedicated workspace, storage and a clean modern finish.',
+  'A compact study table design designed for everyday work, study and comfortable use.',
+  'A simple and minimal desk setup that keeps the workspace clean and organised.',
+  'A warm wooden study table design with a comfortable work surface and practical storage.',
+  'A modern study desk designed for a neat, functional and comfortable workspace.',
+];
+
+/* =========================================================
+   TV WALL — PDF DESIGN DETAILS
+   ========================================================= */
+
+export const tvWallDetails = [  {
+    description:
+      'A modern and luxurious TV unit with vertical wooden slat panels, a premium marble-look feature panel and warm LED lighting designed to elevate your living space.',
+
+    included: [
+      'Vertical Slat Wall Panels',
+      'Marble-Look Feature Panel',
+      'Floating TV Cabinet with Storage',
+      'Premium Finishing',
+      'LED Profile Lighting',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains, electrical points/wiring and other loose items are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit with vertical wood slat panels, ambient LED lighting and sleek floating cabinet detailing designed to create a warm and sophisticated living space.',
+
+    included: [
+      'Vertical Slat Wall Panels',
+      'Feature Wall Finish',
+      'Wall Sconces (2 Nos.)',
+      'Floating TV Cabinet with Storage',
+      'LED Profile Lighting',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, soundbar, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A refined living-room TV unit combining warm walnut fluted detailing, illuminated display shelves, a marble feature panel and a sleek floating storage console.',
+
+    included: [
+      'Vertical Walnut Fluted Panels',
+      'Marble-Look TV Back Panel',
+      'Illuminated Display Shelves',
+      'Wall-Mounted TV Setup',
+      'Floating Storage Console',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, loose electrical appliances and electrical rewiring are not included.',
+  },
+
+  {
+    description:
+      'A modern floating TV unit with a sleek wall-mounted cabinet and LED-lit floating shelves, designed to bring warmth, style and functionality to your living space.',
+
+    included: [
+      'Floating Wall Shelf with LED Light',
+      'LED Profile Lighting',
+      'Floating TV Cabinet',
+      'Wall-Mounted TV Setup',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A contemporary and elegant TV unit featuring vertical wooden slat panels, floating shelves and a sleek floating cabinet, designed to bring warmth, texture and functionality.',
+
+    included: [
+      'Vertical Slat Wall Panels',
+      'TV Back Wall Finish',
+      'Floating Shelves',
+      'Floating TV Cabinet with Storage',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit with vertical walnut slat panels, warm wall sconces and a sleek floating cabinet designed to create a stylish and minimal look.',
+
+    included: [
+      'Vertical Slat Feature Wall',
+      'TV Back Wall Finish',
+      'Wall Sconces (2 Nos.)',
+      'Floating TV Cabinet with Storage',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A contemporary TV unit blending natural vertical fluted wood detailing with a muted sage-green wall panel and sleek floating console, designed for a calm and functional living space.',
+
+    included: [
+      'Vertical Fluted Wood Panel',
+      'Sage Green Wall Panel',
+      'Wall-Mounted TV Setup',
+      'Four-Door Storage Console',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit featuring vertical fluted panels and a sleek floating cabinet in a soft sage-green finish, designed for a contemporary living space.',
+
+    included: [
+      'Vertical Fluted Wood Panel',
+      'TV Back Panel Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A sleek and contemporary TV unit featuring vertical fluted panels and a minimal floating cabinet, designed to bring elegance and functionality to your living space.',
+
+    included: [
+      'Vertical Fluted Wood Panel',
+      'TV Back Panel Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Premium Finishing',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A refined contemporary TV wall combining a textured feature finish, warm wood slat detailing and integrated ambient lighting for a sophisticated living-room look.',
+
+    included: [
+      'Textured Feature Wall',
+      'Vertical Wood Slat Panel',
+      'Floating TV Console',
+      'Integrated LED Lighting',
+      'Wall-Mounted TV Setup',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A sleek and modern floating TV unit with a bold charcoal backdrop, vertical walnut slat panel, floating display shelf and premium contemporary detailing.',
+
+    included: [
+      'Charcoal TV Back Panel',
+      'Vertical Walnut Slat Panel',
+      'Floating Display Shelf',
+      'Floating TV Console',
+      'Open Storage Niche',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A clean contemporary media wall combining warm wood finishes, a floating console, open display and integrated ambient lighting.',
+
+    included: [
+      'Vertical Slat Feature Panel',
+      'Floating Display Shelf',
+      'Wall-Mounted TV Setup',
+      'Floating TV Console',
+      'Integrated LED Lighting',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A refined contemporary TV wall combining walnut slat detailing, a textured statement panel, floating storage console and integrated ambient lighting.',
+
+    included: [
+      'Walnut Slat Feature Panel',
+      'Textured Wall Finish',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'TV Mounting & Finish',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, gaming devices, accessories, decor items and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A refined contemporary media wall combining warm wood panels, a sleek floating console, integrated ambient lighting and a linear fireplace feature.',
+
+    included: [
+      'Wood Panel Feature Wall',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'Linear Fireplace Feature',
+      'TV Mounting & Finish',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, electrical points/wiring and loose items are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A luxurious contemporary TV unit with vertical wooden fluted panels, marble finish, warm LED lighting and a floating console designed for an elegant living space.',
+
+    included: [
+      'Fluted Wood Feature Wall',
+      'Marble Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Stylish Shelves',
+      'Installation & Workmanship',
+    ],
+
+    exclusions:
+      'Television, decor accessories, plants, curtains and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit design featuring a full-height warm wood slat feature wall, a TV wall-mounted panel and a floating cabinet.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Finish',
+      'Floating TV Cabinet',
+      'Premium Wood Finish',
+      'Installation & Finishing',
+      'Design Consultation',
+    ],
+
+    exclusions:
+      'Television, soundbar/audio equipment, decor accessories and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A clean and modern TV unit design with a premium marble-finish panel, warm LED lighting and a floating wooden cabinet for a minimal contemporary look.',
+
+    included: [
+      'Marble Finish TV Panel',
+      'Wooden Accent Panel',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Installation & Finishing',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A warm and sophisticated TV unit featuring a vertical wooden fluted panel, sleek wall-mounted cabinet and minimal, modern aesthetic perfect for contemporary homes.',
+
+    included: [
+      'Fluted Feature Wall',
+      'Floating TV Cabinet',
+      'TV Back Panel & Wall Finish',
+      'Styling Guidance',
+      'Installation & Finishing',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A premium and elegant TV unit featuring a marble-finish back panel with warm LED lighting, vertical wood panels and a floating cabinet that creates a sophisticated timeless look.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'LED Profile Lighting',
+      'Premium Finish & Materials',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A refined contemporary media wall combining warm wood panels, a sleek floating console, integrated ambient lighting and a linear fireplace feature.',
+
+    included: [
+      'Wood Panel Feature Wall',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'Linear Fireplace Feature',
+      'TV Mounting & Finish',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor accessories, electrical points/wiring and loose items are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A modern and elegant TV unit design featuring a full-height warm wood slat feature wall, a TV wall-mounted panel and a floating cabinet.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Finish',
+      'Floating TV Cabinet',
+      'Premium Wood Finish',
+      'Installation & Finishing',
+      'Design Consultation',
+    ],
+
+    exclusions:
+      'Television, soundbar/audio equipment, decor accessories and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A sophisticated TV unit design featuring full-height wooden fluted panels and a floating wooden cabinet with open storage, creating a warm and modern look.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'Premium Materials',
+      'Installation & Finishing',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A stylish and contemporary TV unit design combining a combination of wood fluted panels and a premium marble-finish panel, paired with a floating cabinet.',
+
+    included: [
+      'Fluted Feature Panel',
+      'Marble Finish Panel',
+      'Floating TV Cabinet',
+      'Integrated LED Lighting',
+      'Premium Materials',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A modern and elegant full-height fluted feature wall with a sleek wall-mounted cabinet, floating storage and premium detailing for contemporary homes.',
+
+    included: [
+      'Fluted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'Wall Display',
+      'Premium Finish & Materials',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A sleek and contemporary TV unit featuring a vertical fluted wood panel and a floating cabinet in a rich matte finish, creating a minimal yet elegant design.',
+
+    included: [
+      'Fluted Feature Wall',
+      'Floating TV Cabinet',
+      'Premium Matte Finish',
+      'Installation & Finishing',
+      'Styling Guidance',
+      'Consultation Support',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A stylish and space-efficient TV unit featuring elegant vertical fluted panels, open shelving and a sleek floating cabinet, finished in a warm wood tone.',
+
+    included: [
+      'Fluted Wall Panels',
+      'Open Shelves',
+      'Floating TV Cabinet',
+      'Premium Materials',
+      'LED Profile Lighting',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, decor items, accessories and electrical points/wiring are not included.',
+  },
+
+  {
+    description:
+      'A sleek and contemporary TV unit featuring a full-height fluted wood wall panel with a floating TV cabinet, creating a deep and premium modern look.',
+
+    included: [
+      'Fluted / Slatted Feature Wall',
+      'TV Back Panel & Wall Finish',
+      'Floating TV Cabinet',
+      'Premium Wood Finish',
+      'Installation & Finishing',
+      'Design Consultation',
+    ],
+
+    exclusions:
+      'Television, accessories, decor items and electrical points/wiring are not included unless specifically quoted.',
+  },
+
+  {
+    description:
+      'A perfect blend of minimal design and warm aesthetics. This modern TV unit features a sleek floating cabinet with a wood-accented top, small matte shutters and clean fluted wall panels.',
+
+    included: [
+      'Fluted Feature Wall',
+      'LED Profile Lighting',
+      'Floating TV Cabinet',
+      'Premium Finish',
+      'Styling Guidance',
+      'Installation & Finishing',
+    ],
+
+    exclusions:
+      'Television, accessories, decor items and electrical points/wiring are not included unless specifically quoted.',
+  },
+];
+
+
+
 /* =========================================================
    INTERIOR DESIGNS
    ========================================================= */
@@ -758,46 +1559,136 @@ export const interiorDesigns =
             index % priceSteps.length
           ];
 
-        const dedicatedImage =
-          space.slug === 'living-room'
-            ? livingRoomImages[name]
-            : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
-                name
-              )}.webp`;
+
+
+const dedicatedImage =
+  space.slug === 'tv-wall'
+    ? tvWallImageMap[index]
+    : space.slug === 'living-room'
+      ? livingRoomImages[name]
+      : space.slug === 'mandir'
+        ? mandirImages[name]
+        : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
+            name
+          )}.webp`;
+
+
+        const entranceDetails =
+          space.slug === 'entrance'
+            ? entranceDoorDetails[index]
+            : null;
+        const bedBackWallDetail =
+          space.slug === 'bed-back-wall'
+            ? bedBackWallDetails[index]
+            : null;
 
         return {
-          slug: slugify(name),
+  slug:
+    space.slug === 'tv-wall'
+      ? `${slugify(name)}-${index + 1}`
+      : slugify(name),
 
-          spaceSlug: space.slug,
+  spaceSlug: space.slug,
 
-          name,
+  name,
 
-          tagline:
-            taglines[space.slug],
+  tagline:
+    entranceDetails?.tagline ||
+    taglines[space.slug],
 
-          pricePerSqft,
+  pricePerSqft,
 
-          image: dedicatedImage,
+  estimatedPrice:
+    space.slug === 'study'
+      ? studyEstimatedPrices[index]
+      : space.slug === 'tv-wall'
+        ? tvEstimatedPrices[index]
+        : space.slug === 'mandir'
+          ? mandirEstimatedPrices[index]
+          : null,
 
-          fallbackImage:
-            space.image,
+          // The list, the design page and the booking pop-up all read
+          // this, so study, TV wall and mandir show their estimate everywhere.
+          priceRange:
+            entranceDetails?.priceRange ||
+            bedBackWallDetail?.priceRange ||
+            (space.slug === 'study'
+              ? studyEstimatedPrices[index]
+              : space.slug === 'tv-wall'
+                ? tvEstimatedPrices[index]
+                : space.slug === 'mandir'
+                  ? mandirEstimatedPrices[index]
+                  : undefined),
 
-          colours: [
-            '#efe9e2',
-            '#d8c9b0',
-            '#6b4a34',
-            '#2e2e2e',
-          ],
+  description:
+    space.slug === 'tv-wall'
+      ? tvWallDetails[index]?.description
+      : space.slug === 'study'
+        ? studyDescriptions[index]
+        : entranceDetails?.description ||
+          bedBackWallDetail?.description,
 
-          features:
-            preset.features,
+  tvDetails:
+    space.slug === 'tv-wall'
+      ? tvWallDetails[index]
+      : null,
 
-          materialDetails:
-            preset.materialDetails,
-        };
+  image: entranceDetails
+    ? `/assets/projects/interior-by-choice/entrance/door-${String(
+        entranceDetails.pdfPage
+      ).padStart(2, '0')}.webp`
+    : bedBackWallDetail
+      ? `/assets/projects/interior-by-choice/bed-back-wall/design-${String(
+          index + 1
+        ).padStart(2, '0')}.webp`
+      : dedicatedImage,
+
+  galleryImages:
+    space.slug === 'study'
+      ? studyGalleryImages[name]
+      : null,
+
+  fallbackImage:
+    space.image,
+
+  colours:
+    space.slug === 'entrance'
+      ? []
+      : [
+          '#efe9e2',
+          '#d8c9b0',
+          '#6b4a34',
+          '#2e2e2e',
+        ],
+
+  features:
+    preset.features,
+
+  materialDetails:
+    preset.materialDetails,
+};
       }
     )
   );
+
+/* TV WALL — colour options (first = no tint, shows the original image) */
+export const tvWallColours = [
+  { name: 'Original', hex: null },
+  { name: 'Natural Oak', hex: '#d7b083' },
+  { name: 'Walnut', hex: '#75411f' },
+  { name: 'Wenge', hex: '#2b211b' },
+  { name: 'White Oak', hex: '#ead7bc' },
+  { name: 'Sage Green', hex: '#9caf88' },
+  { name: 'Charcoal', hex: '#3a3a3a' },
+];
+
+/*
+ * Optional real colour photos. Leave empty to use the tint preview.
+ * Key = design slug, then colour name, e.g.
+ * 'marble-frame-tv-unit-1': { Walnut: '/assets/.../1-walnut.png' }
+ */
+export const tvWallColourImages = {};
+
 
 /* =========================================================
    GET SPACE

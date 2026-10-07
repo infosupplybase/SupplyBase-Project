@@ -59,11 +59,11 @@ export const popDesignStyleImages = {
   'border-ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
   'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
 
-  'profile-pop': '/assets/pop-ceiling/types/profile-pop.jpg',
-  'Profile POP': '/assets/pop-ceiling/types/profile-pop.jpg',
+  'profile-pop': '/assets/pop-ceiling/types/profile-pop.webp',
+  'Profile POP': '/assets/pop-ceiling/types/profile-pop.webp',
 
-  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop.jpg',
-  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop.jpg',
+  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop.webp',
+  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop.webp',
 };
 
 export const popAddonImages = {

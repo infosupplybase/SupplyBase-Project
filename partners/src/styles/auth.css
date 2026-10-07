@@ -29,7 +29,7 @@
   background-color: var(--auth-bg);
   background-image:
     linear-gradient(rgba(6, 7, 10, 0.6), rgba(6, 7, 10, 0.78)),
-    url('/assets/hero-house2.jpeg');
+    url('/assets/hero-house2.webp');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -543,4 +543,232 @@
 .auth-switch a {
   color: var(--auth-gold);
   font-weight: 700;
+}
+
+/* ============================================================
+   PASSWORD RESET PAGE
+   ============================================================ */
+
+.partner-reset-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+
+  background-color: #0a0a0c;
+  background-image:
+    linear-gradient(rgba(6, 7, 10, 0.6), rgba(6, 7, 10, 0.78)),
+    url('/assets/hero-house2.jpeg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.partner-reset-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 38px 32px 30px;
+
+  background: rgba(17, 17, 19, 0.82);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+
+  border: 1px solid rgba(245, 208, 51, 0.35);
+  border-radius: 22px;
+
+  color: #f5f5f5;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+}
+
+.partner-reset-logo {
+  display: block;
+  width: fit-content;
+  margin: 0 0 18px;
+}
+
+.partner-reset-logo img {
+  display: block;
+  height: 30px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.partner-reset-card h1 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #f5f5f5;
+}
+
+.partner-reset-card h1 span {
+  color: #f5d033;
+}
+
+.partner-reset-subtitle {
+  margin: 0 0 26px;
+  color: rgba(245, 245, 245, 0.62);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.partner-reset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.partner-reset-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.partner-reset-field label {
+  color: rgba(245, 245, 245, 0.72);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.partner-reset-field input {
+  width: 100%;
+  height: var(--control-h);
+  padding: 0 15px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.03);
+  color: #f5f5f5;
+
+  font-size: 15px;
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.partner-reset-field input::placeholder {
+  color: rgba(245, 245, 245, 0.4);
+}
+
+.partner-reset-field input:focus {
+  outline: none;
+  border-color: #f5d033;
+  background: rgba(245, 208, 51, 0.05);
+  box-shadow: 0 0 0 3px rgba(245, 208, 51, 0.16);
+}
+
+.partner-reset-error {
+  padding: 11px 13px;
+  border-radius: 10px;
+
+  background: rgba(194, 69, 69, 0.14);
+  border: 1px solid rgba(194, 69, 69, 0.4);
+
+  color: #ff9d9d;
+  font-size: 0.86rem;
+}
+
+.partner-reset-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  width: 100%;
+  height: var(--control-h);
+
+  border: 0;
+  border-radius: 12px;
+
+  background: linear-gradient(180deg, #ffe066, #f5d033);
+  color: #1a1400;
+
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+
+  text-decoration: none;
+  cursor: pointer;
+
+  box-shadow: 0 10px 26px rgba(245, 208, 51, 0.28);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.partner-reset-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(245, 208, 51, 0.36);
+}
+
+.partner-reset-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.partner-reset-back {
+  display: block;
+  margin-top: 20px;
+
+  text-align: center;
+  color: #f5d033;
+
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.partner-reset-back:hover {
+  text-decoration: underline;
+}
+
+.partner-reset-success {
+  text-align: center;
+}
+
+.partner-reset-success-icon {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: rgba(22, 121, 74, 0.16);
+  border: 1px solid rgba(22, 121, 74, 0.45);
+
+  color: #7fe0b3;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.partner-reset-success p {
+  margin: 0 0 24px;
+  color: rgba(245, 245, 245, 0.62);
+  line-height: 1.5;
+}
+
+.partner-reset-success .partner-reset-button {
+  display: inline-flex;
+}
+
+@media (max-width: 720px) {
+  .partner-reset-page {
+    padding: 20px 14px;
+  }
+
+  .partner-reset-card {
+    padding: 30px 20px 24px;
+  }
 }

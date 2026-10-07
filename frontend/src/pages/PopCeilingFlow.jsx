@@ -22,6 +22,7 @@ import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
 import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
@@ -431,7 +432,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
               <div className="confirmed-tick">
                 <Icon name="check" size={38} strokeWidth={3} />
               </div>
-              <h2>Booking Confirmed!</h2>
+              <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
               <p>Our expert will visit your home, measure your space and provide a detailed quotation.</p>
 
               <dl className="confirmed-panel">
@@ -441,10 +442,19 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
-              <div className="pnt-fee-note">
-                <Icon name="info" size={17} />
-                <span>{receipt.message}</span>
-              </div>
+              {!receipt.paidOnline && (
+                <div className="pnt-fee-note">
+                  <Icon name="info" size={17} />
+                  <span>{receipt.message}</span>
+                </div>
+              )}
+
+              <PayBookingButton
+                bookingNumber={receipt.bookingNumber}
+                amountDisplay={receipt.visitFeeDisplay}
+                paid={receipt.paidOnline}
+                onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+              />
 
               <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
               <div className="btn-row" style={{ marginTop: 12 }}>

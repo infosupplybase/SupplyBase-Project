@@ -4,15 +4,27 @@ import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import Reveal from '../components/ui/Reveal';
 import AccountSidebar from '../components/account/AccountSidebar';
+import CancelBookingDialog from '../components/account/CancelBookingDialog';
 import api, { ApiError, friendlyError } from '../lib/api';
-import { bookingStatusLabel, bookingStatusTone } from '../lib/bookingStatus';
+import { bookingStatusLabel, bookingStatusTone, isCustomerCancellable } from '../lib/bookingStatus';
 import { formatRupees } from '../lib/money';
 import { bookingVisitTime } from '../lib/visitTime';
 import { emptyDetails, validateDetails } from '../lib/bookingDetails';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /** A cancelled or completed booking is finished — same rule as the backend's
     BookingStatus.isFinal(), which is what actually refuses the edit. */
 const isFinalStatus = (status) => status === 'CANCELLED' || status === 'WORK_COMPLETED';
+
+/** Statuses where the visit fee can still be paid online (mirrors BookingStatus.isBeforeVisit on the API). */
+const PAYABLE_STATUSES = [
+  'PAYMENT_PENDING',
+  'BOOKING_REQUESTED',
+  'CONFIRMED',
+  'ASSIGNMENT_PENDING',
+  'PROFESSIONAL_ASSIGNED',
+  'SITE_VISIT_SCHEDULED',
+];
 
 const formatDate = (value) =>
   value
@@ -66,6 +78,7 @@ export default function BookingDetail() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -228,9 +241,17 @@ export default function BookingDetail() {
                       {booking.visitFeePaise != null && (
                         <li>
                           <Icon name="info" size={15} />
-                          {booking.itemsTotalPaise != null && booking.visitFeePaise === booking.itemsTotalPaise
+                          {booking.paidAt
+                            ? `Amount: ${formatRupees(booking.visitFeePaise / 100)}`
+                            : booking.itemsTotalPaise != null && booking.visitFeePaise === booking.itemsTotalPaise
                             ? `Paid on the day of the visit: ${formatRupees(booking.visitFeePaise / 100)}`
                             : `Home visit fee: ${formatRupees(booking.visitFeePaise / 100)}`}
+                        </li>
+                      )}
+                      {booking.paidAt && (
+                        <li>
+                          <Icon name="check-circle" size={15} />
+                          Paid online on {formatDate(booking.paidAt)}
                         </li>
                       )}
                       {booking.assignedProfessionalName && (
@@ -240,7 +261,35 @@ export default function BookingDetail() {
                           {booking.assignedProfessionalPhone ? ` · ${booking.assignedProfessionalPhone}` : ''}
                         </li>
                       )}
+                      {booking.status === 'CANCELLED' && booking.cancelledReason && (
+                        <li>
+                          <Icon name="info" size={15} />
+                          {booking.cancelledReason}
+                        </li>
+                      )}
+                      {booking.status === 'CANCELLED' && booking.paidAt && (
+                        <li>
+                          <Icon name="info" size={15} />
+                          Your online payment will be refunded to your original payment method.
+                        </li>
+                      )}
                     </ul>
+
+                    {!booking.paidAt && booking.bookingNumber && booking.visitFeePaise > 0 &&
+                      PAYABLE_STATUSES.includes(booking.status) && (
+                        <PayBookingButton
+                          bookingNumber={booking.bookingNumber}
+                          amountDisplay={formatRupees(booking.visitFeePaise / 100)}
+                          onPaid={() => api.booking(booking.id).then(setBooking).catch(() => {})}
+                        />
+                      )}
+
+                    {isCustomerCancellable(booking.status) && !editing && (
+                      <button type="button" className="bkd-cancel-btn" onClick={() => setConfirmCancel(true)}>
+                        <Icon name="close" size={14} />
+                        Cancel booking
+                      </button>
+                    )}
                   </div>
                 </Reveal>
               )}
@@ -454,6 +503,15 @@ export default function BookingDetail() {
           </div>
         </div>
       </section>
+
+      <CancelBookingDialog
+        booking={confirmCancel ? booking : null}
+        onCancelled={(updated) => {
+          setBooking(updated);
+          setConfirmCancel(false);
+        }}
+        onClose={() => setConfirmCancel(false)}
+      />
     </>
   );
 }

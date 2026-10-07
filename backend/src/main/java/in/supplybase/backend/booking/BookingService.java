@@ -21,6 +21,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import in.supplybase.backend.appointment.AppointmentService;
@@ -45,6 +47,7 @@ import in.supplybase.backend.catalogue.ServiceOption;
 import in.supplybase.backend.catalogue.ServiceOptionRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
+import in.supplybase.backend.common.Money;
 import in.supplybase.backend.common.PhotoUploads;
 import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
@@ -208,9 +211,15 @@ public class BookingService {
             saved = bookings.save(saved);
         }
 
-        notifyStaff(saved);
         BookingReceipt receipt = BookingReceipt.from(saved);
-        emailCustomer(saved, receipt);
+        // After commit: SMTP is slow and can stall, and it must neither hold
+        // this transaction (and the appointment seat's row lock) open nor
+        // email about a booking that then rolls back.
+        Booking booked = saved;
+        afterCommit(() -> {
+            notifyStaff(booked);
+            emailCustomer(booked, receipt);
+        });
         return receipt;
     }
 
@@ -276,7 +285,6 @@ public class BookingService {
             if (homeJourney && roomJourney) {
                 throw ApiException.badRequest("Choose one POP journey.");
             }
-
             if (roomJourney) {
                 Map<String, Set<String>> allowedRoomCeilings = Map.of(
                         "living-room", Set.of(
@@ -594,6 +602,56 @@ public class BookingService {
         return BookingResponse.from(bookings.save(booking), answerResponses);
     }
 
+    /**
+     * A customer cancelling their own booking from the dashboard. Allowed
+     * until the work is scheduled (BookingStatus.isCustomerCancellable);
+     * after that the office handles it by phone.
+     *
+     * Frees the appointment seat, like a staff cancel does. A booking already
+     * paid online is NOT refunded automatically: it is marked in the admin
+     * notes (and the staff email) so the office refunds it from Payments.
+     */
+    @Transactional
+    public BookingResponse cancelMine(Long id, String reason, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw ApiException.conflict("That booking is already cancelled.");
+        }
+        if (!booking.getStatus().isCustomerCancellable()) {
+            throw ApiException.conflict(booking.getStatus() == BookingStatus.WORK_COMPLETED
+                    ? "That booking is already completed and can no longer be cancelled."
+                    : "The work on this booking is already scheduled. Please call us to cancel it.");
+        }
+
+        String given = blankToNull(reason);
+        String cancelledReason = "Cancelled by the customer" + (given == null ? "." : ": " + given);
+        booking.setCancelledReason(cancelledReason.length() <= 300
+                ? cancelledReason : cancelledReason.substring(0, 300));
+        booking.setStatus(BookingStatus.CANCELLED);
+        // The status check above guarantees this runs once per booking.
+        if (booking.getAppointmentSlot() != null) {
+            appointments.release(booking.getAppointmentSlot());
+        }
+        if (booking.getPaidAt() != null) {
+            String note = "REFUND DUE: customer cancelled on %s after paying %s online. Refund it from Payments."
+                    .formatted(LocalDate.now(), "₹" + Money.formatRupees(booking.getVisitFeePaise()));
+            booking.setAdminNotes(booking.getAdminNotes() == null || booking.getAdminNotes().isBlank()
+                    ? note : note + "\n\n" + booking.getAdminNotes());
+        }
+
+        Booking saved = bookings.save(booking);
+        afterCommit(() -> {
+            notifyStaffOfCancellation(saved);
+            emailCustomerCancellation(saved);
+        });
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(saved, answerResponses);
+    }
+
     @Transactional
     public BookingResponse update(Long id, UpdateBookingRequest request) {
         Booking booking = bookings.findById(id)
@@ -861,6 +919,20 @@ public class BookingService {
 
     /* ------------------------------------------------------------ email */
 
+    /** Runs once the current transaction commits, or straight away outside one. */
+    private static void afterCommit(Runnable action) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            action.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                action.run();
+            }
+        });
+    }
+
     private void notifyStaff(Booking booking) {
         if (!props.notifications().emailEnabled()) {
             return;
@@ -901,11 +973,12 @@ public class BookingService {
 
     /**
      * Confirms the booking to the customer, at the email given on the form or
-     * else their account's. Same switch as the staff email (ENQUIRY_EMAIL),
-     * and best effort the same way: a mail failure never fails the booking.
+     * else their account's. Its own switch (CUSTOMER_EMAILS, on by default),
+     * not the staff one, and best effort like it: a mail failure never fails
+     * the booking.
      */
     private void emailCustomer(Booking booking, BookingReceipt receipt) {
-        if (!props.notifications().emailEnabled()) {
+        if (!props.notifications().customerEmailsEnabled()) {
             return;
         }
         String to = booking.getEmail() != null ? booking.getEmail()
@@ -940,6 +1013,79 @@ public class BookingService {
             sender.send(message);
         } catch (Exception ex) {
             log.warn("Could not email booking {} to the customer — it is saved regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    /** Tells the office a customer cancelled, and whether a refund is owed. Best effort. */
+    private void notifyStaffOfCancellation(Booking booking) {
+        if (!props.notifications().emailEnabled()) {
+            return;
+        }
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (sender == null) {
+            return;
+        }
+        boolean refundDue = booking.getPaidAt() != null;
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(props.notifications().enquiryRecipient());
+            message.setSubject("%sBooking %s cancelled by customer — %s (%s)".formatted(
+                    refundDue ? "[REFUND DUE] " : "",
+                    booking.getBookingNumber(), booking.getServiceLabel(), booking.getName()));
+            message.setText((
+                    "A customer cancelled their booking from their account.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Date:      %s\n"
+                    + "Name:      %s\n"
+                    + "Mobile:    %s\n"
+                    + "Reason:    %s\n\n"
+                    + "%s").formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel(),
+                    booking.getPreferredDate(), booking.getName(), booking.getPhone(),
+                    orDash(booking.getCancelledReason()),
+                    refundDue
+                            ? "They had paid " + "₹" + Money.formatRupees(booking.getVisitFeePaise())
+                                    + " online. It has NOT been refunded automatically: refund it from"
+                                    + " Payments in the admin panel.\n"
+                            : "Nothing was paid online, so there is nothing to refund.\n"));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email the cancellation of booking {} — it is cancelled regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    /** Confirms the cancellation to the customer, under the same switch as emailCustomer. */
+    private void emailCustomerCancellation(Booking booking) {
+        if (!props.notifications().customerEmailsEnabled()) {
+            return;
+        }
+        String to = booking.getEmail() != null ? booking.getEmail()
+                : booking.getUser() != null ? blankToNull(booking.getUser().getEmail()) : null;
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (to == null || sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Your Supplybase booking %s is cancelled".formatted(booking.getBookingNumber()));
+            message.setText((
+                    "Hello %s,\n\n"
+                    + "Your booking %s (%s) has been cancelled as you asked.\n\n"
+                    + "%s"
+                    + "Changed your mind? You can book again any time at %s\n").formatted(
+                    booking.getName(), booking.getBookingNumber(), booking.getServiceLabel(),
+                    booking.getPaidAt() != null
+                            ? "You paid " + "₹" + Money.formatRupees(booking.getVisitFeePaise())
+                                    + " online. Our team will refund it to your original payment method.\n\n"
+                            : "",
+                    props.frontendUrl()));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email the cancellation of booking {} to the customer",
                     booking.getBookingNumber(), ex);
         }
     }

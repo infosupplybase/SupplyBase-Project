@@ -77,6 +77,8 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
     // 8 because the API enforces 8 — a laxer rule here would only produce a
     // server-side rejection after the person had already pressed the button.
     else if (form.password.length < 8) next.password = 'Use at least eight characters';
+    // 72 bytes, not characters: BCrypt's limit, and the API checks the same way.
+    else if (new TextEncoder().encode(form.password).length > 72) next.password = 'That password is too long. Use fewer characters, or fewer accented letters and symbols';
     if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
     setErrors(next);
     return Object.keys(next).length === 0;

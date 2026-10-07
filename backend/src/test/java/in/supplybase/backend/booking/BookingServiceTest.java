@@ -996,6 +996,82 @@ class BookingServiceTest {
     }
 
     @Nested
+    @DisplayName("cancelMine")
+    class CancelMine {
+
+        private final AuthenticatedUser owner = new AuthenticatedUser(7L, "owner@example.com", Role.CUSTOMER);
+        private final AuthenticatedUser stranger = new AuthenticatedUser(8L, "stranger@example.com", Role.CUSTOMER);
+
+        private Booking ownBooking(BookingStatus status) {
+            return Booking.builder().id(1L).bookingNumber("SB-1").user(User.builder().id(7L).build())
+                    .visitFeePaise(9900L).status(status).build();
+        }
+
+        @Test
+        @DisplayName("cancels, records the reason and frees the visit slot")
+        void cancelsAndReleasesTheSlot() {
+            AppointmentSlot slot = AppointmentSlot.builder().id(9L).capacity(3).bookedCount(1).build();
+            Booking booking = ownBooking(BookingStatus.CONFIRMED);
+            booking.setAppointmentSlot(slot);
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            BookingResponse response = service.cancelMine(1L, "  Plans changed ", owner);
+
+            assertThat(response.status()).isEqualTo(BookingStatus.CANCELLED);
+            assertThat(response.cancelledReason()).isEqualTo("Cancelled by the customer: Plans changed");
+            assertThat(booking.getAdminNotes()).isNull();
+            verify(appointments).release(slot);
+        }
+
+        @Test
+        @DisplayName("a booking paid online is not refunded but marked REFUND DUE for staff")
+        void paidBookingIsMarkedRefundDue() {
+            Booking booking = ownBooking(BookingStatus.SITE_VISIT_SCHEDULED);
+            booking.setPaidAt(Instant.now());
+            booking.setAdminNotes("Gate code 1234");
+            when(bookings.findById(1L)).thenReturn(Optional.of(booking));
+            when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(answers.findByBookingId(1L)).thenReturn(List.of());
+
+            BookingResponse response = service.cancelMine(1L, null, owner);
+
+            assertThat(response.cancelledReason()).isEqualTo("Cancelled by the customer.");
+            assertThat(booking.getAdminNotes()).startsWith("REFUND DUE:").contains("₹99.00")
+                    .endsWith("Gate code 1234");
+        }
+
+        @Test
+        @DisplayName("once the work is scheduled it is a phone call, not a button")
+        void refusesOnceWorkIsScheduled() {
+            for (BookingStatus status : List.of(BookingStatus.WORK_SCHEDULED,
+                    BookingStatus.WORK_IN_PROGRESS, BookingStatus.WORK_COMPLETED, BookingStatus.CANCELLED)) {
+                when(bookings.findById(1L)).thenReturn(Optional.of(ownBooking(status)));
+
+                assertThatThrownBy(() -> service.cancelMine(1L, null, owner))
+                        .isInstanceOf(ApiException.class)
+                        .extracting(ex -> ((ApiException) ex).getStatus())
+                        .isEqualTo(HttpStatus.CONFLICT);
+            }
+            verify(bookings, never()).save(any());
+            verifyNoInteractions(appointments);
+        }
+
+        @Test
+        @DisplayName("a stranger gets 404, not 403")
+        void strangerGetsNotFound() {
+            when(bookings.findById(1L)).thenReturn(Optional.of(ownBooking(BookingStatus.CONFIRMED)));
+
+            assertThatThrownBy(() -> service.cancelMine(1L, null, stranger))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+            verify(bookings, never()).save(any());
+        }
+    }
+
+    @Nested
     @DisplayName("updateMine")
     class UpdateMine {
 
@@ -1157,6 +1233,56 @@ class BookingServiceTest {
             assertThat(customer.getTo()).containsExactly("owner@example.com");
             assertThat(customer.getText())
                     .contains("https://www.supplybase.co.in/dashboard/bookings");
+        }
+
+        @Test
+        @DisplayName("the customer still gets their email when no staff inbox is set")
+        void customerEmailWithoutStaffInbox() {
+            AppProperties props = new AppProperties(
+                    List.of("*"), null, null, null,
+                    new AppProperties.Notifications(null, true),
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+            BookingService noStaffInbox = new BookingService(bookings, answers, users, catalogue, options,
+                    appointments, bookingNumbers, props, mailSender, files, storage);
+
+            noStaffInbox.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+
+            List<org.springframework.mail.SimpleMailMessage> mails = sent();
+            assertThat(mails).hasSize(1);
+            assertThat(mails.get(0).getTo()).containsExactly("asha@example.com");
+        }
+
+        @Test
+        @DisplayName("CUSTOMER_EMAILS=false switches off only the customer's email")
+        void customerEmailsSwitchedOff() {
+            AppProperties props = new AppProperties(
+                    List.of("*"), null, null, null,
+                    new AppProperties.Notifications("staff@example.com", false),
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+            BookingService staffOnly = new BookingService(bookings, answers, users, catalogue, options,
+                    appointments, bookingNumbers, props, mailSender, files, storage);
+
+            staffOnly.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+
+            List<org.springframework.mail.SimpleMailMessage> mails = sent();
+            assertThat(mails).hasSize(1);
+            assertThat(mails.get(0).getTo()).containsExactly("staff@example.com");
+        }
+
+        @Test
+        @DisplayName("inside a transaction, nothing is emailed until it commits")
+        void emailsWaitForCommit() {
+            org.springframework.transaction.support.TransactionSynchronizationManager.initSynchronization();
+            try {
+                emailingService.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+                verify(sender, never()).send(any(org.springframework.mail.SimpleMailMessage.class));
+
+                org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations()
+                        .forEach(org.springframework.transaction.support.TransactionSynchronization::afterCommit);
+                assertThat(sent()).hasSize(2);
+            } finally {
+                org.springframework.transaction.support.TransactionSynchronizationManager.clearSynchronization();
+            }
         }
 
         @Test

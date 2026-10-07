@@ -229,6 +229,9 @@ export const api = {
     payments: {
       list: ({ page = 0, size = 20 } = {}) => request(`/api/admin/payments${qs({ page, size })}`),
       create: (payload) => request('/api/admin/payments', { method: 'POST', body: payload }),
+      /** Asks Razorpay to refund; amountPaise omitted means the full amount. */
+      refund: (id, { amountPaise, reason }) =>
+        request(`/api/admin/payments/${id}/refund`, { method: 'POST', body: { amountPaise, reason } }),
     },
   },
 };

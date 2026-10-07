@@ -155,6 +155,14 @@ public class Booking {
     @Column(name = "paid_at")
     private java.time.Instant paidAt;
 
+    /**
+     * When the customer first opened online checkout for this booking; null
+     * if they never did (they pay our team on the day). BookingExpiryJob only
+     * cancels a booking that has this set and was never paid.
+     */
+    @Column(name = "online_checkout_at")
+    private java.time.Instant onlineCheckoutAt;
+
     @Column(name = "cancelled_reason", length = 300)
     private String cancelledReason;
 

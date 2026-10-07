@@ -1,6 +1,9 @@
 /* Full-width artwork in its original proportions */
 .page-home .sb-final-banner {
   position: relative;
+  /* Above the sections that follow, so the search results list opens over
+     the Popular Services cards instead of behind them. */
+  z-index: 3;
   display: block;
   width: 100%;
   margin: 0;

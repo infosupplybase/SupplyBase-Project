@@ -65,7 +65,7 @@ function ExpiryChip({ booking }) {
   return (
     <span
       className={`admin-expiry${hours <= 6 ? ' urgent' : ''}`}
-      title="Unconfirmed bookings are cancelled automatically 24 hours after they are made"
+      title="The customer started paying online and did not finish. Unless it is paid or confirmed, the booking is cancelled 24 hours after they started."
     >
       <Icon name="clock" size={12} />
       {hours === 0 ? 'Cancelling now' : `Cancels in ${hours} h`}
@@ -496,10 +496,29 @@ export default function AdminBookings() {
                     {formatDay(selected.preferredDate)} · {visitTime(selected) || 'no time chosen'}
                   </dd>
                 </div>
-                <div>
-                  <dt>To pay at the visit</dt>
-                  <dd>{formatRupees(selected.visitFeePaise)}</dd>
-                </div>
+                {selected.status === 'CANCELLED' && (
+                  <div>
+                    <dt>Cancelled</dt>
+                    <dd>
+                      {selected.cancelledReason || 'No reason recorded.'}
+                      {selected.paidAt ? ' Paid online: refund it from Payments if not done yet.' : ''}
+                    </dd>
+                  </div>
+                )}
+                {selected.paidAt ? (
+                  <div>
+                    <dt>Paid online</dt>
+                    <dd>
+                      {formatRupees(selected.visitFeePaise)} on {formatDate(selected.paidAt)}. Nothing to
+                      collect at the visit.
+                    </dd>
+                  </div>
+                ) : (
+                  <div>
+                    <dt>To pay at the visit</dt>
+                    <dd>{formatRupees(selected.visitFeePaise)}</dd>
+                  </div>
+                )}
                 {selected.propertyType && (
                   <div>
                     <dt>Property</dt>

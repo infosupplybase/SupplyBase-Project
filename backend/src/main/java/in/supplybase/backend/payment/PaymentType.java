@@ -6,5 +6,7 @@ public enum PaymentType {
     /** Tied to a project stage. */
     MILESTONE,
     /** Ad-hoc amount raised against a client. */
-    INVOICE
+    INVOICE,
+    /** A service booking's fee, paid online by the customer at booking time. */
+    BOOKING
 }

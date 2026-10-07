@@ -25,6 +25,36 @@
   opacity: 0.75;
 }
 
+.pnt-hero-exterior-waterproofing > img:first-child {
+  object-position: center 58%;
+}
+
+.pnt-hero-terrace-waterproofing > img:first-child {
+  object-position: center 54%;
+}
+
+.pnt-hero-water-tank-waterproofing > img:first-child {
+  object-position: center 48%;
+}
+
+.pnt-hero-basement-waterproofing > img:first-child {
+  object-position: center 58%;
+}
+
+@media (max-width: 767px) {
+  .pnt-hero-terrace-waterproofing > img:first-child {
+    object-position: 65% 54%;
+  }
+
+  .pnt-hero-water-tank-waterproofing > img:first-child {
+    object-position: 38% 48%;
+  }
+
+  .pnt-hero-basement-waterproofing > img:first-child {
+    object-position: 38% 58%;
+  }
+}
+
 .pnt-hero-scrim {
   position: absolute;
   inset: 0;
@@ -1026,6 +1056,8 @@
 }
 
 .pnt-fee-strip span:first-child {
+  flex-shrink: 0;
+  white-space: nowrap;
   color: var(--gold-light);
   font-family: var(--font-display);
   font-size: 1.1rem;

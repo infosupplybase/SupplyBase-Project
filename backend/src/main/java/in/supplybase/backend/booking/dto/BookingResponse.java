@@ -34,7 +34,15 @@ public record BookingResponse(
         // wizard flow (it writes per-question BookingAnswer rows instead, see
         // BookingService.storeAnswers) — this is the real "what did they
         // actually ask for" data.
-        List<BookingAnswerResponse> answers) {
+        List<BookingAnswerResponse> answers,
+        // When the fee was paid online through Razorpay; null while unpaid.
+        Instant paidAt,
+        // When the customer first opened online checkout; null if they never
+        // did. Only such a booking can be auto-cancelled (BookingExpiryJob).
+        Instant onlineCheckoutAt,
+        // Why it was cancelled (by the customer, staff or the expiry job);
+        // null on a booking that is not cancelled.
+        String cancelledReason) {
 
     public static BookingResponse from(Booking b) {
         return from(b, List.of());
@@ -57,7 +65,10 @@ public record BookingResponse(
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getId(),
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getFullName(),
                 b.getAssignedProfessional() == null ? null : b.getAssignedProfessional().getPhone(),
-                answers);
+                answers,
+                b.getPaidAt(),
+                b.getOnlineCheckoutAt(),
+                b.getCancelledReason());
     }
 
 }

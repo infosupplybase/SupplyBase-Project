@@ -7,6 +7,7 @@ import HowBookingWorks from '../components/services/HowBookingWorks';
 // Materials and Projects sections are disabled sitewide — see App.jsx.
 // import MaterialsSection from '../components/materials/MaterialsSection';
 import StatsSection from '../components/home/StatsSection';
+import CustomerReviews from '../components/home/CustomerReviews';
 // import ProjectGrid from '../components/projects/ProjectGrid';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
@@ -31,8 +32,6 @@ export default function Home() {
           <HowBookingWorks />
         </div>
       </section>
-
-      <ConsultationBanner />
 
       {/* Materials section — disabled sitewide, see App.jsx.
       <MaterialsSection /> */}
@@ -64,8 +63,15 @@ export default function Home() {
       </section>
       */}
 
+      {/* Beautiful Spaces, Better Living */}
+      <ConsultationBanner />
+
       {/* --------------------------------------------------------- stats */}
       <StatsSection />
+
+      {/* Client Stories — shows a book-a-service note until
+          data/customerReviews.js has real reviews. */}
+      <CustomerReviews />
 
       <CtaBand />
     </div>

@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const PACKAGE = 0;
 const INCLUDED = 1;
@@ -244,6 +245,18 @@ export default function InteriorDesignFlow({
           {summaryRow('Package', selectedPackage?.name || tier)}
           {summaryRow('Visit', formatVisit(date, time))}
           <p>Price will be confirmed during the site visit.</p>
+          {!receipt.paidOnline && receipt.message && (
+            <div className="pnt-fee-note">
+              <Icon name="info" size={17} />
+              <span>{receipt.message}</span>
+            </div>
+          )}
+          <PayBookingButton
+            bookingNumber={receipt.bookingNumber}
+            amountDisplay={receipt.visitFeeDisplay}
+            paid={receipt.paidOnline}
+            onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+          />
         </div>
       </section>
     );

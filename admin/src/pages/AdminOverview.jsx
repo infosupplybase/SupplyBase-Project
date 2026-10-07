@@ -112,7 +112,7 @@ export default function AdminOverview() {
             icon="alert"
             tone="danger"
             title="New bookings to confirm"
-            description="Check and confirm them. Unconfirmed bookings are cancelled automatically 24 hours after they are made."
+            description="Check and confirm them. A booking whose online payment was started and not finished is cancelled 24 hours later."
             clearText="No new bookings waiting. New ones appear here first."
             to="/bookings?status=PAYMENT_PENDING"
             cta="Confirm now"

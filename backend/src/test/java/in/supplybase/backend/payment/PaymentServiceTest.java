@@ -35,6 +35,9 @@ import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.auth.User;
 import in.supplybase.backend.auth.UserRepository;
+import in.supplybase.backend.booking.Booking;
+import in.supplybase.backend.booking.BookingRepository;
+import in.supplybase.backend.booking.BookingStatus;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.payment.dto.CreatePaymentRequest;
 import in.supplybase.backend.payment.dto.PaymentResponse;
@@ -65,12 +68,14 @@ class PaymentServiceTest {
     private RazorpayService razorpay;
     @Mock
     private InvoiceService invoices;
+    @Mock
+    private BookingRepository bookings;
 
     private PaymentService service;
 
     @BeforeEach
     void setUp() {
-        service = new PaymentService(payments, events, users, projects, razorpay, invoices);
+        service = new PaymentService(payments, events, users, projects, razorpay, invoices, bookings);
         // Most tests only care that save happened, not what it returns beyond
         // the entity handed to it — echo the argument back like a real save.
         lenient().when(payments.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -326,6 +331,23 @@ class PaymentServiceTest {
             verify(payments).save(payment);
         }
 
+        @ParameterizedTest
+        @ValueSource(strings = { "REFUNDED", "CANCELLED", "PAID" })
+        @DisplayName("replaying a signed checkout never changes a settled or cancelled payment")
+        void replayKeepsStatus(String statusName) {
+            User owner = user(1L, Role.CUSTOMER);
+            PaymentStatus status = PaymentStatus.valueOf(statusName);
+            Payment payment = aPayment(owner).status(status).razorpayPaymentId("pay_1").build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            VerifyPaymentRequest request = new VerifyPaymentRequest("order_1", "pay_1", "sig_1");
+            PaymentResponse response = service.confirmFromCheckout(request, callerFor(owner));
+
+            assertThat(response.status()).isEqualTo(status);
+            assertThat(payment.getStatus()).isEqualTo(status);
+            verify(payments, never()).save(any());
+        }
+
         @Test
         @DisplayName("a customer cannot confirm someone else's checkout")
         void rejectsNonOwner() {
@@ -362,8 +384,6 @@ class PaymentServiceTest {
         @Test
         @DisplayName("an invalid webhook signature is recorded but never applied")
         void invalidSignatureRecordedNotApplied() {
-            when(events.existsByRazorpayEventId("evt_1")).thenReturn(false);
-
             service.recordAndApplyWebhook("evt_1", "payment.captured", "{}", false, "order_1", "pay_1");
 
             ArgumentCaptor<PaymentEvent> captor = ArgumentCaptor.forClass(PaymentEvent.class);
@@ -371,6 +391,31 @@ class PaymentServiceTest {
             assertThat(captor.getValue().isProcessed()).isFalse();
             assertThat(captor.getValue().getProcessError()).contains("Signature did not verify");
             verify(payments, never()).findByRazorpayOrderId(any());
+        }
+
+        @Test
+        @DisplayName("an unsigned event keeps no event id, so a forged one can't block the real event")
+        void unsignedEventKeepsNoEventId() {
+            service.recordAndApplyWebhook("evt_real", "payment.captured", "{}", false, "order_1", "pay_1");
+
+            ArgumentCaptor<PaymentEvent> captor = ArgumentCaptor.forClass(PaymentEvent.class);
+            verify(events).save(captor.capture());
+            assertThat(captor.getValue().getRazorpayEventId()).isNull();
+            verify(events, never()).existsByRazorpayEventId(any());
+        }
+
+        @Test
+        @DisplayName("an unsigned event stores only the start of its body, and a long event name is cut to fit")
+        void unsignedEventIsCut() {
+            String huge = "x".repeat(5_000_000);
+            String longType = "e".repeat(200);
+
+            service.recordAndApplyWebhook(null, longType, huge, false, null, null);
+
+            ArgumentCaptor<PaymentEvent> captor = ArgumentCaptor.forClass(PaymentEvent.class);
+            verify(events).save(captor.capture());
+            assertThat(captor.getValue().getPayload()).hasSize(2000);
+            assertThat(captor.getValue().getEventType()).hasSize(60);
         }
 
         @Test
@@ -435,15 +480,51 @@ class PaymentServiceTest {
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
         }
 
-        @ParameterizedTest
-        @ValueSource(strings = { "refund.processed", "refund.created" })
-        @DisplayName("a refund event settles the payment as refunded")
-        void refundEventMarksRefunded(String eventType) {
+        @Test
+        @DisplayName("a processed full refund settles the payment as refunded")
+        void fullRefundMarksRefunded() {
             User owner = user(1L, Role.CUSTOMER);
             Payment payment = aPayment(owner).status(PaymentStatus.PAID).build();
             when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
 
-            service.recordAndApplyWebhook("evt_1", eventType, "{}", true, "order_1", "pay_1");
+            service.recordAndApplyWebhook("evt_1", "refund.processed", "{}", true, "order_1", "pay_1", "full");
+
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+        }
+
+        @Test
+        @DisplayName("a partial refund keeps the payment paid")
+        void partialRefundKeepsPaid() {
+            User owner = user(1L, Role.CUSTOMER);
+            Payment payment = aPayment(owner).status(PaymentStatus.PAID).build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            service.recordAndApplyWebhook("evt_1", "refund.processed", "{}", true, "order_1", "pay_1", "partial");
+
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
+        }
+
+        @Test
+        @DisplayName("refund.created is only a request, so the payment stays paid")
+        void refundCreatedKeepsPaid() {
+            User owner = user(1L, Role.CUSTOMER);
+            Payment payment = aPayment(owner).status(PaymentStatus.PAID).build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            service.recordAndApplyWebhook("evt_1", "refund.created", "{}", true, "order_1", "pay_1", "full");
+
+            assertThat(payment.getStatus()).isEqualTo(PaymentStatus.PAID);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "payment.captured", "order.paid" })
+        @DisplayName("a late capture cannot turn a refunded payment back into paid")
+        void lateCaptureKeepsRefunded(String eventType) {
+            User owner = user(1L, Role.CUSTOMER);
+            Payment payment = aPayment(owner).status(PaymentStatus.REFUNDED).razorpayPaymentId("pay_1").build();
+            when(payments.findByRazorpayOrderId("order_1")).thenReturn(Optional.of(payment));
+
+            service.recordAndApplyWebhook("evt_9", eventType, "{}", true, "order_1", "pay_1");
 
             assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
         }
@@ -600,6 +681,134 @@ class PaymentServiceTest {
                     .isInstanceOf(ApiException.class)
                     .hasMessageContaining("was not found");
             verify(invoices, never()).generate(any());
+        }
+    }
+
+    /* --------------------------------------------------- booking checkout */
+
+    @Nested
+    class BookingCheckout {
+
+        private Booking aBooking(User owner, BookingStatus status) {
+            return Booking.builder().id(7L).reference("BK-1").bookingNumber("SB-20261004-000001")
+                    .serviceLabel("Plumbing").user(owner).status(status).visitFeePaise(9_900L).build();
+        }
+
+        @Test
+        @DisplayName("charges the booking's own fee and creates one payment linked to it")
+        void createsPaymentForBookingFee() {
+            User owner = user(5L, Role.CUSTOMER);
+            Booking booking = aBooking(owner, BookingStatus.PAYMENT_PENDING);
+            when(bookings.findByBookingNumber("SB-20261004-000001")).thenReturn(Optional.of(booking));
+            when(payments.findFirstByBookingIdAndStatusInOrderByCreatedAtDesc(eq(7L), any()))
+                    .thenReturn(Optional.empty());
+            when(razorpay.createOrder(eq(9_900L), eq("INR"), anyString())).thenReturn("order_B1");
+            when(razorpay.keyId()).thenReturn("rzp_test_public");
+
+            RazorpayOrderResponse response = service.startBookingCheckout("SB-20261004-000001", callerFor(owner));
+
+            assertThat(response.orderId()).isEqualTo("order_B1");
+            assertThat(response.amountPaise()).isEqualTo(9_900L);
+            ArgumentCaptor<Payment> captor = ArgumentCaptor.forClass(Payment.class);
+            verify(payments, org.mockito.Mockito.atLeastOnce()).save(captor.capture());
+            Payment saved = captor.getValue();
+            assertThat(saved.getBooking()).isSameAs(booking);
+            assertThat(saved.getPaymentType()).isEqualTo(PaymentType.BOOKING);
+            assertThat(saved.getAmountPaise()).isEqualTo(9_900L);
+        }
+
+        @Test
+        @DisplayName("reuses the open payment and its order on a second attempt")
+        void reusesOpenPayment() {
+            User owner = user(5L, Role.CUSTOMER);
+            Booking booking = aBooking(owner, BookingStatus.PAYMENT_PENDING);
+            Payment existing = aPayment(owner).booking(booking).paymentType(PaymentType.BOOKING)
+                    .amountPaise(9_900L).razorpayOrderId("order_OLD").build();
+            when(bookings.findByBookingNumber("SB-20261004-000001")).thenReturn(Optional.of(booking));
+            when(payments.findFirstByBookingIdAndStatusInOrderByCreatedAtDesc(eq(7L), any()))
+                    .thenReturn(Optional.of(existing));
+
+            RazorpayOrderResponse response = service.startBookingCheckout("SB-20261004-000001", callerFor(owner));
+
+            assertThat(response.orderId()).isEqualTo("order_OLD");
+            verify(razorpay, never()).createOrder(anyLong(), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("hides another customer's booking")
+        void rejectsOtherCustomer() {
+            User owner = user(5L, Role.CUSTOMER);
+            User stranger = user(6L, Role.CUSTOMER);
+            when(bookings.findByBookingNumber("SB-20261004-000001"))
+                    .thenReturn(Optional.of(aBooking(owner, BookingStatus.PAYMENT_PENDING)));
+
+            assertThatThrownBy(() -> service.startBookingCheckout("SB-20261004-000001", callerFor(stranger)))
+                    .isInstanceOf(ApiException.class);
+            verify(razorpay, never()).createOrder(anyLong(), anyString(), anyString());
+        }
+
+        @Test
+        @DisplayName("refuses a booking that is already paid or cancelled")
+        void rejectsPaidOrCancelled() {
+            User owner = user(5L, Role.CUSTOMER);
+            Booking paid = aBooking(owner, BookingStatus.CONFIRMED);
+            paid.setPaidAt(Instant.now());
+            when(bookings.findByBookingNumber("PAID")).thenReturn(Optional.of(paid));
+            when(bookings.findByBookingNumber("GONE"))
+                    .thenReturn(Optional.of(aBooking(owner, BookingStatus.CANCELLED)));
+
+            assertThatThrownBy(() -> service.startBookingCheckout("PAID", callerFor(owner)))
+                    .hasMessageContaining("already been paid");
+            assertThatThrownBy(() -> service.startBookingCheckout("GONE", callerFor(owner)))
+                    .hasMessageContaining("cancelled");
+        }
+
+        @Test
+        @DisplayName("a verified checkout marks the booking paid and confirms it")
+        void verifiedPaymentConfirmsBooking() {
+            User owner = user(5L, Role.CUSTOMER);
+            Booking booking = aBooking(owner, BookingStatus.PAYMENT_PENDING);
+            Payment payment = aPayment(owner).booking(booking).razorpayOrderId("order_B1").build();
+            when(payments.findByRazorpayOrderId("order_B1")).thenReturn(Optional.of(payment));
+            when(razorpay.verifyCheckoutSignature("order_B1", "pay_1", "sig")).thenReturn(true);
+
+            service.confirmFromCheckout(new VerifyPaymentRequest("order_B1", "pay_1", "sig"), callerFor(owner));
+
+            assertThat(booking.getPaidAt()).isNotNull();
+            assertThat(booking.getStatus()).isEqualTo(BookingStatus.CONFIRMED);
+            verify(bookings).save(booking);
+        }
+
+        @Test
+        @DisplayName("a bad signature leaves the booking unpaid")
+        void badSignatureLeavesBookingUnpaid() {
+            User owner = user(5L, Role.CUSTOMER);
+            Booking booking = aBooking(owner, BookingStatus.PAYMENT_PENDING);
+            Payment payment = aPayment(owner).booking(booking).razorpayOrderId("order_B1").build();
+            when(payments.findByRazorpayOrderId("order_B1")).thenReturn(Optional.of(payment));
+            when(razorpay.verifyCheckoutSignature("order_B1", "pay_1", "forged")).thenReturn(false);
+
+            assertThatThrownBy(() -> service.confirmFromCheckout(
+                    new VerifyPaymentRequest("order_B1", "pay_1", "forged"), callerFor(owner)))
+                    .isInstanceOf(ApiException.class);
+
+            assertThat(booking.getPaidAt()).isNull();
+            assertThat(booking.getStatus()).isEqualTo(BookingStatus.PAYMENT_PENDING);
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("a late payment on a cancelled booking is recorded but does not revive it")
+        void lateWebhookOnCancelledBooking() {
+            User owner = user(5L, Role.CUSTOMER);
+            Booking booking = aBooking(owner, BookingStatus.CANCELLED);
+            Payment payment = aPayment(owner).booking(booking).razorpayOrderId("order_B1").build();
+            when(payments.findByRazorpayOrderId("order_B1")).thenReturn(Optional.of(payment));
+
+            service.recordAndApplyWebhook("evt_1", "payment.captured", "{}", true, "order_B1", "pay_1");
+
+            assertThat(booking.getPaidAt()).isNotNull();
+            assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
         }
     }
 }

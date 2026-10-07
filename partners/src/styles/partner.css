@@ -396,6 +396,11 @@
   column-gap: 0;
 }
 
+.pp-main > .pp-support {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .pp-support h3,
 .pp-support > p {
   width: 100%;

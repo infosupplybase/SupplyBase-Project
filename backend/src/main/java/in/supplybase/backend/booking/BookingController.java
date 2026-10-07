@@ -26,6 +26,7 @@ import in.supplybase.backend.booking.dto.AssignProfessionalRequest;
 import in.supplybase.backend.booking.dto.BookingFileResponse;
 import in.supplybase.backend.booking.dto.BookingReceipt;
 import in.supplybase.backend.booking.dto.BookingResponse;
+import in.supplybase.backend.booking.dto.CancelMyBookingRequest;
 import in.supplybase.backend.booking.dto.CreateBookingRequest;
 import in.supplybase.backend.booking.dto.PartnerEarningsResponse;
 import in.supplybase.backend.booking.dto.PartnerPayoutResponse;
@@ -84,6 +85,18 @@ public class BookingController {
     public BookingResponse updateMine(@PathVariable("id") Long id,
             @Valid @RequestBody UpdateMyBookingRequest request) {
         return service.updateMine(id, request, currentUser.require());
+    }
+
+    /**
+     * A customer cancelling their own booking from the dashboard, until the
+     * work is scheduled (BookingStatus.isCustomerCancellable). Same
+     * owner-or-staff check as get(). The body (an optional reason) may be
+     * left out entirely.
+     */
+    @PostMapping("/api/bookings/{id}/cancel")
+    public BookingResponse cancelMine(@PathVariable("id") Long id,
+            @Valid @RequestBody(required = false) CancelMyBookingRequest request) {
+        return service.cancelMine(id, request == null ? null : request.reason(), currentUser.require());
     }
 
     @GetMapping("/api/bookings/{id}/files")

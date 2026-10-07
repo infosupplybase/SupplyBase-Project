@@ -214,7 +214,7 @@ updateProfile: (profile) =>
 
   /** Emails a reset link to the given identifier. Always resolves — see the endpoint's own docs. */
   forgotPassword: (identifier) =>
-    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier, app: 'customer' }, }),
 
   /** Sets a new password with the token from the emailed reset link. */
   resetPassword: (token, newPassword) =>
@@ -275,8 +275,35 @@ updateProfile: (profile) =>
 
   myBookings: () => request('/api/bookings/mine'),
 
+  /* --------------------------------------------------------- payments */
+
+  /** Opens (or reuses) the Razorpay order for a booking's fee. The amount is the server's, never ours. */
+  startBookingPayment: (bookingNumber) =>
+    request(`/api/payments/bookings/${encodeURIComponent(bookingNumber)}/order`, { method: 'POST' }),
+
+  /** { onlinePayments: boolean }: false until Razorpay keys are set on the server. */
+  paymentStatus: () => request('/api/payments/status', { auth: false }),
+
+  /** Hands checkout's signed result to the server, which verifies it before marking anything paid. */
+  verifyPayment: ({ razorpay_order_id, razorpay_payment_id, razorpay_signature }) =>
+    request('/api/payments/verify', {
+      method: 'POST',
+      body: {
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+      },
+    }),
+
   /** One booking in full, including the real answers given in the wizard. */
   booking: (id) => request(`/api/bookings/${id}`),
+
+  /** A customer cancelling their own booking, with an optional reason. */
+  cancelBooking: (id, reason) =>
+    request(`/api/bookings/${id}/cancel`, {
+      method: 'POST',
+      body: { reason: reason && reason.trim() ? reason.trim() : null },
+    }),
 
   /** A customer editing their own booking's contact details or address. */
   updateBooking: (id, details) =>

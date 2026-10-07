@@ -26,14 +26,15 @@ let googleMapsPromise = null;
  * of leaving them with a broken map.
  */
 let mapsAuthFailed = false;
-const MAPS_AUTH_FAILED = 'supplybase:maps-auth-failed';
+export const mapsKeyRejected = () => mapsAuthFailed;
+export const MAPS_AUTH_FAILED = 'supplybase:maps-auth-failed';
 const MAPS_UNAVAILABLE_MESSAGE =
   'The map is not available right now. Please close this and type your address instead.';
 
 /*
  * Load Google Maps JavaScript API
  */
-function loadGoogleMaps() {
+export function loadGoogleMaps() {
   if (window.google?.maps) {
     return Promise.resolve(window.google.maps);
   }
@@ -139,25 +140,23 @@ function geolocationMessage(geoError) {
 
 /**
  * The street address, city and pincode at a point, from Google's Geocoder —
- * or null if it cannot say (the key may not have the Geocoding API enabled),
- * in which case callers fall back to the bare coordinates.
+ * or null if it cannot say (the key may not have the Geocoding API enabled).
  */
-async function reverseGeocode(latitude, longitude) {
+async function geocoderAddress(googleMaps, latitude, longitude) {
   try {
-    const googleMaps = await loadGoogleMaps();
     const { Geocoder } = await googleMaps.importLibrary('geocoding');
     const { results } = await new Geocoder().geocode({
       location: { lat: latitude, lng: longitude },
     });
     // A plus-code result ("4XQ7+2C Kalyan") is useless to a visiting team.
     const best = (results || []).find((r) => !r.types?.includes('plus_code')) || results?.[0];
-    if (!best) return null;
+    if (!best?.formatted_address) return null;
 
     const part = (type) =>
       best.address_components?.find((c) => c.types.includes(type))?.long_name || '';
 
     return {
-      address: best.formatted_address || '',
+      address: best.formatted_address,
       city:
         part('locality') ||
         part('administrative_area_level_3') ||
@@ -165,9 +164,62 @@ async function reverseGeocode(latitude, longitude) {
       pincode: part('postal_code'),
     };
   } catch (err) {
+    console.warn('Geocoder lookup failed:', err);
+    return null;
+  }
+}
+
+/**
+ * The address of the nearest named place, from the Places API (New) — the
+ * same API the address search box uses, so it still works when the key has
+ * no Geocoding API.
+ */
+async function nearbyPlaceAddress(googleMaps, latitude, longitude) {
+  try {
+    const { Place, SearchNearbyRankPreference } = await googleMaps.importLibrary('places');
+    const { places } = await Place.searchNearby({
+      fields: ['formattedAddress', 'addressComponents'],
+      locationRestriction: { center: { lat: latitude, lng: longitude }, radius: 150 },
+      rankPreference: SearchNearbyRankPreference.DISTANCE,
+      maxResultCount: 5,
+    });
+    const best = (places || []).find((p) => p.formattedAddress);
+    if (!best) return null;
+
+    const part = (type) =>
+      best.addressComponents?.find((c) => c.types.includes(type))?.longText || '';
+
+    return {
+      address: best.formattedAddress,
+      city:
+        part('locality') ||
+        part('administrative_area_level_3') ||
+        part('administrative_area_level_2'),
+      pincode: part('postal_code'),
+    };
+  } catch (err) {
+    console.warn('Nearby place lookup failed:', err);
+    return null;
+  }
+}
+
+/**
+ * The street address, city and pincode at a point: Google's Geocoder first,
+ * then the nearest place from the Places API. Null if neither can say.
+ */
+export async function reverseGeocode(latitude, longitude) {
+  let googleMaps;
+  try {
+    googleMaps = await loadGoogleMaps();
+  } catch (err) {
     console.warn('Reverse geocoding failed:', err);
     return null;
   }
+
+  return (
+    (await geocoderAddress(googleMaps, latitude, longitude)) ||
+    (await nearbyPlaceAddress(googleMaps, latitude, longitude))
+  );
 }
 
 /**
@@ -814,7 +866,10 @@ export default function GoogleLocationPicker({
             onClick={onClose}
             aria-label="Close location picker"
           >
-            <span aria-hidden="true" style={{ fontSize: 26, lineHeight: 1 }}>×</span>
+            <Icon
+              name="close"
+              size={22}
+            />
           </button>
         </div>
 
@@ -839,7 +894,10 @@ export default function GoogleLocationPicker({
               }
               aria-label="Clear search"
             >
-              <span aria-hidden="true" style={{ fontSize: 20, lineHeight: 1 }}>×</span>
+              <Icon
+                name="close"
+                size={16}
+              />
             </button>
           </div>
         </div>
