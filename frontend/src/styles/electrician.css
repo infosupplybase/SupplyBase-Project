@@ -392,6 +392,14 @@
   max-width: 100%;
   box-sizing: border-box;
 }
+.electrical-modal-section {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.electrical-modal-section .plb-overview-grid {
+  margin-bottom: 0 !important;
+}
 
 /* ---- card shell ---- */
 :is(.electrical-modal-section, .electrical-page-section) .plb-overview-card {
@@ -559,7 +567,7 @@
   :is(.electrical-modal-section, .electrical-page-section) .plb-overview-grid,
   .electrical-modal-scope .plb-overview-grid,
   .electrical-intro-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
   }
 
@@ -605,4 +613,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .electrical-modal-section {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.electrical-modal-section .plb-overview-grid {
+  margin-bottom: 0 !important;
+}
 }
