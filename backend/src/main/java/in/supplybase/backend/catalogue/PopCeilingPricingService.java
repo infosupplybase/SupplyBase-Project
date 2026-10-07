@@ -27,6 +27,10 @@ public class PopCeilingPricingService {
                 SELECT CONCAT('room:', room_type) AS home_type,
                        '*' AS ceiling_type, price_paise
                 FROM pop_ceiling_room_prices
+                UNION ALL
+                SELECT CONCAT('room:', room_type) AS home_type,
+                       ceiling_type, price_paise
+                FROM pop_ceiling_room_design_prices
                 ORDER BY home_type, ceiling_type
                 """, (rs, rowNum) -> new StartingPrice(
                         rs.getString("home_type"),
@@ -34,16 +38,27 @@ public class PopCeilingPricingService {
                         rs.getLong("price_paise")));
     }
 
-    public Long findRoomPricePaise(String roomType) {
-        if (roomType == null) {
+    public Long findRoomPricePaise(String roomType, String ceilingType) {
+        if (roomType == null || ceilingType == null) {
             return null;
         }
 
-        List<Long> prices = jdbc.query("""
-                SELECT price_paise
-                FROM pop_ceiling_room_prices
-                WHERE room_type = ?
-                """, (rs, rowNum) -> rs.getLong("price_paise"), roomType);
+        List<Long> prices;
+
+        if ("living-room".equals(roomType) || "bedroom".equals(roomType)) {
+            prices = jdbc.query("""
+                    SELECT price_paise
+                    FROM pop_ceiling_room_design_prices
+                    WHERE room_type = ? AND ceiling_type = ?
+                    """, (rs, rowNum) -> rs.getLong("price_paise"),
+                    roomType, ceilingType);
+        } else {
+            prices = jdbc.query("""
+                    SELECT price_paise
+                    FROM pop_ceiling_room_prices
+                    WHERE room_type = ?
+                    """, (rs, rowNum) -> rs.getLong("price_paise"), roomType);
+        }
 
         return prices.isEmpty() ? null : prices.get(0);
     }
