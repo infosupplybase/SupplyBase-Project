@@ -966,7 +966,7 @@
 
 
 .electrical-modal-section {
-  padding: 24px 0 32px !important;
+  padding: 24px 0 0px !important;
 }
 
 .electrical-modal-intro {
@@ -1243,4 +1243,16 @@
 .plb-back-arrow svg {
   width: 22px;
   height: 22px;
+}
+
+@media (max-width: 767px) {
+  .electrical-modal-scope .electrical-modal-section {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .electrical-modal-scope .plb-overview-grid {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
 }
