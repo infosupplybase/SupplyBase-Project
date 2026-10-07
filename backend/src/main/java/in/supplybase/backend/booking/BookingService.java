@@ -285,6 +285,31 @@ public class BookingService {
             if (homeJourney && roomJourney) {
                 throw ApiException.badRequest("Choose one POP journey.");
             }
+            if (roomJourney) {
+                Map<String, Set<String>> allowedRoomCeilings = Map.of(
+                        "living-room", Set.of(
+                                "flat-ceiling", "double-layer-ceiling",
+                                "floating-ceiling", "border-ceiling",
+                                "profile-pop", "pvc-panel-pop"),
+                        "bedroom", Set.of(
+                                "flat-ceiling", "double-layer-ceiling",
+                                "floating-ceiling", "border-ceiling",
+                                "profile-pop", "pvc-panel-pop"),
+                        "balcony-pvc", Set.of("pvc-panel-pop"),
+                        "kitchen", Set.of("flat-ceiling"),
+                        "passage-pvc", Set.of("flat-ceiling", "profile-pop"),
+                        "bathroom-pvc", Set.of("pvc-panel-pop"));
+
+                String roomType = popSelections.get("pop_room_type");
+                String ceilingType = popSelections.get("pop_room_design_style");
+
+                if (roomType == null || ceilingType == null
+                        || !allowedRoomCeilings.getOrDefault(roomType, Set.of())
+                                .contains(ceilingType)) {
+                    throw ApiException.badRequest(
+                            "Choose an available ceiling for your selected room.");
+                }
+            }
             if (roomJourney
                     && (!popSelections.containsKey("pop_room_type")
                         || !popSelections.containsKey("pop_room_design_style"))) {
@@ -391,7 +416,7 @@ public class BookingService {
 
             if (popBooking && "pop_room_design_style".equals(input.key())) {
                 Long startingPrice = popCeilingPricing.findRoomPricePaise(
-                        popSelections.get("pop_room_type"));
+                        popSelections.get("pop_room_type"), input.value());
 
                 if (startingPrice == null) {
                     throw ApiException.badRequest(

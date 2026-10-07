@@ -50,12 +50,34 @@ const MODAL_BACK =
 const MODAL_NEXT =
   'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-auto md:!min-w-[170px] md:!flex-none md:!px-4';
 
+const ROOM_CEILING_CHOICES = {
+  'living-room': [
+    'flat-ceiling',
+    'double-layer-ceiling',
+    'floating-ceiling',
+    'border-ceiling',
+    'profile-pop',
+    'pvc-panel-pop',
+  ],
+  bedroom: [
+    'flat-ceiling',
+    'double-layer-ceiling',
+    'floating-ceiling',
+    'border-ceiling',
+    'profile-pop',
+    'pvc-panel-pop',
+  ],
+  'balcony-pvc': ['pvc-panel-pop'],
+  kitchen: ['flat-ceiling'],
+  'passage-pvc': ['flat-ceiling', 'profile-pop'],
+  'bathroom-pvc': ['pvc-panel-pop'],
+};
 export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
   const params = useParams();
   const flowSlug = propFlowSlug || params.flowSlug;
   const flow = popFlows[flowSlug];
   const { user } = useAuth();
-  const { category, loading, error: loadError, optionsFor, startingPriceFor } = usePopCeilingCatalogue();
+  const { category, loading, error: loadError, optionsFor: catalogueOptionsFor, startingPriceFor } = usePopCeilingCatalogue();
 
   // This form's step and answers live in the browser's history (see
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
@@ -63,6 +85,17 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const formBack = useFormBack();
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+
+  const optionsFor = (questionKey) => {
+    const options = catalogueOptionsFor(questionKey);
+
+    if (questionKey !== 'pop_room_design_style') {
+      return options;
+    }
+
+    const allowed = ROOM_CEILING_CHOICES[answers.pop_room_type] || [];
+    return options.filter((option) => allowed.includes(option.value));
+  };
   const pickedLocation = usePickedLocation();
   const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
@@ -98,7 +131,20 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const CONFIRM = SCHEDULE + 1;
 
   const setAnswer = (key) => (value) => {
-    setAnswers((a) => ({ ...a, [key]: value }));
+    setAnswers((previous) => {
+      const next = { ...previous, [key]: value };
+
+      if (key === 'pop_room_type') {
+        const allowed = ROOM_CEILING_CHOICES[value] || [];
+
+        if (!allowed.includes(previous.pop_room_design_style)) {
+          delete next.pop_room_design_style;
+          delete next.pop_design_notes;
+        }
+      }
+
+      return next;
+    });
     setErrors((e) => ({ ...e, [key]: undefined }));
     setChoiceError('');
     setSubmitError('');
@@ -198,6 +244,20 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    if (configSteps.some((item) => item.questionKey === 'pop_room_type')) {
+      const allowed = ROOM_CEILING_CHOICES[answers.pop_room_type] || [];
+
+      if (!allowed.includes(answers.pop_room_design_style)) {
+        setSubmitError('Please choose an available ceiling for your selected room.');
+        jumpToStep(
+          configSteps.findIndex(
+            (item) => item.questionKey === 'pop_room_design_style'
+          ) + 1
+        );
+        return;
+      }
+    }
+
     // Every booking needs an account: ask now, over this form (LoginGate).
     if (!(await ensureLogin(details))) return;
 
