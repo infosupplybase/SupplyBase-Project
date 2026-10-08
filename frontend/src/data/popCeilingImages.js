@@ -1,11 +1,11 @@
 export const popHomeTypeImages = {
-  '1bhk': '/assets/services/architectural-design/1bhk.webp',
+  '1bhk': '/assets/interior-design/layouts/1bhk.jpg',
   '1 BHK': '/assets/services/architectural-design/1bhk.webp',
-  '2bhk': '/assets/services/architectural-design/2bhk.webp',
+  '2bhk': '/assets/interior-design/layouts/2bhk.jpg',
   '2 BHK': '/assets/services/architectural-design/2bhk.webp',
-  '3bhk': '/assets/services/architectural-design/3bhk.webp',
+  '3bhk': '/assets/interior-design/layouts/3bhk-v2.webp',
   '3 BHK': '/assets/services/architectural-design/3bhk.webp',
-  '4bhk': '/assets/services/architectural-design/4bhk.webp',
+  '4bhk': '/assets/interior-design/layouts/villa-v2.webp',
   '4 BHK+': '/assets/services/architectural-design/4bhk.webp',
   'villa-independent-house':
     '/assets/services/architectural-design/villa-bungalow.webp',
@@ -21,17 +21,17 @@ export const popHomeTypeImages = {
 };
 
 export const popRoomTypeImages = {
-  'living-room': '/assets/pop-ceiling/hero/living-room-cove.webp',
-  'Living Room': '/assets/pop-ceiling/hero/living-room-cove.webp',
-  bedroom: '/assets/projects/bedroom.webp',
-  Bedroom: '/assets/projects/bedroom.webp',
+  'living-room': '/assets/pop-ceiling/hero/living-room-ceiling.webp',
+  'Living Room': '/assets/pop-ceiling/hero/living-room-ceiling.webp',
+  bedroom: '/assets/pop-ceiling/hero/bedroom-ceiling.webp',
+  Bedroom: '/assets/pop-ceiling/hero/bedroom-ceiling.webp',
   'dining-room': '/assets/pop-ceiling/hero/diningroom.webp',
   'Dining Room': '/assets/pop-ceiling/hero/diningroom.webp',
   'study-room': '/assets/pop-ceiling/hero/studyroom.webp',
   'Study Room': '/assets/pop-ceiling/hero/studyroom.webp',
   'kids-room': '/assets/pop-ceiling/hero/kidsroom.webp',
   'Kids Room': '/assets/pop-ceiling/hero/kidsroom.webp',
-  Kitchen: '/assets/waterproofing/hero/kitchen.webp',
+  Kitchen: '/assets/pop-ceiling/hero/kitchen-ceiling.webp',
   'Office / Commercial Space': '/assets/waterproofing/hero/office.webp',
   'other-room': '/assets/projects/modern-interior.webp',
   'Other Room': '/assets/projects/modern-interior.webp',
@@ -44,26 +44,32 @@ export const popRoomTypeImages = {
   'POP TV Wall': '/assets/pop-ceiling/hero/pop-tv-wall.webp',
   'POP Repair & Renovation': '/assets/pop-ceiling/hero/pop-repair-renovation.webp',
   Other: '/assets/pop-ceiling/hero/other.webp',
+  'balcony-pvc': '/assets/pop-ceiling/hero/balcony-pvc.webp',
+  'Balcony PVC': '/assets/pop-ceiling/hero/balcony-pvc.webp',
+  'passage-pvc': '/assets/pop-ceiling/hero/passage-pvc.webp',
+  'Passage PVC': '/assets/pop-ceiling/hero/passage-pvc.webp',
+  'bathroom-pvc': '/assets/pop-ceiling/hero/bathroom-pvc.webp',
+  'Bathroom PVC': '/assets/pop-ceiling/hero/bathroom-pvc.webp',
 };
 
 export const popDesignStyleImages = {
-  'flat-ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
-  'Flat Ceiling': '/assets/pop-ceiling/types/flat-ceiling.webp',
+  'flat-ceiling': '/assets/pop-ceiling/types/flat-ceiling-v2.webp',
+  'Flat Ceiling': '/assets/pop-ceiling/types/flat-ceiling-v2.webp',
 
-  'double-layer-ceiling': '/assets/pop-ceiling/types/double-layer-ceiling.webp',
-  'Double Layer Ceiling': '/assets/pop-ceiling/types/double-layer-ceiling.webp',
+  'double-layer-ceiling': '/assets/pop-ceiling/types/double-layer-ceiling-v2.webp',
+  'Double Layer Ceiling': '/assets/pop-ceiling/types/double-layer-ceiling-v2.webp',
 
-  'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
-  'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling.webp',
+  'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling-v2.webp',
+  'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling-v2.webp',
 
-  'border-ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
-  'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling.webp',
+  'border-ceiling': '/assets/pop-ceiling/types/border-ceiling-v2.webp',
+  'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling-v2.webp',
 
-  'profile-pop': '/assets/pop-ceiling/types/profile-pop.webp',
-  'Profile POP': '/assets/pop-ceiling/types/profile-pop.webp',
+  'profile-pop': '/assets/pop-ceiling/types/profile-pop-v2.webp',
+  'Profile POP': '/assets/pop-ceiling/types/profile-pop-v2.webp',
 
-  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop.webp',
-  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop.webp',
+  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop-v2.webp',
+  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop-v2.webp',
 
   simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
   Simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
