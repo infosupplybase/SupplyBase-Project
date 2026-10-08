@@ -1,0 +1,796 @@
+.page-home .sbx-section { padding: 38px 0; color: #242424; background: #fff; }
+.page-home .sbx-section--soft { background: #faf9f6; }
+.page-home .sbx-section--compact { padding: 24px 0; }
+.page-home .sbx-wrap { width: min(1200px, calc(100% - 48px)); margin-inline: auto; }
+.sbx-section *, .sbx-section *::before, .sbx-section *::after { box-sizing: border-box; }
+.sbx-heading { margin-bottom: 22px; }
+.sbx-eyebrow { display: block; margin-bottom: 8px; color: #8a650b; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; line-height: 1.4; }
+.sbx-heading h2, .sbx-area h2 { margin: 0; color: #242424; font-family: var(--font-display, inherit); font-size: clamp(24px, 2.5vw, 32px); font-weight: 600; line-height: 1.2; text-transform: none; }
+.sbx-heading p, .sbx-area p { max-width: 640px; margin: 10px 0 0; color: #666; font-size: 14px; line-height: 1.65; }
+.sbx-benefits { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.sbx-benefit { display: flex; align-items: flex-start; gap: 13px; min-width: 0; padding: 20px 16px; border: 1px solid #ece8df; border-radius: 14px; background: #fff; }
+.sbx-benefit > div { min-width: 0; }
+.sbx-icon { display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; border-radius: 14px; background: #fbf2dc; color: #936a0c; }
+.sbx-benefit h3, .sbx-project h3, .sbx-note h3 { margin: 0 0 7px; font-family: inherit; font-size: 15px; font-weight: 700; line-height: 1.4; text-transform: none; }
+.sbx-benefit p, .sbx-project p, .sbx-note p { margin: 0; color: #666; font-size: 13px; line-height: 1.65; }
+.sbx-projects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.sbx-project { min-width: 0; overflow: hidden; border: 1px solid #e9e5dc; border-radius: 16px; background: #fff; }
+.sbx-comparison { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: #eee; }
+.sbx-comparison img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sbx-before { position: absolute; inset: 0; }
+.sbx-label { position: absolute; top: 14px; z-index: 2; padding: 6px 10px; border-radius: 6px; background: #252525; color: #fff; font-size: 11px; font-weight: 700; }
+.sbx-label--before { left: 14px; }
+.sbx-label--after { right: 14px; background: #d9a624; color: #211b0b; }
+.sbx-divider { position: absolute; top: 0; bottom: 0; width: 2px; background: #fff; transform: translateX(-50%); pointer-events: none; }
+.sbx-divider > span { position: absolute; top: 50%; left: 50%; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid #eee; border-radius: 50%; background: #fff; color: #936a0c; transform: translate(-50%, -50%); }
+.sbx-project-body { padding: 16px; }
+.sbx-project-body label { display: block; margin-top: 14px; color: #666; font-size: 12px; }
+.sbx-project-body input[type="range"] { display: block; width: 100%; min-height: 32px; margin: 4px 0 0; accent-color: #b88a18; cursor: ew-resize; }
+.sbx-note { display: flex; align-items: center; gap: 20px; padding: 24px; border: 1px solid #e8e2d6; border-radius: 16px; background: #fff; }
+.sbx-note > div, .sbx-area > div { flex: 1; min-width: 0; }
+.sbx-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; min-height: 46px; padding: 12px 18px; border: 1px solid #d9a624; border-radius: 10px; background: #e8b735; color: #251d09; font-size: 13px; font-weight: 700; line-height: 1.4; text-align: center; text-decoration: none; transition: background 180ms ease; }
+.sbx-button svg { flex-shrink: 0; }
+.sbx-button:hover { background: #dbab27; }
+.sbx-button--outline { background: #fff; color: #805d0c; }
+.sbx-button--outline:hover { background: #fff8e7; }
+.sbx-area { display: flex; align-items: center; gap: 20px; padding: 26px; border: 1px solid #ecdfbc; border-radius: 16px; background: #fffbf2; }
+.sbx-area h2 { font-size: clamp(22px, 2vw, 27px); }
+.sbx-faq-layout { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: start; gap: 48px; }
+.sbx-text-link { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; color: #805d0c; font-size: 14px; font-weight: 600; text-decoration: none; }
+.sbx-faq-list { overflow: hidden; border: 1px solid #e8e5de; border-radius: 14px; background: #fff; }
+.sbx-faq + .sbx-faq { border-top: 1px solid #e8e5de; }
+.sbx-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 60px; padding: 16px 20px; font-size: 14px; font-weight: 600; line-height: 1.5; list-style: none; cursor: pointer; }
+.sbx-faq summary::-webkit-details-marker { display: none; }
+.sbx-faq summary svg { flex-shrink: 0; color: #936a0c; }
+.sbx-faq[open] summary { background: #fffbf2; }
+.sbx-faq[open] summary svg { transform: rotate(180deg); }
+.sbx-faq > p { margin: 0; padding: 12px 20px 20px; color: #666; font-size: 14px; line-height: 1.7; }
+.sbx-button:focus-visible, .sbx-text-link:focus-visible, .sbx-faq summary:focus-visible, .sbx-project-body input:focus-visible { outline: 2px solid #936a0c; outline-offset: 4px; }
+@media (max-width: 1000px) {
+  .sbx-benefits { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sbx-faq-layout { gap: 28px; }
+  .sbx-note { flex-wrap: wrap; }
+}
+@media (max-width: 640px) {
+  .page-home .sbx-section { padding: 28px 0; }
+  .page-home .sbx-section--compact { padding: 14px 0; }
+  .page-home .sbx-wrap { width: calc(100% - 32px); }
+  .sbx-heading { margin-bottom: 18px; }
+  .sbx-benefits { gap: 10px; }
+  .sbx-benefit { flex-direction: column; gap: 12px; padding: 16px 12px; }
+  .sbx-icon { width: 42px; height: 42px; flex-basis: 42px; }
+  .sbx-benefit h3 { font-size: 14px; }
+  .sbx-benefit p { font-size: 12px; }
+  .sbx-projects { grid-template-columns: 1fr; gap: 16px; }
+  .sbx-note, .sbx-area { flex-wrap: wrap; align-items: flex-start; gap: 14px; padding: 18px; }
+  .sbx-note > div, .sbx-area > div { flex-basis: calc(100% - 56px); }
+  .sbx-note .sbx-button, .sbx-area .sbx-button { width: 100%; }
+  .sbx-faq-layout { grid-template-columns: 1fr; gap: 20px; }
+  .sbx-faq-layout .sbx-heading { margin-bottom: 8px; }
+  .sbx-faq summary { padding: 15px; font-size: 13px; }
+  .sbx-faq > p { padding: 12px 15px 18px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sbx-button { transition: none; }
+}
+
+/* Homepage location availability */
+.sbx-availability {
+  flex-wrap: wrap;
+}
+.sbx-availability .sbx-availability-copy {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+.sbx-availability .sbx-availability-actions {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+.sbx-availability--available {
+  border-color: #cfe2ce;
+  background: #f8fcf6;
+}
+.sbx-availability--available > .sbx-icon {
+  background: #e6f3e3;
+  color: #286b38;
+}
+.sbx-availability .sbx-served-cities {
+  margin-top: 9px;
+  color: #806c43;
+  font-size: 12px;
+}
+.sbx-location-control .location-select {
+  width: 100%;
+}
+.sbx-location-control .location-btn {
+  width: 100%;
+  min-height: 46px;
+  justify-content: center;
+  border: 1px solid #decda7;
+  border-radius: 10px;
+  background: #fff;
+}
+.sbx-availability .sbx-city-form {
+  flex: 1 0 100%;
+  width: 100%;
+  margin-top: 4px;
+}
+.sbx-city-form > label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.sbx-city-form > div {
+  display: flex;
+  gap: 10px;
+}
+.sbx-city-form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 10px 14px;
+  border: 1px solid #d9d3c7;
+  border-radius: 10px;
+  background: #fff;
+  color: #242424;
+  font: inherit;
+  font-size: 14px;
+}
+.sbx-city-form input:focus-visible {
+  outline: 2px solid #936a0c;
+  outline-offset: 2px;
+}
+@media (max-width: 640px) {
+  .sbx-availability .sbx-availability-copy {
+    flex-basis: calc(100% - 56px);
+  }
+  .sbx-availability .sbx-availability-actions {
+    flex-basis: 100%;
+    width: 100%;
+  }
+  .sbx-city-form > div {
+    flex-direction: column;
+  }
+  .sbx-city-form input {
+    width: 100%;
+    flex: auto;
+  }
+}
+/* End homepage location availability */
+
+
+/* Before and after service options */
+.page-home .sbx-transformation-services {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  align-items: start;
+  gap: 20px 12px;
+  margin: 24px 0 0;
+}
+
+.page-home .sbx-transformation-service {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 6px 2px;
+  border: 0;
+  background: transparent;
+  color: #202020;
+  font: inherit;
+  cursor: pointer;
+}
+
+.page-home .sbx-transformation-service-icon {
+  display: grid;
+  place-items: center;
+  width: 86px;
+  height: 86px;
+  box-sizing: border-box;
+  border: 2px solid #b99756;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #252016, #090909 75%);
+  color: #e6c583;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 5px #e4d7bf;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.page-home .sbx-transformation-service-label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.page-home .sbx-transformation-service.is-active
+.sbx-transformation-service-icon {
+  border-color: #e0ac32;
+  box-shadow: 0 0 0 4px #fff, 0 0 0 6px #c79527;
+}
+
+.page-home .sbx-transformation-service.is-active
+.sbx-transformation-service-label {
+  color: #8a6213;
+}
+
+.page-home .sbx-transformation-service:focus-visible {
+  outline: 2px solid #b58b28;
+  outline-offset: 7px;
+  border-radius: 12px;
+}
+
+.page-home .sbx-transformation-services + .sbx-projects {
+  margin-top: 30px;
+}
+
+@media (hover: hover) {
+  .page-home .sbx-transformation-service:hover
+  .sbx-transformation-service-icon {
+    transform: translateY(-3px);
+  }
+}
+
+@media (max-width: 900px) {
+  .page-home .sbx-transformation-services {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-home .sbx-transformation-services {
+    gap: 22px 8px;
+  }
+
+  .page-home .sbx-transformation-service-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .page-home .sbx-transformation-service-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .page-home .sbx-transformation-service-label {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-home .sbx-transformation-service-icon {
+    transition: none;
+  }
+}
+/* End before and after service options */
+
+/* Eight before and after services */
+.page-home .sbx-transformation-services {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+@media (max-width: 1000px) {
+  .page-home .sbx-transformation-services {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .page-home .sbx-transformation-services {
+    gap: 24px 8px;
+  }
+
+  .page-home .sbx-transformation-service-label {
+    max-width: 100%;
+    font-size: 10px;
+    line-height: 1.5;
+    overflow-wrap: normal;
+  }
+}
+/* End eight before and after services */
+
+/* Before and after separate popup */
+.sbx-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, .5);
+}
+
+.sbx-preview-dialog {
+  width: 100%;
+  max-width: 900px;
+  max-height: 90dvh;
+  overflow: auto;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, .2);
+  outline: none;
+}
+
+.sbx-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 24px;
+  border-bottom: 1px solid #eee5d5;
+}
+
+.sbx-preview-header .sbx-eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: #956b16;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+}
+
+.sbx-preview-header h2 {
+  margin: 0;
+  color: #222;
+  font-size: 24px;
+  line-height: 1.4;
+}
+
+.sbx-preview-close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid #e5e5e5;
+  border-radius: 50%;
+  background: #fff;
+  color: #333;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.sbx-preview-close:focus-visible {
+  outline: 2px solid #b58b28;
+  outline-offset: 3px;
+}
+
+.sbx-preview-content {
+  min-height: 180px;
+}
+
+@media (max-width: 600px) {
+  .sbx-preview-overlay { padding: 14px; }
+  .sbx-preview-header { padding: 18px 16px; gap: 12px; }
+  .sbx-preview-header h2 { font-size: 19px; }
+}
+/* End before and after separate popup */
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Why choose balanced cards */
+.page-home .home-how {
+  margin-bottom: 0;
+  padding-bottom: 24px;
+}
+
+.page-home .sbx-why-choose {
+  margin: 0;
+  padding: 12px 0 28px;
+  background: #fff;
+}
+
+.page-home .sbx-why-choose .popular-services-head {
+  margin: 0 0 22px;
+}
+
+.page-home .sbx-why-choose .sbx-benefits {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+.page-home .sbx-why-choose .sbx-benefit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  min-width: 0;
+  min-height: 190px;
+  margin: 0;
+  padding: 24px 20px;
+  overflow: hidden;
+  border: 1px solid #eae5db;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff, #fffcf6);
+  box-shadow: 0 4px 16px rgba(45, 35, 15, .04);
+  text-align: center;
+}
+
+.page-home .sbx-why-choose .sbx-benefit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 35%;
+  right: 35%;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: #c9a047;
+}
+
+.page-home .sbx-why-choose .sbx-benefit > .sbx-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  border: 1px solid #efdfb8;
+  border-radius: 14px;
+  background: #fbf2dc;
+  color: #a47716;
+}
+
+.page-home .sbx-why-choose .sbx-benefit > div {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.page-home .sbx-why-choose .sbx-benefit h3 {
+  margin: 0 0 8px;
+  padding: 0;
+  color: #222;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.page-home .sbx-why-choose .sbx-benefit p {
+  max-width: 28ch;
+  margin: 0 auto;
+  padding: 0;
+  color: #687078;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+@media (max-width: 900px) {
+  .page-home .sbx-why-choose .sbx-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .page-home .home-how {
+    padding-bottom: 18px;
+  }
+
+  .page-home .sbx-why-choose {
+    padding: 10px 0 24px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefits {
+    gap: 12px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit {
+    min-height: 0;
+    padding: 20px 12px;
+    gap: 12px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit h3 {
+    font-size: 14px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit p {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 340px) {
+  .page-home .sbx-why-choose .sbx-benefits {
+    grid-template-columns: 1fr;
+  }
+}
+/* End why choose balanced cards */
+
+/* Why choose black and gold panel */
+.page-home .sbx-why-choose {
+  padding-top: 20px;
+  padding-bottom: 28px;
+  background: #fff;
+}
+
+.page-home .sbx-why-choose > .container {
+  position: relative;
+}
+
+/* The panel stays inside the existing shared container. */
+.page-home .sbx-why-choose .popular-services-head {
+  margin: 0;
+  padding: 24px 24px 20px;
+  border: 1px solid #30291a;
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
+  background: #14120d;
+}
+
+.page-home .sbx-why-choose .popular-services-title {
+  margin: 0;
+  color: #fff8e8;
+}
+
+.page-home .sbx-why-choose .sbx-benefits {
+  gap: 16px;
+  padding: 0 24px 24px;
+  border: 1px solid #30291a;
+  border-top: 0;
+  border-radius: 0 0 20px 20px;
+  background: #14120d;
+}
+
+.page-home .sbx-why-choose .sbx-benefit {
+  min-height: 176px;
+  padding: 22px 16px;
+  border: 1px solid #443922;
+  border-radius: 14px;
+  background: #1e1b14;
+  box-shadow: none;
+}
+
+.page-home .sbx-why-choose .sbx-benefit::before {
+  background: #d4ab48;
+}
+
+.page-home .sbx-why-choose .sbx-benefit > .sbx-icon {
+  border-color: #685124;
+  background: #332a16;
+  color: #f0cb70;
+}
+
+.page-home .sbx-why-choose .sbx-benefit h3 {
+  color: #fff8e8;
+}
+
+.page-home .sbx-why-choose .sbx-benefit p {
+  color: #d0c9b9;
+}
+
+@media (max-width: 600px) {
+  .page-home .sbx-why-choose .popular-services-head {
+    padding: 20px 16px 18px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefits {
+    gap: 12px;
+    padding: 0 16px 20px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit {
+    min-height: 0;
+    padding: 18px 12px;
+  }
+}
+/* End why choose black and gold panel */
+
+/* Booking to consultation spacing */
+.page-home .home-how {
+  margin-bottom: 0 !important;
+  padding-bottom: 56px !important;
+}
+
+@media (max-width: 600px) {
+  .page-home .home-how {
+    padding-bottom: 36px !important;
+  }
+}
+/* End booking to consultation spacing */
+
+/* Consultation to why choose spacing */
+.page-home .sbx-why-choose {
+  margin-top: 0 !important;
+  padding-top: 56px !important;
+}
+
+@media (max-width: 600px) {
+  .page-home .sbx-why-choose {
+    padding-top: 36px !important;
+  }
+}
+/* End consultation to why choose spacing */
+
+/* Why choose to project section spacing */
+.page-home .sbx-why-choose {
+  margin-bottom: 0 !important;
+  padding-bottom: 32px !important;
+}
+
+.page-home .wss {
+  margin-top: 0 !important;
+  padding-top: 32px !important;
+}
+
+@media (max-width: 600px) {
+  .page-home .sbx-why-choose {
+    padding-bottom: 24px !important;
+  }
+
+  .page-home .wss {
+    padding-top: 24px !important;
+  }
+}
+/* End why choose to project section spacing */
+
+/* Refined why choose panel */
+.page-home .sbx-why-choose .popular-services-head {
+  padding: 28px 28px 22px;
+  border-color: #393021;
+  background: #15130e;
+}
+
+.page-home .sbx-why-choose .popular-services-title {
+  color: #fff8e8;
+  line-height: 1.25;
+}
+
+.page-home .sbx-why-choose .sbx-benefits {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 18px;
+  padding: 0 28px 28px;
+  border-color: #393021;
+  background: #15130e;
+}
+
+.page-home .sbx-why-choose .sbx-benefit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  min-width: 0;
+  min-height: 200px;
+  padding: 24px 18px;
+  border: 1px solid #443a25;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #252116, #1c1912);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+  text-align: center;
+  transition: transform .2s ease, border-color .2s ease,
+              box-shadow .2s ease;
+}
+
+.page-home .sbx-why-choose .sbx-benefit::before {
+  content: none;
+}
+
+.page-home .sbx-why-choose .sbx-benefit .sbx-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  margin: 0;
+  border: 1px solid #715925;
+  border-radius: 14px;
+  background: #352b16;
+  color: #f2ca64;
+}
+
+.page-home .sbx-why-choose .sbx-benefit > div {
+  width: 100%;
+  min-width: 0;
+}
+
+.page-home .sbx-why-choose .sbx-benefit h3 {
+  margin: 0 0 9px;
+  color: #fff8e8;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.page-home .sbx-why-choose .sbx-benefit p {
+  max-width: 28ch;
+  margin: 0 auto;
+  color: #d2c9b7;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .page-home .sbx-why-choose .sbx-benefit:hover {
+    transform: translateY(-4px);
+    border-color: #ac8431;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, .2);
+  }
+}
+
+@media (max-width: 900px) {
+  .page-home .sbx-why-choose .sbx-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .page-home .sbx-why-choose .popular-services-head {
+    padding: 22px 16px 18px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefits {
+    gap: 12px;
+    padding: 0 16px 20px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit {
+    min-height: 0;
+    gap: 14px;
+    padding: 20px 12px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit h3 {
+    font-size: 14px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit p {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .page-home .sbx-why-choose .sbx-benefits {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-home .sbx-why-choose .sbx-benefit {
+    transition: none;
+  }
+}
+/* End refined why choose panel */
+
+/* Service availability top spacing */
+.page-home .sbx-section:has(.sbx-availability) {
+  padding-top: 56px !important;
+}
+
+@media (max-width: 600px) {
+  .page-home .sbx-section:has(.sbx-availability) {
+    padding-top: 36px !important;
+  }
+}
+/* End service availability top spacing */

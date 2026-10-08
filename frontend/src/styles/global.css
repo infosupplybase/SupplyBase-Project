@@ -3556,3 +3556,69 @@ button[aria-label="Close booking modal"] {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* Waterproofing mobile intro spacing */
+@media (max-width: 767px) {
+  .wp-intro-section.wp-intro-section > .container.container-narrow {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+    padding-inline: 14px !important;
+    box-sizing: border-box !important;
+  }
+
+  .wp-intro-section.wp-intro-section .pnt-intro-heading,
+  .wp-intro-section.wp-intro-section .pnt-intro-text {
+    width: 100% !important;
+    margin-inline: 0 !important;
+    padding-inline: 0 !important;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+  }
+
+  .wp-intro-section.wp-intro-section .pnt-intro-heading {
+    margin-top: 0;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .wp-intro-section.wp-intro-section .pnt-intro-text {
+    line-height: 1.6;
+  }
+
+  .wp-intro-section.wp-intro-section .pnt-intro-trust {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 18px 0 12px !important;
+    padding: 0 !important;
+    list-style: none;
+    box-sizing: border-box;
+  }
+
+  .wp-intro-section.wp-intro-section .pnt-intro-trust li {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 0;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center;
+  }
+
+  .wp-intro-section.wp-intro-section .pnt-intro-trust li svg {
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  .wp-intro-section.wp-intro-section .pnt-intro-trust li span {
+    font-size: 11px;
+    line-height: 1.45;
+    overflow-wrap: break-word;
+  }
+}
+/* End waterproofing mobile intro spacing */
