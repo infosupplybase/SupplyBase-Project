@@ -135,6 +135,7 @@ export default function Join() {
   const [trades, setTrades] = useState(null);
   const [tradesError, setTradesError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
@@ -279,6 +280,26 @@ export default function Join() {
 
       <div className="auth-card-wrap">
         <div className="auth-card auth-card-tall">
+
+          <div className="partner-tutorial-mobile">
+        <button
+          type="button"
+          className="partner-tutorial-preview"
+          onClick={() => setShowTutorial(true)}
+          aria-label="Watch partner registration tutorial"
+        >
+          <video
+  src="/videos/registration-tutorial.mp4"
+  autoPlay
+  muted
+  loop
+  playsInline
+  preload="auto"
+/>
+
+        </button>
+      </div>
+
           <a href={SITE_URL} className="auth-logo">
             <img src="/assets/brand/logo.png" alt={`${COMPANY_NAME} logo`} />
           </a>
@@ -294,41 +315,41 @@ export default function Join() {
 
           <form onSubmit={handleSubmit} noValidate className="auth-form">
             {!withAccount && (
-            <>
-            <Field id="fullName" error={errors.fullName} label="Full Name" icon="user" required>
-              <input
-                id="pj-fullName"
-                type="text"
-                value={form.fullName}
-                onChange={update('fullName')}
-                placeholder="Ravi Kumar"
-                autoComplete="name"
-              />
-            </Field>
+              <>
+                <Field id="fullName" error={errors.fullName} label="Full Name" icon="user" required>
+                  <input
+                    id="pj-fullName"
+                    type="text"
+                    value={form.fullName}
+                    onChange={update('fullName')}
+                    placeholder="Ravi Kumar"
+                    autoComplete="name"
+                  />
+                </Field>
 
-            <Field id="phone" error={errors.phone} label="Mobile Number" icon="phone" required hint="You can sign in with this number too.">
-              <input
-                id="pj-phone"
-                type="tel"
-                value={form.phone}
-                onChange={update('phone')}
-                placeholder="98765 43210"
-                autoComplete="tel"
-                inputMode="numeric"
-              />
-            </Field>
+                <Field id="phone" error={errors.phone} label="Mobile Number" icon="phone" required hint="You can sign in with this number too.">
+                  <input
+                    id="pj-phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={update('phone')}
+                    placeholder="98765 43210"
+                    autoComplete="tel"
+                    inputMode="numeric"
+                  />
+                </Field>
 
-            <Field id="email" error={errors.email} label="Email Address" icon="mail" required>
-              <input
-                id="pj-email"
-                type="email"
-                value={form.email}
-                onChange={update('email')}
-                placeholder="name@domain.com"
-                autoComplete="email"
-              />
-            </Field>
-            </>
+                <Field id="email" error={errors.email} label="Email Address" icon="mail" required>
+                  <input
+                    id="pj-email"
+                    type="email"
+                    value={form.email}
+                    onChange={update('email')}
+                    placeholder="name@domain.com"
+                    autoComplete="email"
+                  />
+                </Field>
+              </>
             )}
 
             <Field id="primaryTrade" error={errors.primaryTrade} label="What work do you do?" icon="wrench" required>
@@ -436,56 +457,56 @@ export default function Join() {
             </div>
 
             {!withAccount && (
-            <>
-            <div className="auth-row-2">
-              <Field id="password" error={errors.password} label="Password" icon="lock" required>
-                <input
-                  id="pj-password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={update('password')}
-                  placeholder="Letters and numbers, 8+"
-                  autoComplete="new-password"
-                  maxLength={72}
-                  aria-describedby="pj-strength"
-                />
-                <button
-                  type="button"
-                  className="auth-input-toggle"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  <Icon name={showPassword ? 'eye-off' : 'eye'} size={18} />
-                </button>
-              </Field>
+              <>
+                <div className="auth-row-2">
+                  <Field id="password" error={errors.password} label="Password" icon="lock" required>
+                    <input
+                      id="pj-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={form.password}
+                      onChange={update('password')}
+                      placeholder="Letters and numbers, 8+"
+                      autoComplete="new-password"
+                      maxLength={72}
+                      aria-describedby="pj-strength"
+                    />
+                    <button
+                      type="button"
+                      className="auth-input-toggle"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      <Icon name={showPassword ? 'eye-off' : 'eye'} size={18} />
+                    </button>
+                  </Field>
 
-              <Field id="confirm" error={errors.confirm} label="Confirm Password" icon="lock" required>
-                <input
-                  id="pj-confirm"
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.confirm}
-                  onChange={update('confirm')}
-                  placeholder="Type it once more"
-                  autoComplete="new-password"
-                  maxLength={72}
-                />
-              </Field>
-            </div>
+                  <Field id="confirm" error={errors.confirm} label="Confirm Password" icon="lock" required>
+                    <input
+                      id="pj-confirm"
+                      type={showPassword ? 'text' : 'password'}
+                      value={form.confirm}
+                      onChange={update('confirm')}
+                      placeholder="Type it once more"
+                      autoComplete="new-password"
+                      maxLength={72}
+                    />
+                  </Field>
+                </div>
 
-            {form.password && (
-              <div id="pj-strength" className="pw-strength" data-score={passwordProblem(form.password, form) ? 0 : passwordScore(form.password)}>
-                <span className="pw-strength-bar" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                  <span />
-                </span>
-                <span className="pw-strength-text">
-                  {passwordProblem(form.password, form) || `${STRENGTH[passwordScore(form.password)]} password`}
-                </span>
-              </div>
-            )}
-            </>
+                {form.password && (
+                  <div id="pj-strength" className="pw-strength" data-score={passwordProblem(form.password, form) ? 0 : passwordScore(form.password)}>
+                    <span className="pw-strength-bar" aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                      <span />
+                    </span>
+                    <span className="pw-strength-text">
+                      {passwordProblem(form.password, form) || `${STRENGTH[passwordScore(form.password)]} password`}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="login-meta">
@@ -522,23 +543,58 @@ export default function Join() {
             </button>
           </form>
 
-{withAccount ? (
-  <p className="auth-switch">
-    Not you?{' '}
-    <button type="button" className="auth-inline-link" onClick={() => logout()}>
-      Sign out
-    </button>
-  </p>
-) : (
-  <p className="auth-switch">
-    Already applied?{' '}
-    <Link to={isEmbedded ? '/login?embed=1' : '/login'}>
-      Partner Login
-    </Link>
-  </p>
-)}
+          {withAccount ? (
+            <p className="auth-switch">
+              Not you?{' '}
+              <button type="button" className="auth-inline-link" onClick={() => logout()}>
+                Sign out
+              </button>
+            </p>
+          ) : (
+            <p className="auth-switch">
+              Already applied?{' '}
+              <Link to={isEmbedded ? '/login?embed=1' : '/login'}>
+                Partner Login
+              </Link>
+            </p>
+          )}
         </div>
       </div>
+
+      {showTutorial && (
+        <div
+          className="partner-tutorial-overlay"
+          role="presentation"
+          onClick={() => setShowTutorial(false)}
+        >
+          <div
+            className="partner-tutorial-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Partner registration tutorial"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="partner-tutorial-close"
+              onClick={() => setShowTutorial(false)}
+              aria-label="Close tutorial"
+            >
+              <span aria-hidden="true" style={{ fontSize: "26px", fontWeight: 700, lineHeight: 1 }}>
+  ×
+</span>
+            </button>
+
+            <video
+              src="/videos/registration-tutorial.mp4"
+              controls
+              autoPlay
+              playsInline
+              className="partner-tutorial-player"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

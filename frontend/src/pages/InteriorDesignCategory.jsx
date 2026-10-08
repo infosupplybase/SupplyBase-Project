@@ -21,38 +21,38 @@ export default function InteriorDesignCategory({
   return (
     <>
       {!modal && (
-  <PaintingHero
-    eyebrow={idOverviewIntro.eyebrow}
-    title={idOverviewIntro.title}
-    tagline={idOverviewIntro.text}
-    image={ID_HERO_IMAGE}
-    trustPoints={idTrustPoints}
-  />
-)}
+        <PaintingHero
+          eyebrow={idOverviewIntro.eyebrow}
+          title={idOverviewIntro.title}
+          tagline={idOverviewIntro.text}
+          image={ID_HERO_IMAGE}
+          trustPoints={idTrustPoints}
+        />
+      )}
 
       <section className={modal ? 'w-full' : 'pnt-section'}>
-  <div className={modal ? 'w-full' : 'container container-narrow'}>
+        <div className={modal ? 'w-full' : 'container container-narrow'}>
           <div className="id-filter-pills" role="tablist">
             {idProjectTypeFilters.map((f) => (
               f.key === 'custom' ? (
                 modal ? (
-  <button
-    key={f.key}
-    type="button"
-    className="id-filter-pill"
-    onClick={onCustom}
-  >
-    {f.label}
-  </button>
-) : (
-  <Link
-    key={f.key}
-    to="/quote?service=interior-design"
-    className="id-filter-pill"
-  >
-    {f.label}
-  </Link>
-)
+                  <button
+                    key={f.key}
+                    type="button"
+                    className="id-filter-pill"
+                    onClick={onCustom}
+                  >
+                    {f.label}
+                  </button>
+                ) : (
+                  <Link
+                    key={f.key}
+                    to="/quote?service=interior-design"
+                    className="id-filter-pill"
+                  >
+                    {f.label}
+                  </Link>
+                )
               ) : (
                 <button
                   key={f.key}
@@ -70,65 +70,65 @@ export default function InteriorDesignCategory({
 
           <div className="id-category-grid">
             {visible.map((cat) =>
-  modal ? (
-    <button
-      key={cat.slug}
-      type="button"
-      className="id-category-card !w-full !text-left"
-      onClick={() => onSelectCategory?.(cat.slug)}
-    >
-      <span className="id-category-photo">
-        <img
-          src={cat.image}
-          alt=""
-          loading="lazy"
-        />
-      </span>
+              modal ? (
+                <button
+                  key={cat.slug}
+                  type="button"
+                  className="id-category-card !w-full !text-left"
+                  onClick={() => onSelectCategory?.(cat.slug)}
+                >
+                  <span className="id-category-photo">
+                    <img
+                      src={cat.image}
+                      alt=""
+                      loading="lazy"
+                    />
+                  </span>
 
-      <span className="id-category-body">
-        <strong>{cat.name}</strong>
-        <span>{cat.tagline}</span>
-        <span className="id-category-area">
-          {cat.areaNote}
-        </span>
-      </span>
+                  <span className="id-category-body">
+                    <strong>{cat.name}</strong>
+                    <span>{cat.tagline}</span>
+                    <span className="id-category-area">
+                      {cat.areaNote}
+                    </span>
+                  </span>
 
-      {/* <Icon
+                  {/* <Icon
         name="chevron-right"
         size={18}
         className="pnt-overview-arrow"
       /> */}
-    </button>
-  ) : (
-    <Link
-      key={cat.slug}
-      to={`/services/interior-design/${cat.slug}`}
-      className="id-category-card"
-    >
-      <span className="id-category-photo">
-        <img
-          src={cat.image}
-          alt=""
-          loading="lazy"
-        />
-      </span>
+                </button>
+              ) : (
+                <Link
+                  key={cat.slug}
+                  to={`/services/interior-design/${cat.slug}`}
+                  className="id-category-card"
+                >
+                  <span className="id-category-photo">
+                    <img
+                      src={cat.image}
+                      alt=""
+                      loading="lazy"
+                    />
+                  </span>
 
-      <span className="id-category-body">
-        <strong>{cat.name}</strong>
-        <span>{cat.tagline}</span>
-        <span className="id-category-area">
-          {cat.areaNote}
-        </span>
-      </span>
+                  <span className="id-category-body">
+                    <strong>{cat.name}</strong>
+                    <span>{cat.tagline}</span>
+                    <span className="id-category-area">
+                      {cat.areaNote}
+                    </span>
+                  </span>
 
-      {/* <Icon
+                  {/* <Icon
         name="chevron-right"
         size={18}
         className="pnt-overview-arrow"
       /> */}
-    </Link>
-  )
-)}
+                </Link>
+              )
+            )}
           </div>
         </div>
       </section>

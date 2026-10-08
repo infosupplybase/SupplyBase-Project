@@ -1611,3 +1611,25 @@
 .painting-modal-scope .pnt-swatch:hover {
   transform: none !important;
 }
+/* Hide Villa / Independent House subtext */
+.painting-modal-scope
+.pnt-option:has(input[value="independent-house"])
+.pnt-option-hint {
+  display: none !important;
+}
+
+/* Remove extra space from only this card */
+.painting-modal-scope
+.pnt-option:has(input[value="independent-house"]) {
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* Painting flow - smaller Continue button aligned right */
+/* Painting flow - smaller Continue button aligned right */
+.painting-modal-scope .pnt-step-actions .btn-primary {
+  flex: 0 0 auto !important;
+  width: 120px !important;
+  min-width: 120px !important;
+  margin-left: auto !important;
+}
