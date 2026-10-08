@@ -5,6 +5,16 @@ import Reveal from '../components/ui/Reveal';
 import { electricalGroups } from '../data/electricalContent';
 import { formatRupees } from '../lib/money';
 
+/* Category cards show a photo of the group's first service. */
+const electricalCategoryImages = {
+  'fan-services': '/assets/services/electrician/01-ceiling-fan-installation.webp',
+  'light-services': '/assets/services/electrician/01-bulb-holder-installation.webp',
+  'switch-socket-services': '/assets/services/electrician/01-switch-replacement.webp',
+  'wiring-electrical-repair': '/assets/services/electrician/01-external-wiring.webp',
+  'mcb-db-inverter': '/assets/services/electrician/01-mcb-replacement.webp',
+  'appliance-installation': '/assets/services/electrician/01-geyser-installation.webp',
+};
+
 /* The card's "From" price is the cheapest priced item actually listed in the
    group, so it can never drift from the list behind it (the hand-typed
    figures did: Fan Services said ₹79 with nothing under ₹99). */
@@ -31,9 +41,9 @@ export default function ElectricalCategory({
     const fromPrice = fromPriceOf(group);
     const content = (
       <>
-        <span className="plb-overview-photo">
+        <span className="plb-overview-photo electrical-category-photo">
           <img
-            src={group.image}
+            src={electricalCategoryImages[group.slug] || group.image}
             alt={group.name}
             loading={index < 3 ? 'eager' : 'lazy'}
           />
