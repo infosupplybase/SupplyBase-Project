@@ -6,11 +6,30 @@ import ServiceRow from '../components/plumbing/ServiceRow';
 import ViewCartBox from '../components/plumbing/ViewCartBox';
 import { getElectricalGroup } from '../data/electricalContent';
 
-/**
- * The "Select a Service" screen for one electrician category — in the
- * booking pop-up, and at /services/electrical/:group. Mirrors PlumbingTab —
- * same ServiceRow and StickyCartBar, on the electrical cart.
+/*
+ * Images used for the six main electrician categories.
+ * These images are loaded from frontend/public/assets.
  */
+const electricalServiceImages = {
+  'Fan Services':
+    '/assets/services/electrician/fan-services.webp',
+
+  'Light Services':
+    '/assets/services/electrician/light-services.webp',
+
+  'Switch & Socket Services':
+    '/assets/services/electrician/switch-socket-services.webp',
+
+  'Wiring & Electrical Repair':
+    '/assets/services/electrician/wiring-electrical-repair.webp',
+
+  'MCB, DB & Inverter':
+    '/assets/services/electrician/mcb-db-inverter.webp',
+
+  'Appliance Installation':
+    '/assets/services/electrician/appliance-installation.webp',
+};
+
 export default function ElectricalTab({
   modal = false,
   tabSlug,
@@ -18,18 +37,31 @@ export default function ElectricalTab({
   onViewCart,
 }) {
   const navigate = useNavigate();
-  const group = useMemo(() => getElectricalGroup(tabSlug), [tabSlug]);
+
+  const group = useMemo(
+    () => getElectricalGroup(tabSlug),
+    [tabSlug]
+  );
+
   const [query, setQuery] = useState('');
-  const viewCart = onViewCart || (() => navigate('/services/electrical/cart'));
+
+  const viewCart =
+    onViewCart ||
+    (() => navigate('/services/electrical/cart'));
 
   const items = useMemo(() => {
     if (!group) return [];
+
     const q = query.trim().toLowerCase();
-    if (!q) return group.items;
+
+    if (!q) {
+      return group.items;
+    }
+
     return group.items.filter(
-      (i) =>
-        i.label.toLowerCase().includes(q) ||
-        (i.hint || '').toLowerCase().includes(q)
+      (item) =>
+        item.label.toLowerCase().includes(q) ||
+        (item.hint || '').toLowerCase().includes(q)
     );
   }, [group, query]);
 
@@ -43,7 +75,10 @@ export default function ElectricalTab({
       <Icon name="arrow-left" size={18} />
     </button>
   ) : (
-    <Link to="/services/electrical" className="plb-back-link">
+    <Link
+      to="/services/electrical"
+      className="plb-back-link"
+    >
       <Icon name="arrow-left" size={18} />
       All electrical services
     </Link>
@@ -54,7 +89,10 @@ export default function ElectricalTab({
       <section className="plb-section !py-0 !pb-4">
         <div className="container !w-full !max-w-none !px-0">
           {back}
-          <p className="question-hint">Service not found.</p>
+
+          <p className="question-hint">
+            Service not found.
+          </p>
         </div>
       </section>
     );
@@ -69,19 +107,40 @@ export default function ElectricalTab({
           text="Pick the services you need — add them to your cart and book one visit."
           image="/assets/services/electrician/hero.webp"
           breadcrumbs={[
-            { label: 'Services', to: '/services' },
-            { label: 'Electrical', to: '/services/electrical' },
-            { label: group.name },
+            {
+              label: 'Services',
+              to: '/services',
+            },
+            {
+              label: 'Electrical',
+              to: '/services/electrical',
+            },
+            {
+              label: group.name,
+            },
           ]}
         />
       )}
 
-      <section className={modal ? 'plb-section !py-0 !pb-4' : 'plb-section'}>
-        <div className={modal ? 'container !w-full !max-w-none !px-0' : 'container container-narrow'}>
+      <section
+        className={
+          modal
+            ? 'plb-section !py-0 !pb-4'
+            : 'plb-section'
+        }
+      >
+        <div
+          className={
+            modal
+              ? 'container !w-full !max-w-none !px-0'
+              : 'container container-narrow'
+          }
+        >
           {back}
 
           <div className="plb-search elc-tab-search">
             <Icon name="search" size={18} />
+
             <input
               type="text"
               value={query}
@@ -91,20 +150,33 @@ export default function ElectricalTab({
             />
           </div>
 
-          <h4 className="plb-select-heading">SELECT A SERVICE</h4>
+          <h4 className="plb-select-heading">
+            SELECT A SERVICE
+          </h4>
 
           {items.length === 0 ? (
-            <p className="question-hint">No matching services.</p>
+            <p className="question-hint">
+              No matching services.
+            </p>
           ) : (
-            <div className="plb-list">
+            <div className="plb-list elc-service-list">
               {items.map((item) => (
-                <ServiceRow key={item.value} item={item} group={group.name} />
+                <ServiceRow
+                  key={item.value}
+                  item={item}
+                  group={group.name}
+                  image={
+                    electricalServiceImages[item.label] || ''
+                  }
+                />
               ))}
             </div>
           )}
 
-          {/* The same box as plumbing's service list */}
-          <ViewCartBox cart="electrical" onViewCart={viewCart} />
+          <ViewCartBox
+            cart="electrical"
+            onViewCart={viewCart}
+          />
         </div>
       </section>
     </>

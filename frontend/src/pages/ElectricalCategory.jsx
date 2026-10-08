@@ -5,12 +5,34 @@ import Reveal from '../components/ui/Reveal';
 import { electricalGroups } from '../data/electricalContent';
 import { formatRupees } from '../lib/money';
 
-/* The card's "From" price is the cheapest priced item actually listed in the
-   group, so it can never drift from the list behind it (the hand-typed
-   figures did: Fan Services said ₹79 with nothing under ₹99). */
+const electricalCategoryImages = {
+  'fan-services':
+    '/assets/services/electrician/01-ceiling-fan-installation.webp',
+
+  'light-services':
+    '/assets/services/electrician/01-bulb-holder-installation.webp',
+
+  'switch-socket-services':
+    '/assets/services/electrician/01-switch-replacement.webp',
+
+  'wiring-electrical-repair':
+    '/assets/services/electrician/01-external-wiring.webp',
+
+  'mcb-db-inverter':
+    '/assets/services/electrician/01-mcb-replacement.webp',
+
+'appliance-installation':
+  'https://5.imimg.com/data5/SELLER/Default/2025/8/536411164/HG/WD/IG/118748666/washing-machine-deep-cleaning-service-500x500.jpg',
+};
+
 const fromPriceOf = (group) => {
-  const prices = (group.items || []).map((i) => i.price).filter((p) => p > 0);
-  return prices.length ? Math.min(...prices) : group.fromPrice ?? null;
+  const prices = (group.items || [])
+    .map((item) => item.price)
+    .filter((price) => price > 0);
+
+  return prices.length
+    ? Math.min(...prices)
+    : group.fromPrice ?? null;
 };
 
 export default function ElectricalCategory({
@@ -24,16 +46,22 @@ export default function ElectricalCategory({
       onSelectTab(group.slug);
       return;
     }
+
     navigate(`/services/electrical/${group.slug}`);
   };
 
   const renderCard = (group, index) => {
     const fromPrice = fromPriceOf(group);
+
+    const image =
+      electricalCategoryImages[group.slug] ||
+      group.image;
+
     const content = (
       <>
-        <span className="plb-overview-photo">
+        <span className="plb-overview-photo electrical-category-photo">
           <img
-            src={group.image}
+            src={image}
             alt={group.name}
             loading={index < 3 ? 'eager' : 'lazy'}
           />
@@ -91,8 +119,13 @@ export default function ElectricalCategory({
           text="Certified electricians for wiring, fans, switches, repairs and more — pick a service to get started."
           image="/assets/services/electrician/hero.webp"
           breadcrumbs={[
-            { label: 'Services', to: '/services' },
-            { label: 'Electrical' },
+            {
+              label: 'Services',
+              to: '/services',
+            },
+            {
+              label: 'Electrical',
+            },
           ]}
         />
       )}
@@ -112,9 +145,12 @@ export default function ElectricalCategory({
           }
         >
           <div className="plb-overview-grid">
-            {electricalGroups.map((group, i) => (
-              <Reveal key={group.slug} delay={i * 30}>
-                {renderCard(group, i)}
+            {electricalGroups.map((group, index) => (
+              <Reveal
+                key={group.slug}
+                delay={index * 30}
+              >
+                {renderCard(group, index)}
               </Reveal>
             ))}
           </div>
