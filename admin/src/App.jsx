@@ -10,6 +10,9 @@ import AdminProjectDetail from './pages/AdminProjectDetail';
 import AdminPayments from './pages/AdminPayments';
 import AdminUsers from './pages/AdminUsers';
 import AdminPartners from './pages/AdminPartners';
+import AdminChatbot from './pages/AdminChatbot';
+
+
 
 /**
  * ROUTES
@@ -45,6 +48,7 @@ export default function App() {
         <Route path="payments" element={<AdminPayments />} />
         <Route path="partners" element={<AdminPartners />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="chatbot" element={<AdminChatbot />} />
         {/* Anything else signed in goes to the dashboard, not a blank page. */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
