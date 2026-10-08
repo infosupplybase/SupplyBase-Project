@@ -1535,6 +1535,63 @@ export const tvWallDetails = [  {
 
 
 /* =========================================================
+   TV WALL — "WHAT'S INCLUDED" CARDS (icon + image + description)
+   ---------------------------------------------------------
+   Your tvWallDetails[].included lists are plain strings. This
+   turns each string into { title, icon, desc, image } using the
+   same wording as the PDF. To change one item for one design,
+   put an object in the list instead of a string, e.g.
+   { title: 'Wall Sconces (2 Nos.)', desc: 'Modern wall lights as per design' }
+   ========================================================= */
+
+const INCLUDED_IMG_DIR = '/assets/projects/interior-by-choice/tv-wall/included';
+
+const includedRules = [
+  { test: /consult|guidance|styling|customis/i, key: 'consult', icon: 'consult',
+    desc: 'Guidance on dimensions, material selection and customisation' },
+  { test: /sconce/i, key: 'sconce', icon: 'sconce',
+    desc: 'Modern wall lights as per design' },
+  { test: /install/i, key: 'install', icon: 'install',
+    desc: 'Complete on-site installation' },
+  { test: /tv (set ?up|mount)|wall-mounted tv/i, key: 'tv-mount', icon: 'tv',
+    desc: 'TV mounting on panel (in installation scope)' },
+  { test: /shelf|shelves|niche|display/i, key: 'shelf', icon: 'shelf',
+    desc: 'Sturdy wooden shelves as per design' },
+  { test: /led|lighting/i, key: 'led', icon: 'led',
+    desc: 'Warm ambient lighting as per design' },
+  { test: /marble/i, key: 'marble', icon: 'marble',
+    desc: 'High-quality laminate/veneer with premium finish' },
+  { test: /fireplace/i, key: 'fireplace', icon: 'fire',
+    desc: 'Elegant glass-enclosed fireplace unit' },
+  { test: /cabinet|console|storage/i, key: 'cabinet', icon: 'cabinet',
+    desc: 'Spacious drawers and open shelf as per design' },
+  { test: /premium|material/i, key: 'premium-finish', icon: 'sparkle',
+    desc: 'Clean edges and professional finish' },
+  { test: /slat|fluted|wood panel|wooden/i, key: 'slat', icon: 'slat',
+    desc: 'Premium wooden slat panels as per design' },
+];
+
+const includedFallback = {
+  key: 'wall-finish',
+  icon: 'finish',
+  desc: 'High-quality laminate/paint finish',
+};
+
+export const getIncludedItems = (list = []) =>
+  list.map((entry) => {
+    const base = typeof entry === 'string' ? { title: entry } : entry;
+    const rule =
+      includedRules.find((r) => r.test.test(base.title)) || includedFallback;
+
+    return {
+      title: base.title,
+      icon: base.icon || rule.icon,
+      desc: base.desc || rule.desc,
+      image: base.image || `${INCLUDED_IMG_DIR}/${rule.key}.webp`,
+    };
+  });
+
+/* =========================================================
    INTERIOR DESIGNS
    ========================================================= */
 
