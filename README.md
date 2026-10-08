@@ -334,4 +334,4 @@ Icons are inline SVG in `Icon.jsx` in both apps — no icon library, nothing ext
 - [ ] Point `VITE_API_URL` (both apps) at your deployed API, not localhost
 - [ ] Have a professional review `frontend/src/pages/Legal.jsx` — the privacy policy and terms are starting drafts, not legal advice
 
-Contact details already in place everywhere: **+91 77095 88422** and **info.supplybase@gmail.com**.
+Contact details already in place everywhere: **+91 91373 06446** and **info.supplybase@gmail.com**.

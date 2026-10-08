@@ -31,16 +31,16 @@ public class ChatbotService {
     private static final String FALLBACK_MESSAGE =
             "I don't want to give you a wrong answer on that. I've passed your question to the SupplyBase team, "
                     + "and a team member will reply right here in this chat. "
-                    + "For anything urgent, call or WhatsApp us on +91 77095 88422.";
+                    + "For anything urgent, call or WhatsApp us on +91 91373 06446.";
 
     private static final String HANDOFF_MESSAGE =
             "Of course. I've passed this chat to the SupplyBase team, and a team member will reply right here. "
                     + "We're available every day from 9 AM to 9 PM. "
-                    + "For anything urgent, call or WhatsApp us on +91 77095 88422.";
+                    + "For anything urgent, call or WhatsApp us on +91 91373 06446.";
 
     private static final String ERROR_MESSAGE =
             "Sorry, I'm having trouble answering right now. I've passed your message to the SupplyBase team, "
-                    + "and a team member will reply right here. You can also call or WhatsApp us on +91 77095 88422.";
+                    + "and a team member will reply right here. You can also call or WhatsApp us on +91 91373 06446.";
 
     private static final String WAITING_MESSAGE =
             "Thanks, your message has been sent to the SupplyBase team. A team member will reply here.";
@@ -71,7 +71,7 @@ public class ChatbotService {
             - When it helps, point the customer to the exact page on the website using
               the full address from the knowledge, e.g. https://supplybase.co.in/services/painting
             - When a customer shows interest in a service, end with one clear next step:
-              book on the service page, book a home visit, or call/WhatsApp +91 77095 88422.
+              book on the service page, book a home visit, or call/WhatsApp +91 91373 06446.
             - Use the earlier messages in this conversation to understand follow-up
               questions such as "how much is it?" or "what about the bathroom?".
             - Reply in the language the customer writes in (English, Hindi or Marathi).
