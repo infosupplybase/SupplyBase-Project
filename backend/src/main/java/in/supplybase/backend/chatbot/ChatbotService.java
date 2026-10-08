@@ -427,11 +427,15 @@ public class ChatbotService {
                         ))
                         .build();
 
+        // Free models are often briefly busy (HTTP 429) or down (5xx):
+        // try once more before handing the chat to the team.
         HttpResponse<String> response =
-                client.send(
-                        request,
-                        HttpResponse.BodyHandlers.ofString()
-                );
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 429 || response.statusCode() >= 500) {
+            Thread.sleep(1500);
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        }
 
         if (response.statusCode() < 200
                 || response.statusCode() >= 300) {
@@ -439,6 +443,7 @@ public class ChatbotService {
             throw new IllegalStateException(
                     "OpenRouter returned HTTP "
                             + response.statusCode()
+                            + ": " + errorMessage(response.body())
             );
         }
 
@@ -454,11 +459,27 @@ public class ChatbotService {
                 || content.asText().isBlank()) {
 
             throw new IllegalStateException(
-                    "OpenRouter returned an empty response"
+                    "OpenRouter returned no answer: " + errorMessage(response.body())
             );
         }
 
         return cleanResponse(content.asText());
+    }
+
+    /**
+     * OpenRouter's own explanation of a failed call (for the server log),
+     * e.g. "No auth credentials found" or "Rate limit exceeded".
+     */
+    private String errorMessage(String body) {
+        try {
+            String message = objectMapper.readTree(body).path("error").path("message").asText("");
+            if (!message.isBlank()) {
+                return message.length() > 300 ? message.substring(0, 300) : message;
+            }
+        } catch (Exception ignored) {
+            // not JSON; fall through
+        }
+        return body == null ? "" : body.substring(0, Math.min(body.length(), 300));
     }
 
     /**
