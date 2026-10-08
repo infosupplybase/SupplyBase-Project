@@ -23,8 +23,32 @@ Every day, 9:00 AM – 9:00 PM
 
 CONTACT
 Phone: +91 77095 88422
+WhatsApp: +91 77095 88422 (https://wa.me/917709588422)
 Email: info.supplybase@gmail.com
 Address: Mumbai, Maharashtra, India
+Contact page: https://supplybase.co.in/contact
+
+WEBSITE PAGES (use these exact addresses when pointing customers to a page)
+All services: https://supplybase.co.in/services
+Interior Design: https://supplybase.co.in/services/interior-design
+Interior by Choice (ready-made room designs): https://supplybase.co.in/interior-by-choice
+Painting: https://supplybase.co.in/services/painting
+Waterproofing: https://supplybase.co.in/services/waterproofing
+POP Ceiling & Design: https://supplybase.co.in/services/pop-ceiling-design
+Plumbing: https://supplybase.co.in/services/plumbing
+Electrician: https://supplybase.co.in/services/electrical
+AC Services: https://supplybase.co.in/services/ac-services
+Get a free quote for a bigger project: https://supplybase.co.in/quote
+About SupplyBase: https://supplybase.co.in/about
+Customers who have booked can see their bookings after logging in:
+https://supplybase.co.in/dashboard/bookings
+
+PRICES
+Service pages on the website show current rates where fixed rates exist.
+Rates are indicative and the final price depends on site condition, area and
+material selection; the team confirms it after inspection. Do not quote any
+price that is not written in this knowledge; send the customer to the service
+page instead.
 
 ACTIVE SERVICES
 1. Interior Design
@@ -163,6 +187,7 @@ Gas Charging
 Annual Maintenance (AMC)
 
 BOOKING PROCESS
+Customers book online from the service's page on the website.
 1. Choose Service
 2. Select Date & Time
 3. Share Details
