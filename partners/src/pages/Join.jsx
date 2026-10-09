@@ -271,7 +271,7 @@ export default function Join() {
               onClick={() => setShowTutorial(true)}
               aria-label="Watch partner registration tutorial"
             >
-              <video src="/videos/registration-tutorial.mp4" autoPlay muted loop playsInline preload="auto" />
+              <video src="/videos/registration-tutorial-v2.mp4" autoPlay muted loop playsInline preload="auto" />
             </button>
           </div>
 
@@ -556,7 +556,7 @@ export default function Join() {
               <span aria-hidden="true" style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1 }}>×</span>
             </button>
             <video
-              src="/videos/registration-tutorial.mp4"
+              src="/videos/registration-tutorial-v2.mp4"
               controls
               autoPlay
               playsInline
