@@ -95,61 +95,59 @@ export function AddressFields({
           />
 
           {/* Building / Room / Floor */}
-          {pickedLocation && (
-            <div className="booking-address-inputs">
-              <div className="field booking-building-field">
-                <label htmlFor={`${idPrefix}-building`}>
-                  Building Name <span className="req">*</span>
+          <div className="booking-address-inputs">
+            <div className="field booking-building-field">
+              <label htmlFor={`${idPrefix}-building`}>
+                Building Name <span className="req">*</span>
+              </label>
+
+              <input
+                id={`${idPrefix}-building`}
+                type="text"
+                value={details.buildingName || ''}
+                onChange={setDetail('buildingName')}
+                placeholder="Enter building name"
+              />
+
+              {errors.buildingName && (
+                <span className="field-error">
+                  {errors.buildingName}
+                </span>
+              )}
+            </div>
+
+            <div className="booking-small-fields">
+              {/* Room */}
+              <div className="field">
+                <label htmlFor={`${idPrefix}-room`}>
+                  Room No.
                 </label>
 
                 <input
-                  id={`${idPrefix}-building`}
+                  id={`${idPrefix}-room`}
                   type="text"
-                  value={details.buildingName || ''}
-                  onChange={setDetail('buildingName')}
-                  placeholder="Enter building name"
+                  value={details.roomNo || ''}
+                  onChange={setDetail('roomNo')}
+                  placeholder="Room no."
                 />
-
-                {errors.buildingName && (
-                  <span className="field-error">
-                    {errors.buildingName}
-                  </span>
-                )}
               </div>
 
-              <div className="booking-small-fields">
-                {/* Room */}
-                <div className="field">
-                  <label htmlFor={`${idPrefix}-room`}>
-                    Room No.
-                  </label>
+              {/* Floor */}
+              <div className="field">
+                <label htmlFor={`${idPrefix}-floor`}>
+                  Floor
+                </label>
 
-                  <input
-                    id={`${idPrefix}-room`}
-                    type="text"
-                    value={details.roomNo || ''}
-                    onChange={setDetail('roomNo')}
-                    placeholder="Room no."
-                  />
-                </div>
-
-                {/* Floor */}
-                <div className="field">
-                  <label htmlFor={`${idPrefix}-floor`}>
-                    Floor
-                  </label>
-
-                  <input
-                    id={`${idPrefix}-floor`}
-                    type="text"
-                    value={details.floorNo || ''}
-                    onChange={setDetail('floorNo')}
-                    placeholder="Floor"
-                  />
-                </div>
+                <input
+                  id={`${idPrefix}-floor`}
+                  type="text"
+                  value={details.floorNo || ''}
+                  onChange={setDetail('floorNo')}
+                  placeholder="Floor"
+                />
               </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
