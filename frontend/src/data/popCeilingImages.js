@@ -57,20 +57,20 @@ export const popDesignStyleImages = {
   'flat-ceiling': '/assets/pop-ceiling/types/flat-ceiling-v2.webp',
   'Flat Ceiling': '/assets/pop-ceiling/types/flat-ceiling-v2.webp',
 
-  'double-layer-ceiling': '/assets/pop-ceiling/types/double-layer-ceiling-v2.png',
-  'Double Layer Ceiling': '/assets/pop-ceiling/types/double-layer-ceiling-v2.png',
+  'double-layer-ceiling': '/assets/pop-ceiling/types/double-layer-ceiling-v2.webp',
+  'Double Layer Ceiling': '/assets/pop-ceiling/types/double-layer-ceiling-v2.webp',
 
-  'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling-v2.png',
-  'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling-v2.png',
+  'floating-ceiling': '/assets/pop-ceiling/types/floating-ceiling-v2.webp',
+  'Floating Ceiling': '/assets/pop-ceiling/types/floating-ceiling-v2.webp',
 
-  'border-ceiling': '/assets/pop-ceiling/types/border-ceiling-v2.png',
-  'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling-v2.png',
+  'border-ceiling': '/assets/pop-ceiling/types/border-ceiling-v2.webp',
+  'Border Ceiling': '/assets/pop-ceiling/types/border-ceiling-v2.webp',
 
-  'profile-pop': '/assets/pop-ceiling/types/profile-pop-v2.png',
-  'Profile POP': '/assets/pop-ceiling/types/profile-pop-v2.png',
+  'profile-pop': '/assets/pop-ceiling/types/profile-pop-v2.webp',
+  'Profile POP': '/assets/pop-ceiling/types/profile-pop-v2.webp',
 
-  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop-v2.png',
-  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop-v2.png',
+  'pvc-panel-pop': '/assets/pop-ceiling/types/pvc-panel-pop-v2.webp',
+  'PVC Panel POP': '/assets/pop-ceiling/types/pvc-panel-pop-v2.webp',
 
   simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
   Simple: '/assets/pop-ceiling/hero/false-ceiling.webp',
