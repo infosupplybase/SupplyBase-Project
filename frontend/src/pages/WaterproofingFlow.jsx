@@ -221,7 +221,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
             className={HERO_CLASS_BY_FLOW[flow.slug] || ''}
           />
         )}
-        <section className="pnt-section">
+        <section className="pnt-section wp-intro-section">
           <div className="container container-narrow">
             <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
             <p className="pnt-intro-text">{flow.intro.text}</p>

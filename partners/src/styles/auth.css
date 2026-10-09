@@ -771,4 +771,121 @@
   .partner-reset-card {
     padding: 30px 20px 24px;
   }
+}/* Partner registration tutorial — mobile only */
+
+.partner-tutorial-mobile {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .auth-screen:has(.partner-tutorial-mobile) {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 18px;
+  }
+
+  .partner-tutorial-mobile {
+  position: absolute;
+  top: 10px;
+  right: 1px;
+  z-index: 10;
+  width: 90px;
+  display: block;
+  margin: 0;
+}
+
+  .partner-tutorial-preview {
+  position: relative;
+  display: block;
+  width: 70px;
+  height: 100px;
+  overflow: hidden;
+  border: 1px solid rgba(245, 208, 51, 0.45);
+  border-radius: 12px;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+}
+
+  .partner-tutorial-preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+  .partner-tutorial-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #f5d033;
+    color: #111;
+  }
+
+  .partner-tutorial-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 18px 12px 10px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+  }
+}
+
+/* Large tutorial modal */
+
+.partner-tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.partner-tutorial-modal {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  max-height: 92dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partner-tutorial-player {
+  display: block;
+  width: 100%;
+  max-height: 85dvh;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #000;
+}
+
+.partner-tutorial-close {
+  position: absolute;
+  top: -42px;
+  right: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: #f5d033;
+  color: #111;
+  cursor: pointer;
 }

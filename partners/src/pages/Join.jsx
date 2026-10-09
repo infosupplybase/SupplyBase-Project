@@ -134,6 +134,7 @@ export default function Join() {
   const [trades, setTrades] = useState(null);
   const [tradesError, setTradesError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
@@ -263,6 +264,17 @@ export default function Join() {
 
       <div className="auth-card-wrap">
         <div className="auth-card auth-card-tall">
+          <div className="partner-tutorial-mobile">
+            <button
+              type="button"
+              className="partner-tutorial-preview"
+              onClick={() => setShowTutorial(true)}
+              aria-label="Watch partner registration tutorial"
+            >
+              <video src="/videos/registration-tutorial-v2.mp4" autoPlay muted loop playsInline preload="auto" />
+            </button>
+          </div>
+
           <a href={SITE_URL} className="auth-logo">
             <img src="/assets/brand/logo.png" alt={`${COMPANY_NAME} logo`} />
           </a>
@@ -521,6 +533,38 @@ export default function Join() {
           )}
         </div>
       </div>
+
+      {showTutorial && (
+        <div
+          className="partner-tutorial-overlay"
+          role="presentation"
+          onClick={() => setShowTutorial(false)}
+        >
+          <div
+            className="partner-tutorial-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Partner registration tutorial"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="partner-tutorial-close"
+              onClick={() => setShowTutorial(false)}
+              aria-label="Close tutorial"
+            >
+              <span aria-hidden="true" style={{ fontSize: '26px', fontWeight: 700, lineHeight: 1 }}>×</span>
+            </button>
+            <video
+              src="/videos/registration-tutorial-v2.mp4"
+              controls
+              autoPlay
+              playsInline
+              className="partner-tutorial-player"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -19,12 +19,13 @@ const navGroups = [
     items: [{ to: '/', label: 'Dashboard', icon: 'dashboard', end: true }],
   },
   {
-    title: 'Daily work',
-    items: [
-      { to: '/bookings', label: 'Bookings', icon: 'calendar', badge: 'bookingsNeedingAction', badgeHint: 'bookings waiting on you' },
-      { to: '/enquiries', label: 'Enquiries', icon: 'chat', badge: 'newEnquiries', badgeHint: 'new enquiries' },
-    ],
-  },
+  title: 'Daily work',
+  items: [
+    { to: '/bookings', label: 'Bookings', icon: 'calendar', badge: 'bookingsNeedingAction', badgeHint: 'bookings waiting on you' },
+    { to: '/enquiries', label: 'Enquiries', icon: 'chat', badge: 'newEnquiries', badgeHint: 'new enquiries' },
+    { to: '/chatbot', label: 'Chatbot Support', icon: 'chat' },
+  ],
+},
   {
     title: 'Business',
     items: [
