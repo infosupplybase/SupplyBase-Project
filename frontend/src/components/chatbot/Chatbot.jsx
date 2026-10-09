@@ -12,14 +12,14 @@ const TOKEN_KEY = "supplybase_chatbot_token";
 const LOGO = "/assets/brand/logo-stacked.webp";
 
 const WELCOME_TEXT =
-  "Hello, welcome to SupplyBase! I can help you choose the right service, explain how our work is done, or get you booked for a home visit. What are you planning?";
+  "Hello, welcome to SupplyBase! Ask me anything about our services, prices, booking or payment, and I'll help you right here. What are you planning?";
 
 const TALK_TO_TEAM = "Talk to our team";
 
 const QUICK_REPLIES = [
-  "What services do you offer?",
+  "How much does painting a 2BHK cost?",
+  "My terrace is leaking, what should I do?",
   "How do I book a home visit?",
-  "Tell me about Interior by Choice",
   TALK_TO_TEAM,
 ];
 
@@ -428,6 +428,8 @@ export default function Chatbot() {
         body: JSON.stringify({
           message: trimmed,
           conversationToken: conversationToken || null,
+          // Lets the assistant know which service "this" means.
+          page: window.location.pathname,
         }),
       });
 

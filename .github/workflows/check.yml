@@ -39,6 +39,16 @@ jobs:
           cache-dependency-path: ${{ matrix.app }}/package-lock.json
       - run: npm ci
       - run: npm run build
+      # The chatbot's copy of the AC/electrician prices and the service FAQs
+      # must match the website's data files.
+      - name: Chatbot data is up to date
+        if: matrix.app == 'frontend'
+        run: |
+          npm run chatbot-data
+          if ! git diff --exit-code -- ../backend/src/main/resources/chatbot/website-data.txt; then
+            echo "::error::A price or FAQ changed in frontend/src/data. Run 'npm run chatbot-data' in frontend/ and commit backend/src/main/resources/chatbot/website-data.txt."
+            exit 1
+          fi
 
   # The API: run its tests, then start it against an empty MySQL so every
   # Flyway migration runs. A migration that fails (like V49 adding a column
