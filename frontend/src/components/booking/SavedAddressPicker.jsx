@@ -245,7 +245,7 @@ function PlaceSearch({ onPick, onError }) {
  */
 export default function SavedAddressPicker({ selected, onUse, idPrefix = 'bk' }) {
   const { addresses, save, remove } = useSavedAddresses();
-  const [formOpen, setFormOpen] = useState(() => addresses.length === 0 && !selected);
+  const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
   const [label, setLabel] = useState('');
@@ -260,16 +260,25 @@ export default function SavedAddressPicker({ selected, onUse, idPrefix = 'bk' })
   const unsavedPin = selected && !addresses.some((a) => samePlace(a, selected)) ? selected : null;
 
   const takeDraft = (place, suggestedLabel = '') => {
-    setDraft({
-      address: place.address,
-      latitude: place.latitude,
-      longitude: place.longitude,
-      city: place.city || '',
-      pincode: place.pincode || '',
-    });
-    if (!labelTyped.current) setLabel((current) => suggestedLabel || current);
-    setError('');
+  const location = {
+    address: place.address,
+    latitude: place.latitude,
+    longitude: place.longitude,
+    city: place.city || '',
+    pincode: place.pincode || '',
   };
+
+  setDraft(location);
+
+  // Immediately show the selected location as the pinned location
+  onUse(location);
+
+  if (!labelTyped.current) {
+    setLabel((current) => suggestedLabel || current);
+  }
+
+  setError('');
+};
 
   const openForm = (entry = null) => {
     setEditingId(entry?.id || null);
@@ -415,30 +424,31 @@ export default function SavedAddressPicker({ selected, onUse, idPrefix = 'bk' })
         </button>
       )}
 
-      {(unsavedPin || addresses.length > 0) && (
-        <ul className="loc-book-list" aria-label="Your addresses">
-          {unsavedPin && (
-            <li className="loc-book-item active">
-              <div className="loc-book-item-main">
-                <span className="loc-book-radio" aria-hidden="true" />
-                <span className="loc-book-item-text">
-                  <strong>Pinned location</strong>
-                  <span>{unsavedPin.address}</span>
-                </span>
-              </div>
-              <button
-                type="button"
-                className="loc-book-item-btn"
-                onClick={() => {
-                  openForm();
-                  takeDraft(unsavedPin);
-                }}
-              >
-                <Icon name="plus" size={15} />
-                Save
-              </button>
-            </li>
-          )}
+     {(unsavedPin || addresses.length > 0) && (
+  <ul className="loc-book-list" aria-label="Your addresses">
+    {unsavedPin && (
+      <li className="loc-book-item active">
+        <div className="loc-book-item-main">
+          <span className="loc-book-radio" aria-hidden="true" />
+          <span className="loc-book-item-text">
+            <strong>Pinned location</strong>
+            <span>{unsavedPin.address}</span>
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className="loc-book-item-btn"
+          onClick={() => {
+            openForm();
+            takeDraft(unsavedPin);
+          }}
+        >
+          <Icon name="plus" size={15} />
+          Save
+        </button>
+      </li>
+    )}
 
           {addresses.map((entry) => {
             const active = samePlace(entry, selected);

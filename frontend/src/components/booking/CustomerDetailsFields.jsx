@@ -95,7 +95,7 @@ export function AddressFields({
           />
 
           {/* Building / Room / Floor */}
-          {pickedLocation && (
+        
             <div className="booking-address-inputs">
               <div className="field booking-building-field">
                 <label htmlFor={`${idPrefix}-building`}>
@@ -149,7 +149,7 @@ export function AddressFields({
                 </div>
               </div>
             </div>
-          )}
+          
         </div>
       )}
 
