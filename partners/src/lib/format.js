@@ -43,6 +43,20 @@ export const dayLabel = (value) => {
   return null;
 };
 
+/** "18:00:00" -> "6:00 PM" */
+const toClock = (time) => {
+  const [h, min] = String(time).split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(min)) return String(time);
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(min).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+};
+
+/**
+ * A booking's visit time: the time the customer picked ("18:00:00" ->
+ * "6:00 PM"), or the morning/afternoon label on the old two-lane bookings.
+ */
+export const visitTime = (job) =>
+  job ? (job.appointmentTime ? toClock(job.appointmentTime) : job.preferredSlot || '') : '';
+
 /** "15 Oct 2026" from a timestamp. */
 export const formatDate = (value) =>
   value

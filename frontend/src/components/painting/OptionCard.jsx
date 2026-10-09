@@ -37,14 +37,11 @@ const renovationImages = {
     '/assets/services/fabrication/staircase.webp',
 };
 
-const STANDARD_IMAGE = '/assets/painting/hero/painter-roller.webp';
+const UNFURNISHED_IMAGE = '/assets/painting/hero/painter-roller.webp';
 const RENOVATION_IMAGE = '/assets/projects/villa-renovation.webp';
-const COMPLETE_IMAGE = '/assets/projects/painting-finishing.webp';
 
 const packageImages = {
-  'standard-repaint': STANDARD_IMAGE,
-  'standard-repainting': STANDARD_IMAGE,
-  'complete-repaint': COMPLETE_IMAGE,
+  'unfurnished-home': UNFURNISHED_IMAGE,
   'renovation-repaint': RENOVATION_IMAGE,
   'renovation-repainting': RENOVATION_IMAGE,
   'renovation-painting': RENOVATION_IMAGE,
@@ -77,6 +74,14 @@ function findOptionImage(name, option) {
     .toLowerCase()
     .replace(/[_-]+/g, ' ');
 
+  // Few Walls -> Ceiling Type: plain or designer ceiling photo.
+  if (name === 'few_walls_ceiling_type') {
+    if (/design|false ceiling/.test(text)) {
+      return '/assets/pop-ceiling/hero/designer-ceiling.webp';
+    }
+    return '/assets/pop-ceiling/types/flat-ceiling.webp';
+  }
+
   const isPaintingType =
     name === 'full_home_painting_type' ||
     name === 'few_walls_painting_type';
@@ -84,15 +89,13 @@ function findOptionImage(name, option) {
   if (isPaintingType) {
     // Match the displayed label first so each package uses its own photo.
     if (/renovation/.test(label)) return RENOVATION_IMAGE;
-    if (/standard/.test(label)) return STANDARD_IMAGE;
-    if (/complete/.test(label)) return COMPLETE_IMAGE;
+    if (/unfurnished/.test(label)) return UNFURNISHED_IMAGE;
 
     const mappedImage = packageImages[option.value];
     if (mappedImage) return mappedImage;
 
     if (/renovation/.test(text)) return RENOVATION_IMAGE;
-    if (/standard/.test(text)) return STANDARD_IMAGE;
-    if (/complete/.test(text)) return COMPLETE_IMAGE;
+    if (/unfurnished/.test(text)) return UNFURNISHED_IMAGE;
 
     return null;
   }
@@ -177,6 +180,7 @@ export default function OptionCard({
 
   const image = findOptionImage(name, option);
   const showImage = Boolean(image && failedImage !== image);
+  const isCeilingType = name === 'few_walls_ceiling_type';
 
   const fallbackIcon =
     icon ||
@@ -201,18 +205,19 @@ export default function OptionCard({
           aria-hidden="true"
           style={{
             display: 'block',
-            width: 88,
-            height: 72,
+            width: isCeilingType ? 120 : 88,
+            height: isCeilingType ? 88 : 72,
             flexShrink: 0,
             overflow: 'hidden',
             borderRadius: 10,
+            background: '#f5f1e8',
           }}
         >
           <img
             src={image}
             alt=""
-            width={88}
-            height={72}
+            width={isCeilingType ? 120 : 88}
+            height={isCeilingType ? 88 : 72}
             loading="lazy"
             decoding="async"
             onError={() => setFailedImage(image)}

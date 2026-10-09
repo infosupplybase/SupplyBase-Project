@@ -85,9 +85,9 @@ export const jobStep = (status) => (status in STEP_OF ? STEP_OF[status] : null);
  * `{on date}` is replaced with `when` — "today", "tomorrow" or "on Thu, 15 Oct".
  */
 const GUIDE = {
-  PROFESSIONAL_ASSIGNED: { you: false, text: 'Supplybase will fix the site visit time with the customer. It will show here.' },
+  PROFESSIONAL_ASSIGNED: { you: false, text: 'Supplybase is confirming this visit time with the customer. Nothing to do yet.' },
   ASSIGNMENT_PENDING: { you: false, text: 'Supplybase is confirming this job with you. Nothing to do yet.' },
-  CONFIRMED: { you: false, text: 'Supplybase will fix the site visit time with the customer. It will show here.' },
+  CONFIRMED: { you: false, text: 'Supplybase is confirming this visit time with the customer. Nothing to do yet.' },
   BOOKING_REQUESTED: { you: false, text: 'The customer is still confirming this booking. Nothing to do yet.' },
   PAYMENT_PENDING: { you: false, text: 'The customer is still confirming this booking. Nothing to do yet.' },
   SITE_VISIT_SCHEDULED: { you: true, text: 'Visit the site{on date}. After the visit, tap “Mark site visit done”.' },

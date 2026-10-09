@@ -77,6 +77,10 @@ public class SecurityConfig {
                                  "/api/auth/logout", "/api/auth/forgot-password",
                                  "/api/auth/reset-password", "/api/auth/verify-email").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/enquiries").permitAll()
+                // Website chatbot: no sign-in needed. A chat is read back only
+                // with its random public token (a UUID the visitor's browser keeps).
+                .requestMatchers(HttpMethod.POST, "/api/chatbot/chat").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/chatbot/conversations/*").permitAll()
                 // A professional applying to join. Creates a CUSTOMER login plus a
                 // PENDING application; the PROFESSIONAL role only comes from an
                 // admin approving it (PartnerService.review).
@@ -88,6 +92,9 @@ public class SecurityConfig {
                 // Razorpay authenticates itself with an HMAC signature in the
                 // request body, not with our JWT, so this must stay open.
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
+                // Only says whether online payment is on, so the site can hide
+                // its Pay buttons; nothing about any payment.
+                .requestMatchers(HttpMethod.GET, "/api/payments/status").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 

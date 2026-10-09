@@ -1,6 +1,6 @@
 import Icon from '../ui/Icon';
 import { JOB_STEPS, NEXT_STEP, jobGuide, jobStatusLabel, jobStatusTone, jobStep } from '../../lib/bookingStatus';
-import { daysFromToday, formatDate, formatDay, dayLabel, mapsHref, telHref, whatsappHref } from '../../lib/format';
+import { daysFromToday, formatDate, formatDay, dayLabel, mapsHref, telHref, visitTime, whatsappHref } from '../../lib/format';
 import { formatRupees } from '../../lib/money';
 
 /**
@@ -115,7 +115,7 @@ export default function JobCard({ job, done, busy, error, onAdvance, nextUp }) {
             </dt>
             <dd>
               {day}
-              {job.preferredSlot ? ` · ${job.preferredSlot}` : ''}
+              {visitTime(job) ? ` · ${visitTime(job)}` : ''}
               {when && !done && <span className="pp-when">{when}</span>}
             </dd>
           </div>

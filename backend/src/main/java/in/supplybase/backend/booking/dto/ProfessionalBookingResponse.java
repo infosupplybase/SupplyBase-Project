@@ -2,6 +2,7 @@ package in.supplybase.backend.booking.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import in.supplybase.backend.booking.Booking;
@@ -28,6 +29,8 @@ public record ProfessionalBookingResponse(
         String serviceLabel, String propertyType, Integer areaSqft,
         String workNature, String workOption, String workDetail,
         LocalDate preferredDate, String preferredSlot,
+        // The visit time the customer picked; see BookingResponse.
+        LocalTime appointmentTime,
         String name, String phone, String whatsapp,
         String address, String location,
         boolean attachmentsPending, Instant createdAt,
@@ -67,6 +70,7 @@ public record ProfessionalBookingResponse(
                 b.getWorkNature(), b.getWorkOption(), b.getWorkDetail(),
                 b.getPreferredDate(),
                 b.getPreferredSlot() == null ? null : b.getPreferredSlot().label(),
+                b.getAppointmentSlot() == null ? null : b.getAppointmentSlot().getSlotTime(),
                 b.getName(),
                 closed ? null : b.getPhone(),
                 closed ? null : b.getWhatsapp(),

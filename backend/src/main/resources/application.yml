@@ -58,6 +58,11 @@ spring:
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
+      # Without these JavaMail waits forever on a stalled SMTP server, and the
+      # request that sends the email (a booking, a password reset) hangs with it.
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
 
 server:
   # Render and Railway provide PORT. SERVER_PORT remains useful locally.
@@ -98,6 +103,8 @@ app:
   # The single frontend origin used to build links emailed out (password
   # reset, email verification). Not a CORS list, just one URL.
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  # The partners app's origin, for links emailed to partners (password reset).
+  partners-url: ${PARTNERS_URL:http://localhost:3002}
   jwt:
     # No fixed fallback on purpose — see JwtService.resolveSecret for why a
     # value baked in here would itself be a security hole. Left unset, a
@@ -121,6 +128,9 @@ app:
   notifications:
     # Where new enquiries are emailed. Blank disables the email entirely.
     enquiry-recipient: ${ENQUIRY_EMAIL:}
+    # The booking confirmation emailed to the customer. On by default and
+    # independent of ENQUIRY_EMAIL; set CUSTOMER_EMAILS=false to switch it off.
+    customer-emails: ${CUSTOMER_EMAILS:true}
   bootstrap:
     # Set both to create (or promote) the first ADMIN account on startup.
     # Leave blank in production once an admin exists — this only ever acts

@@ -1,184 +1,204 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Icon from '../ui/Icon';
-import { heroSlides, AUTOPLAY_MS } from './heroSlides';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import HomeHero from '../home/HomeHero';
 import './HeroSlider.css';
 
-/**
- * HeroSlider — four approved banners, shown as artwork.
- *
- * The images already contain their own headings, ₹25 card and BOOK NOW
- * button, so nothing is drawn on top of them. The only overlays are the
- * controls (arrows, dots) and one transparent hotspot sitting exactly over
- * the painted BOOK NOW button, which is what makes it clickable without
- * putting a second button on the page.
- *
- * All four slides are stacked and cross-faded rather than translated, so a
- * fade never shows a seam between two images and the layout height never
- * shifts mid-transition.
- */
+const slides = [
+  {
+    src: '/assets/home-slider/1.webp',
+    mobileSrc: '/assets/home-slider/4.webp',
+    mobileWidth: 1455,
+    mobileHeight: 1081,
+    width: 2048,
+    height: 684,
+    alt: 'SupplyBase painting services: Fresh Walls, Brighter Spaces. Get 5% off.',
+  },
+  {
+    src: '/assets/home-slider/2.webp',
+    mobileSrc: '/assets/home-slider/5.webp',
+    mobileWidth: 1454,
+    mobileHeight: 1082,
+    width: 2170,
+    height: 725,
+    alt: 'SupplyBase POP and ceiling designs: Stylish Ceilings for Modern Homes. Get 5% off.',
+  },
+  {
+    src: '/assets/home-slider/3.webp',
+    mobileSrc: '/assets/home-slider/6.webp',
+    mobileWidth: 1455,
+    mobileHeight: 1081,
+    width: 2048,
+    height: 684,
+    alt: 'SupplyBase waterproofing services: Keep Your Home Safe from Water Damage. Get 5% off.',
+  },
+];
+
 export default function HeroSlider() {
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const navigate = useNavigate();
-
-  const rootRef = useRef(null);
-  const touchStartX = useRef(null);
-  const touchStartY = useRef(null);
-
-  const count = heroSlides.length;
-
-  const goTo = useCallback((next) => setIndex(((next % count) + count) % count), [count]);
-  const next = useCallback(() => goTo(index + 1), [goTo, index]);
-  const prev = useCallback(() => goTo(index - 1), [goTo, index]);
-
-  /* ------------------------------------------------------- autoplay */
+  const [active, setActive] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [interacting, setInteracting] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const startTouch = useRef(null);
 
   useEffect(() => {
-    if (paused) return undefined;
-
-    // Someone who has asked for reduced motion should not have the page
-    // changing under them on a timer either.
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) return undefined;
-
-    const timer = setTimeout(() => goTo(index + 1), AUTOPLAY_MS);
-    return () => clearTimeout(timer);
-  }, [index, paused, goTo]);
-
-  // Advancing while the tab is hidden just means a burst of slides when the
-  // visitor comes back, so the timer stops with the tab.
-  useEffect(() => {
-    const onVisibility = () => setPaused(document.hidden);
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
   }, []);
 
-  /* ------------------------------------------------------- keyboard */
+  useEffect(() => {
+    if (reducedMotion || interacting || searchFocused) return undefined;
 
-  const onKeyDown = (event) => {
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      prev();
-    } else if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      next();
-    }
-  };
+    const timer = window.setInterval(() => {
+      if (!document.hidden) {
+        setActive((current) => (current + 1) % slides.length);
+      }
+    }, 4000);
 
-  /* ---------------------------------------------------------- touch */
+    return () => window.clearInterval(timer);
+  }, [active, reducedMotion, interacting, searchFocused]);
 
-  const onTouchStart = (event) => {
-    touchStartX.current = event.touches[0].clientX;
-    touchStartY.current = event.touches[0].clientY;
-  };
+  // Keep the full artwork below the site header.
+  useLayoutEffect(() => {
+    const banner = document.querySelector('.sb-final-banner');
+    const header = document.querySelector('header');
 
-  const onTouchEnd = (event) => {
-    if (touchStartX.current === null) return;
-    const dx = event.changedTouches[0].clientX - touchStartX.current;
-    const dy = event.changedTouches[0].clientY - touchStartY.current;
+    if (!banner || !header) return undefined;
 
-    // Only treat it as a swipe if it is decisively sideways. Without the
-    // vertical comparison, scrolling the page down with a thumb that drifts
-    // slightly would flick the slide.
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      if (dx < 0) next();
-      else prev();
-    }
-    touchStartX.current = null;
-    touchStartY.current = null;
-  };
+    const alignBanner = () => {
+      banner.style.setProperty('margin-top', '0px', 'important');
+
+      // Page coordinates, so the result is the same however far the
+      // visitor has scrolled (the header is fixed, the banner is not).
+      const headerBottom = header.getBoundingClientRect().bottom;
+      const bannerTop = banner.getBoundingClientRect().top + window.scrollY;
+      const overlap = Math.max(0, headerBottom - bannerTop);
+
+      banner.style.setProperty(
+        'margin-top',
+        `${Math.ceil(overlap)}px`,
+        'important'
+      );
+    };
+
+    alignBanner();
+
+    const observer = new ResizeObserver(alignBanner);
+    observer.observe(header);
+    window.addEventListener('resize', alignBanner);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', alignBanner);
+      banner.style.removeProperty('margin-top');
+    };
+  }, []);
+
+  const current = slides[active];
 
   return (
     <section
-      className="hero-slider"
-      ref={rootRef}
-      aria-roledescription="carousel"
-      aria-label="Supplybase services"
-      tabIndex={0}
-      onKeyDown={onKeyDown}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
-      onBlur={() => setPaused(false)}
-      onTouchStart={onTouchStart}
-      onTouchEnd={onTouchEnd}
+      className="sb-home-banner sb-final-banner"
+      aria-label="SupplyBase service offers"
+      style={{
+        '--banner-ratio': `${current.width} / ${current.height}`,
+        '--mobile-banner-ratio': `${current.mobileWidth} / ${current.mobileHeight}`,
+      }}
     >
-      <div className="hero-slider-track">
-        {heroSlides.map((slide, i) => {
-          const active = i === index;
-          // Load the current slide and the one after it. Purely lazy slides
-          // fade in blank, because a lazy image inside a hidden slide has not
-          // started downloading when the transition begins. As the carousel
-          // advances this walks forward, so nothing loads before it is needed
-          // and nothing is missing when it is.
-          const preload = i === 0 || i === index || i === (index + 1) % count;
-          return (
-            <div
-              key={slide.id}
-              className={`hero-slide ${active ? 'active' : ''}`}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${i + 1} of ${count}: ${slide.alt}`}
-              aria-hidden={!active}
-            >
-              <img
-                src={slide.image}
-                alt={slide.alt}
-                width={1672}
-                height={941}
-                /* The first banner is the largest thing above the fold, so it
-                   loads eagerly at high priority. The rest follow one slide
-                   ahead — four 2MB PNGs racing on a phone would delay the one
-                   actually being looked at. */
-                loading={preload ? 'eager' : 'lazy'}
-                fetchPriority={i === 0 ? 'high' : 'low'}
-                decoding="async"
-                draggable={false}
-              />
-           
-              {/* Transparent, sitting exactly over the BOOK NOW painted into
-                  the artwork. No visible button is added — the one in the
-                  image is the button. */}
-              <button
-                type="button"
-                className="hero-hotspot"
-                style={{
-                  left: `${slide.hotspot.left}%`,
-                  top: `${slide.hotspot.top}%`,
-                  width: `${slide.hotspot.width}%`,
-                  height: `${slide.hotspot.height}%`,
-                }}
-                aria-label={slide.bookLabel}
-                tabIndex={active ? 0 : -1}
-                onClick={() => navigate(slide.route)}
-              />
-            </div>
-          );
-        })}
+      <div
+        className="sb-final-banner__images"
+        onTouchStart={(event) => {
+          const touch = event.touches[0];
+          if (touch) {
+            startTouch.current = { x: touch.clientX, y: touch.clientY };
+          }
+          setInteracting(true);
+        }}
+        onTouchEnd={(event) => {
+          const start = startTouch.current;
+          const touch = event.changedTouches[0];
+
+          if (start && touch) {
+            const dx = touch.clientX - start.x;
+            const dy = touch.clientY - start.y;
+
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+              setActive((index) =>
+                (index + (dx < 0 ? 1 : -1) + slides.length) % slides.length
+              );
+            }
+          }
+
+          startTouch.current = null;
+          setInteracting(false);
+        }}
+        onTouchCancel={() => {
+          startTouch.current = null;
+          setInteracting(false);
+        }}
+      >
+        <div
+          className="sb-final-banner__track"
+          style={{ transform: `translateX(-${active * 100}%)` }}
+        >
+        {slides.map((slide, index) => (
+          <picture
+            key={slide.src}
+            className={`sb-final-banner__image ${
+              active === index ? 'is-active' : ''
+            }`}
+            aria-hidden={active !== index}
+          >
+            <source
+              media="(max-width: 767px)"
+              srcSet={slide.mobileSrc}
+              width={slide.mobileWidth}
+              height={slide.mobileHeight}
+            />
+            <img
+              src={slide.src}
+              alt={slide.alt}
+              width={slide.width}
+              height={slide.height}
+              loading="eager"
+              fetchPriority={index === 0 ? 'high' : 'auto'}
+              decoding="async"
+              draggable={false}
+            />
+          </picture>
+        ))}
+        </div>
       </div>
 
-      {/* ------------------------------------------------- controls */}
+      <h1 className="sr-only">
+        Home services in Mumbai: painting, waterproofing, plumbing, electrical, AC servicing, POP ceilings and interiors
+      </h1>
 
+      <div
+        className="sb-final-banner__search"
+        onFocusCapture={() => setSearchFocused(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setSearchFocused(false);
+          }
+        }}
+      >
+        <HomeHero />
+      </div>
 
-      <div className="hero-dots" role="tablist" aria-label="Choose slide">
-        {heroSlides.map((slide, i) => (
+      <div className="sb-final-banner__dots" style={{ '--image-height': `${current.height / current.width * 100}vw` }} aria-label="Choose banner">
+        {slides.map((slide, index) => (
           <button
-            key={slide.id}
+            key={slide.src}
             type="button"
-            role="tab"
-            aria-selected={i === index}
-            aria-label={slide.alt}
-            className={`hero-dot ${i === index ? 'active' : ''}`}
-            onClick={() => goTo(i)}
+            className={active === index ? 'is-active' : ''}
+            aria-label={`Show banner ${index + 1}`}
+            aria-current={active === index ? 'true' : undefined}
+            onClick={() => setActive(index)}
           />
         ))}
       </div>
-
-      {/* Announces the change to a screen reader without stealing focus. */}
-      <p className="sr-only" aria-live="polite">
-        {heroSlides[index].alt}, slide {index + 1} of {count}
-      </p>
     </section>
   );
 }

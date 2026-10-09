@@ -1,20 +1,35 @@
 import { useEffect, useMemo, useState } from 'react';
 import api, { friendlyError } from '../lib/api';
 
-let cachedForm = null;
+let cachedCatalogue = null;
 let pendingRequest = null;
 
-function loadPopCeilingForm() {
-  if (cachedForm) {
-    return Promise.resolve(cachedForm);
+function loadPopCeilingCatalogue() {
+  if (cachedCatalogue) {
+    return Promise.resolve(cachedCatalogue);
   }
 
   if (!pendingRequest) {
-    pendingRequest = api
-      .serviceForm('pop-ceiling-design')
-      .then((result) => {
-        cachedForm = result;
-        return result;
+    const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
+    pendingRequest = Promise.all([
+      api.serviceForm('pop-ceiling-design'),
+      fetch(
+        `${baseUrl}/api/catalogue/services/pop-ceiling-design/starting-prices`
+      ).then(async (response) => {
+        if (!response.ok) {
+          throw new Error('Unable to load POP starting prices. Please try again.');
+        }
+        const prices = await response.json();
+        if (!Array.isArray(prices)) {
+          throw new Error('Unexpected POP pricing response.');
+        }
+        return prices;
+      }),
+    ])
+      .then(([form, prices]) => {
+        cachedCatalogue = { form, prices };
+        return cachedCatalogue;
       })
       .finally(() => {
         pendingRequest = null;
@@ -25,29 +40,25 @@ function loadPopCeilingForm() {
 }
 
 export default function usePopCeilingCatalogue() {
-  const [form, setForm] = useState(() => cachedForm);
-  const [loading, setLoading] = useState(() => !cachedForm);
+  const [catalogue, setCatalogue] = useState(() => cachedCatalogue);
+  const [loading, setLoading] = useState(() => !cachedCatalogue);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
 
-    loadPopCeilingForm()
+    loadPopCeilingCatalogue()
       .then((result) => {
-        if (cancelled) return;
-
-        setForm(result);
-        setError('');
+        if (!cancelled) {
+          setCatalogue(result);
+          setError('');
+        }
       })
       .catch((err) => {
-        if (!cancelled) {
-          setError(friendlyError(err));
-        }
+        if (!cancelled) setError(friendlyError(err));
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       });
 
     return () => {
@@ -57,21 +68,33 @@ export default function usePopCeilingCatalogue() {
 
   const byKey = useMemo(() => {
     const map = new Map();
-
-    (form?.questions || []).forEach((question) => {
+    (catalogue?.form?.questions || []).forEach((question) => {
       map.set(question.key, question);
     });
-
     return map;
-  }, [form]);
+  }, [catalogue]);
+
+  const pricesBySelection = useMemo(() => {
+    const map = new Map();
+    (catalogue?.prices || []).forEach((row) => {
+      map.set(`${row.homeType}:${row.ceilingType}`, row.pricePaise);
+    });
+    return map;
+  }, [catalogue]);
 
   const optionsFor = (questionKey) =>
     byKey.get(questionKey)?.options || [];
 
+  const startingPriceFor = (homeType, ceilingType) =>
+    pricesBySelection.get(`${homeType}:${ceilingType}`) ??
+    pricesBySelection.get(`${homeType}:*`) ??
+    null;
+
   return {
-    category: form?.category,
+    category: catalogue?.form?.category,
     loading,
     error,
     optionsFor,
+    startingPriceFor,
   };
 }

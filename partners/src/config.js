@@ -14,7 +14,7 @@ export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://www.supplybas
 /**
  * Supplybase's partner desk — the number partners (and people wanting to
  * become partners) call and WhatsApp. It is a different number from the
- * customer line on the main website (+91 77095 88422), so do not swap them.
+ * customer line on the main website (+91 91373 06446), so do not swap them.
  *
  * `PARTNER_PHONE_RAW` is digits with the country code and no "+", which is the
  * form wa.me and tel: links need; a wa.me link without the 91 does not open a

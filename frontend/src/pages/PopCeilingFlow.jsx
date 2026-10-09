@@ -22,6 +22,7 @@ import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
 import { popHomeTypeImages, popRoomTypeImages, popDesignStyleImages } from '../data/popCeilingImages';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * One page, two journeys (Full Home / Room) — driven by popFlows[flowSlug]
@@ -49,12 +50,34 @@ const MODAL_BACK =
 const MODAL_NEXT =
   'btn btn-primary !w-full !min-w-0 !px-3 !whitespace-nowrap md:!w-auto md:!min-w-[170px] md:!flex-none md:!px-4';
 
+const ROOM_CEILING_CHOICES = {
+  'living-room': [
+    'flat-ceiling',
+    'double-layer-ceiling',
+    'floating-ceiling',
+    'border-ceiling',
+    'profile-pop',
+    'pvc-panel-pop',
+  ],
+  bedroom: [
+    'flat-ceiling',
+    'double-layer-ceiling',
+    'floating-ceiling',
+    'border-ceiling',
+    'profile-pop',
+    'pvc-panel-pop',
+  ],
+  'balcony-pvc': ['pvc-panel-pop'],
+  kitchen: ['flat-ceiling'],
+  'passage-pvc': ['flat-ceiling', 'profile-pop'],
+  'bathroom-pvc': ['pvc-panel-pop'],
+};
 export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, onBackToCategories, onStepChange }) {
   const params = useParams();
   const flowSlug = propFlowSlug || params.flowSlug;
   const flow = popFlows[flowSlug];
   const { user } = useAuth();
-  const { category, loading, error: loadError, optionsFor } = usePopCeilingCatalogue();
+  const { category, loading, error: loadError, optionsFor: catalogueOptionsFor, startingPriceFor } = usePopCeilingCatalogue();
 
   // This form's step and answers live in the browser's history (see
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
@@ -62,6 +85,17 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const formBack = useFormBack();
   const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
   const [answers, setAnswers] = useHistoryState(`${scope}:answers`, {});
+
+  const optionsFor = (questionKey) => {
+    const options = catalogueOptionsFor(questionKey);
+
+    if (questionKey !== 'pop_room_design_style') {
+      return options;
+    }
+
+    const allowed = ROOM_CEILING_CHOICES[answers.pop_room_type] || [];
+    return options.filter((option) => allowed.includes(option.value));
+  };
   const pickedLocation = usePickedLocation();
   const ensureLogin = useEnsureLogin();
   const [details, setDetails] = useHistoryState(`${scope}:details`, user
@@ -76,12 +110,41 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
 
   const configSteps = useMemo(() => flow?.steps || [], [flow]);
+
+  const fullHomePop = configSteps.some(
+    (item) => item.questionKey === 'pop_home_type'
+  );
+
+  const popStartingPricePaise = fullHomePop
+    ? startingPriceFor(
+        answers.pop_home_type,
+        answers.pop_home_design_style
+      )
+    : answers.pop_room_type && answers.pop_room_design_style
+      ? startingPriceFor(
+          `room:${answers.pop_room_type}`,
+          answers.pop_room_design_style
+        )
+      : null;
   const DETAILS = 1 + configSteps.length;
   const SCHEDULE = DETAILS + 1;
   const CONFIRM = SCHEDULE + 1;
 
   const setAnswer = (key) => (value) => {
-    setAnswers((a) => ({ ...a, [key]: value }));
+    setAnswers((previous) => {
+      const next = { ...previous, [key]: value };
+
+      if (key === 'pop_room_type') {
+        const allowed = ROOM_CEILING_CHOICES[value] || [];
+
+        if (!allowed.includes(previous.pop_room_design_style)) {
+          delete next.pop_room_design_style;
+          delete next.pop_design_notes;
+        }
+      }
+
+      return next;
+    });
     setErrors((e) => ({ ...e, [key]: undefined }));
     setChoiceError('');
     setSubmitError('');
@@ -140,7 +203,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   };
 
   const validateStep = (step) => {
-    if ((step.type === 'option' || step.type === 'style') && !answers[step.questionKey]) {
+    if ((step.type === 'option' || step.type === 'style') && !optionsFor(step.questionKey).some((option) => option.value === answers[step.questionKey])) {
       setErrors({ [step.questionKey]: 'Please choose an option' });
       if (modal) setChoiceError('Choose an option to continue.');
       return false;
@@ -181,6 +244,20 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
       setErrors({ slot: 'Please choose a date and a time' });
       return;
     }
+    if (configSteps.some((item) => item.questionKey === 'pop_room_type')) {
+      const allowed = ROOM_CEILING_CHOICES[answers.pop_room_type] || [];
+
+      if (!allowed.includes(answers.pop_room_design_style)) {
+        setSubmitError('Please choose an available ceiling for your selected room.');
+        jumpToStep(
+          configSteps.findIndex(
+            (item) => item.questionKey === 'pop_room_design_style'
+          ) + 1
+        );
+        return;
+      }
+    }
+
     // Every booking needs an account: ask now, over this form (LoginGate).
     if (!(await ensureLogin(details))) return;
 
@@ -261,7 +338,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   }
 
   /* -------------------------------------------------------------- intro */
-  if (stage === 0) {
+  if (stage === 0 && !receipt) {
     if (modal) {
       return (
         <div className="pop-modal-intro">
@@ -343,7 +420,9 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
   }
 
   /* --------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
       <div className="wizard-shell">
@@ -353,7 +432,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
               <div className="confirmed-tick">
                 <Icon name="check" size={38} strokeWidth={3} />
               </div>
-              <h2>Booking Confirmed!</h2>
+              <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
               <p>Our expert will visit your home, measure your space and provide a detailed quotation.</p>
 
               <dl className="confirmed-panel">
@@ -363,10 +442,19 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
-              <div className="pnt-fee-note">
-                <Icon name="info" size={17} />
-                <span>{receipt.message}</span>
-              </div>
+              {!receipt.paidOnline && (
+                <div className="pnt-fee-note">
+                  <Icon name="info" size={17} />
+                  <span>{receipt.message}</span>
+                </div>
+              )}
+
+              <PayBookingButton
+                bookingNumber={receipt.bookingNumber}
+                amountDisplay={receipt.visitFeeDisplay}
+                paid={receipt.paidOnline}
+                onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+              />
 
               <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
               <div className="btn-row" style={{ marginTop: 12 }}>
@@ -532,7 +620,9 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
             <EstimateSummary
               rows={resolved}
               whatsIncluded={flow.whatsIncluded}
-              itemsTotalPaise={null}
+              itemsTotalPaise={popStartingPricePaise}
+              startingFrom={popStartingPricePaise != null}
+              siteVisitQuote={fullHomePop && popStartingPricePaise == null}
               onEditStep={jumpToStep}
             />
           )}

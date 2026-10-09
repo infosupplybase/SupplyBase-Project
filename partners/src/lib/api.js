@@ -244,7 +244,17 @@ export const api = {
 
   /** Password reset email — always succeeds, whether or not the account exists. */
   forgotPassword: (identifier) =>
-    request('/api/auth/forgot-password', { method: 'POST', auth: false, body: { identifier } }),
+  request('/api/auth/forgot-password', {
+    method: 'POST',
+    auth: false,
+    body: { identifier, app: 'partner' }
+  }),
+  resetPassword: (token, newPassword) =>
+  request('/api/auth/reset-password', {
+    method: 'POST',
+    auth: false,
+    body: { token, newPassword }
+  }),
 
   /** The service catalogue; the apply form's trade list is its main categories. */
   services: () => request('/api/catalogue/services', { auth: false }),
@@ -275,6 +285,27 @@ export const api = {
     body.append('aadhaarBack', documents.aadhaarBack);
     body.append('panFront', documents.panFront);
     return request('/api/partners/apply', { method: 'POST', auth: false, body });
+  },
+
+  /**
+   * A signed-in customer applying on the account they already have: the work
+   * details and photos only, since the account holds the name, email, phone
+   * and password. /apply would refuse them as "account already exists".
+   */
+  applyWithAccount: (form, documents) => {
+    const body = new FormData();
+    const application = {
+      primaryTrade: form.primaryTrade,
+      experienceYears: Number(form.experienceYears),
+      city: form.city.trim(),
+      serviceAreas: form.serviceAreas.trim(),
+      languages: form.languages.trim(),
+    };
+    body.append('request', new Blob([JSON.stringify(application)], { type: 'application/json' }));
+    body.append('aadhaarFront', documents.aadhaarFront);
+    body.append('aadhaarBack', documents.aadhaarBack);
+    body.append('panFront', documents.panFront);
+    return request('/api/partners/me/apply', { method: 'POST', body });
   },
 
   /** The signed-in user's own application. 404 (ApiError.status) if they never applied. */

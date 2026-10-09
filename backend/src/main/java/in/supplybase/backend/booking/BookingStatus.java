@@ -30,6 +30,16 @@ public enum BookingStatus {
                 || this == SITE_VISIT_SCHEDULED;
     }
 
+    /**
+     * Whether the customer may still cancel this booking themselves from
+     * their account. Allowed until the work itself is scheduled: from then on
+     * the team may already have bought materials or booked labour, so a
+     * cancellation is a phone call, not a button.
+     */
+    public boolean isCustomerCancellable() {
+        return !isFinal() && this != WORK_SCHEDULED && this != WORK_IN_PROGRESS;
+    }
+
     /** A cancelled booking is finished; nothing may move it on. */
     public boolean isFinal() {
         return this == CANCELLED || this == WORK_COMPLETED;

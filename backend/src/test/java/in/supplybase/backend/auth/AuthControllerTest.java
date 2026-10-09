@@ -139,6 +139,19 @@ class AuthControllerTest {
         }
 
         @Test
+        @DisplayName("400s, not 500, on a password under 72 characters but over BCrypt's 72 bytes")
+        void passwordOver72BytesReturns400() throws Exception {
+            String fortyAccents = "é".repeat(40);
+            mockMvc.perform(post("/api/auth/register")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"fullName":"Jane Doe","email":"jane@example.com","phone":"9820011223","password":"%s"}
+                                    """.formatted(fortyAccents)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.fieldErrors.password").exists());
+        }
+
+        @Test
         @DisplayName("400s on a malformed email even though the field is present")
         void malformedEmailReturns400() throws Exception {
             mockMvc.perform(post("/api/auth/register")
@@ -305,7 +318,7 @@ class AuthControllerTest {
         @Test
         @DisplayName("swallows a thrown exception and still returns 200")
         void swallowsServiceException() throws Exception {
-            doThrow(new RuntimeException("boom")).when(authService).forgotPassword(any());
+            doThrow(new RuntimeException("boom")).when(authService).forgotPassword(any(), any());
 
             mockMvc.perform(post("/api/auth/forgot-password")
                             .contentType(MediaType.APPLICATION_JSON)

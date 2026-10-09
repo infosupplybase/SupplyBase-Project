@@ -15,6 +15,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const STAGES = ['Schedule', 'Details', 'Confirm'];
 const SCHEDULE = 0;
@@ -61,12 +62,13 @@ const TRADES = {
     scope: 'f:elc-checkout',
     cartPath: '/services/electrical/cart',
     serviceSlug: electricalServiceFor,
+    // The label is what the booking pages show, so it carries the quantity
+    // and price too: the server has no catalogue price to add them from.
     answers: (items) =>
-      items.map((item) => ({
-        key: 'requirements',
-        value: `${item.name} × ${item.quantity} — ${formatRupees((item.unitPricePaise * item.quantity) / 100)}`.slice(0, 400),
-        label: item.name,
-      })),
+      items.map((item) => {
+        const line = `${item.name} × ${item.quantity} — ${formatRupees((item.unitPricePaise * item.quantity) / 100)}`;
+        return { key: 'requirements', value: line.slice(0, 400), label: line.slice(0, 300) };
+      }),
     arrival: 'Our electrician will arrive in this window.',
     help: 'Hello Supplybase, I need help with my electrical cart checkout.',
     backLabel: 'BACK TO ELECTRICAL',
@@ -134,6 +136,11 @@ export default function PlumbingCheckout({
         return;
       }
     }
+    if (stage === DETAILS) {
+      const nextErrors = validateDetails(details, pickedLocation);
+      setErrors(nextErrors);
+      if (Object.keys(nextErrors).length > 0) return;
+    }
     setStage((s) => Math.min(s + 1, CONFIRM));
 
     if (modal) {
@@ -164,7 +171,11 @@ export default function PlumbingCheckout({
     e.preventDefault();
     const nextErrors = validateDetails(details, pickedLocation);
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    // The fields are not on the Confirm step: go back to where they are.
+    if (Object.keys(nextErrors).length > 0) {
+      setStage(DETAILS, { push: false });
+      return;
+    }
     // Every booking needs an account: ask now, over this form (LoginGate).
     if (!(await ensureLogin(details))) return;
 
@@ -205,11 +216,13 @@ export default function PlumbingCheckout({
   if (receipt) {
     return (
       <CheckoutConfirmation
+        trade={trade}
         receipt={receipt}
         details={details}
         config={config}
         modal={modal}
         onBackToServices={onBackToServices}
+        onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
       />
     );
   }
@@ -326,21 +339,22 @@ export default function PlumbingCheckout({
               {(stage > 0 || modal) && (
   <button
     type="button"
-    className="btn btn-ghost btn-back !m-0 !w-full !justify-center"
+    className="btn btn-ghost btn-back !m-0 !w-auto !min-w-[140px] !max-w-[180px] !flex-none !justify-center"
     onClick={goBack}
   >
     BACK
   </button>
 )}
               {stage === CONFIRM ? (
-                <button type="submit" className="btn btn-primary !m-0 !w-full !justify-center" disabled={busy}>
+                <button key="submit" type="submit" className="btn btn-primary !m-0 !w-auto !min-w-[160px] !flex-1 !justify-center" disabled={busy}>
                   {busy ? 'BOOKING…' : 'CONFIRM BOOKING'}
                   <Icon name="arrow-right" size={17} />
                 </button>
               ) : (
                 <button
+  key="continue"
   type="button"
-  className="btn btn-primary !m-0 !w-full !min-w-0 !flex !justify-center"
+  className="btn btn-primary !m-0 !w-auto !min-w-[160px] !flex-1 !justify-center"
   onClick={goNext}
 >
                   CONTINUE
@@ -414,13 +428,19 @@ function CartSummary({ items, subtotalPaise, date, time, showsFees }) {
 }
 
 function CheckoutConfirmation({
+  trade,
   receipt,
   details,
   config,
   modal = false,
   onBackToServices,
+  onPaid,
 }) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
+  // The cart's single Checkout button books plumbing first; electrical items
+  // still in the cart are the next booking.
+  const electricalLeft = useCart('electrical').count;
+  const nextCheckout = trade === 'plumbing' && electricalLeft > 0 && !modal;
   return (
     <div
       className={
@@ -444,12 +464,12 @@ function CheckoutConfirmation({
             {config.showsFees ? (
               <>
                 <h2>Your Booking is Reserved!</h2>
-                <p>{receipt.message}</p>
+                {!receipt.paidOnline && <p>{receipt.message}</p>}
               </>
             ) : (
               // Like the electrician journeys: no fee amounts on this screen.
               <>
-                <h2>Booking Confirmed!</h2>
+                <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
                 <p>
                   We have received your request. Our team will contact you on WhatsApp or phone to confirm the
                   appointment.
@@ -489,7 +509,19 @@ function CheckoutConfirmation({
               </div>
             </dl>
 
-            {!modal && (
+            <PayBookingButton
+              bookingNumber={receipt.bookingNumber}
+              amountDisplay={receipt.visitFeeDisplay}
+              paid={receipt.paidOnline}
+              onPaid={onPaid}
+            />
+
+            {nextCheckout && (
+              <Link to="/services/electrical/checkout" className="btn btn-primary btn-block">
+                NEXT: BOOK YOUR ELECTRICAL ITEMS ({electricalLeft})
+              </Link>
+            )}
+            {!modal && !nextCheckout && (
               <Link to="/dashboard" className="btn btn-primary btn-block">
                 GO TO DASHBOARD
               </Link>

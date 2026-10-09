@@ -37,6 +37,20 @@ export const formatDay = (value) => {
   return date ? date.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' }) : '—';
 };
 
+/** "18:00:00" -> "6:00 PM" */
+const toClock = (time) => {
+  const [h, min] = String(time).split(':').map(Number);
+  if (Number.isNaN(h) || Number.isNaN(min)) return String(time);
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(min).padStart(2, '0')} ${h < 12 ? 'AM' : 'PM'}`;
+};
+
+/**
+ * A booking's visit time: the time the customer picked ("18:00:00" ->
+ * "6:00 PM"), or the morning/afternoon label on the old two-lane bookings.
+ */
+export const visitTime = (booking) =>
+  booking ? (booking.appointmentTime ? toClock(booking.appointmentTime) : booking.preferredSlot || '') : '';
+
 /** "just now", "12 min ago", "3 h ago", "2 days ago", then a plain date. */
 export const timeAgo = (value) => {
   if (!value) return '—';
@@ -88,23 +102,25 @@ export const bookingTone = (status) => {
 };
 
 /**
- * PAYMENT_PENDING and BOOKING_REQUESTED bookings are cancelled by the server
- * (BookingExpiryJob) 24 hours after they were made, unless staff move them on.
+ * The server (BookingExpiryJob) cancels a PAYMENT_PENDING or BOOKING_REQUESTED
+ * booking only when the customer opened online payment and did not finish it
+ * within 24 hours. Pay-on-the-day bookings are never cancelled automatically.
  */
 export const EXPIRY_HOURS = 24;
 export const EXPIRING_STATUSES = ['PAYMENT_PENDING', 'BOOKING_REQUESTED'];
 
 /** Hours left before the server auto-cancels this booking, or null if it never will. */
 export const hoursUntilAutoCancel = (booking) => {
-  if (!booking || !EXPIRING_STATUSES.includes(booking.status) || !booking.createdAt) return null;
-  const deadline = new Date(booking.createdAt).getTime() + EXPIRY_HOURS * 3600000;
+  if (!booking || !EXPIRING_STATUSES.includes(booking.status)) return null;
+  if (!booking.onlineCheckoutAt || booking.paidAt) return null;
+  const deadline = new Date(booking.onlineCheckoutAt).getTime() + EXPIRY_HOURS * 3600000;
   return Math.max(0, Math.ceil((deadline - Date.now()) / 3600000));
 };
 
 /** What each booking status means, in plain words, for the staff who move it on. */
 export const BOOKING_STATUS_HELP = {
-  PAYMENT_PENDING: 'New booking. Check it and confirm — it is cancelled automatically after 24 hours.',
-  BOOKING_REQUESTED: 'Requested by the customer. Confirm it — it is cancelled automatically after 24 hours.',
+  PAYMENT_PENDING: 'New booking. Check it and confirm. If the customer started paying online and did not finish, it is cancelled 24 hours later.',
+  BOOKING_REQUESTED: 'Requested by the customer. Confirm it. If the customer started paying online and did not finish, it is cancelled 24 hours later.',
   CONFIRMED: 'Confirmed. Next: assign a partner.',
   ASSIGNMENT_PENDING: 'Waiting for a partner to be assigned.',
   PROFESSIONAL_ASSIGNED: 'A partner is assigned. Next: schedule the site visit.',

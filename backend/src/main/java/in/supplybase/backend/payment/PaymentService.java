@@ -14,6 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 import in.supplybase.backend.auth.AuthenticatedUser;
 import in.supplybase.backend.auth.User;
 import in.supplybase.backend.auth.UserRepository;
+import in.supplybase.backend.booking.Booking;
+import in.supplybase.backend.booking.BookingRepository;
+import in.supplybase.backend.booking.BookingStatus;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.Money;
 import in.supplybase.backend.common.Reference;
@@ -35,19 +38,27 @@ public class PaymentService {
     private final ProjectRepository projects;
     private final RazorpayService razorpay;
     private final InvoiceService invoices;
+    private final BookingRepository bookings;
 
     public PaymentService(PaymentRepository payments, PaymentEventRepository events,
                           UserRepository users, ProjectRepository projects,
-                          RazorpayService razorpay, InvoiceService invoices) {
+                          RazorpayService razorpay, InvoiceService invoices,
+                          BookingRepository bookings) {
         this.payments = payments;
         this.events = events;
         this.users = users;
         this.projects = projects;
         this.razorpay = razorpay;
         this.invoices = invoices;
+        this.bookings = bookings;
     }
 
     /* ------------------------------------------------------------ reads */
+
+    /** False until the Razorpay keys are set on the server. */
+    public boolean onlinePaymentsEnabled() {
+        return razorpay.isConfigured();
+    }
 
     @Transactional(readOnly = true)
     public List<PaymentResponse> myPayments(Long userId) {
@@ -120,7 +131,11 @@ public class PaymentService {
         if (payment.getStatus() == PaymentStatus.CANCELLED) {
             throw ApiException.badRequest("That payment was cancelled.");
         }
+        return openCheckout(payment);
+    }
 
+    /** Creates the Razorpay order on first use and returns what checkout needs. */
+    private RazorpayOrderResponse openCheckout(Payment payment) {
         String orderId = payment.getRazorpayOrderId();
         if (orderId == null) {
             orderId = razorpay.createOrder(payment.getAmountPaise(), payment.getCurrency(),
@@ -133,6 +148,61 @@ public class PaymentService {
         return new RazorpayOrderResponse(orderId, razorpay.keyId(), payment.getAmountPaise(),
                 payment.getCurrency(), payment.getReference(), payment.getDescription(),
                 client.getFullName(), client.getEmail(), client.getPhone());
+    }
+
+    /**
+     * Opens checkout for a booking's fee, keyed by the booking number the
+     * booking form hands back.
+     *
+     * The amount is the booking's own visitFeePaise, fixed by the server when
+     * the booking was made, so nothing the browser sends can change what is
+     * charged. One payment row per booking is reused across attempts, so
+     * closing checkout and trying again does not raise a second charge.
+     */
+    @Transactional
+    public RazorpayOrderResponse startBookingCheckout(String bookingNumber, AuthenticatedUser caller) {
+        Booking booking = bookings.findByBookingNumber(bookingNumber)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+
+        User owner = booking.getUser();
+        if (owner == null || (!caller.isStaff() && !owner.getId().equals(caller.id()))) {
+            throw ApiException.notFound("That booking");
+        }
+        if (booking.getPaidAt() != null) {
+            throw ApiException.badRequest("This booking has already been paid.");
+        }
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw ApiException.badRequest("This booking was cancelled, so it cannot be paid.");
+        }
+        if (!booking.getStatus().isBeforeVisit()) {
+            throw ApiException.badRequest("This booking is past the visit stage. Please pay our team directly.");
+        }
+        if (booking.getVisitFeePaise() <= 0) {
+            throw ApiException.badRequest("There is nothing to pay on this booking.");
+        }
+
+        // The customer chose to pay online: from now on BookingExpiryJob may
+        // cancel the booking if the payment is never finished.
+        if (booking.getOnlineCheckoutAt() == null) {
+            booking.setOnlineCheckoutAt(Instant.now());
+            bookings.save(booking);
+        }
+
+        Payment payment = payments.findFirstByBookingIdAndStatusInOrderByCreatedAtDesc(
+                        booking.getId(), List.of(PaymentStatus.PENDING, PaymentStatus.FAILED))
+                .orElseGet(() -> payments.save(Payment.builder()
+                        .reference(Reference.forPayment())
+                        .user(owner)
+                        .booking(booking)
+                        .paymentType(PaymentType.BOOKING)
+                        .description(truncateDescription(booking.getServiceLabel() + " booking "
+                                + booking.getBookingNumber()))
+                        .amountPaise(booking.getVisitFeePaise())
+                        .currency("INR")
+                        .status(PaymentStatus.PENDING)
+                        .build()));
+
+        return openCheckout(payment);
     }
 
     /**
@@ -149,6 +219,12 @@ public class PaymentService {
 
         if (!caller.isStaff() && !payment.getUser().getId().equals(caller.id())) {
             throw ApiException.notFound("That payment");
+        }
+        // Only a payment still waiting on money can become paid here. A paid
+        // one is already done, and replaying an old signed checkout result
+        // must never turn a refunded or cancelled payment back into PAID.
+        if (payment.getStatus() != PaymentStatus.PENDING && payment.getStatus() != PaymentStatus.FAILED) {
+            return PaymentResponse.from(payment);
         }
 
         if (!razorpay.verifyCheckoutSignature(request.razorpayOrderId(),
@@ -223,6 +299,38 @@ public class PaymentService {
     public void recordAndApplyWebhook(String eventId, String eventType, String rawBody,
                                       boolean signatureValid, String razorpayOrderId,
                                       String razorpayPaymentId) {
+        recordAndApplyWebhook(eventId, eventType, rawBody, signatureValid, razorpayOrderId,
+                razorpayPaymentId, null);
+    }
+
+    /**
+     * As above, with the payment's {@code refund_status} from the event
+     * ("full" or "partial", null when the event carries none), so only a
+     * full refund marks the payment REFUNDED.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordAndApplyWebhook(String eventId, String eventType, String rawBody,
+                                      boolean signatureValid, String razorpayOrderId,
+                                      String razorpayPaymentId, String refundStatus) {
+        // The webhook URL is public, so an unsigned event is anyone's. It is
+        // kept as a short audit row only: no event id (or a forged one sent
+        // first would make the real, signed event look like a duplicate and be
+        // dropped) and only the start of its body, so it cannot fill the disk.
+        if (!signatureValid) {
+            events.save(PaymentEvent.builder()
+                    .eventType(cut(eventType, EVENT_TYPE_MAX))
+                    .signatureValid(false)
+                    .payload(cut(rawBody, UNSIGNED_PAYLOAD_MAX))
+                    .processed(false)
+                    .processError("Signature did not verify — not applied")
+                    .build());
+            return;
+        }
+
+        // Razorpay's ids are short; anything longer than the column is not one.
+        if (eventId != null && eventId.length() > EVENT_ID_MAX) {
+            eventId = null;
+        }
         if (eventId != null && events.existsByRazorpayEventId(eventId)) {
             log.info("Ignoring duplicate Razorpay event {}", eventId);
             return;
@@ -230,17 +338,11 @@ public class PaymentService {
 
         PaymentEvent event = PaymentEvent.builder()
                 .razorpayEventId(eventId)
-                .eventType(eventType)
-                .signatureValid(signatureValid)
+                .eventType(cut(eventType, EVENT_TYPE_MAX))
+                .signatureValid(true)
                 .payload(rawBody)
                 .processed(false)
                 .build();
-
-        if (!signatureValid) {
-            event.setProcessError("Signature did not verify — not applied");
-            events.save(event);
-            return;
-        }
 
         try {
             Payment payment = razorpayOrderId == null ? null
@@ -250,7 +352,7 @@ public class PaymentService {
             if (payment == null) {
                 event.setProcessError("No payment matches order " + razorpayOrderId);
             } else {
-                applyEvent(payment, eventType, razorpayPaymentId);
+                applyEvent(payment, eventType, razorpayPaymentId, refundStatus);
                 payments.save(payment);
                 event.setProcessed(true);
             }
@@ -261,10 +363,14 @@ public class PaymentService {
         events.save(event);
     }
 
-    private void applyEvent(Payment payment, String eventType, String razorpayPaymentId) {
+    private void applyEvent(Payment payment, String eventType, String razorpayPaymentId,
+                            String refundStatus) {
         switch (eventType) {
             case "payment.captured", "order.paid" -> {
-                if (payment.getStatus() != PaymentStatus.PAID) {
+                // A late or retried capture must not undo a refund or a
+                // cancellation, nor re-stamp a payment that is already paid.
+                if (payment.getStatus() == PaymentStatus.PENDING
+                        || payment.getStatus() == PaymentStatus.FAILED) {
                     markPaid(payment, razorpayPaymentId, null);
                 }
             }
@@ -276,7 +382,17 @@ public class PaymentService {
                     payment.setFailureReason("Razorpay reported the payment failed");
                 }
             }
-            case "refund.processed", "refund.created" -> payment.setStatus(PaymentStatus.REFUNDED);
+            // refund.created only means a refund was asked for (it can still
+            // fail), and a partial refund leaves most of the money paid, so
+            // only a processed refund that covers the whole payment counts.
+            case "refund.processed" -> {
+                if (payment.getStatus() == PaymentStatus.PAID && "full".equals(refundStatus)) {
+                    payment.setStatus(PaymentStatus.REFUNDED);
+                } else {
+                    log.info("Refund on payment {} is not a full refund ({}); status kept as {}",
+                            payment.getReference(), refundStatus, payment.getStatus());
+                }
+            }
             default -> log.debug("Ignoring unhandled Razorpay event type {}", eventType);
         }
     }
@@ -291,6 +407,42 @@ public class PaymentService {
         if (payment.getPaidAt() == null) {
             payment.setPaidAt(Instant.now());
         }
+        markBookingPaid(payment);
+    }
+
+    /**
+     * A verified booking payment stamps the booking paid and, if it was still
+     * waiting on that payment, confirms it (RULE 7 in BookingStatus). A
+     * booking that moved on, or was cancelled meanwhile, keeps its status:
+     * staff see the paid stamp and can refund a cancelled one.
+     */
+    private void markBookingPaid(Payment payment) {
+        Booking booking = payment.getBooking();
+        if (booking == null || booking.getPaidAt() != null) {
+            return;
+        }
+        booking.setPaidAt(payment.getPaidAt());
+        if (booking.getStatus() == BookingStatus.PAYMENT_PENDING
+                || booking.getStatus() == BookingStatus.BOOKING_REQUESTED) {
+            booking.setStatus(BookingStatus.CONFIRMED);
+        }
+        bookings.save(booking);
+    }
+
+    private static String truncateDescription(String value) {
+        return value.length() <= 255 ? value : value.substring(0, 255);
+    }
+
+    // payment_events column sizes (V1), and how much of an unsigned body is kept.
+    private static final int EVENT_ID_MAX = 64;
+    private static final int EVENT_TYPE_MAX = 60;
+    private static final int UNSIGNED_PAYLOAD_MAX = 2000;
+
+    private static String cut(String value, int max) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= max ? value : value.substring(0, max);
     }
 
     private static String truncate(String value) {

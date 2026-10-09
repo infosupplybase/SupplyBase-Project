@@ -5,6 +5,7 @@ import GoogleButton from './GoogleButton';
 import { contact } from '../../data/siteConfig';
 import { useAuth, friendlyError } from '../../context/AuthContext';
 import { isValidPhone } from '../../lib/bookingDetails';
+import api from '../../lib/api';
 
 /**
  * Sign in / create account — the form itself, shared by the account page
@@ -76,6 +77,8 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
     // 8 because the API enforces 8 — a laxer rule here would only produce a
     // server-side rejection after the person had already pressed the button.
     else if (form.password.length < 8) next.password = 'Use at least eight characters';
+    // 72 bytes, not characters: BCrypt's limit, and the API checks the same way.
+    else if (new TextEncoder().encode(form.password).length > 72) next.password = 'That password is too long. Use fewer characters, or fewer accented letters and symbols';
     if (form.confirm !== form.password) next.confirm = 'Both passwords must match';
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -135,17 +138,31 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
   };
 
   /**
-   * There is no self-service reset yet — the API has no endpoint for it, and
-   * saying "check your inbox" when no email is sent would be worse than
-   * saying nothing. Point at a person instead until that flow is built.
+   * Emails a reset link (to /reset-password) for the email or phone typed
+   * above. The API answers the same whether or not an account matches, so
+   * the message cannot say which.
    */
-  const handleReset = (e) => {
+  const handleReset = async (e) => {
     e.preventDefault();
     setError('');
-    setNotice(
-      `Call us on ${contact.phoneDisplay} and we will reset it for you. ` +
-        'Self-service password reset is coming.'
-    );
+    setNotice('');
+    if (!form.identifier.trim()) {
+      setErrors((err) => ({ ...err, identifier: 'Type your email or phone number, then tap Forgot password' }));
+      document.getElementById('auth-identifier')?.focus();
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.forgotPassword(form.identifier.trim());
+      setNotice(
+        'If this matches an account, we have emailed it a link to reset the password. ' +
+          `Check your inbox and spam folder, or call us on ${contact.phoneDisplay}.`
+      );
+    } catch (err) {
+      setError(friendlyError(err));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -344,7 +361,7 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
                 type="button"
                 className="auth-inline-link auth-forgot"
                 onClick={handleReset}
-                title={`Call ${contact.phoneDisplay}`}
+                disabled={busy}
               >
                 Forgot password?
               </button>

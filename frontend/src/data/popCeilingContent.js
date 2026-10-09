@@ -68,8 +68,8 @@ export const DESIGN_STYLE_ICONS = {
   'double-layer-ceiling': 'layers',
   'floating-ceiling': 'cove',
   'border-ceiling': 'border',
-  'non-drop-ceiling': 'ceiling',
-  'recessed-ceiling': 'tray',
+  'profile-pop': 'cove',
+  'pvc-panel-pop': 'panel',
 
   // Existing catalogue values retained for compatibility.
   'simple-elegant': 'sparkle',
@@ -113,7 +113,7 @@ export const popFlows = {
   'full-home': {
     slug: 'full-home',
     title: 'Full Home POP',
-    heroTagline: 'Complete false ceiling packages for 1 BHK to Duplex homes.',
+    heroTagline: 'Complete POP ceiling work for 1 BHK, 2 BHK, 3 BHK and 4 BHK / Villa.',
     intro: {
       eyebrow: 'PROFESSIONAL',
       heading: 'Transform your entire home with elegant POP ceilings.',

@@ -29,3 +29,11 @@ export const bookingStatusTone = (status) => {
   if (['PAYMENT_PENDING', 'BOOKING_REQUESTED', 'ASSIGNMENT_PENDING'].includes(status)) return 'warning';
   return 'accent';
 };
+
+/**
+ * Whether the customer can cancel this booking themselves — until the work is
+ * scheduled. Mirrors BookingStatus.isCustomerCancellable on the API, which is
+ * what actually refuses it.
+ */
+export const isCustomerCancellable = (status) =>
+  !['WORK_SCHEDULED', 'WORK_IN_PROGRESS', 'WORK_COMPLETED', 'CANCELLED'].includes(status);

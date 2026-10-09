@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import SlotPicker from '../components/booking/SlotPicker';
@@ -10,12 +11,15 @@ import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 // The same form and checks as every other booking flow.
 import { composeAddress, emptyDetails, validateDetails as checkDetails } from '../lib/bookingDetails';
-import { getSpaceBySlug, getDesignBySlug, HOME_VISIT_FEE } from '../data/interiorCatalog';
+import { getSpaceBySlug, getDesignBySlug, interiorColourNames, HOME_VISIT_FEE } from '../data/interiorCatalog';
 import { formatVisitDate, formatVisitTime } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const STEPS = ['Details', 'Schedule', 'Confirm'];
 const CATEGORY_SLUG = 'interior-by-choice';
+// The API accepts up to 400 characters per answer.
+const NOTES_MAX = 400;
 
 
 /**
@@ -35,13 +39,21 @@ export default function InteriorBooking({
   designSlug: propDesignSlug,
 
   selectedPanelName,
-  selectedColorName,
+  selectedColorName: popupColourName,
   referenceImage,
 
   onBack,
   onStepChange,
 }) {
   const params = useParams();
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  // The colour picked on the design page arrives as ?colour=Walnut; only the
+  // catalogue's own names are accepted. The Services pop-up passes its own.
+  const pageColour = searchParams.get('colour');
+  const selectedColorName =
+    popupColourName ||
+    (!modal && Object.values(interiorColourNames).includes(pageColour) ? pageColour : null);
 
 const spaceSlug = propSpaceSlug || params.spaceSlug;
 const designSlug = propDesignSlug || params.designSlug;
@@ -62,6 +74,21 @@ const designSlug = propDesignSlug || params.designSlug;
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useHistoryState(`${scope}:receipt`, null);
+
+  // A signed-in customer starts with their own name, phone and email.
+  useEffect(() => {
+    if (user) {
+      setForm((f) => ({
+        ...f,
+        name: f.name || user.fullName || '',
+        phone: f.phone || user.phone || '',
+        email: f.email || user.email || '',
+      }));
+    }
+  }, [user]);
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  const shownStep = receipt ? 2 : step;
 
   // Kept in a ref: a new callback from the parent is not a step change.
   const onStepChangeRef = useRef(onStepChange);
@@ -105,7 +132,11 @@ const designSlug = propDesignSlug || params.designSlug;
     const notesParts = [`Selected design: ${selectedLabel}.`];
     // The living-room panel and colour picked in the booking pop-up, so staff
     // know exactly what the customer chose.
-    if (selectedColorName) notesParts.push(`Panel: ${selectedPanelName || '-'}, colour: ${selectedColorName}.`);
+    if (selectedPanelName && selectedColorName) {
+      notesParts.push(`Panel: ${selectedPanelName}, colour: ${selectedColorName}.`);
+    } else if (selectedColorName) {
+      notesParts.push(`Colour: ${selectedColorName}.`);
+    }
     if (String(form.notes || '').trim()) notesParts.push(form.notes.trim());
 
     setBusy(true);
@@ -113,7 +144,9 @@ const designSlug = propDesignSlug || params.designSlug;
     try {
       const result = await api.createBooking({
         serviceSlug: CATEGORY_SLUG,
-        answers: [{ key: 'notes', value: notesParts.join(' ').slice(0, 400), label: 'Selected design and requirements' }],
+        // No label: the booking shows a label in place of the value, and
+        // staff need to read the selection itself.
+        answers: [{ key: 'notes', value: notesParts.join(' ').slice(0, NOTES_MAX) }],
         preferredDate: date,
         preferredTime: time,
         name: form.name.trim(),
@@ -142,6 +175,11 @@ if (modal) {
     }
   };
 
+  // A space or design in the URL that is not in the catalogue: no form to
+  // book against, so back to the catalogue (as the design page does).
+  if (!modal && spaceSlug && !space) return <Navigate to="/interior-by-choice" replace />;
+  if (!modal && designSlug && !design) return <Navigate to={`/interior-by-choice/${spaceSlug}`} replace />;
+
   return (
     <>
      {!modal && (  <PageHero
@@ -164,7 +202,7 @@ if (modal) {
         : 'container container-narrow'
     }
   >
-          {step < 2 && (
+          {shownStep < 2 && (
             <ol className="ibc-steps">
               {STEPS.map((label, i) => (
                 <li key={label} className={`ibc-step ${i === step ? 'current' : ''} ${i < step ? 'done' : ''}`}>
@@ -175,7 +213,7 @@ if (modal) {
             </ol>
           )}
 
-          {(space || design) && step < 2 && (
+          {(space || design) && shownStep < 2 && (
             <div className="ibc-selected-service">
               <img
   src={
@@ -183,7 +221,7 @@ if (modal) {
     (design || space).image
   }
   alt={
-    selectedColorName
+    selectedPanelName && selectedColorName
       ? `${selectedPanelName} - ${selectedColorName}`
       : (design || space).name
   }
@@ -222,10 +260,10 @@ if (modal) {
             </div>
           )}
 
-          {step === 0 && (
+          {shownStep === 0 && (
             <div className="ibc-form-panel">
 
-{selectedColorName && (
+{selectedPanelName && selectedColorName && (
   <div
     className="
       mb-5
@@ -258,7 +296,7 @@ if (modal) {
               <CustomerDetailsFields details={form} setDetail={setField} errors={errors} idPrefix="ib" />
               <div className="field" style={{ marginTop: 16 }}>
                 <label htmlFor="ib-notes">Any specific requirements? (Optional)</label>
-                <textarea id="ib-notes" rows={3} value={form.notes || ''} onChange={setField('notes')} />
+                <textarea id="ib-notes" rows={3} maxLength={300} value={form.notes || ''} onChange={setField('notes')} />
               </div>
               <button type="button" className="btn btn-primary ibc-form-submit" onClick={goToSchedule}>
                 Continue
@@ -266,7 +304,7 @@ if (modal) {
             </div>
           )}
 
-          {step === 1 && (
+          {shownStep === 1 && (
             <div className="ibc-form-panel">
               <SlotPicker
                 serviceSlug={CATEGORY_SLUG}
@@ -297,12 +335,12 @@ if (modal) {
             </div>
           )}
 
-          {step === 2 && receipt && (
+          {shownStep === 2 && receipt && (
             <div className="ibc-confirm-panel pb-6">
               <span className="ibc-confirm-icon">
                 <Icon name="check" size={30} />
               </span>
-              <h2>Booking Confirmed!</h2>
+              <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
               <p>Our expert will visit your home.</p>
 
               <div className="ibc-confirm-details">
@@ -336,19 +374,21 @@ if (modal) {
                 </p>
               </div>
 
-              <Link
-  to="/dashboard"
-  className="btn btn-dark ibc-form-submit"
->
-  View Booking
-</Link>
+              <PayBookingButton
+                bookingNumber={receipt.bookingNumber}
+                amountDisplay={receipt.visitFeeDisplay}
+                paid={receipt.paidOnline}
+                onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+              />
 
-<Link
-  to="/"
-  className="btn btn-ghost ibc-form-submit mb-2"
->
-  Back to Home
-</Link>
+              <div className="ibc-confirm-actions">
+                <Link to="/dashboard/bookings" className="btn btn-dark ibc-form-submit">
+                  View Booking
+                </Link>
+                <Link to="/" className="btn btn-ghost ibc-form-submit">
+                  Back to Home
+                </Link>
+              </div>
             </div>
           )}
         </div>

@@ -60,7 +60,7 @@ export const idCategories = [
     type: 'apartment',
     tagline: 'Smart. Stylish. Affordable.',
     areaNote: 'Up to 650 sq. ft.',
-    image: ID_HERO_IMAGE,
+    image: '/assets/interior-design/layouts/1bhk.jpg',
   },
   {
     slug: '2bhk',
@@ -68,7 +68,7 @@ export const idCategories = [
     type: 'apartment',
     tagline: 'Perfect Balance of Space & Style.',
     areaNote: '650 – 1,000 sq. ft.',
-    image: '/assets/pop-ceiling/hero/living-room-cove.webp',
+    image: '/assets/interior-design/layouts/2bhk.jpg',
   },
   {
     slug: '3bhk',
@@ -76,7 +76,7 @@ export const idCategories = [
     type: 'apartment',
     tagline: 'More Space. More Possibilities.',
     areaNote: '1,000 – 1,500 sq. ft.',
-    image: '/assets/projects/office-fitout.webp',
+    image: '/assets/interior-design/layouts/3bhk-v2.webp',
   },
   {
     slug: 'villa',
@@ -84,7 +84,7 @@ export const idCategories = [
     type: 'villa',
     tagline: 'Luxury Living Without Limits.',
     areaNote: '1,500 sq. ft. and above',
-    image: '/assets/projects/luxury-bungalow.webp',
+    image: '/assets/interior-design/layouts/villa-v2.webp',
   },
 ];
 
@@ -92,11 +92,7 @@ export const idCategories = [
     honest "quote after site visit" state (see V18's migration comment). */
 export const ID_REFERENCE_PROJECT_SLUG = 'modern-minimal';
 
-export const ID_REFERENCE_PACKAGES = {
-  standard: { priceRupees: 499000, priceDisplay: '₹4.99 Lakhs' },
-  premium: { priceRupees: 699000, priceDisplay: '₹6.99 Lakhs' },
-  luxury: { priceRupees: 999000, priceDisplay: '₹9.99 Lakhs' },
-};
+export const ID_REFERENCE_PACKAGES = {};
 
 export const ID_REFERENCE_STATS = {
   areaSqft: '650 sq. ft.',
@@ -105,9 +101,18 @@ export const ID_REFERENCE_STATS = {
 };
 
 export const idPackageTiers = [
-  { key: 'standard', name: 'Standard', blurb: 'Smart designs, great functionality.', icon: 'sofa' },
-  { key: 'premium', name: 'Premium', blurb: 'Elevated living, premium finishes.', icon: 'award' },
-  { key: 'luxury', name: 'Luxury', blurb: 'Bespoke design, ultimate experience.', icon: 'sparkle' },
+  {
+    key: 'standard',
+    name: 'Standard',
+    blurb: 'Smart designs, great functionality.',
+    icon: 'sofa',
+  },
+  {
+    key: 'premium',
+    name: 'Premium',
+    blurb: 'Elevated living, premium finishes.',
+    icon: 'award',
+  },
 ];
 
 /** Shared across every tier's card — the reference shows one inclusion

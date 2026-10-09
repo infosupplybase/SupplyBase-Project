@@ -3,7 +3,7 @@ import Icon from '../ui/Icon';
 import { formatRupees } from '../../lib/money';
 import { ITEM_ICON_OVERRIDES } from '../../data/paintingContent';
 
-const TEXTURE_IMAGE = '/assets/projects/Stone_texture.webp';
+const TEXTURE_IMAGE = '/assets/projects/interior-by-choice/tv-wall/stone-texture.webp';
 
 const addonImages = {
   'ceiling-painting': '/assets/pop-ceiling/types/flat-ceiling.webp',
@@ -17,6 +17,8 @@ const addonImages = {
   'texture-feature-wall': TEXTURE_IMAGE,
   'texture-wall': TEXTURE_IMAGE,
   'feature-wall': TEXTURE_IMAGE,
+  'deep-cleaning': '/assets/ac-services/matched/blower-cleaning.webp',
+  'furniture-shifting': '/assets/services/furniture/2bhk.webp',
 };
 
 function getAddonImage(option) {
@@ -30,9 +32,17 @@ function getAddonImage(option) {
   if (label.includes('texture') || label.includes('feature wall')) {
     return TEXTURE_IMAGE;
   }
+  if (label.includes('deep cleaning')) return addonImages['deep-cleaning'];
+  if (label.includes('furniture shifting')) {
+    return addonImages['furniture-shifting'];
+  }
+  if (label.includes('waterproof')) {
+    return addonImages['waterproofing-treatment'];
+  }
+  if (label.includes('door') || label.includes('window')) {
+    return addonImages['doors-windows-painting'];
+  }
 
-  // Deep Cleaning and Furniture Shifting have no photo of our own yet, so
-  // they show their icon (see AddonRow) instead of another company's picture.
   return null;
 }
 
@@ -57,8 +67,8 @@ function AddonRow({ option, checked, onToggle }) {
           aria-hidden="true"
           style={{
             display: 'block',
-            width: 72,
-            height: 64,
+            width: 88,
+            height: 72,
             flexShrink: 0,
             overflow: 'hidden',
             borderRadius: 10,
@@ -68,8 +78,8 @@ function AddonRow({ option, checked, onToggle }) {
           <img
             src={image}
             alt=""
-            width={72}
-            height={64}
+            width={88}
+            height={72}
             loading="lazy"
             decoding="async"
             referrerPolicy="no-referrer"

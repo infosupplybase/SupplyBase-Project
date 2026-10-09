@@ -12,17 +12,17 @@ export const company = {
   statement: 'DESIGN. BUILD. DELIVER.',
   model: 'LABOUR + MATERIAL + MANAGEMENT',
   shortIntro:
-    'From 3D architectural design to construction and finishing — we provide labour, materials and complete project execution under one roof.',
+    'Painting, waterproofing, plumbing, electrical, AC servicing, POP ceiling and interior design — we provide the people, the materials and the supervision under one roof.',
   longIntro:
-    'Supplybase is a construction, architectural design, interior design and turnkey project execution company. We handle labour, material and project management so our clients deal with one partner from the first drawing to the final handover.',
+    'Supplybase does painting, waterproofing, plumbing, electrical, AC servicing, POP ceiling and interior design work for homes. We handle labour, material and supervision so our clients deal with one partner from the first visit to the final handover.',
 };
 
 /**
  * OFFICIAL CONTACT DETAILS — used by every call, email and WhatsApp button on the site.
  */
 export const contact = {
-  phoneDisplay: '+91 77095 88422',
-  phoneRaw: '917709588422', // country code + number, digits only (used for tel: and WhatsApp)
+  phoneDisplay: '+91 91373 06446',
+  phoneRaw: '919137306446', // country code + number, digits only (used for tel: and WhatsApp)
   email: 'info.supplybase@gmail.com',
   addressLines: ['Mumbai, Maharashtra', 'India'],
   serviceAreas: ['Mumbai', 'Navi Mumbai', 'Thane', 'Kalyan', 'Panvel', 'Pune'],
@@ -149,7 +149,7 @@ export const processSteps = [
 export const whyUsPoints = [
   {
     title: 'One Partner For Everything',
-    text: 'Design, construction, interiors, and finishing—all managed by one accountable team.',
+    text: 'Painting, repairs, interiors, and finishing—all managed by one accountable team.',
     icon: 'users',
     image: '/assets/about/one-partner.webp',
   },
@@ -161,7 +161,7 @@ export const whyUsPoints = [
   },
   {
     title: 'Design Before You Build',
-    text: '2D plans and 3D views help you visualize your project before construction begins.',
+    text: 'Room designs and 3D views help you see the finished space before work begins.',
     icon: 'layout',
     image: '/assets/about/design-before-build.webp',
   },

@@ -22,7 +22,8 @@ import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
-import { wpCategories } from '../data/waterproofingContent';
+import { wpCatalogueService, wpCategories } from '../data/waterproofingContent';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 
 
@@ -332,11 +333,7 @@ const stageQuestions = useMemo(() => {
           text: 'Which waterproofing service do you need?',
           inputType: 'SINGLE',
           options: wpCategories.map((category) => {
-            const catalogueName = category.slug === 'interior-wall'
-              ? 'Wall Waterproofing'
-              : category.slug === 'exterior-wall'
-                ? 'External Waterproofing'
-                : category.name;
+            const catalogueName = wpCatalogueService(category.slug, category.name);
             const option = catalogueServiceQuestion?.options?.find((item) =>
               item.value === catalogueName || item.label === catalogueName
             );
@@ -714,6 +711,7 @@ const stageQuestions = useMemo(() => {
         receipt={receipt}
         details={details}
         modal={modal}
+        onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
       />
     );
   }
@@ -789,7 +787,8 @@ const stageQuestions = useMemo(() => {
             Progress
         -------------------------------------------------- */}
 
-        <ol
+        {category.slug !== 'waterproofing' && (
+<ol
           className={
             modal
               ? 'wizard-steps !mb-3'
@@ -832,6 +831,7 @@ const stageQuestions = useMemo(() => {
             </li>
           ))}
         </ol>
+        )}
 
         {/* --------------------------------------------------
             Form
@@ -985,7 +985,10 @@ const stageQuestions = useMemo(() => {
               )}
 
               {!(slug === 'waterproofing' && stage === 0) && (stage === confirmStage ? (
+                // Distinct keys so React never reuses this node for CONTINUE:
+                // a reused button turns into type="submit" mid-click and books.
                 <button
+                  key="submit"
                   type="submit"
                   className="
                     btn btn-primary btn-sm
@@ -1035,6 +1038,7 @@ const stageQuestions = useMemo(() => {
                   )
                 ) && (
                   <button
+                    key="continue"
                     type="button"
                     className="btn btn-primary btn-sm md:!flex-none md:!w-44 md:!ms-auto"
                     onClick={goNext}
@@ -1163,6 +1167,13 @@ function Summary({
           <strong>
             Site Visit &amp; Quotation Fee
           </strong>
+
+          {/* The amount "before you pay" refers to. */}
+          {category.visitFeeDisplay && (
+            <span className="fee-panel-amount">
+              {category.visitFeeDisplay}
+            </span>
+          )}
         </div>
 
         <ul className="fee-includes">
@@ -1209,6 +1220,7 @@ function Confirmation({
   receipt,
   details,
   modal = false,
+  onPaid,
 }) {
   const message = encodeURIComponent(
     `Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`
@@ -1289,6 +1301,13 @@ function Confirmation({
                 </dd>
               </div>
             </dl>
+
+            <PayBookingButton
+              bookingNumber={receipt.bookingNumber}
+              amountDisplay={receipt.visitFeeDisplay}
+              paid={receipt.paidOnline}
+              onPaid={onPaid}
+            />
 
             <Link
               to="/dashboard"

@@ -1,13 +1,16 @@
+import { createPortal } from 'react-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
+import { wpStageImages } from '../data/waterproofingStageImages';
 import PaintingHero from '../components/painting/PaintingHero';
 import BrandPicker from '../components/waterproofing/BrandPicker';
+import TerraceSlider from '../components/waterproofing/TerraceSlider';
 import RateTable from '../components/waterproofing/RateTable';
 import CustomerDetailsFields from '../components/booking/CustomerDetailsFields';
 import SlotPicker from '../components/booking/SlotPicker';
 import useWaterproofingCatalogue from '../hooks/useWaterproofingCatalogue';
-import { wpFlows } from '../data/waterproofingContent';
+import { wpCatalogueService, wpFlows } from '../data/waterproofingContent';
 import { composeAddress, emptyDetails, validateDetails } from '../lib/bookingDetails';
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
@@ -18,6 +21,7 @@ import { contact } from '../data/siteConfig';
 import { formatVisit } from '../lib/visitTime';
 import { useFormBack, useHistoryState } from '../hooks/useHistoryState';
 import ModalFoot from '../components/services/ModalFoot';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 /**
  * One page, six journeys (Terrace / Exterior Wall / Bathroom-Floor /
@@ -31,6 +35,14 @@ import ModalFoot from '../components/services/ModalFoot';
  * have one) -> Details/Schedule/Confirm. See V17's migration comment for
  * why every booking here shows the flat ₹99 fee regardless of brand.
  */
+// Each flow's own photo needs a different crop to keep the work in frame.
+const HERO_CLASS_BY_FLOW = {
+  'exterior-wall': 'pnt-hero-exterior-waterproofing',
+  terrace: 'pnt-hero-terrace-waterproofing',
+  'water-tank': 'pnt-hero-water-tank-waterproofing',
+  basement: 'pnt-hero-basement-waterproofing',
+};
+
 export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = false, onBackToCategories, onStepChange }) {
   const { flowSlug: routeFlowSlug } = useParams();
   const flowSlug = flowSlugProp || routeFlowSlug;
@@ -42,7 +54,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   // hooks/useHistoryState): a refresh keeps them, Back goes one step back.
   const scope = `f:wp:${flowSlug}`;
   const formBack = useFormBack();
-  const [stage, setStage] = useHistoryState(`${scope}:stage`, 0, { push: true });
+  const [stage, setStage] = useHistoryState(`${scope}:stage:slots-first`, 0, { push: true });
   const [brand, setBrand] = useHistoryState(`${scope}:brand`, '');
   const pickedLocation = usePickedLocation();
   const ensureLogin = useEnsureLogin();
@@ -63,9 +75,9 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const BRAND = 2;
   const RATES = 3;
   const BENEFITS = 4;
-  const DETAILS = hasBenefits ? 5 : 4;
-  const SCHEDULE = DETAILS + 1;
-  const CONFIRM = SCHEDULE + 1;
+  const SCHEDULE = hasBenefits ? 5 : 4;
+  const DETAILS = SCHEDULE + 1;
+  const CONFIRM = DETAILS + 1;
 
   if (!flow) return <Navigate to="/services/waterproofing" replace />;
 
@@ -115,6 +127,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (busy) return;
+    if (!canLeaveDetails()) return;
     if (!date || !time) {
       setErrors({ slot: 'Please choose a date and a time' });
       return;
@@ -125,7 +138,13 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
     setBusy(true);
     setSubmitError('');
     try {
-      const flat = [];
+      // The service itself, so staff see which job this is (Terrace, Water
+      // Tank...), not just the brand.
+      const flat = [{
+        key: 'service_needed',
+        value: wpCatalogueService(flowSlug, flow.title),
+        label: flowSlug === 'bathroom-floor' ? 'Bathroom Floor Waterproofing' : flow.title,
+      }];
       if (brand) {
         flat.push({ key: 'wp_brand', value: brand, label: brandLabel || brand });
       }
@@ -180,7 +199,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   }
 
   /* -------------------------------------------------------------- intro */
-  if (stage === 0) {
+  if (stage === 0 && !receipt) {
     return (
       <>
         {modal && (
@@ -190,8 +209,19 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
             </button>
           </div>
         )}
-        <PaintingHero eyebrow="PROFESSIONAL" title={flow.title} tagline={flow.heroTagline} image={flow.intro.image} trustPoints={[]} />
-        <section className="pnt-section">
+        {flowSlug === 'terrace' ? (
+          <TerraceSlider title={flow.title} />
+        ) : (
+          <PaintingHero
+            eyebrow=""
+            title={flow.slug === 'bathroom-floor' ? 'BATHROOM WATERPROOFING' : flow.title}
+            tagline={flow.heroTagline}
+            image={flow.intro.image}
+            trustPoints={[]}
+            className={HERO_CLASS_BY_FLOW[flow.slug] || ''}
+          />
+        )}
+        <section className="pnt-section wp-intro-section">
           <div className="container container-narrow">
             <h2 className="pnt-intro-heading">{flow.intro.heading}</h2>
             <p className="pnt-intro-text">{flow.intro.text}</p>
@@ -205,9 +235,21 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
               ))}
             </ul>
 
-            <button type="button" className="btn btn-primary btn-block" onClick={() => jumpToStep(1)}>
-              {flow.slug === 'terrace' || flow.slug === 'interior-wall' || flow.slug === 'water-tank' ? 'View Services' : 'Explore Services'} <Icon name="arrow-right" size={17} />
-            </button>
+            <ModalFoot
+              className={modal ? 'pnt-step-actions modal-sticky-foot' : undefined}
+            >
+              <button
+                data-wp-intro-action
+                type="button"
+                className="btn btn-primary btn-block"
+                onClick={() => jumpToStep(1)}
+              >
+                {flow.slug === 'terrace' || flow.slug === 'interior-wall' || flow.slug === 'water-tank'
+                  ? 'View Services'
+                  : 'Explore Services'}
+                <Icon name="arrow-right" size={17} />
+              </button>
+            </ModalFoot>
           </div>
         </section>
       </>
@@ -215,7 +257,9 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   }
 
   /* --------------------------------------------------------- confirmed */
-  if (stage === CONFIRM && receipt) {
+  // Once booked, every step shows the confirmation (Back included), so the
+  // same booking cannot be sent twice.
+  if (receipt) {
     const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
     return (
       <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
@@ -236,10 +280,19 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
                 <div><dt>Location</dt><dd>{details.city}</dd></div>
               </dl>
 
-              <div className="pnt-fee-note">
-                <Icon name="info" size={17} />
-                <span>{receipt.message}</span>
-              </div>
+              {!receipt.paidOnline && (
+                <div className="pnt-fee-note">
+                  <Icon name="info" size={17} />
+                  <span>{receipt.message}</span>
+                </div>
+              )}
+
+              <PayBookingButton
+                bookingNumber={receipt.bookingNumber}
+                amountDisplay={receipt.visitFeeDisplay}
+                paid={receipt.paidOnline}
+                onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+              />
               <p className="question-hint" style={{ marginTop: 10 }}>
                 Our team will contact you shortly to confirm the details.
               </p>
@@ -274,7 +327,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
       <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
         <div className="wizard-container">
           <FlowTopBar flow={flow} onBack={goBack} />
-          <form onSubmit={(e) => { e.preventDefault(); if (canLeaveDetails()) goNext(); }} noValidate>
+          <form onSubmit={handleSubmit} noValidate>
             <div className="wizard-card">
               <div className="wizard-card-head">
                 <h2>Your Details</h2>
@@ -288,7 +341,10 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
               )}
               <ModalFoot className={modal ? 'wizard-foot modal-sticky-foot' : 'wizard-foot'}>
                 <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
-                <button type="submit" className="btn btn-primary">CONTINUE <Icon name="arrow-right" size={17} /></button>
+                <button type="submit" className="btn btn-primary" disabled={busy}>
+                  {busy ? 'BOOKING…' : 'BOOK A SITE VISIT'}
+                  <Icon name="arrow-right" size={17} />
+                </button>
               </ModalFoot>
             </div>
           </form>
@@ -300,22 +356,35 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
   /* ----------------------------------------------------------- schedule */
   if (stage === SCHEDULE) {
     return (
-      <div className="wizard-shell">
+      <div className={modal ? 'wizard-shell wp-modal-wizard' : 'wizard-shell'}>
         <div className="wizard-container">
           <FlowTopBar flow={flow} onBack={goBack} />
-          <form onSubmit={handleSubmit} noValidate>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!date || !time) {
+                setErrors((current) => ({
+                  ...current,
+                  slot: 'Please choose a date and a time',
+                }));
+                return;
+              }
+              goNext();
+            }}
+            noValidate
+          >
             <div className="wizard-card">
               <div className="wizard-card-head">
                 <h2>Book a Site Visit</h2>
                 <p>Our expert will visit your site, inspect and provide a customised quotation.</p>
               </div>
-              <SlotPicker
+              <div className="wp-slot-region"><SlotPicker
                 serviceSlug="waterproofing"
                 date={date}
                 time={time}
                 onPick={(d, t) => { setDate(d); setTime(t); setErrors((e) => ({ ...e, slot: undefined })); }}
                 error={errors.slot}
-              />
+              /></div>
 
               <div className="pnt-fee-strip">
                 <span>{category ? category.visitFeeDisplay : '₹—'}</span>
@@ -330,7 +399,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
               <ModalFoot className={modal ? 'wizard-foot modal-sticky-foot' : 'wizard-foot'}>
                 <button type="button" className="btn btn-ghost btn-back" onClick={goBack}>BACK</button>
                 <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'BOOKING…' : 'BOOK A SITE VISIT'} <Icon name="arrow-right" size={17} />
+                  CONTINUE <Icon name="arrow-right" size={17} />
                 </button>
               </ModalFoot>
             </div>
@@ -342,19 +411,10 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
 
   /* -------------------------------------------------------- config step */
   return (
-    <div className={modal ? 'pnt-flow-shell wp-modal-flow' : 'pnt-flow-shell'}>
+    <div className={modal ? 'pnt-flow-shell wp-modal-flow' : 'pnt-flow-shell wp-page-flow'}>
       <div className="container container-narrow">
         <FlowTopBar flow={flow} onBack={goBack} plain />
-        <ol className="pnt-steps" aria-label="Progress">
-          {Array.from({ length: hasBenefits ? 4 : 3 }).map((_, i) => (
-            <li key={i} className={`pnt-step ${i + 1 === stage ? 'current' : ''} ${i + 1 < stage ? 'done' : ''}`}>
-              <span className="pnt-step-num">
-                {i + 1 < stage ? <Icon name="check" size={12} strokeWidth={3} /> : i + 1}
-              </span>
-              {i < (hasBenefits ? 3 : 2) && <span className="pnt-step-line" aria-hidden="true" />}
-            </li>
-          ))}
-        </ol>
+
 
         <div className="pnt-step-card">
           {stage === 1 && (
@@ -362,8 +422,25 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
               <h2 className="pnt-step-title">What We Do</h2>
               <div className="wp-stage-list">
                 {flow.stages.map((s) => (
-                  <div key={s.title} className="wp-stage-card">
-                    <span className="wp-stage-icon"><Icon name={s.icon} size={22} /></span>
+                  <div key={s.title} className="wp-stage-card wp-stage-card--photo">
+                    <span className="wp-stage-photo" aria-hidden="true">
+                      <img
+                        key={wpStageImages[flow.slug]?.[s.title]}
+                        src={wpStageImages[flow.slug]?.[s.title]}
+                        alt=""
+                        width={96}
+                        height={76}
+                        loading="lazy"
+                        decoding="async"
+                        onError={(event) => {
+                          event.currentTarget.hidden = true;
+                          event.currentTarget.nextElementSibling.hidden = false;
+                        }}
+                      />
+                      <span className="wp-stage-photo-fallback" hidden>
+                        <Icon name={s.icon} size={24} />
+                      </span>
+                    </span>
                     <span className="wp-stage-body">
                       <strong>{s.title}</strong>
                       <span>{s.text}</span>
@@ -380,15 +457,41 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
               <p className="question-hint" style={{ marginTop: -8, marginBottom: 16 }}>
                 We work with trusted brands to ensure long-lasting protection and quality.
               </p>
-              <BrandPicker options={brandOptions} value={brand} onSelect={setBrand} />
-              {errors.wp_brand && <span className="field-error">{errors.wp_brand}</span>}
+              <BrandPicker
+                options={brandOptions}
+                value={brand}
+                onSelect={(value) => {
+                  setBrand(value);
+                  setErrors((current) => ({
+                    ...current,
+                    wp_brand: undefined,
+                  }));
+                }}
+              />
+              {errors.wp_brand && createPortal(
+                <div className="wp-validation-popup" role="alert">
+                  <Icon name="info" size={20} />
+                  <span>{errors.wp_brand}</span>
+                  <button
+                    type="button"
+                    aria-label="Dismiss message"
+                    onClick={() => setErrors((current) => ({
+                      ...current,
+                      wp_brand: undefined,
+                    }))}
+                  >
+                    ×
+                  </button>
+                </div>,
+                document.body
+              )}
             </>
           )}
 
           {stage === RATES && (
             <>
               <h2 className="pnt-step-title">{flow.title} Rates</h2>
-              {flow.slug === 'water-tank' ? (
+              {flow.slug === 'water-tank' && brand === 'dr-fixit' ? (
                 <>
                   <RateTable
                     title="Overhead Tank"

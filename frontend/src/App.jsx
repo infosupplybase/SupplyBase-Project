@@ -11,6 +11,7 @@ import Home from './pages/Home';
 // import ProjectDetail from './pages/ProjectDetail';
 import NotFound from './pages/NotFound';
 import PageMeta from './components/layout/PageMeta';
+import Chatbot from './components/chatbot/Chatbot';
 
 /* Pages load when first visited (a visitor to the home page does not need
    the booking flows' code up front). Home and the not-found page stay in the
@@ -41,12 +42,13 @@ const WaterproofingCategory = lazyPage(() => import('./pages/WaterproofingCatego
 const WaterproofingBathroom = lazyPage(() => import('./pages/WaterproofingBathroom'));
 const WaterproofingFlow = lazyPage(() => import('./pages/WaterproofingFlow'));
 const InteriorDesignCategory = lazyPage(() => import('./pages/InteriorDesignCategory'));
-const InteriorDesignCatalogue = lazyPage(() => import('./pages/InteriorDesignCatalogue'));
 const InteriorDesignFlow = lazyPage(() => import('./pages/InteriorDesignFlow'));
 const About = lazyPage(() => import('./pages/About'));
 const Contact = lazyPage(() => import('./pages/Contact'));
 const Quote = lazyPage(() => import('./pages/Quote'));
 const Login = lazyPage(() => import('./pages/Login'));
+const ResetPassword = lazyPage(() => import('./pages/EmailLink').then((m) => ({ default: m.ResetPassword })));
+const VerifyEmail = lazyPage(() => import('./pages/EmailLink').then((m) => ({ default: m.VerifyEmail })));
 const MyBookings = lazyPage(() => import('./pages/MyBookings'));
 const BookingDetail = lazyPage(() => import('./pages/BookingDetail'));
 const Profile = lazyPage(() => import('./pages/Profile'));
@@ -115,6 +117,9 @@ export default function App() {
           both paths render it; the tab that opens is taken from the URL. */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Login />} />
+      {/* Where the API's emails link to (AuthService). */}
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       {/* Professionals have their own app now (partners/). Old /partner links
           forward there once VITE_PARTNERS_URL is set; until then they go home. */}
       <Route path="/partner/*" element={<PartnerRedirect />} />
@@ -215,7 +220,7 @@ export default function App() {
             config-driven flow (package -> details -> customise ->
             consultation -> confirm). */}
         <Route path="services/interior-design" element={<InteriorDesignCategory />} />
-        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignCatalogue />} />
+        <Route path="services/interior-design/:categorySlug" element={<InteriorDesignFlow />} />
         <Route path="services/interior-design/:categorySlug/:projectSlug" element={<InteriorDesignFlow />} />
 
         <Route path="services/:slug" element={<ServiceBooking />} />
@@ -282,6 +287,7 @@ export default function App() {
       </Route>
     </Routes>
     </Suspense>
+    <Chatbot />
     </>
   );
 }

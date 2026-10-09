@@ -1,3 +1,4 @@
+import { waterproofingImages } from '../data/waterproofingImages';
 import { Link } from 'react-router-dom';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
@@ -29,8 +30,22 @@ export default function WaterproofingCategory() {
           <div className="pnt-overview-list">
             {wpCategories.map((cat) => (
               <Link key={cat.slug} to={cat.route} className="pnt-overview-card">
-                <span className="pnt-overview-photo pce-overview-icon">
-                  <Icon name={cat.icon} size={30} />
+                <span className="pnt-overview-photo">
+                  <img
+                    src={waterproofingImages[cat.name]}
+                    alt={cat.name}
+                    width={120}
+                    height={90}
+                    loading="lazy"
+                    decoding="async"
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: 'inherit',
+                    }}
+                  />
                 </span>
                 <span className="pnt-overview-body">
                   <span className="pnt-overview-name">{cat.name}</span>

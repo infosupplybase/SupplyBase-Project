@@ -14,6 +14,7 @@ import { composeAddress, emptyDetails, validateDetails as checkDetails } from '.
 import { usePickedLocation } from '../context/LocationContext';
 import { useEnsureLogin } from '../components/auth/LoginGate';
 import { uploadBookingPhotos } from '../lib/bookingPhotos';
+import PayBookingButton from '../components/payment/PayBookingButton';
 
 const TYPE = 0;
 const DETAILS = 1;
@@ -312,7 +313,7 @@ export default function ElectricianService() {
   if (!intro) return <Navigate to="/services/electrical" replace />;
 
   /* ---------------------------------------------------------- intro splash */
-  if (!started) {
+  if (!started && !receipt) {
     return (
       <div className="elc-intro-wrap">
         <div className="elc-intro-hero">
@@ -371,7 +372,15 @@ export default function ElectricianService() {
 
   /* -------------------------------------------------------------- confirm */
   if (receipt) {
-    return <ElectricianConfirmation receipt={receipt} details={details} pendingFiles={pendingFiles} uploadState={uploadState} />;
+    return (
+      <ElectricianConfirmation
+        receipt={receipt}
+        details={details}
+        pendingFiles={pendingFiles}
+        uploadState={uploadState}
+        onPaid={() => setReceipt({ ...receipt, paidOnline: true })}
+      />
+    );
   }
 
   // Restored mid-way by a refresh: the step is known straight away, the
@@ -629,7 +638,7 @@ function ElectricianSummary({ category, form, answers, date, time, estimate }) {
   );
 }
 
-function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }) {
+function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState, onPaid }) {
   const message = encodeURIComponent(`Hello Supplybase, this is about my booking ${receipt.bookingNumber}.`);
   const fileCount = Object.values(pendingFiles).reduce((n, files) => n + files.length, 0);
   const uploadedCount = Object.values(uploadState).filter((s) => s === 'done').length;
@@ -656,7 +665,7 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
               <Icon name="check" size={38} strokeWidth={3} />
             </div>
 
-            <h2>Booking Confirmed!</h2>
+            <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
             <p>
               We have received your request. Our team will contact you on WhatsApp or phone to confirm the
               appointment.
@@ -680,6 +689,13 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState }
                 <dd>{details.address}, {details.city}</dd>
               </div>
             </dl>
+
+            <PayBookingButton
+              bookingNumber={receipt.bookingNumber}
+              amountDisplay={receipt.visitFeeDisplay}
+              paid={receipt.paidOnline}
+              onPaid={onPaid}
+            />
 
             {fileCount > 0 && (
               <p className="elc-upload-status">

@@ -48,6 +48,28 @@ class PhoneNumbersTest {
                 .hasMessageContaining("10-digit");
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = { "5876543210", "0000000000", "1234567890", "+91 58765 43210", "00000000000" })
+    @DisplayName("ten digits that are not an Indian mobile number are refused")
+    void rejectsNonMobiles(String typed) {
+        assertThatThrownBy(() -> PhoneNumbers.normalise(typed))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("10-digit");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "6000000000", "7000000000", "8000000000", "9123456780" })
+    @DisplayName("every mobile series, 6 to 9, is accepted")
+    void acceptsEveryMobileSeries(String typed) {
+        assertThat(PhoneNumbers.normalise(typed)).isEqualTo(typed);
+    }
+
+    @Test
+    @DisplayName("the sign-in box still finds an account saved before the mobile rule")
+    void lenientFormKeepsOlderNumbers() {
+        assertThat(PhoneNumbers.normaliseOrNull("58765 43210")).isEqualTo("5876543210");
+    }
+
     @Test
     @DisplayName("the lenient form returns null instead of throwing, for the sign-in box")
     void lenientFormSwallows() {

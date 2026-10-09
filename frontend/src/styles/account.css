@@ -416,3 +416,86 @@
     flex-direction: column;
   }
 }
+
+/* ------------------------------------------------ customer cancel booking */
+
+/* The list card plus its "Cancel booking" button, which sits over the
+   card's "View details" row as a sibling of the card link. */
+.acct-booking-item {
+  position: relative;
+}
+
+.acct-booking-item:hover .acct-booking-card {
+  box-shadow: var(--depth-inset-top), var(--shadow);
+  border-color: var(--gold-a40);
+  transform: translateY(-4px);
+}
+
+.acct-booking-cancel {
+  position: absolute;
+  right: var(--space-5);
+  bottom: calc(var(--space-4) - 6px);
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--danger);
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: transform var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+.acct-booking-item:hover .acct-booking-cancel {
+  transform: translateY(-4px);
+}
+
+.acct-booking-cancel:hover,
+.acct-booking-cancel:focus-visible {
+  background: var(--danger-soft);
+}
+
+.bkd-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-3);
+  padding: 8px 14px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: background var(--t-fast) var(--ease);
+}
+
+.bkd-cancel-btn:hover {
+  background: var(--danger-soft);
+}
+
+.cancel-booking-icon {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.cancel-booking-reason {
+  margin-top: var(--space-4);
+  text-align: left;
+}
+
+.cancel-booking-reason textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.cancel-booking-error {
+  margin-top: var(--space-3);
+  text-align: left;
+}
+
+.cancel-booking-confirm,
+.cancel-booking-confirm:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}

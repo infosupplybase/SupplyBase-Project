@@ -3,10 +3,12 @@ package in.supplybase.backend.booking;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,6 +21,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import in.supplybase.backend.appointment.AppointmentService;
@@ -43,6 +47,7 @@ import in.supplybase.backend.catalogue.ServiceOption;
 import in.supplybase.backend.catalogue.ServiceOptionRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
+import in.supplybase.backend.common.Money;
 import in.supplybase.backend.common.PhotoUploads;
 import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
@@ -53,8 +58,12 @@ public class BookingService {
 
     private static final Logger log = LoggerFactory.getLogger(BookingService.class);
 
-    /** A real person does not book six site visits in an hour; a bot does. */
-    private static final int MAX_PER_PHONE_PER_HOUR = 5;
+    /**
+     * A real person does not book six visits for one service in an hour; a
+     * bot does. Counted per service, so someone booking a plumber, an
+     * electrician and a painter in one sitting is not stopped.
+     */
+    private static final int MAX_PER_PHONE_PER_SERVICE_PER_HOUR = 5;
 
     /**
      * The plumbing cart's pricing rule (from the approved rate card): actual
@@ -69,6 +78,9 @@ public class BookingService {
     private static final String PLUMBING_SLUG = "plumbing";
     private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
     private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+    // Joins a question key and an option value into one lookup key. Both the
+    // map that is built and every lookup into it must use this same constant.
+    private static final String OPTION_KEY_SEPARATOR = "\u0000";
 
     /**
      * Painting's itemised answer keys (see V15) — priced the same way
@@ -88,6 +100,9 @@ public class BookingService {
     // paintingBhkPricing: package prices are read from the database.
     @org.springframework.beans.factory.annotation.Autowired
     private in.supplybase.backend.catalogue.PaintingProductPriceRepository paintingPrices;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    private in.supplybase.backend.catalogue.PopCeilingPricingService popCeilingPricing;
 
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
@@ -132,11 +147,12 @@ public class BookingService {
         ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
         String phone = PhoneNumbers.normalise(request.phone());
 
-        long recent = bookings.countByPhoneAndCreatedAtAfter(
-                phone, Instant.now().minus(Duration.ofHours(1)));
-        if (recent >= MAX_PER_PHONE_PER_HOUR) {
-            throw ApiException.badRequest(
-                    "We already have your booking. Please call us if it is urgent.");
+        long recent = bookings.countByPhoneAndCategoryAndCreatedAtAfter(
+                phone, category, Instant.now().minus(Duration.ofHours(1)));
+        if (recent >= MAX_PER_PHONE_PER_SERVICE_PER_HOUR) {
+            throw ApiException.badRequest("You have made " + MAX_PER_PHONE_PER_SERVICE_PER_HOUR
+                    + " " + category.getName() + " bookings from this number in the last hour."
+                    + " Please call us if you need another one now.");
         }
 
         // Reserving before saving means a full slot fails the whole request
@@ -195,8 +211,16 @@ public class BookingService {
             saved = bookings.save(saved);
         }
 
-        notifyStaff(saved);
-        return BookingReceipt.from(saved);
+        BookingReceipt receipt = BookingReceipt.from(saved);
+        // After commit: SMTP is slow and can stall, and it must neither hold
+        // this transaction (and the appointment seat's row lock) open nor
+        // email about a booking that then rolls back.
+        Booking booked = saved;
+        afterCommit(() -> {
+            notifyStaff(booked);
+            emailCustomer(booked, receipt);
+        });
+        return receipt;
     }
 
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
@@ -233,7 +257,68 @@ public class BookingService {
             if (option.getOptionValue() != null) {
                 allowedByKey.computeIfAbsent(option.getQuestionKey(), k -> new HashSet<>())
                         .add(option.getOptionValue());
-                optionByKeyAndValue.put(option.getQuestionKey() + " " + option.getOptionValue(), option);
+                optionByKeyAndValue.put(option.getQuestionKey() + OPTION_KEY_SEPARATOR + option.getOptionValue(), option);
+            }
+        }
+
+        boolean popBooking = "pop-ceiling-design".equals(category.getSlug());
+        Map<String, String> popSelections = new HashMap<>();
+
+        if (popBooking) {
+            Set<String> popSingleKeys = Set.of(
+                    "pop_home_type", "pop_home_design_style",
+                    "pop_room_type", "pop_room_design_style");
+
+            for (CreateBookingRequest.AnswerInput input : submitted) {
+                if (popSingleKeys.contains(input.key())
+                        && popSelections.putIfAbsent(input.key(), input.value()) != null) {
+                    throw ApiException.badRequest(
+                            "Choose only one option for each POP question.");
+                }
+            }
+
+            boolean homeJourney = popSelections.containsKey("pop_home_type")
+                    || popSelections.containsKey("pop_home_design_style");
+            boolean roomJourney = popSelections.containsKey("pop_room_type")
+                    || popSelections.containsKey("pop_room_design_style");
+
+            if (homeJourney && roomJourney) {
+                throw ApiException.badRequest("Choose one POP journey.");
+            }
+            if (roomJourney) {
+                Map<String, Set<String>> allowedRoomCeilings = Map.of(
+                        "living-room", Set.of(
+                                "flat-ceiling", "double-layer-ceiling",
+                                "floating-ceiling", "border-ceiling",
+                                "profile-pop", "pvc-panel-pop"),
+                        "bedroom", Set.of(
+                                "flat-ceiling", "double-layer-ceiling",
+                                "floating-ceiling", "border-ceiling",
+                                "profile-pop", "pvc-panel-pop"),
+                        "balcony-pvc", Set.of("pvc-panel-pop"),
+                        "kitchen", Set.of("flat-ceiling"),
+                        "passage-pvc", Set.of("flat-ceiling", "profile-pop"),
+                        "bathroom-pvc", Set.of("pvc-panel-pop"));
+
+                String roomType = popSelections.get("pop_room_type");
+                String ceilingType = popSelections.get("pop_room_design_style");
+
+                if (roomType == null || ceilingType == null
+                        || !allowedRoomCeilings.getOrDefault(roomType, Set.of())
+                                .contains(ceilingType)) {
+                    throw ApiException.badRequest(
+                            "Choose an available ceiling for your selected room.");
+                }
+            }
+            if (roomJourney
+                    && (!popSelections.containsKey("pop_room_type")
+                        || !popSelections.containsKey("pop_room_design_style"))) {
+                throw ApiException.badRequest("Choose your room and ceiling type.");
+            }
+            if (homeJourney
+                    && (!popSelections.containsKey("pop_home_type")
+                        || !popSelections.containsKey("pop_home_design_style"))) {
+                throw ApiException.badRequest("Choose your home and ceiling type.");
             }
         }
 
@@ -329,10 +414,43 @@ public class BookingService {
                     .answerValue(input.value())
                     .answerLabel(input.label());
 
+            if (popBooking && "pop_room_design_style".equals(input.key())) {
+                Long startingPrice = popCeilingPricing.findRoomPricePaise(
+                        popSelections.get("pop_room_type"), input.value());
+
+                if (startingPrice == null) {
+                    throw ApiException.badRequest(
+                            "Pricing is unavailable for this room selection.");
+                }
+
+                row.quantity(1)
+                        .unitPricePaise(startingPrice)
+                        .lineTotalPaise(startingPrice);
+                itemsTotalPaise += startingPrice;
+            }
+
+            if (popBooking && "pop_home_design_style".equals(input.key())) {
+                String homeType = popSelections.get("pop_home_type");
+
+                if (!"4bhk".equals(homeType)) {
+                    Long startingPrice = popCeilingPricing.findPricePaise(
+                            homeType, input.value());
+                    if (startingPrice == null) {
+                        throw ApiException.badRequest(
+                                "Pricing is unavailable for this POP selection.");
+                    }
+
+                    row.quantity(1)
+                            .unitPricePaise(startingPrice)
+                            .lineTotalPaise(startingPrice);
+                    itemsTotalPaise += startingPrice;
+                }
+            }
+
             if ("cart_item".equals(input.key())
                     || (paintingBooking && PAINTING_PRICED_KEYS.contains(input.key()))) {
                 ServiceOption matched = optionByKeyAndValue.get(
-                        input.key() + " " + input.value());
+                        input.key() + OPTION_KEY_SEPARATOR + input.value());
 
                 Long unitPricePaise = matched == null ? null : matched.getPricePaise();
 
@@ -412,7 +530,12 @@ public class BookingService {
 
     @Transactional(readOnly = true)
     public List<BookingResponse> forDate(LocalDate date) {
+        // In visit-time order: the picked time on new bookings, the old
+        // morning/afternoon lane (already the query's order) on legacy ones.
         return bookings.findByPreferredDateOrderByPreferredSlotAsc(date).stream()
+                .sorted(java.util.Comparator.comparing(
+                        (Booking b) -> b.getAppointmentSlot() == null ? null : b.getAppointmentSlot().getSlotTime(),
+                        java.util.Comparator.nullsLast(java.util.Comparator.naturalOrder())))
                 .map(BookingResponse::from)
                 .toList();
     }
@@ -477,6 +600,56 @@ public class BookingService {
                 .map(BookingAnswerResponse::from)
                 .toList();
         return BookingResponse.from(bookings.save(booking), answerResponses);
+    }
+
+    /**
+     * A customer cancelling their own booking from the dashboard. Allowed
+     * until the work is scheduled (BookingStatus.isCustomerCancellable);
+     * after that the office handles it by phone.
+     *
+     * Frees the appointment seat, like a staff cancel does. A booking already
+     * paid online is NOT refunded automatically: it is marked in the admin
+     * notes (and the staff email) so the office refunds it from Payments.
+     */
+    @Transactional
+    public BookingResponse cancelMine(Long id, String reason, AuthenticatedUser viewer) {
+        Booking booking = bookings.findById(id)
+                .orElseThrow(() -> ApiException.notFound("That booking"));
+        checkAccess(booking, viewer);
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw ApiException.conflict("That booking is already cancelled.");
+        }
+        if (!booking.getStatus().isCustomerCancellable()) {
+            throw ApiException.conflict(booking.getStatus() == BookingStatus.WORK_COMPLETED
+                    ? "That booking is already completed and can no longer be cancelled."
+                    : "The work on this booking is already scheduled. Please call us to cancel it.");
+        }
+
+        String given = blankToNull(reason);
+        String cancelledReason = "Cancelled by the customer" + (given == null ? "." : ": " + given);
+        booking.setCancelledReason(cancelledReason.length() <= 300
+                ? cancelledReason : cancelledReason.substring(0, 300));
+        booking.setStatus(BookingStatus.CANCELLED);
+        // The status check above guarantees this runs once per booking.
+        if (booking.getAppointmentSlot() != null) {
+            appointments.release(booking.getAppointmentSlot());
+        }
+        if (booking.getPaidAt() != null) {
+            String note = "REFUND DUE: customer cancelled on %s after paying %s online. Refund it from Payments."
+                    .formatted(LocalDate.now(), "₹" + Money.formatRupees(booking.getVisitFeePaise()));
+            booking.setAdminNotes(booking.getAdminNotes() == null || booking.getAdminNotes().isBlank()
+                    ? note : note + "\n\n" + booking.getAdminNotes());
+        }
+
+        Booking saved = bookings.save(booking);
+        afterCommit(() -> {
+            notifyStaffOfCancellation(saved);
+            emailCustomerCancellation(saved);
+        });
+        List<BookingAnswerResponse> answerResponses = answers.findByBookingId(id).stream()
+                .map(BookingAnswerResponse::from)
+                .toList();
+        return BookingResponse.from(saved, answerResponses);
     }
 
     @Transactional
@@ -746,6 +919,20 @@ public class BookingService {
 
     /* ------------------------------------------------------------ email */
 
+    /** Runs once the current transaction commits, or straight away outside one. */
+    private static void afterCommit(Runnable action) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            action.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                action.run();
+            }
+        });
+    }
+
     private void notifyStaff(Booking booking) {
         if (!props.notifications().emailEnabled()) {
             return;
@@ -775,6 +962,130 @@ public class BookingService {
             sender.send(message);
         } catch (Exception ex) {
             log.warn("Could not email booking {} — it is saved regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    private static final DateTimeFormatter EMAIL_DATE =
+            DateTimeFormatter.ofPattern("EEE, d MMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter EMAIL_TIME =
+            DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH);
+
+    /**
+     * Confirms the booking to the customer, at the email given on the form or
+     * else their account's. Its own switch (CUSTOMER_EMAILS, on by default),
+     * not the staff one, and best effort like it: a mail failure never fails
+     * the booking.
+     */
+    private void emailCustomer(Booking booking, BookingReceipt receipt) {
+        if (!props.notifications().customerEmailsEnabled()) {
+            return;
+        }
+        String to = booking.getEmail() != null ? booking.getEmail()
+                : booking.getUser() != null ? blankToNull(booking.getUser().getEmail()) : null;
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (to == null || sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Your Supplybase booking %s — %s".formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel()));
+            String when = (booking.getPreferredDate() == null ? "—" : booking.getPreferredDate().format(EMAIL_DATE))
+                    + (receipt.time() == null ? "" : ", " + receipt.time().format(EMAIL_TIME));
+            message.setText((
+                    "Hello %s,\n\n"
+                    + "Thank you for booking with Supplybase.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Visit:     %s\n"
+                    + "Address:   %s, %s %s\n"
+                    + "Visit fee: %s\n\n"
+                    + "%s\n\n"
+                    + "%s"
+                    + "Need to change something? Just reply to this email.\n").formatted(
+                    booking.getName(), booking.getBookingNumber(), booking.getServiceLabel(), when,
+                    orDash(booking.getAddress()), orDash(booking.getCity()), orDash(booking.getPincode()),
+                    receipt.visitFeeDisplay(), receipt.message(),
+                    booking.getUser() == null ? ""
+                            : "See your booking any time: " + props.frontendUrl() + "/dashboard/bookings\n\n"));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email booking {} to the customer — it is saved regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    /** Tells the office a customer cancelled, and whether a refund is owed. Best effort. */
+    private void notifyStaffOfCancellation(Booking booking) {
+        if (!props.notifications().emailEnabled()) {
+            return;
+        }
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (sender == null) {
+            return;
+        }
+        boolean refundDue = booking.getPaidAt() != null;
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(props.notifications().enquiryRecipient());
+            message.setSubject("%sBooking %s cancelled by customer — %s (%s)".formatted(
+                    refundDue ? "[REFUND DUE] " : "",
+                    booking.getBookingNumber(), booking.getServiceLabel(), booking.getName()));
+            message.setText((
+                    "A customer cancelled their booking from their account.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Date:      %s\n"
+                    + "Name:      %s\n"
+                    + "Mobile:    %s\n"
+                    + "Reason:    %s\n\n"
+                    + "%s").formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel(),
+                    booking.getPreferredDate(), booking.getName(), booking.getPhone(),
+                    orDash(booking.getCancelledReason()),
+                    refundDue
+                            ? "They had paid " + "₹" + Money.formatRupees(booking.getVisitFeePaise())
+                                    + " online. It has NOT been refunded automatically: refund it from"
+                                    + " Payments in the admin panel.\n"
+                            : "Nothing was paid online, so there is nothing to refund.\n"));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email the cancellation of booking {} — it is cancelled regardless",
+                    booking.getBookingNumber(), ex);
+        }
+    }
+
+    /** Confirms the cancellation to the customer, under the same switch as emailCustomer. */
+    private void emailCustomerCancellation(Booking booking) {
+        if (!props.notifications().customerEmailsEnabled()) {
+            return;
+        }
+        String to = booking.getEmail() != null ? booking.getEmail()
+                : booking.getUser() != null ? blankToNull(booking.getUser().getEmail()) : null;
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (to == null || sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject("Your Supplybase booking %s is cancelled".formatted(booking.getBookingNumber()));
+            message.setText((
+                    "Hello %s,\n\n"
+                    + "Your booking %s (%s) has been cancelled as you asked.\n\n"
+                    + "%s"
+                    + "Changed your mind? You can book again any time at %s\n").formatted(
+                    booking.getName(), booking.getBookingNumber(), booking.getServiceLabel(),
+                    booking.getPaidAt() != null
+                            ? "You paid " + "₹" + Money.formatRupees(booking.getVisitFeePaise())
+                                    + " online. Our team will refund it to your original payment method.\n\n"
+                            : "",
+                    props.frontendUrl()));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email the cancellation of booking {} to the customer",
                     booking.getBookingNumber(), ex);
         }
     }

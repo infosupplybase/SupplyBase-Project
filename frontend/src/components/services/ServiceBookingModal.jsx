@@ -8,6 +8,7 @@ import {
   interiorSpaces,
   getDesignsBySpace,
   getDesignBySlug,
+  getIncludedItems,
   livingRoomSubOptions,
   livingRoomColorImages,
   livingRoomDescriptions,
@@ -19,11 +20,10 @@ import {
   mandirGroups,
 
   HOME_VISIT_FEE,
+  interiorFeatures,
 } from '../../data/interiorCatalog';
 import InteriorDesignCategory from '../../pages/InteriorDesignCategory';
-import InteriorDesignCatalogue from '../../pages/InteriorDesignCatalogue';
 import InteriorDesignFlow from '../../pages/InteriorDesignFlow';
-import InteriorDesignCustomFlow from '../../pages/InteriorDesignCustomFlow';
 import PaintingCategory from '../../pages/PaintingCategory';
 import PaintingFlow from '../../pages/PaintingFlow';
 import PopCeilingCategory from '../../pages/PopCeilingCategory';
@@ -45,7 +45,97 @@ import ElectricalTab from '../../pages/ElectricalTab';
 import ElectricalCart from '../../pages/ElectricalCart';
 import ElectricalCheckout from '../../pages/ElectricalCheckout';
 import { getElectricalGroup } from '../../data/electricalContent';
+import DesignViewer from './DesignViewer';
 
+/* =========================================================
+   "WHAT'S INCLUDED" ICONS (inline SVG, no Icon-name lookup)
+   Icons match the reference design: slats, marble layers,
+   sun (LED), drawer cabinet, sparkles, wrench + screwdriver.
+   ========================================================= */
+
+const includedIconPaths = {
+  slat: <path d="M6 4v16M10 4v16M14 4v16M18 4v16" />,
+  marble: (<><path d="M12 3l9 4.5-9 4.5-9-4.5z" /><path d="M3 12l9 4.5 9-4.5" /><path d="M3 16.5L12 21l9-4.5" /></>),
+  led: (<><circle cx="12" cy="12" r="4" /><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" /></>),
+  cabinet: (<><rect x="3" y="7" width="18" height="11" rx="2" /><path d="M3 12.5h18M10 15h4M7 18v2M17 18v2" /></>),
+  tv: (<><rect x="3" y="7" width="18" height="11" rx="2" /><path d="M3 12.5h18M10 15h4M7 18v2M17 18v2" /></>),
+  shelf: (<><rect x="3" y="7" width="18" height="11" rx="2" /><path d="M3 12.5h18M10 15h4M7 18v2M17 18v2" /></>),
+  install: (<><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z" /><path d="M15 15l5 5M19 3l2 2-5 5" /></>),
+  sparkle: (<><path d="M9 4l1.6 4.4L15 10l-4.4 1.6L9 16l-1.6-4.4L3 10l4.4-1.6z" /><path d="M18 13l.9 2.1L21 16l-2.1.9L18 19l-.9-2.1L15 16l2.1-.9z" /></>),
+  sconce: <path d="M9 4h6v9a3 3 0 0 1-6 0zM12 16v4" />,
+  finish: (<><path d="M9 4l1.6 4.4L15 10l-4.4 1.6L9 16l-1.6-4.4L3 10l4.4-1.6z" /><path d="M18 13l.9 2.1L21 16l-2.1.9L18 19l-.9-2.1L15 16l2.1-.9z" /></>),
+  consult: (<><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-4 3-6 7-6s7 2 7 6" /></>),
+  fire: <path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z" />,
+};
+
+/* Photo for each "What's Included" item, keyed by the item's icon name.
+   Put these files in  public/assets/included/  */
+const includedImages = {
+  slat: '/assets/included/slat.webp',
+  marble: '/assets/included/marble.webp',
+  led: '/assets/included/led.webp',
+  cabinet: '/assets/included/cabinet.webp',
+  tv: '/assets/included/cabinet.webp',
+  shelf: '/assets/included/cabinet.webp',
+  sparkle: '/assets/included/finish.webp',
+  finish: '/assets/included/finish.webp',
+  install: '/assets/included/install.webp',
+};
+
+function IncludedIcon({ name }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {includedIconPaths[name] || includedIconPaths.finish}
+    </svg>
+  );
+}
+
+
+/* One "What's Included" item: photo on the left, icon + title + description
+   on the right. The photo is hidden if its file fails to load. */
+function IncludedCard({ item }) {
+  const [showImage, setShowImage] = useState(true);
+  const imageSrc = includedImages[item.icon] || item.image;
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-[#faf7f3] p-3">
+      {showImage && imageSrc && (
+        <img
+          src={imageSrc}
+          alt={item.title}
+          className="block h-24! w-24! shrink-0 rounded-xl object-cover"
+          loading="lazy"
+          decoding="async"
+          onError={() => setShowImage(false)}
+        />
+      )}
+
+      <div className="min-w-0 flex-1">
+        <span className="text-[#9A5B2D]">
+          <IncludedIcon name={item.icon} />
+        </span>
+
+        <p className="mt-1 text-sm font-semibold leading-5 text-gray-950">
+          {item.title}
+        </p>
+
+        <p className="mt-0.5 text-xs leading-5 text-gray-600">
+          {item.desc}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 /**
  * The "Book a service" modal's content: the booking flow for the chosen
@@ -59,6 +149,10 @@ export default function ServiceBookingModal({ service, onClose }) {
   const [selectedLivingRoomOption, setSelectedLivingRoomOption] = useHistoryState('bm:livingRoomOption', null, { push: true });
   const [selectedLivingRoomColor, setSelectedLivingRoomColor] = useHistoryState('bm:livingRoomColor', null, { push: true });
   const [isLivingRoomSaved, setIsLivingRoomSaved] = useState(false);
+  // Full-screen viewer for a design's Front / Side / Detail views (index or null).
+  const [viewerIndex, setViewerIndex] = useState(null);
+  // Full-screen viewer for the Study list: { name, fallback, views, index } or null.
+  const [studyViewer, setStudyViewer] = useState(null);
   const [showInteriorBooking, setShowInteriorBooking] = useHistoryState('bm:interiorBooking', false, { push: true });
   const [selectedInteriorDesignCategory, setSelectedInteriorDesignCategory] = useHistoryState('bm:idCategory', null, { push: true });
   const [selectedInteriorDesignProject, setSelectedInteriorDesignProject] = useHistoryState('bm:idProject', null, { push: true });
@@ -102,6 +196,10 @@ export default function ServiceBookingModal({ service, onClose }) {
   // Inside a Painting or POP flow the flow shows its own title bar, so the
   // pop-up's "Book a service" header gives way to a spacer under the close
   // button (yash's layout). AC Services always draws its own bar.
+  const interiorDesignFlowOpen =
+    service.slug === 'interior-design' &&
+    Boolean(selectedInteriorDesignCategory);
+
   const hideMainHeader =
     (service.slug === 'painting' && Boolean(selectedPaintingFlow)) ||
     (service.slug === 'pop-ceiling-design' && Boolean(selectedPopFlow)) ||
@@ -158,6 +256,9 @@ export default function ServiceBookingModal({ service, onClose }) {
       <div
         className={`
           ${service.slug === 'ac-services' ? 'booking-pop-ac-layout' : ''}
+          ${interiorDesignFlowOpen ? 'booking-interior-flow-layout' : ''}
+          ${service.slug === 'pop-ceiling-design' ? 'booking-pop-ceiling-layout' : ''}
+          ${service.slug === 'waterproofing' ? 'booking-pop-waterproofing-layout' : ''}
           relative
           w-full
           flex
@@ -177,7 +278,7 @@ export default function ServiceBookingModal({ service, onClose }) {
         // change size.
         style={{
           maxWidth: modalMaxWidth,
-          ...(service.slug === 'painting' || service.slug === 'ac-services'
+          ...(service.slug === 'painting' || service.slug === 'ac-services' || service.slug === 'waterproofing'
             ? { height: '88dvh', maxHeight: '88dvh' }
             : null),
         }}
@@ -191,7 +292,7 @@ export default function ServiceBookingModal({ service, onClose }) {
           className={`
             !absolute
             !right-5
-            ${hideMainHeader ? '!top-3' : '!top-5'}
+            ${interiorDesignFlowOpen ? '!top-2' : hideMainHeader ? '!top-3' : '!top-5'}
             !z-50
 
             !flex
@@ -224,8 +325,10 @@ export default function ServiceBookingModal({ service, onClose }) {
             close button), and inside a waterproofing flow, whose hero sits
             right under the close button */}
 
-        {hideMainHeader ? (
-          <div className="h-14 shrink-0" aria-hidden="true" />
+        {interiorDesignFlowOpen ? null : hideMainHeader ? (
+          service.slug === 'ac-services' ? null : (
+            <div className="h-14 shrink-0" aria-hidden="true" />
+          )
         ) : waterproofingFlowOpen ? null : (
         <>
         <div className="shrink-0 px-6 pt-6 pr-16 max-sm:px-4 max-sm:pr-16">
@@ -356,16 +459,60 @@ onStepChange={
                       );
                     }
 
+                    // Front / Side / Detail views — TV wall designs only.
+                    // Side and detail photos sit next to the main photo:
+                    //   tv-wall/1.webp  ->  1-side.webp, 1-detail.webp
+                    // A missing file falls back to the front photo.
+                    const isTvWall = design.spaceSlug === 'tv-wall';
+
+                    const designViews = isTvWall
+                      ? [
+                          {
+                            label: 'Front View',
+                            src: design.image,
+                          },
+                          {
+                            label: 'Side View',
+                            src: design.image.replace(
+                              /\.webp$/,
+                              '-side.webp'
+                            ),
+                          },
+                          {
+                            label: 'Detail View',
+                            src: design.image.replace(
+                              /\.webp$/,
+                              '-detail.webp'
+                            ),
+                          },
+                        ]
+                      : [];
+
+                    const includedItems = isTvWall
+                      ? getIncludedItems(design.tvDetails?.included || [])
+                      : [];
+
                     return (
                       <>
                         <button
                           type="button"
                           className="
-                            btn
-                            btn-ghost
-                            btn-sm
                             mb-4
+                            flex
+                            h-10
+                            w-10
+                            items-center
+                            justify-center
+                            rounded-full
+                            border
+                            border-gray-200
+                            bg-white
+                            text-gray-900
+                            shadow-sm
+                            transition
+                            hover:bg-gray-100
                           "
+                          aria-label="Back"
                           onClick={() => {
                             formBack(() =>
                               setSelectedInteriorDesign(
@@ -376,162 +523,364 @@ onStepChange={
                             scrollModalToTop();
                           }}
                         >
-                          BACK
+                          <Icon
+                            name="arrow-left"
+                            size={20}
+                          />
                         </button>
 
-<div
-  className="
-    grid
-    grid-cols-1
-    gap-6
-    md:grid-cols-2
-    md:items-start
-  "
->
-  <div
-    className="
-      overflow-hidden
-      rounded-2xl
-      bg-gray-100
-      shadow-sm
-    "
-  >
-    <img
-      loading="eager"
-      decoding="async"
-      src={design.image}
-      alt={design.name}
-      className="
-        block
-        h-[300px]
-        w-full
-        object-cover
-        sm:h-[360px]
-        md:h-[420px]
-      "
-    />
-  </div>
-
-   <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-  <p
-    className="
-      text-xs
-      font-semibold
-      uppercase
-      tracking-[0.14em]
-      text-[#9A5B2D]
-    "
-  >
-    {space?.name}
-  </p>
-
-  <h3
-    className="
-      mt-2
-      text-2xl
-      font-bold
-      leading-tight
-      text-gray-950
-    "
-  >
-    {design.name}
-  </h3>
-
-  {design.tagline && (
-    <p
-      className="
-        mt-2
-        text-sm
-        leading-6
-        text-gray-500
-      "
-    >
-      {design.tagline}
-    </p>
-  )}
-
-  {design.estimatedPrice ? (
-    <div
-      className="
-        mt-5
-        rounded-xl
-        bg-[#faf7f3]
-        px-4
-        py-3
-      "
-    >
-      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
-        Estimated Price
-      </p>
-
-      <p className="mt-1 text-xl font-bold text-gray-950">
-        {design.estimatedPrice}
-      </p>
-    </div>
-  ) : (
-    <p className="mt-4 text-lg font-semibold text-gray-900">
-      ₹{design.pricePerSqft} / sq.ft.
-    </p>
-  )}
-
-  {design.description && (
-  <div className="mt-4 rounded-2xl bg-[#fafafa] p-4">
-    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-      About this design
-    </p>
-
-    <p className="mt-2 text-sm leading-6 text-gray-700">
-      {design.description}
-    </p>
-  </div>
-)}
-
-
-{design.features?.length > 0 && (
-  <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4">
-    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
-      Key Features
-    </p>
-
-    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-      {design.features.map((feature, index) => (
-        <div
-          key={`${feature}-${index}`}
-          className="flex items-start gap-2"
-        >
-          <span className="mt-0.5 text-[#9A5B2D]">✓</span>
-
-          <span className="text-sm leading-6 text-gray-700">
-            {feature}
-          </span>
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
-
-                            <button
-                              type="button"
-                              className="
-                                btn
-                                btn-primary
-                                mt-6
-                                w-full
-                                md:w-auto
-                              "
-                              onClick={() => {
-                                setShowInteriorBooking(
-                                  true
-                                );
-
-                                scrollModalToTop();
-                              }}
+                        {/* TWO COLUMNS: photos on the left, details on the right */}
+                        <div
+                          className="
+                            grid
+                            grid-cols-1
+                            gap-6
+                            md:grid-cols-2
+                            md:items-stretch
+                          "
+                        >
+                          {/* ============ LEFT COLUMN ============ */}
+                          <div className="flex flex-col">
+                            <div
+                              className={`ibc-modal-design-media overflow-hidden rounded-2xl bg-gray-100 shadow-sm md:min-h-[360px] md:flex-1 ${
+                                design.spaceSlug === 'entrance'
+                                  ? 'ibc-modal-design-media--entrance'
+                                  : ''
+                              }`}
                             >
-                              CUSTOMISE THIS DESIGN
-                            </button>
+                              <img
+                                loading="eager"
+                                decoding="async"
+                                src={design.image}
+                                alt={design.name}
+                                className={`block h-[300px] w-full sm:h-[360px] md:h-full! ${
+                                  design.spaceSlug === 'entrance'
+                                    ? 'object-contain'
+                                    : 'object-cover'
+                                }`}
+                              />
+                            </div>
+
+                            {/* FRONT / SIDE / DETAIL — click one to open it */}
+                            {designViews.length > 0 && (
+                              <div className="mt-3 grid grid-cols-3 gap-3">
+                                {designViews.map((view, index) => (
+                                  <button
+                                    key={view.label}
+                                    type="button"
+                                    className="
+                                      overflow-hidden
+                                      rounded-xl
+                                      border
+                                      border-gray-200
+                                      bg-white
+                                      text-center
+                                      shadow-sm
+                                      transition
+                                      hover:border-[#9A5B2D]
+                                    "
+                                    onClick={() => setViewerIndex(index)}
+                                    aria-label={`Open ${view.label}`}
+                                  >
+                                    <img
+                                      src={view.src}
+                                      alt={`${design.name} ${view.label}`}
+                                      className="block h-24 w-full object-cover"
+                                      loading="lazy"
+                                      decoding="async"
+                                      onError={(event) => {
+                                        event.currentTarget.onerror = null;
+                                        event.currentTarget.src = design.image;
+                                      }}
+                                    />
+
+                                    <span className="block px-2 py-2 text-xs font-semibold text-gray-700">
+                                      {view.label}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
                           </div>
+                          {/* ============ END LEFT COLUMN ============ */}
+
+                          {/* ============ RIGHT COLUMN ============ */}
+                          <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <p
+                              className="
+                                text-xs
+                                font-semibold
+                                uppercase
+                                tracking-[0.14em]
+                                text-[#9A5B2D]
+                              "
+                            >
+                              {space?.name}
+                            </p>
+
+                            <h3
+                              className="
+                                mt-2
+                                text-2xl
+                                font-bold
+                                leading-tight
+                                text-gray-950
+                              "
+                            >
+                              {design.name}
+                            </h3>
+
+                            {design.tagline && (
+                              <p
+                                className="
+                                  mt-2
+                                  text-sm
+                                  leading-6
+                                  text-gray-500
+                                "
+                              >
+                                {design.tagline}
+                              </p>
+                            )}
+
+                            {design.estimatedPrice ? (
+                              <div
+                                className="
+                                  mt-5
+                                  rounded-xl
+                                  bg-[#faf7f3]
+                                  px-4
+                                  py-3
+                                "
+                              >
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-500">
+                                  Estimated Price
+                                </p>
+
+                                <p className="mt-1 text-xl font-bold text-gray-950">
+                                  {design.estimatedPrice}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="mt-4 text-lg font-semibold text-gray-900">
+                                {design.priceRange ||
+                                  `₹${design.pricePerSqft} / sq.ft.`}
+                              </p>
+                            )}
+
+                            {design.description && (
+                              <div className="mt-4 rounded-2xl bg-[#fafafa] p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
+                                  About this design
+                                </p>
+
+                                <p className="mt-2 text-sm leading-6 text-gray-700">
+                                  {design.description}
+                                </p>
+                              </div>
+                            )}
+
+                            {design.features?.length > 0 && (
+                              <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
+                                  Key Features
+                                </p>
+
+                                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                  {design.features.map((feature, index) => (
+                                    <div
+                                      key={`${feature}-${index}`}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <span className="mt-0.5 text-[#9A5B2D]">✓</span>
+
+                                      <span className="text-sm leading-6 text-gray-700">
+                                        {interiorFeatures[feature]?.label || feature}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="mt-auto pt-6">
+                              <button
+                                type="button"
+                                className="
+                                  btn
+                                  btn-primary
+                                  w-full
+                                  md:w-auto
+                                "
+                                onClick={() => {
+                                  setShowInteriorBooking(
+                                    true
+                                  );
+
+                                  scrollModalToTop();
+                                }}
+                              >
+                                CUSTOMISE THIS DESIGN
+                              </button>
+                            </div>
+                          </div>
+                          {/* ============ END RIGHT COLUMN ============ */}
                         </div>
+
+                        {/* WHAT'S INCLUDED — full width, light theme */}
+                        {includedItems.length > 0 && (
+                          <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">
+                                What’s Included
+                              </p>
+
+                              <span className="text-xs font-medium text-[#9A5B2D]">
+                                {includedItems.length} items
+                              </span>
+                            </div>
+
+                            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                              {includedItems.map((item) => (
+                                <IncludedCard key={item.title} item={item} />
+                              ))}
+                            </div>
+
+                            {design.tvDetails?.exclusions && (
+                              <p className="mt-4 border-t border-gray-100 pt-3 text-xs leading-5 text-gray-500">
+                                <span className="font-semibold text-gray-700">
+                                  Not included:{' '}
+                                </span>
+                                {design.tvDetails.exclusions}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* FULL-SCREEN VIEWER */}
+                        {viewerIndex !== null &&
+                          designViews[viewerIndex] && (
+                            <div
+                              className="
+                                fixed
+                                inset-0
+                                z-[3000]
+                                flex
+                                items-center
+                                justify-center
+                                bg-black/90
+                                p-4
+                              "
+                              onClick={() => setViewerIndex(null)}
+                            >
+                              <button
+                                type="button"
+                                className="
+                                  absolute
+                                  right-4
+                                  top-4
+                                  flex
+                                  h-10
+                                  w-10
+                                  items-center
+                                  justify-center
+                                  rounded-full
+                                  bg-white
+                                  text-xl
+                                  text-gray-900
+                                "
+                                aria-label="Close view"
+                                onClick={() => setViewerIndex(null)}
+                              >
+                                ✕
+                              </button>
+
+                              <button
+                                type="button"
+                                className="
+                                  absolute
+                                  left-3
+                                  top-1/2
+                                  flex
+                                  h-10
+                                  w-10
+                                  -translate-y-1/2
+                                  items-center
+                                  justify-center
+                                  rounded-full
+                                  bg-white/90
+                                  text-gray-900
+                                "
+                                aria-label="Previous view"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setViewerIndex(
+                                    (viewerIndex + designViews.length - 1) %
+                                      designViews.length
+                                  );
+                                }}
+                              >
+                                <Icon
+                                  name="arrow-left"
+                                  size={20}
+                                />
+                              </button>
+
+                              <div
+                                className="flex max-h-full max-w-full flex-col items-center"
+                                onClick={(event) =>
+                                  event.stopPropagation()
+                                }
+                              >
+                                <img
+                                  src={designViews[viewerIndex].src}
+                                  alt={`${design.name} ${designViews[viewerIndex].label}`}
+                                  className="max-h-[80vh] max-w-full rounded-xl object-contain"
+                                  onError={(event) => {
+                                    event.currentTarget.onerror = null;
+                                    event.currentTarget.src =
+                                      design.image;
+                                  }}
+                                />
+
+                                <p className="mt-3 text-sm font-semibold text-white">
+                                  {designViews[viewerIndex].label}
+                                </p>
+                              </div>
+
+                              <button
+                                type="button"
+                                className="
+                                  absolute
+                                  right-3
+                                  top-1/2
+                                  flex
+                                  h-10
+                                  w-10
+                                  -translate-y-1/2
+                                  items-center
+                                  justify-center
+                                  rounded-full
+                                  bg-white/90
+                                  text-gray-900
+                                "
+                                aria-label="Next view"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  setViewerIndex(
+                                    (viewerIndex + 1) %
+                                      designViews.length
+                                  );
+                                }}
+                              >
+                                <Icon
+                                  name="arrow-right"
+                                  size={20}
+                                />
+                              </button>
+                            </div>
+                          )}
                       </>
                     );
                   })()}
@@ -549,11 +898,22 @@ onStepChange={
                         <button
                           type="button"
                           className="
-                            btn
-                            btn-ghost
-                            btn-sm
                             mb-4
+                            flex
+                            h-10
+                            w-10
+                            items-center
+                            justify-center
+                            rounded-full
+                            border
+                            border-gray-200
+                            bg-white
+                            text-gray-900
+                            shadow-sm
+                            transition
+                            hover:bg-gray-100
                           "
+                          aria-label="Back"
                           onClick={() => {
                             formBack(() => {
                               if (
@@ -586,7 +946,10 @@ onStepChange={
                             scrollModalToTop();
                           }}
                         >
-                          BACK
+                          <Icon
+                            name="arrow-left"
+                            size={20}
+                          />
                         </button>
 
                         <div className="ibc-filter-row">
@@ -771,12 +1134,6 @@ onStepChange={
                                 >
                                   {colorOptions.map(
                                     (option) => {
-                                      // const image =
-                                      //   livingRoomColorImages?.[
-                                      //     selectedLivingRoomOption
-                                      //   ]?.[option] ||
-                                      //   selectedDesign?.image;
-
                                       const active =
                                         option ===
                                         selectedLivingRoomColor;
@@ -1565,7 +1922,7 @@ onClick={() => {
                   loading="lazy"
                   decoding="async"
                   className="
-                    h-full
+                    h-full!
                     w-full
                     object-cover
                   "
@@ -1670,7 +2027,7 @@ onClick={() => {
                   loading="lazy"
                   decoding="async"
                   className="
-                    h-full
+                    h-full!
                     w-full
                     object-cover
                   "
@@ -1745,7 +2102,7 @@ onClick={() => {
           <p className="mt-1 text-sm font-semibold text-gray-950">
             <span className="text-xl text-[#9A5B2D]">
             ✓
-          </span> Pan India Service
+          </span> Expert Site Visit
           </p>
         </div>
 
@@ -1755,7 +2112,7 @@ onClick={() => {
 
 
     {/* =================================
-        FREE QUOTE BUTTON
+        BOOK A SITE VISIT BUTTON
         ================================= */}
 
     <button
@@ -1775,7 +2132,7 @@ onClick={() => {
 
       }}
     >
-      Get a Free Quote for your Mandir Design
+      Book a Site Visit for your Mandir
     </button>
 
   </div>
@@ -1786,151 +2143,199 @@ onClick={() => {
     {getDesignsBySpace('study').map((design) => {
       const gallery = design.galleryImages || {};
 
+      const views = [
+        { label: 'Front View',  src: gallery.front  || design.image },
+        { label: 'Side View',   src: gallery.side   || design.image },
+        { label: 'Detail View', src: gallery.detail || design.image },
+      ];
+
+      const openViewer = (index) =>
+        setStudyViewer({
+          name: design.name,
+          fallback: design.image,
+          views,
+          index,
+        });
+
       return (
         <div
           key={design.slug}
-          className="
-            overflow-hidden
-            rounded-2xl
-            border
-            border-gray-200
-            bg-white
-            shadow-sm
-          "
+          className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
         >
-
           {/* DESIGN NAME */}
           <div className="px-5 pt-5">
-            <h3 className="text-xl font-bold text-gray-950">
-              {design.name}
-            </h3>
+            <h3 className="text-xl font-bold text-gray-950">{design.name}</h3>
           </div>
 
-          {/* MAIN IMAGE */}
+          {/* MAIN IMAGE → opens Front View */}
           <button
             type="button"
-            className="
-              mt-4
-              block
-              w-full
-              border-0
-              bg-transparent
-              p-0
-            "
-            onClick={() => {
-              setSelectedInteriorDesign(design.slug);
-              scrollModalToTop();
-            }}
+            className="mt-4 block w-full border-0 bg-transparent p-0"
+            onClick={() => openViewer(0)}
+            aria-label={`Open ${design.name}`}
           >
             <div className="px-4">
-  <div className="h-[370px] overflow-hidden rounded-xl bg-gray-100">
-    <img
-      src={design.image}
-      alt={design.name}
-      className="!block !h-[370px] !min-h-0 w-full object-cover"
-      loading="lazy"
-      decoding="async"
-    />
-  </div>
-</div>
+              <div className="h-[370px] overflow-hidden rounded-xl bg-gray-100">
+                <img
+                  src={design.image}
+                  alt={design.name}
+                  className="!block !h-[370px] !min-h-0 w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+            </div>
           </button>
 
-          {/* FRONT / SIDE / DETAIL */}
+          {/* FRONT / SIDE / DETAIL — click one to open it */}
           <div className="grid grid-cols-3 gap-3 px-4 pt-4">
-
-            {/* FRONT */}
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <img
-                src={gallery.front || design.image}
-                alt={`${design.name} Front View`}
-                className="h-24 w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-
-              <div className="px-2 py-2 text-center">
-                <span className="text-xs font-semibold text-gray-700">
-                  Front View
+            {views.map((view, index) => (
+              <button
+                key={view.label}
+                type="button"
+                onClick={() => openViewer(index)}
+                aria-label={`Open ${view.label}`}
+                className="overflow-hidden rounded-xl border border-gray-200 bg-white text-center shadow-sm transition hover:border-[#9A5B2D]"
+              >
+                <img
+                  src={view.src}
+                  alt={`${design.name} ${view.label}`}
+                  className="block h-24 w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = design.image;
+                  }}
+                />
+                <span className="block px-2 py-2 text-xs font-semibold text-gray-700">
+                  {view.label}
                 </span>
-              </div>
-            </div>
-
-            {/* SIDE */}
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <img
-                src={gallery.side || design.image}
-                alt={`${design.name} Side View`}
-                className="h-24 w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-
-              <div className="px-2 py-2 text-center">
-                <span className="text-xs font-semibold text-gray-700">
-                  Side View
-                </span>
-              </div>
-            </div>
-
-            {/* DETAIL */}
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <img
-                src={gallery.detail || design.image}
-                alt={`${design.name} Detail View`}
-                className="h-24 w-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-
-              <div className="px-2 py-2 text-center">
-                <span className="text-xs font-semibold text-gray-700">
-                  Detail View
-                </span>
-              </div>
-            </div>
-
+              </button>
+            ))}
           </div>
 
           {/* PRICE */}
           <div className="px-5 pb-5 pt-5">
             <div className="rounded-xl bg-[#faf7f3] px-4 py-3">
-              <span className="
-                block
-                text-[11px]
-                font-semibold
-                uppercase
-                tracking-wide
-                text-gray-500
-              ">
+              <span className="block text-[11px] font-semibold uppercase tracking-wide text-gray-500">
                 Estimated Price
               </span>
-
-              <span className="
-                mt-1
-                block
-                text-lg
-                font-bold
-                text-gray-950
-              ">
+              <span className="mt-1 block text-lg font-bold text-gray-950">
                 {design.estimatedPrice}
               </span>
             </div>
           </div>
-
         </div>
       );
     })}
 
+    {/* FULL-SCREEN VIEWER (Study) */}
+    {studyViewer && (
+      <div
+        className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/90 p-4"
+        onClick={() => setStudyViewer(null)}
+      >
+        {/* Close */}
+        <button
+          type="button"
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl text-gray-900"
+          aria-label="Close view"
+          onClick={() => setStudyViewer(null)}
+        >
+          ✕
+        </button>
+
+        {/* Previous */}
+        <button
+          type="button"
+          className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900"
+          aria-label="Previous view"
+          onClick={(event) => {
+            event.stopPropagation();
+            setStudyViewer((v) => ({
+              ...v,
+              index: (v.index + v.views.length - 1) % v.views.length,
+            }));
+          }}
+        >
+          <Icon name="arrow-left" size={20} />
+        </button>
+
+        {/* Image + label */}
+        <div
+          className="flex max-h-full max-w-full flex-col items-center"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <img
+            src={studyViewer.views[studyViewer.index].src}
+            alt={`${studyViewer.name} ${studyViewer.views[studyViewer.index].label}`}
+            className="max-h-[80vh] max-w-full rounded-xl object-contain"
+            onError={(event) => {
+              event.currentTarget.onerror = null;
+              event.currentTarget.src = studyViewer.fallback;
+            }}
+          />
+
+          <p className="mt-3 text-sm font-semibold text-white">
+            {studyViewer.name} — {studyViewer.views[studyViewer.index].label}
+          </p>
+
+          {/* dots */}
+          <div className="mt-2 flex gap-2">
+            {studyViewer.views.map((_, i) => (
+              <span
+                key={i}
+                className={`h-2 w-2 rounded-full ${
+                  i === studyViewer.index ? 'bg-white' : 'bg-white/40'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Next */}
+        <button
+          type="button"
+          className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900"
+          aria-label="Next view"
+          onClick={(event) => {
+            event.stopPropagation();
+            setStudyViewer((v) => ({
+              ...v,
+              index: (v.index + 1) % v.views.length,
+            }));
+          }}
+        >
+          <Icon name="arrow-right" size={20} />
+        </button>
+      </div>
+    )}
+
   </div>
 ) : (
- <div className="ibc-design-grid">
+
+
+  <div
+                        className={`ibc-design-grid ${
+                          selectedInteriorSpace === 'entrance'
+                            ? 'ibc-design-grid--entrance'
+                            : selectedInteriorSpace === 'bed-back-wall'
+                              ? 'ibc-design-grid--bed-back-wall'
+                              : ''
+                        }`}
+                      >
                         {getDesignsBySpace(
                           selectedInteriorSpace
                         ).map(
                           (design) => (
                             <div
                               key={design.slug}
-                              className="ibc-design-card"
+                              className={`ibc-design-card ${
+                                selectedInteriorSpace === 'entrance'
+                                  ? 'ibc-design-card--entrance'
+                                  : ''
+                              }`}
                             >
                               <button
                                 type="button"
@@ -2008,7 +2413,8 @@ onClick={() => {
     </span>
   ) : (
     <span>
-      ₹{design.pricePerSqft} / sq.ft.
+      {design.priceRange ||
+        `₹${design.pricePerSqft} / sq.ft.`}
     </span>
   )}
 </span>
@@ -2152,61 +2558,19 @@ onClick={() => {
               )}
             </>
           ) : service.slug === 'interior-design' ? (
-            showCustomInteriorDesign ? (
-              <InteriorDesignCustomFlow
-                initialRequirements={customInteriorRequirements}
-                onDraftChange={setCustomInteriorRequirements}
-                onBack={() => {
-                  formBack(() => setShowCustomInteriorDesign(false));
-                  scrollModalToTop();
-                }}
-                onContinue={(requirements) => {
-                  setCustomInteriorRequirements(requirements);
-                  setShowCustomInteriorDesign(false);
-                  setShowCustomInteriorDetails(true);
-                  scrollModalToTop();
-                }}
-              />
-            ) : showCustomInteriorDetails ? (
+            selectedInteriorDesignCategory ? (
               <InteriorDesignFlow
-                modal={true}
-                startAtDetails={true}
-                customRequirements={customInteriorRequirements}
-                onBackToCatalogue={() => {
-                  formBack(() => {
-                    setShowCustomInteriorDetails(false);
-                    setShowCustomInteriorDesign(true);
-                  });
-                  scrollModalToTop();
-                }}
-                onStepChange={scrollModalToTop}
-              />
-            ) : selectedInteriorDesignProject ? (
-              <InteriorDesignFlow
+                key={selectedInteriorDesignCategory}
                 modal={true}
                 categorySlug={selectedInteriorDesignCategory}
-                projectSlug={selectedInteriorDesignProject}
                 onBackToCatalogue={() => {
-                  formBack(() => setSelectedInteriorDesignProject(null));
-                  scrollModalToTop();
-                }}
-                onStepChange={scrollModalToTop}
-              />
-            ) : selectedInteriorDesignCategory ? (
-              <InteriorDesignCatalogue
-                modal={true}
-                categorySlug={selectedInteriorDesignCategory}
-                onSelectProject={(projectSlug) => {
-                  setSelectedInteriorDesignProject(projectSlug);
-                  scrollModalToTop();
-                }}
-                onBack={() => {
                   formBack(() => {
                     setSelectedInteriorDesignCategory(null);
                     setSelectedInteriorDesignProject(null);
                   });
                   scrollModalToTop();
                 }}
+                onStepChange={scrollModalToTop}
               />
             ) : (
               <InteriorDesignCategory
@@ -2214,10 +2578,6 @@ onClick={() => {
                 onSelectCategory={(categorySlug) => {
                   setSelectedInteriorDesignCategory(categorySlug);
                   setSelectedInteriorDesignProject(null);
-                  scrollModalToTop();
-                }}
-                onCustom={() => {
-                  setShowCustomInteriorDesign(true);
                   scrollModalToTop();
                 }}
               />

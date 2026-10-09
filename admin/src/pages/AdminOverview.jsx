@@ -7,7 +7,7 @@ import { EmptyState, ErrorBanner } from '../components/admin/TableStates';
 import { useAttention } from '../context/AttentionContext';
 import { useAuth } from '../context/AuthContext';
 import api, { friendlyError } from '../lib/api';
-import { bookingTone, label, timeAgo, todayIso } from '../lib/format';
+import { bookingTone, label, timeAgo, todayIso, visitTime } from '../lib/format';
 
 const greeting = () => {
   const h = new Date().getHours();
@@ -112,7 +112,7 @@ export default function AdminOverview() {
             icon="alert"
             tone="danger"
             title="New bookings to confirm"
-            description="Check and confirm them. Unconfirmed bookings are cancelled automatically 24 hours after they are made."
+            description="Check and confirm them. A booking whose online payment was started and not finished is cancelled 24 hours later."
             clearText="No new bookings waiting. New ones appear here first."
             to="/bookings?status=PAYMENT_PENDING"
             cta="Confirm now"
@@ -172,7 +172,7 @@ export default function AdminOverview() {
               {today.map((b) => (
                 <li key={b.id}>
                   <Link to={`/bookings?open=${b.id}&mode=day`} className="admin-list-item">
-                    <span className="admin-list-time">{b.preferredSlot || '—'}</span>
+                    <span className="admin-list-time">{visitTime(b) || '—'}</span>
                     <span className="admin-list-main">
                       <strong>{b.name}</strong>
                       <span>
