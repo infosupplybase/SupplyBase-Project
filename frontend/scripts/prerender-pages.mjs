@@ -37,11 +37,10 @@ const crumbNames = {
   '/terms': 'Terms & Conditions',
 };
 
-/** Home page banner: the first slide, preloaded so it starts downloading
-    with the HTML instead of after the app's JavaScript (the page's LCP). */
+/** Home page hero logo, preloaded so it starts downloading with the HTML
+    instead of after the app's JavaScript. */
 const HOME_PRELOAD = [
-  '<link rel="preload" as="image" href="/assets/home-slider/4.webp" media="(max-width: 767px)" fetchpriority="high" />',
-  '<link rel="preload" as="image" href="/assets/home-slider/1.webp" media="(min-width: 768px)" fetchpriority="high" />',
+  '<link rel="preload" as="image" href="/assets/brand/hero-logo-20261011.webp" fetchpriority="high" />',
 ].join('\n    ');
 
 const esc = (s) =>
