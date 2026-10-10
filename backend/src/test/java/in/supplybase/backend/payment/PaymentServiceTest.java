@@ -70,12 +70,14 @@ class PaymentServiceTest {
     private InvoiceService invoices;
     @Mock
     private BookingRepository bookings;
+    @Mock
+    private in.supplybase.backend.booking.BookingService bookingService;
 
     private PaymentService service;
 
     @BeforeEach
     void setUp() {
-        service = new PaymentService(payments, events, users, projects, razorpay, invoices, bookings);
+        service = new PaymentService(payments, events, users, projects, razorpay, invoices, bookings, bookingService);
         // Most tests only care that save happened, not what it returns beyond
         // the entity handed to it — echo the argument back like a real save.
         lenient().when(payments.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -777,6 +779,8 @@ class PaymentServiceTest {
             assertThat(booking.getPaidAt()).isNotNull();
             assertThat(booking.getStatus()).isEqualTo(BookingStatus.CONFIRMED);
             verify(bookings).save(booking);
+            // Confirmation emails go out only now that the fee is paid.
+            verify(bookingService).onBookingPaid(booking);
         }
 
         @Test
@@ -809,6 +813,8 @@ class PaymentServiceTest {
 
             assertThat(booking.getPaidAt()).isNotNull();
             assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+            // BookingService flags it for a refund and tells the office.
+            verify(bookingService).onBookingPaid(booking);
         }
     }
 }

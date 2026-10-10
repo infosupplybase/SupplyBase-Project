@@ -79,6 +79,7 @@ class BookingServiceTest {
     @Mock private BookingFileRepository files;
     @Mock private FileStorageService storage;
     @Mock private NotificationRepository notifications;
+    @Mock private in.supplybase.backend.payment.RazorpayService razorpay;
 
     private BookingService service;
 
@@ -87,9 +88,11 @@ class BookingServiceTest {
         AppProperties props = new AppProperties(
                 List.of("*"), null, null, null,
                 new AppProperties.Notifications(null), // email disabled: no recipient configured
-                null, null, new AppProperties.Booking(24), null);
+                null, null, new AppProperties.Booking(30), null);
         service = new BookingService(bookings, answers, users, catalogue, options, appointments,
-                bookingNumbers, props, mailSender, files, storage, notifications);
+                bookingNumbers, props, mailSender, files, storage, notifications, razorpay);
+        // Online payment is switched on unless a test says otherwise.
+        org.mockito.Mockito.lenient().when(razorpay.isConfigured()).thenReturn(true);
     }
 
     private static ServiceCategory plumbingCategory() {
@@ -152,6 +155,10 @@ class BookingServiceTest {
             verify(bookings).save(savedCaptor.capture());
             Booking saved = savedCaptor.getValue();
             assertThat(saved.getStatus()).isEqualTo(BookingStatus.PAYMENT_PENDING);
+            // Every booking pays the flat ₹99 visiting fee, whatever the
+            // category's own fee, and its payment window starts now.
+            assertThat(saved.getVisitFeePaise()).isEqualTo(9900L);
+            assertThat(saved.getOnlineCheckoutAt()).isNotNull();
             assertThat(saved.getAppointmentSlot()).isSameAs(slot);
             assertThat(saved.getPhone()).isEqualTo("9820011223");
 
@@ -168,6 +175,19 @@ class BookingServiceTest {
             assertThat(receipt.bookingNumber()).isEqualTo("SB-20260906-000001");
             assertThat(receipt.status()).isEqualTo(BookingStatus.PAYMENT_PENDING);
             assertThat(receipt.serviceName()).isEqualTo("Plumbing");
+        }
+
+        @Test
+        @DisplayName("takes no booking while online payment is switched off")
+        void refusesWithoutOnlinePayments() {
+            when(razorpay.isConfigured()).thenReturn(false);
+
+            assertThatThrownBy(() -> service.create(
+                    requestFor(LocalDate.now().plusDays(3), LocalTime.of(10, 0), List.of()), null))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessageContaining("Online booking is not available");
+            verifyNoInteractions(appointments);
+            verify(bookings, never()).save(any());
         }
 
         @Test
@@ -1176,9 +1196,9 @@ class BookingServiceTest {
             AppProperties props = new AppProperties(
                     List.of("*"), null, null, null,
                     new AppProperties.Notifications("staff@example.com"),
-                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(30), null);
             emailingService = new BookingService(bookings, answers, users, catalogue, options, appointments,
-                    bookingNumbers, props, mailSender, files, storage, notifications);
+                    bookingNumbers, props, mailSender, files, storage, notifications, razorpay);
             when(mailSender.getIfAvailable()).thenReturn(sender);
 
             ServiceCategory category = plumbingCategory();
@@ -1191,6 +1211,43 @@ class BookingServiceTest {
             when(bookings.save(any(Booking.class))).thenAnswer(inv -> inv.getArgument(0));
         }
 
+        /** Makes a booking and then has its visiting fee verified, which is what sends the emails. */
+        private void bookAndPay(BookingService target, CreateBookingRequest request, Long userId) {
+            target.create(request, userId);
+            ArgumentCaptor<Booking> saved = ArgumentCaptor.forClass(Booking.class);
+            verify(bookings, org.mockito.Mockito.atLeastOnce()).save(saved.capture());
+            Booking booking = saved.getValue();
+            booking.setStatus(BookingStatus.CONFIRMED);
+            target.onBookingPaid(booking);
+        }
+
+        @Test
+        @DisplayName("making a booking emails nobody until its visiting fee is paid")
+        void noEmailBeforePayment() {
+            org.mockito.Mockito.reset(mailSender);
+            emailingService.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+            verify(sender, never()).send(any(org.springframework.mail.SimpleMailMessage.class));
+        }
+
+        @Test
+        @DisplayName("a payment landing on a cancelled booking flags a refund and tells only the office")
+        void latePaymentOnCancelledBooking() {
+            org.mockito.Mockito.reset(catalogue, appointments, bookingNumbers);
+            Booking cancelled = Booking.builder().id(7L).bookingNumber("SB-1").serviceLabel("Plumbing")
+                    .name("Asha Rao").phone("9820011223").email("asha@example.com")
+                    .visitFeePaise(9900L).status(BookingStatus.CANCELLED)
+                    .cancelledReason("Automatically cancelled").build();
+
+            emailingService.onBookingPaid(cancelled);
+
+            assertThat(cancelled.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+            assertThat(cancelled.getAdminNotes()).startsWith("REFUND DUE");
+            List<org.springframework.mail.SimpleMailMessage> mails = sent();
+            assertThat(mails).hasSize(1);
+            assertThat(mails.get(0).getTo()).containsExactly("staff@example.com");
+            assertThat(mails.get(0).getSubject()).startsWith("[REFUND DUE]");
+        }
+
         private List<org.springframework.mail.SimpleMailMessage> sent() {
             ArgumentCaptor<org.springframework.mail.SimpleMailMessage> captor =
                     ArgumentCaptor.forClass(org.springframework.mail.SimpleMailMessage.class);
@@ -1201,7 +1258,7 @@ class BookingServiceTest {
         @Test
         @DisplayName("emails the customer the booking number, service, visit time and address")
         void emailsCustomer() {
-            emailingService.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+            bookAndPay(emailingService, requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 
             List<org.springframework.mail.SimpleMailMessage> mails = sent();
             assertThat(mails).hasSize(2);
@@ -1214,7 +1271,8 @@ class BookingServiceTest {
                     .contains("SB-20260906-000001")
                     .contains(VISIT.format(java.time.format.DateTimeFormatter.ofPattern("EEE, d MMM yyyy", java.util.Locale.ENGLISH)) + ", 10:00 AM")
                     .contains("12 MG Road, Mumbai 400001")
-                    .contains("₹25")
+                    .contains("Visiting fee: ₹99.00 (paid)")
+                    .contains("booking is confirmed")
                     // a guest booking has no account page to point at
                     .doesNotContain("/dashboard/bookings");
         }
@@ -1229,7 +1287,7 @@ class BookingServiceTest {
                     "Asha Rao", "9820011223", null, null,
                     "12 MG Road", "Mumbai", "400001", 800);
 
-            emailingService.create(noEmail, 5L);
+            bookAndPay(emailingService, noEmail, 5L);
 
             org.springframework.mail.SimpleMailMessage customer = sent().get(1);
             assertThat(customer.getTo()).containsExactly("owner@example.com");
@@ -1243,11 +1301,11 @@ class BookingServiceTest {
             AppProperties props = new AppProperties(
                     List.of("*"), null, null, null,
                     new AppProperties.Notifications(null, true),
-                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(30), null);
             BookingService noStaffInbox = new BookingService(bookings, answers, users, catalogue, options,
-                    appointments, bookingNumbers, props, mailSender, files, storage, notifications);
+                    appointments, bookingNumbers, props, mailSender, files, storage, notifications, razorpay);
 
-            noStaffInbox.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+            bookAndPay(noStaffInbox, requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 
             List<org.springframework.mail.SimpleMailMessage> mails = sent();
             assertThat(mails).hasSize(1);
@@ -1260,11 +1318,11 @@ class BookingServiceTest {
             AppProperties props = new AppProperties(
                     List.of("*"), null, null, null,
                     new AppProperties.Notifications("staff@example.com", false),
-                    "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
+                    "https://www.supplybase.co.in", null, new AppProperties.Booking(30), null);
             BookingService staffOnly = new BookingService(bookings, answers, users, catalogue, options,
-                    appointments, bookingNumbers, props, mailSender, files, storage, notifications);
+                    appointments, bookingNumbers, props, mailSender, files, storage, notifications, razorpay);
 
-            staffOnly.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+            bookAndPay(staffOnly, requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 
             List<org.springframework.mail.SimpleMailMessage> mails = sent();
             assertThat(mails).hasSize(1);
@@ -1276,7 +1334,7 @@ class BookingServiceTest {
         void emailsWaitForCommit() {
             org.springframework.transaction.support.TransactionSynchronizationManager.initSynchronization();
             try {
-                emailingService.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+                bookAndPay(emailingService, requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
                 verify(sender, never()).send(any(org.springframework.mail.SimpleMailMessage.class));
 
                 org.springframework.transaction.support.TransactionSynchronizationManager.getSynchronizations()
@@ -1293,10 +1351,9 @@ class BookingServiceTest {
             org.mockito.Mockito.doThrow(new org.springframework.mail.MailSendException("down"))
                     .when(sender).send(any(org.springframework.mail.SimpleMailMessage.class));
 
-            BookingReceipt receipt = emailingService.create(
-                    requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
+            bookAndPay(emailingService, requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 
-            assertThat(receipt.bookingNumber()).isEqualTo("SB-20260906-000001");
+            verify(sender, org.mockito.Mockito.times(2)).send(any(org.springframework.mail.SimpleMailMessage.class));
         }
     }
 }

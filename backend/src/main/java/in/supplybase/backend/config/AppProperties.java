@@ -99,7 +99,7 @@ public record AppProperties(
         }
     }
 
-    /** How long an unpaid or unconfirmed booking is held before it expires. */
-    public record Booking(int expiryHours) {
+    /** How long a booking waits for its visiting fee before it is cancelled. */
+    public record Booking(int paymentWindowMinutes) {
     }
 }

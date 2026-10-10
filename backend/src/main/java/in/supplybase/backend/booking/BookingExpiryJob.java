@@ -14,15 +14,17 @@ import in.supplybase.backend.appointment.AppointmentService;
 import in.supplybase.backend.config.AppProperties;
 
 /**
- * Auto-cancels bookings whose online payment was started and never finished.
+ * Auto-cancels bookings whose visiting fee was not paid in time.
  *
- * A PAYMENT_PENDING or BOOKING_REQUESTED booking whose customer opened online
- * checkout more than app.booking.expiry-hours ago and still has not paid is
- * not going anywhere, so this frees the appointment seat it is holding.
+ * Every booking must pay its visiting fee online to be confirmed, and its
+ * payment window (app.booking.payment-window-minutes) starts when it is made
+ * (onlineCheckoutAt). A PAYMENT_PENDING or BOOKING_REQUESTED booking still
+ * unpaid after that is not going anywhere, so this cancels it and frees the
+ * appointment seat it is holding.
  *
- * A booking whose customer never opened checkout is left alone: the site
- * tells them they can pay our team on the day of the visit, so it is not
- * "unpaid" until then. Staff cancel those by hand if they need to.
+ * Bookings made before the fee was compulsory, whose customer was told they
+ * could pay on the day and never opened checkout, have no onlineCheckoutAt
+ * and are left alone. Staff cancel those by hand if they need to.
  */
 @Component
 public class BookingExpiryJob {
@@ -43,10 +45,10 @@ public class BookingExpiryJob {
         this.props = props;
     }
 
-    @Scheduled(fixedDelayString = "${app.booking.expiry-check-interval-ms:900000}") // 15 min default
+    @Scheduled(fixedDelayString = "${app.booking.expiry-check-interval-ms:300000}") // 5 min default
     @Transactional
     public void expireStaleBookings() {
-        Instant cutoff = Instant.now().minus(Duration.ofHours(props.booking().expiryHours()));
+        Instant cutoff = Instant.now().minus(Duration.ofMinutes(props.booking().paymentWindowMinutes()));
         List<Booking> stale = bookings.findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(EXPIRABLE, cutoff);
         if (stale.isEmpty()) {
             return;
@@ -55,13 +57,13 @@ public class BookingExpiryJob {
         for (Booking booking : stale) {
             booking.setStatus(BookingStatus.CANCELLED);
             booking.setCancelledReason(
-                    "Automatically cancelled — payment was not completed in time.");
+                    "Automatically cancelled — the visiting fee was not paid in time.");
             if (booking.getAppointmentSlot() != null) {
                 appointments.release(booking.getAppointmentSlot());
             }
         }
         bookings.saveAll(stale);
-        log.info("Expired {} booking(s) with online payment unfinished after {} hour(s)",
-                stale.size(), props.booking().expiryHours());
+        log.info("Expired {} booking(s) with the visiting fee unpaid after {} minute(s)",
+                stale.size(), props.booking().paymentWindowMinutes());
     }
 }

@@ -245,7 +245,7 @@ export default function BookingDetail() {
                             ? `Amount: ${formatRupees(booking.visitFeePaise / 100)}`
                             : booking.itemsTotalPaise != null && booking.visitFeePaise === booking.itemsTotalPaise
                             ? `Paid on the day of the visit: ${formatRupees(booking.visitFeePaise / 100)}`
-                            : `Home visit fee: ${formatRupees(booking.visitFeePaise / 100)}`}
+                            : `Visiting fee: ${formatRupees(booking.visitFeePaise / 100)}`}
                         </li>
                       )}
                       {booking.paidAt && (
@@ -278,6 +278,7 @@ export default function BookingDetail() {
                     {!booking.paidAt && booking.bookingNumber && booking.visitFeePaise > 0 &&
                       PAYABLE_STATUSES.includes(booking.status) && (
                         <PayBookingButton
+                          autoStart={false}
                           bookingNumber={booking.bookingNumber}
                           amountDisplay={formatRupees(booking.visitFeePaise / 100)}
                           onPaid={() => api.booking(booking.id).then(setBooking).catch(() => {})}

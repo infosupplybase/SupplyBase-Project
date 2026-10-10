@@ -35,7 +35,7 @@ class BookingExpiryJobTest {
     void setUp() {
         AppProperties props = new AppProperties(
                 List.of("*"), null, null, null, null, null, null,
-                new AppProperties.Booking(24), null);
+                new AppProperties.Booking(30), null);
         job = new BookingExpiryJob(bookings, appointments, props);
     }
 
@@ -74,7 +74,7 @@ class BookingExpiryJobTest {
     }
 
     @Test
-    @DisplayName("only bookings that opened online checkout are looked for, and only unpaid ones")
+    @DisplayName("only unpaid bookings past their 30-minute payment window are looked for")
     void asksOnlyForUnfinishedOnlinePayments() {
         when(bookings.findByStatusInAndPaidAtIsNullAndOnlineCheckoutAtBefore(anyList(), any(Instant.class)))
                 .thenReturn(List.of());
@@ -87,7 +87,9 @@ class BookingExpiryJobTest {
                 org.mockito.ArgumentMatchers.eq(
                         List.of(BookingStatus.PAYMENT_PENDING, BookingStatus.BOOKING_REQUESTED)),
                 cutoff.capture());
-        assertThat(cutoff.getValue()).isBefore(before.minusSeconds(24 * 3600 - 60));
+        assertThat(cutoff.getValue())
+                .isBefore(before.minusSeconds(30 * 60 - 5))
+                .isAfter(before.minusSeconds(30 * 60 + 60));
         verify(bookings, never()).findAll();
     }
 }
