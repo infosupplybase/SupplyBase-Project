@@ -150,3 +150,9 @@ springdoc:
 logging:
   level:
     in.supplybase.backend: ${LOG_LEVEL:INFO}
+
+
+whatsapp:
+  webhook:
+    verify-token: "${WHATSAPP_WEBHOOK_VERIFY_TOKEN:}"
+    app-secret: "${WHATSAPP_APP_SECRET:}"

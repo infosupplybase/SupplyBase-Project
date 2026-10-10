@@ -88,7 +88,12 @@ public class SecurityConfig {
                 // Razorpay authenticates itself with an HMAC signature in the
                 // request body, not with our JWT, so this must stay open.
                 .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
-                .requestMatchers("/actuator/health", "/error").permitAll()
+
+                // WhatsApp webhook verification and signed event delivery
+                .requestMatchers(HttpMethod.GET, "/api/whatsapp/webhook").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/whatsapp/webhook").permitAll()
+
+.requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                 // --- staff only
