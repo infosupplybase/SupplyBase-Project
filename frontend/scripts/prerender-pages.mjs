@@ -10,10 +10,11 @@
  * After `vite build`, this writes dist/<path>/index.html for each page in
  * `indexable` (src/data/seo.js) with that page's own title, description,
  * canonical link, preview tags, structured data and a short no-JavaScript
- * summary. Vercel serves a real file ahead of the rewrites in vercel.json,
- * so /services/painting gets dist/services/painting/index.html; deeper
- * booking steps still fall through to the app as before. The React app
- * itself is unchanged and takes over as soon as it loads.
+ * summary. vercel.json rewrites each of those paths to its own file ahead
+ * of the catch-all rewrites (the build fails if one is missing), so
+ * /services/painting gets dist/services/painting/index.html while deeper
+ * booking steps still fall through to the app's index.html as before. The
+ * React app itself is unchanged and takes over as soon as it loads.
  */
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -206,6 +207,19 @@ export function prerenderPages() {
         writeFileSync(out, html);
       }
       writeFileSync(join(dir, 'sitemap.xml'), sitemap());
+
+      // Each page file is only served if vercel.json sends its path there.
+      const rewrites = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8')).rewrites || [];
+      const missing = Object.keys(indexable).filter(
+        (path) => path !== '/' && !rewrites.some((r) => r.source === path && r.destination === `${path}/index.html`)
+      );
+      if (missing.length) {
+        throw new Error(
+          `prerender: add a rewrite to vercel.json (above the catch-all ones) for: ${missing
+            .map((p) => `{ "source": "${p}", "destination": "${p}/index.html" }`)
+            .join(', ')}`
+        );
+      }
     },
   };
 }
