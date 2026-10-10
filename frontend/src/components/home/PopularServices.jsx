@@ -1,3 +1,8 @@
+import PopCeilingCardAnimation from './PopCeilingCardAnimation';
+import WaterproofingCardAnimation from './WaterproofingCardAnimation';
+import InteriorChoiceCardAnimation from './InteriorChoiceCardAnimation';
+import InteriorDesignCardAnimation from './InteriorDesignCardAnimation';
+import PaintingCardAnimation from './PaintingCardAnimation';
 import Icon from '../ui/Icon';
 import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import optimizedImage from '../../lib/optimizedImage';
@@ -36,7 +41,34 @@ function ServicePhoto({ category, index }) {
 
   return (
     <span className="service-tile-photo">
-      {category.slug === 'ac-services' || heroImage ? (
+  {(category.slug === 'painting' || category.slug === 'interior-design' || category.slug === 'interior-by-choice' || category.slug === 'waterproofing' || category.slug === 'pop-ceiling-design') ? (
+    <>
+      {category.slug === 'painting' ? (
+        <PaintingCardAnimation />
+      ) : (
+        <>
+          {category.slug === 'interior-design' ? (
+            <InteriorDesignCardAnimation />
+          ) : (
+            <>
+            {category.slug === 'interior-by-choice' ? (
+              <InteriorChoiceCardAnimation />
+            ) : (
+              <>
+              {category.slug === 'waterproofing' ? (
+                <WaterproofingCardAnimation />
+              ) : (
+                <PopCeilingCardAnimation />
+              )}
+            </>
+            )}
+          </>
+          )}
+        </>
+      )}
+    </>
+  ) : (
+    <>{category.slug === 'ac-services' || heroImage ? (
         <img
           src={
             category.slug === 'ac-services'
@@ -56,8 +88,9 @@ function ServicePhoto({ category, index }) {
             size={34}
           />
         </span>
-      )}
-    </span>
+      )}</>
+  )}
+</span>
   );
 }
 

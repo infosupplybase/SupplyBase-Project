@@ -3871,3 +3871,36 @@ button[aria-label="Close booking modal"] {
   box-shadow: none;
 }
 /* End services page coming soon */
+
+
+
+/* Search Coming Soon services */
+.home-search-result.home-search-result--soon,
+.home-search-result.home-search-result--soon:hover,
+.home-search-result.home-search-result--soon.is-active {
+  cursor: not-allowed;
+  background: #f7f7f5;
+  box-shadow: none;
+  transform: none;
+  opacity: 1;
+}
+
+.home-search-result--soon strong,
+.home-search-result--soon > svg {
+  color: #777;
+}
+
+.home-search-result .home-search-coming-soon {
+  display: inline-block;
+  width: fit-content;
+  margin-top: 5px;
+  padding: 3px 8px;
+  border: 1px solid #e5d8b9;
+  border-radius: 6px;
+  background: #faf4e8;
+  color: #846329;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+/* End Search Coming Soon services */
