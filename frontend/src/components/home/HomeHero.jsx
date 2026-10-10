@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import api, { friendlyError } from '../../lib/api';
-import { searchSubServices } from '../../lib/serviceSearch';
+import { rankResults, searchSubServices } from '../../lib/serviceSearch';
 
 /** Where a search hit actually lives. */
 function routeFor(result) {
@@ -66,7 +66,9 @@ export default function HomeHero() {
       ])
         .then(([services, jobs]) => {
           if (!cancelled) {
-            setResults([...services, ...jobs]);
+            // Both lists are substring matches, so rank them together:
+            // "ac" puts AC Services above Interior Design.
+            setResults(rankResults([...services, ...jobs], q));
             setActive(-1);
           }
         })
