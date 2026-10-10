@@ -206,7 +206,13 @@ export default function PlumbingCheckout({
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (err) {
-      if (err && err.fieldErrors) setErrors(err.fieldErrors);
+      if (err && err.fieldErrors) {
+        setErrors(err.fieldErrors);
+        // A detail the server turned down is fixed on the Details step, not here.
+        if (Object.keys(err.fieldErrors).some((key) => key in emptyDetails)) {
+          setStage(DETAILS, { push: false });
+        }
+      }
       setError(friendlyError(err));
     } finally {
       setBusy(false);
@@ -319,7 +325,14 @@ export default function PlumbingCheckout({
             )}
 
             {stage === CONFIRM && (
-              <CartSummary items={items} subtotalPaise={subtotalPaise} date={date} time={time} showsFees={config.showsFees} />
+              <CartSummary
+                items={items}
+                subtotalPaise={subtotalPaise}
+                date={date}
+                time={time}
+                address={[composeAddress(details, pickedLocation), details.city, details.pincode].filter(Boolean).join(', ')}
+                showsFees={config.showsFees}
+              />
             )}
 
             {error && (
@@ -369,7 +382,7 @@ export default function PlumbingCheckout({
   );
 }
 
-function CartSummary({ items, subtotalPaise, date, time, showsFees }) {
+function CartSummary({ items, subtotalPaise, date, time, address, showsFees }) {
   const overThreshold = subtotalPaise / 100 > 5000;
   const feePanel = showsFees ? (
     <div className="fee-panel">
@@ -413,6 +426,10 @@ function CartSummary({ items, subtotalPaise, date, time, showsFees }) {
         <div>
           <dt>Site visit</dt>
           <dd>{formatVisit(date, time)}</dd>
+        </div>
+        <div>
+          <dt>Visit address</dt>
+          <dd>{address}</dd>
         </div>
         {items.map((item) => (
           <div key={item.itemSlug}>

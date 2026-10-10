@@ -127,16 +127,51 @@ const matches = (entry, words) => {
   return words.every((word) => haystack.includes(word));
 };
 
-/** Matching sub-service and job entries for a query, best (name) matches first. */
+const queryWords = (query) => String(query || '').toLowerCase().split(/\s+/).filter(Boolean);
+
+const startsAWord = (text, word) =>
+  text.split(/[^a-z0-9]+/).some((part) => part.startsWith(word));
+
+/**
+ * How well an entry matches, lower is better: a word in the name starts with
+ * what was typed ("ac" → "AC Services"), the name merely contains it
+ * ("ac" → "Interior by Choice"), a word in the description starts with it,
+ * or it only appears somewhere in the description ("ac" → "space").
+ * An entry is as good as its worst-matching word.
+ */
+function matchRank(entry, words) {
+  const name = String(entry.name || '').toLowerCase();
+  const tagline = String(entry.tagline || '').toLowerCase();
+  return Math.max(
+    ...words.map((word) => {
+      if (startsAWord(name, word)) return 0;
+      if (name.includes(word)) return 1;
+      if (startsAWord(tagline, word)) return 2;
+      return 3;
+    }),
+  );
+}
+
+/**
+ * Best matches first. The sort is stable, so equally good results keep the
+ * order they came in (main services before the jobs inside them).
+ */
+export function rankResults(results, query) {
+  const words = queryWords(query);
+  if (!words.length) return results;
+  return results
+    .map((entry, index) => ({ entry, index, rank: matchRank(entry, words) }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map(({ entry }) => entry);
+}
+
+/** Matching sub-service and job entries for a query, best matches first. */
 export async function searchSubServices(query, limit = 6) {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const words = queryWords(query);
   if (!words.length) return [];
 
   const [plumbing, interior] = await Promise.all([loadPlumbingEntries(), loadInteriorEntries()]);
   const hits = [...staticEntries, ...plumbing, ...interior].filter((entry) => matches(entry, words));
 
-  const inName = (entry) => words.every((word) => entry.name.toLowerCase().includes(word));
-  hits.sort((a, b) => Number(inName(b)) - Number(inName(a)));
-
-  return hits.slice(0, limit);
+  return rankResults(hits, query).slice(0, limit);
 }

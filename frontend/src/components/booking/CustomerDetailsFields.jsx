@@ -11,6 +11,7 @@ import {
   MAX_BOOKING_PHOTOS,
   BOOKING_PHOTO_TYPES,
 } from '../../lib/bookingPhotos';
+import { MAX_LENGTH } from '../../lib/bookingDetails';
 
 export function Field({ id, label, required, hint, error, ...rest }) {
   return (
@@ -106,6 +107,7 @@ export function AddressFields({
                 type="text"
                 value={details.buildingName || ''}
                 onChange={setDetail('buildingName')}
+                maxLength={MAX_LENGTH.buildingName}
                 placeholder="Enter building name"
               />
 
@@ -128,6 +130,7 @@ export function AddressFields({
                   type="text"
                   value={details.roomNo || ''}
                   onChange={setDetail('roomNo')}
+                  maxLength={MAX_LENGTH.roomNo}
                   placeholder="Room no."
                 />
               </div>
@@ -143,6 +146,7 @@ export function AddressFields({
                   type="text"
                   value={details.floorNo || ''}
                   onChange={setDetail('floorNo')}
+                  maxLength={MAX_LENGTH.floorNo}
                   placeholder="Floor"
                 />
               </div>
@@ -177,6 +181,7 @@ export function AddressFields({
           rows={3}
           value={details.address || ''}
           onChange={setDetail('address')}
+          maxLength={MAX_LENGTH.address}
           placeholder={
             pickedLocation
               ? 'Landmark or directions for our team'
@@ -335,6 +340,7 @@ export default function CustomerDetailsFields({
           required
           value={value('name')}
           onChange={setDetail('name')}
+          maxLength={MAX_LENGTH.name}
           error={errors.name}
           placeholder="Enter your name"
           autoComplete="name"
@@ -374,6 +380,7 @@ export default function CustomerDetailsFields({
           type="email"
           value={value('email')}
           onChange={setDetail('email')}
+          maxLength={MAX_LENGTH.email}
           error={errors.email}
           placeholder="Enter email address"
           autoComplete="email"
@@ -494,6 +501,7 @@ export default function CustomerDetailsFields({
           required
           value={value('city')}
           onChange={setDetail('city')}
+          maxLength={MAX_LENGTH.city}
           error={errors.city}
           placeholder="Mumbai"
           autoComplete="address-level2"
