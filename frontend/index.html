@@ -52,9 +52,10 @@
 
     <!--
       Business details for search engines (schema.org). Only facts already on
-      the site: name, phone, email, region, areas served and opening hours.
-      A street address is left out because the site does not publish one;
-      add "streetAddress" and "postalCode" under "address" once it does.
+      the site: name, phone, email, town (Kalyan, the GST-registered place of
+      business), areas served and opening hours. The street address is left
+      out because the site does not publish one; add "streetAddress" under
+      "address" if it ever does.
     -->
     <script type="application/ld+json">
       {
@@ -70,8 +71,9 @@
         "email": "info.supplybase@gmail.com",
         "address": {
           "@type": "PostalAddress",
-          "addressLocality": "Mumbai",
+          "addressLocality": "Kalyan",
           "addressRegion": "Maharashtra",
+          "postalCode": "421306",
           "addressCountry": "IN"
         },
         "areaServed": ["Mumbai", "Navi Mumbai", "Thane", "Kalyan", "Panvel", "Pune"],
