@@ -52,6 +52,8 @@ import in.supplybase.backend.common.PhotoUploads;
 import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
 import in.supplybase.backend.config.AppProperties;
+import in.supplybase.backend.notification.Notification;
+import in.supplybase.backend.notification.NotificationRepository;
 
 @Service
 public class BookingService {
@@ -104,6 +106,7 @@ public class BookingService {
     @org.springframework.beans.factory.annotation.Autowired
     private in.supplybase.backend.catalogue.PopCeilingPricingService popCeilingPricing;
 
+    private final NotificationRepository notifications;
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
     private final UserRepository users;
@@ -121,7 +124,8 @@ public class BookingService {
                           ServiceOptionRepository options, AppointmentService appointments,
                           BookingNumbers bookingNumbers, AppProperties props,
                           ObjectProvider<JavaMailSender> mailSender,
-                          BookingFileRepository files, FileStorageService storage) {
+                          BookingFileRepository files, FileStorageService storage,
+                          NotificationRepository notifications) {
         this.bookings = bookings;
         this.answers = answers;
         this.users = users;
@@ -133,6 +137,7 @@ public class BookingService {
         this.mailSender = mailSender;
         this.files = files;
         this.storage = storage;
+        this.notifications = notifications;
     }
 
     /**
@@ -212,6 +217,10 @@ public class BookingService {
         }
 
         BookingReceipt receipt = BookingReceipt.from(saved);
+        createBookingNotification(saved.getUser(), "Booking received",
+                "Your " + saved.getServiceLabel()
+                        + " booking has been received. Complete payment to confirm it.",
+                "BOOKING_RECEIVED", saved.getId());
         // After commit: SMTP is slow and can stall, and it must neither hold
         // this transaction (and the appointment seat's row lock) open nor
         // email about a booking that then rolls back.
@@ -224,6 +233,19 @@ public class BookingService {
     }
 
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
+    }
+
+    /** Adds an entry to the recipient's notification bell; skipped when there is no account. */
+    private void createBookingNotification(User recipient, String title, String message,
+                                           String notificationType, Long bookingId) {
+        if (recipient == null) return;
+        Notification notification = new Notification();
+        notification.setRecipient(recipient);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setNotificationType(notificationType);
+        notification.setRelatedBookingId(bookingId);
+        notifications.save(notification);
     }
 
     /**
@@ -723,7 +745,11 @@ public class BookingService {
         }
         booking.setAssignedProfessional(professional);
         booking.setStatus(BookingStatus.PROFESSIONAL_ASSIGNED);
-        return BookingResponse.from(bookings.save(booking));
+        Booking saved = bookings.save(booking);
+        createBookingNotification(professional, "New booking assigned",
+                "You have been assigned a " + saved.getServiceLabel() + " booking.",
+                "BOOKING_ASSIGNED", saved.getId());
+        return BookingResponse.from(saved);
     }
 
     /* ------------------------------------------------------- professional */
