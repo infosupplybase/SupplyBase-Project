@@ -219,7 +219,7 @@ export default function Footer() {
 
             <ul className="ft-list ft-list-services">
 
-              {catalogue.map((service) => (
+              {catalogue.filter((service) => !['plumbing', 'electrical', 'ac-services'].includes(service.slug)).map((service) => (
                 <li key={service.slug}>
 
                   <Link to={serviceRoute(service.slug)}>

@@ -14,6 +14,8 @@ import optimizedImage from '../lib/optimizedImage';
  * the same catalogue (see useServiceCatalogue), so they cannot drift apart.
  */
 
+const isComingSoon = (slug) => ['plumbing', 'electrical', 'ac-services'].includes(slug);
+
 const serviceImages = {
   'interior-design': '/assets/services/interior-design.webp',
   'interior-by-choice': '/assets/services/interior-by-choice.webp',
@@ -72,9 +74,9 @@ export default function Services() {
                 delay={i * 70}
               >
                 <article
-                  className="svc-card"
+                  className={`svc-card ${isComingSoon(service.slug) ? 'svc-card--upcoming' : ''}`}
                   data-service={service.slug}
-                  onClick={() => booking.open(service)}
+                  onClick={() => { if (!isComingSoon(service.slug)) booking.open(service); }}
                 >
                   <div className="svc-card-media">
                     <img loading="lazy" decoding="async"
@@ -104,13 +106,20 @@ export default function Services() {
                       {/* No onClick here — the click bubbles up to the card's own
                           handler above (a real <button>'s keyboard activation
                           dispatches a bubbling click too, so Tab+Enter still works). */}
-                      <button type="button" className="btn btn-primary btn-sm">
-                        BOOK NOW
+                      <button
+                        type="button"
+                        className={
+                          isComingSoon(service.slug)
+                            ? 'btn btn-sm svc-upcoming-button'
+                            : 'btn btn-primary btn-sm'
+                        }
+                        disabled={isComingSoon(service.slug)}
+                      >
+                        {isComingSoon(service.slug) ? 'COMING SOON' : 'BOOK NOW'}
 
-                        <Icon
-                          name="arrow-right"
-                          size={15}
-                        />
+                        {!isComingSoon(service.slug) && (
+                          <Icon name="arrow-right" size={15} />
+                        )}
                       </button>
                     </div>
                   </div>
