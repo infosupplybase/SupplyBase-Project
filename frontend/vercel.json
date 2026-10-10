@@ -1,6 +1,50 @@
 {
   "rewrites": [
     {
+      "source": "/services",
+      "destination": "/services/index.html"
+    },
+    {
+      "source": "/services/painting",
+      "destination": "/services/painting/index.html"
+    },
+    {
+      "source": "/services/waterproofing",
+      "destination": "/services/waterproofing/index.html"
+    },
+    {
+      "source": "/services/pop-ceiling-design",
+      "destination": "/services/pop-ceiling-design/index.html"
+    },
+    {
+      "source": "/services/interior-design",
+      "destination": "/services/interior-design/index.html"
+    },
+    {
+      "source": "/interior-by-choice",
+      "destination": "/interior-by-choice/index.html"
+    },
+    {
+      "source": "/about",
+      "destination": "/about/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact/index.html"
+    },
+    {
+      "source": "/quote",
+      "destination": "/quote/index.html"
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy-policy/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/terms/index.html"
+    },
+    {
       "source": "/(about|book|booking|cart|contact|dashboard|interior-by-choice|login|partner|privacy-policy|quote|register|reset-password|verify-email|services|terms)",
       "destination": "/index.html"
     },

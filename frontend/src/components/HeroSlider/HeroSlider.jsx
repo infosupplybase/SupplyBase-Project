@@ -161,8 +161,10 @@ export default function HeroSlider() {
               alt={slide.alt}
               width={slide.width}
               height={slide.height}
-              loading="eager"
-              fetchPriority={index === 0 ? 'high' : 'auto'}
+              // Only the first banner is on screen at load (and is preloaded
+              // in the home page's HTML); the others wait until needed.
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'low'}
               decoding="async"
               draggable={false}
             />
@@ -172,7 +174,7 @@ export default function HeroSlider() {
       </div>
 
       <h1 className="sr-only">
-        Home services in Mumbai: painting, waterproofing, plumbing, electrical, AC servicing, POP ceilings and interiors
+        Home painting, waterproofing, POP ceiling and interior design services in Thane and Mumbai
       </h1>
 
       <div

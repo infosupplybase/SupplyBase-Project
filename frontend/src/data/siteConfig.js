@@ -24,9 +24,10 @@ export const contact = {
   phoneDisplay: '+91 91373 06446',
   phoneRaw: '919137306446', // country code + number, digits only (used for tel: and WhatsApp)
   email: 'info.supplybase@gmail.com',
-  addressLines: ['Mumbai, Maharashtra', 'India'],
+  addressLines: ['Kalyan, Thane, Maharashtra 421306', 'India'], // town and PIN of the GST-registered place of business
   serviceAreas: ['Mumbai', 'Navi Mumbai', 'Thane', 'Kalyan', 'Panvel', 'Pune'],
   workingHours: 'Every day, 9:00 AM – 9:00 PM',
+  gstin: '27LPZPK7707M1ZL', // GST registration, shown in the footer
 };
 
 /**
