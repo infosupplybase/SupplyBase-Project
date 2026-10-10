@@ -11,6 +11,7 @@ import Home from './pages/Home';
 // import ProjectDetail from './pages/ProjectDetail';
 import NotFound from './pages/NotFound';
 import PageMeta from './components/layout/PageMeta';
+import Chatbot from './components/chatbot/Chatbot';
 
 /* Pages load when first visited (a visitor to the home page does not need
    the booking flows' code up front). Home and the not-found page stay in the
@@ -286,6 +287,7 @@ export default function App() {
       </Route>
     </Routes>
     </Suspense>
+    <Chatbot />
     </>
   );
 }

@@ -245,7 +245,7 @@ function PlaceSearch({ onPick, onError }) {
  */
 export default function SavedAddressPicker({ selected, onUse, idPrefix = 'bk' }) {
   const { addresses, save, remove } = useSavedAddresses();
-  const [formOpen, setFormOpen] = useState(() => addresses.length === 0 && !selected);
+  const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState(null);
   const [label, setLabel] = useState('');
@@ -260,13 +260,17 @@ export default function SavedAddressPicker({ selected, onUse, idPrefix = 'bk' })
   const unsavedPin = selected && !addresses.some((a) => samePlace(a, selected)) ? selected : null;
 
   const takeDraft = (place, suggestedLabel = '') => {
-    setDraft({
+    const location = {
       address: place.address,
       latitude: place.latitude,
       longitude: place.longitude,
       city: place.city || '',
       pincode: place.pincode || '',
-    });
+    };
+    setDraft(location);
+    // Use the picked spot for this booking straight away, saved or not
+    // (editing another saved address still leaves the booking alone).
+    if (!editingId) onUse(location);
     if (!labelTyped.current) setLabel((current) => suggestedLabel || current);
     setError('');
   };

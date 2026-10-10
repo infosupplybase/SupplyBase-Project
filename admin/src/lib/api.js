@@ -145,6 +145,36 @@ export const api = {
   booking: (id) => request(`/api/bookings/${id}`),
 
   admin: {
+    chatbot: {
+  conversations: ({ status, page = 0, size = 20 } = {}) =>
+    request(
+      `/api/admin/chatbot/conversations${qs({
+        status,
+        page,
+        size,
+      })}`
+    ),
+
+  conversation: (id) =>
+    request(`/api/admin/chatbot/conversations/${id}`),
+
+  reply: (id, message) =>
+    request(
+      `/api/admin/chatbot/conversations/${id}/reply`,
+      {
+        method: 'POST',
+        body: { message },
+      }
+    ),
+
+  close: (id) =>
+    request(
+      `/api/admin/chatbot/conversations/${id}/close`,
+      {
+        method: 'PATCH',
+      }
+    ),
+},
     enquiries: {
       list: ({ status, page = 0, size = 20 } = {}) =>
         request(`/api/admin/enquiries${qs({ status, page, size })}`),

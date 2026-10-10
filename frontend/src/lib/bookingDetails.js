@@ -16,6 +16,19 @@ export const emptyDetails = {
   pincode: '',
 };
 
+/** The server's limits (CreateBookingRequest / UpdateMyBookingRequest).
+    Checked here, on the step that has the fields: a value the server turns
+    down would otherwise only fail at Confirm, with no field to fix in view. */
+export const MAX_LENGTH = {
+  name: 120,
+  email: 190,
+  address: 400,
+  buildingName: 120,
+  roomNo: 20,
+  floorNo: 20,
+  city: 80,
+};
+
 // A form restored from history (see useHistoryState) may predate the
 // building / room / floor fields.
 const text = (v) => String(v || '').trim();
@@ -56,7 +69,26 @@ export function validateDetails(details, pickedLocation = null, { typedAddressOn
       ? 'Add your address above, or type it here'
       : 'Please enter your address';
   }
+  if (!next.name && text(details.name).length > MAX_LENGTH.name) {
+    next.name = `Please keep the name under ${MAX_LENGTH.name} characters`;
+  }
+  if (!next.email && text(details.email).length > MAX_LENGTH.email) {
+    next.email = `Please keep the email under ${MAX_LENGTH.email} characters`;
+  }
+  // The building, room, floor, map pin and typed text go out as one address,
+  // so it is their total that has to fit. The message goes on a field the
+  // customer can shorten: the typed text when there is any, else the building.
+  if (!next.address && !next.buildingName) {
+    const over = composeAddress(details, typedAddressOnly ? null : pickedLocation).length - MAX_LENGTH.address;
+    if (over > 0) {
+      const field = text(details.address) || !pickedLocation ? 'address' : 'buildingName';
+      next[field] = `This address is too long. Please shorten it by ${over} character${over === 1 ? '' : 's'}.`;
+    }
+  }
   if (!text(details.city)) next.city = 'Please enter your city';
+  else if (text(details.city).length > MAX_LENGTH.city) {
+    next.city = `Please keep the city under ${MAX_LENGTH.city} characters`;
+  }
   if (!text(details.pincode)) next.pincode = 'Please enter your pincode';
   else if (!/^[1-9][0-9]{5}$/.test(text(details.pincode))) {
     next.pincode = 'Enter a 6-digit pincode';

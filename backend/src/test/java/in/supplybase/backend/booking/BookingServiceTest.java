@@ -55,6 +55,7 @@ import in.supplybase.backend.catalogue.ServiceOptionRepository;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.FileStorageService;
 import in.supplybase.backend.config.AppProperties;
+import in.supplybase.backend.notification.NotificationRepository;
 
 /**
  * Mockito-only tests: every collaborator is mocked, nothing touches a
@@ -77,6 +78,7 @@ class BookingServiceTest {
     @Mock private ObjectProvider<JavaMailSender> mailSender;
     @Mock private BookingFileRepository files;
     @Mock private FileStorageService storage;
+    @Mock private NotificationRepository notifications;
 
     private BookingService service;
 
@@ -87,7 +89,7 @@ class BookingServiceTest {
                 new AppProperties.Notifications(null), // email disabled: no recipient configured
                 null, null, new AppProperties.Booking(24), null);
         service = new BookingService(bookings, answers, users, catalogue, options, appointments,
-                bookingNumbers, props, mailSender, files, storage);
+                bookingNumbers, props, mailSender, files, storage, notifications);
     }
 
     private static ServiceCategory plumbingCategory() {
@@ -1176,7 +1178,7 @@ class BookingServiceTest {
                     new AppProperties.Notifications("staff@example.com"),
                     "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
             emailingService = new BookingService(bookings, answers, users, catalogue, options, appointments,
-                    bookingNumbers, props, mailSender, files, storage);
+                    bookingNumbers, props, mailSender, files, storage, notifications);
             when(mailSender.getIfAvailable()).thenReturn(sender);
 
             ServiceCategory category = plumbingCategory();
@@ -1243,7 +1245,7 @@ class BookingServiceTest {
                     new AppProperties.Notifications(null, true),
                     "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
             BookingService noStaffInbox = new BookingService(bookings, answers, users, catalogue, options,
-                    appointments, bookingNumbers, props, mailSender, files, storage);
+                    appointments, bookingNumbers, props, mailSender, files, storage, notifications);
 
             noStaffInbox.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 
@@ -1260,7 +1262,7 @@ class BookingServiceTest {
                     new AppProperties.Notifications("staff@example.com", false),
                     "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
             BookingService staffOnly = new BookingService(bookings, answers, users, catalogue, options,
-                    appointments, bookingNumbers, props, mailSender, files, storage);
+                    appointments, bookingNumbers, props, mailSender, files, storage, notifications);
 
             staffOnly.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 

@@ -76,7 +76,7 @@ export const idCategories = [
     type: 'apartment',
     tagline: 'More Space. More Possibilities.',
     areaNote: '1,000 – 1,500 sq. ft.',
-    image: '/assets/interior-design/layouts/3bhk.jpg',
+    image: '/assets/interior-design/layouts/3bhk-v2.webp',
   },
   {
     slug: 'villa',
@@ -84,7 +84,7 @@ export const idCategories = [
     type: 'villa',
     tagline: 'Luxury Living Without Limits.',
     areaNote: '1,500 sq. ft. and above',
-    image: '/assets/interior-design/layouts/villa.jpg',
+    image: '/assets/interior-design/layouts/villa-v2.webp',
   },
 ];
 

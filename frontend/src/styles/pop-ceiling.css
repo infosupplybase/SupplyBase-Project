@@ -56,92 +56,168 @@
   font-size: 1rem;
 }
 
-/* Two aligned image cards per row */
+/* =========================================
+   POP HOME TYPE CARDS
+   Same style as Interior Design cards
+   ========================================= */
 
 .pop-modal-scope .pnt-option-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
 }
+
+/* CARD */
 
 .pop-image-option {
   position: relative;
+
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+
+  width: 100%;
+  height: 100%;
   min-width: 0;
+
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+
   background: #fff;
+
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.10);
+
   transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
+
+/* Hover / Selected */
 
 .pop-image-option:hover,
 .pop-image-option:focus-within,
 .pop-image-option.selected {
   border-color: var(--gold);
-  box-shadow: 0 0 0 2px var(--gold-a40);
+
+  box-shadow: 0 0 0 1px var(--gold);
+
+  transform: translateY(-1px);
 }
+
+/* Hidden radio */
 
 .pop-image-option input {
   position: absolute;
-  opacity: 0;
+
   width: 1px;
   height: 1px;
+
+  opacity: 0;
 }
+
+/* =========================================
+   IMAGE
+   Complete image visible - no cropping
+   ========================================= */
 
 .pop-image-option img {
   display: block;
+
   width: 100%;
-  height: 100px;
-  object-fit: cover;
+  height: 145px;
+
+  object-fit: contain;
+  object-position: center;
+
+  background: #fff;
 }
+
+/* =========================================
+   CONTENT
+   ========================================= */
 
 .pop-image-option-content {
   display: flex;
   flex: 1;
+
   flex-direction: column;
-  gap: 3px;
+  align-items: flex-start;
+
+  gap: 4px;
+
+  min-width: 0;
+
   padding: 10px 12px 12px;
 }
 
 .pop-image-option-content strong {
-  color: var(--ink);
+  display: block;
+
+  color: #171717;
+
   font-size: 14px;
-  line-height: 1.25;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .pop-image-option-content small {
-  color: var(--ink-muted);
+  display: block;
+
+  color: #777;
+
   font-size: 12px;
-  line-height: 1.35;
+  line-height: 1.45;
 }
+
+/* =========================================
+   SELECT CHECK
+   ========================================= */
 
 .pop-image-option-check {
   position: absolute;
+
   top: 8px;
   right: 8px;
+
+  z-index: 5;
+
   display: grid;
+
   width: 25px;
   height: 25px;
+
   place-items: center;
-  border: 2px solid white;
+
+  border: 2px solid #fff;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  color: #fff;
+
   opacity: 0;
 }
 
 .pop-image-option.selected .pop-image-option-check {
   opacity: 1;
+
   background: var(--gold-deep);
 }
 
-/* Back and Continue stay below the scrolling cards */
+/* =========================================
+   BACK + CONTINUE
+   ========================================= */
 
 .pop-modal-actions {
   display: flex;
@@ -160,47 +236,62 @@
   margin: 0;
 }
 
-/* Heading and help link */
+/* =========================================
+   HEADER
+   ========================================= */
 
-/* The pop-up's own header is hidden inside a POP flow; its spacer keeps
-   this bar below the close button (ServiceBookingModal, hideMainHeader). */
 .pop-modal-scope .pnt-top {
   display: flex;
   align-items: center;
+
   gap: 10px;
+
   margin: 0 0 12px;
   padding: 8px 10px;
+
   border: 1px solid var(--border);
   border-radius: 12px;
+
   background: #fff;
 }
 
 .pop-modal-scope .pnt-back {
   width: 34px;
   height: 34px;
+
   border: 1px solid var(--border);
   border-radius: 8px;
+
   color: var(--ink);
 }
 
 .pop-modal-scope .pnt-top-title {
   flex: 1;
+
   min-width: 0;
+
   overflow: hidden;
+
   color: var(--ink) !important;
+
   font-size: 1.05rem;
   letter-spacing: 0.03em;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .pop-modal-scope .pnt-help {
   padding: 7px 10px;
+
   border: 1px solid var(--gold-a40);
   border-radius: 8px;
+
   color: var(--gold-deep) !important;
+
   font-size: 12px;
   font-weight: 700;
+
   text-decoration: none;
 }
 
@@ -208,8 +299,12 @@
   background: var(--gold-a08);
 }
 
-/* Phones (after the rules above, so it wins over them) */
+/* =========================================
+   MOBILE
+   ========================================= */
+
 @media (max-width: 480px) {
+
   .pop-modal-scope .pnt-top {
     gap: 8px;
     padding: 6px 8px;
@@ -219,45 +314,109 @@
     font-size: 0.92rem;
   }
 
-  /* A round "?" instead of the "Need help?" words, so the flow's title
-     keeps one line; the words are still its accessible name. */
+  /* Need help becomes ? */
+
   .pop-modal-scope .pnt-help {
     display: grid;
+
     place-items: center;
+
     flex-shrink: 0;
+
     width: 32px;
     height: 32px;
+
     padding: 0;
+
     border-radius: 50%;
+
     font-size: 0;
   }
 
   .pop-modal-scope .pnt-help::before {
     content: '?';
+
     font-size: 15px;
     font-weight: 800;
     line-height: 1;
   }
+
+  /* Two cards */
+
+  .pop-modal-scope .pnt-option-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-/* Validation popup */
+.pop-image-option {
+  border-radius: 14px;
+}
+
+.pop-image-option img {
+  width: 100%;
+  height: 125px;
+  object-fit: contain;
+  object-position: center;
+  background: #fff;
+}
+
+  /* Text */
+
+  .pop-image-option-content {
+    padding: 10px 10px 12px;
+
+    gap: 4px;
+  }
+
+  .pop-image-option-content strong {
+    font-size: 14px;
+
+    line-height: 1.3;
+  }
+
+  .pop-image-option-content small {
+    font-size: 11px;
+
+    line-height: 1.4;
+  }
+
+  .pop-modal-progress span {
+    display: none;
+  }
+}
+
+/* =========================================
+   VALIDATION POPUP
+   ========================================= */
 
 .pop-choice-toast {
   position: fixed;
+
   top: max(24px, env(safe-area-inset-top, 0px));
   left: 50%;
+
   z-index: 3000;
+
   display: flex;
   align-items: center;
+
   gap: 10px;
+
   width: min(420px, calc(100vw - 32px));
+
   padding: 13px 14px;
+
   transform: translateX(-50%);
+
   border: 1px solid #f0a5a5;
   border-radius: 10px;
+
   background: #fff4f4;
+
   color: #982121;
+
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+
   font-size: 14px;
   font-weight: 650;
 }
@@ -268,42 +427,20 @@
 
 .pop-choice-toast button {
   padding: 0 4px;
+
   border: 0;
+
   background: none;
+
   color: inherit;
+
   font-size: 23px;
   line-height: 1;
 }
 
-@media (max-width: 420px) {
-  .pop-modal-scope .pnt-step-card {
-    padding: 12px;
-  }
-
-  .pop-modal-scope .pnt-option-list {
-    gap: 8px;
-  }
-
-  .pop-image-option img {
-    height: 82px;
-  }
-
-  .pop-image-option-content {
-    padding: 8px;
-  }
-
-  .pop-image-option-content strong {
-    font-size: 13px;
-  }
-
-  .pop-modal-progress span {
-    display: none;
-  }
-
-  /* The top bar's phone sizes are set with its desktop rules above; it no
-     longer needs right padding for the close button (it stops short of it). */
-}
-/* POP modal side spacing */
+/* =========================================
+   POP MODAL SIDE SPACING
+   ========================================= */
 
 .booking-pop-ceiling-layout .bm-scroll {
   padding-left: 20px !important;
@@ -315,10 +452,14 @@
 .booking-pop-ceiling-layout .pnt-flow-shell,
 .booking-pop-ceiling-layout .painting-modal-scope .container {
   width: 100% !important;
+
   max-width: none !important;
   min-width: 0 !important;
+
   box-sizing: border-box !important;
+
   margin-inline: 0 !important;
+
   padding-inline: 0 !important;
 }
 
@@ -329,12 +470,20 @@
 
 .booking-pop-ceiling-layout .pop-modal-actions {
   width: 100% !important;
+
   max-width: none !important;
+
   margin-inline: 0 !important;
+
   padding-inline: 0 !important;
 }
 
+/* =========================================
+   SMALL MOBILE
+   ========================================= */
+
 @media (max-width: 600px) {
+
   .booking-pop-ceiling-layout .bm-scroll,
   .booking-pop-ceiling-layout .bm-foot {
     padding-left: 16px !important;

@@ -21,8 +21,8 @@ export const company = {
  * OFFICIAL CONTACT DETAILS — used by every call, email and WhatsApp button on the site.
  */
 export const contact = {
-  phoneDisplay: '+91 77095 88422',
-  phoneRaw: '917709588422', // country code + number, digits only (used for tel: and WhatsApp)
+  phoneDisplay: '+91 91373 06446',
+  phoneRaw: '919137306446', // country code + number, digits only (used for tel: and WhatsApp)
   email: 'info.supplybase@gmail.com',
   addressLines: ['Mumbai, Maharashtra', 'India'],
   serviceAreas: ['Mumbai', 'Navi Mumbai', 'Thane', 'Kalyan', 'Panvel', 'Pune'],
