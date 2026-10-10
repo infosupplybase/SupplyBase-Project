@@ -403,6 +403,7 @@ export default function Footer() {
             </span>
 
             . All rights reserved.
+            {contact.gstin && <> GSTIN: {contact.gstin}</>}
           </p>
 
 

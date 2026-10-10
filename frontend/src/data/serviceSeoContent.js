@@ -44,7 +44,7 @@ export const serviceSeoContent = {
     path: '/services/painting',
     name: 'Painting Services',
     serviceType: 'House painting',
-    h1: 'Painting Services in Mumbai & Thane',
+    h1: 'Painting Services in Thane & Mumbai',
     intro:
       'Supplybase paints complete homes, single rooms and a few walls, and handles renovation painting for walls with cracks, dampness or peeling paint. Choose your paint brand, product range and colours while you book, and our painters take care of preparation, painting and clean-up.',
     includesTitle: 'What a painting job includes',
@@ -74,7 +74,7 @@ export const serviceSeoContent = {
     path: '/services/pop-ceiling-design',
     name: 'POP Ceiling & Design',
     serviceType: 'POP and false ceiling installation',
-    h1: 'POP Ceiling & False Ceiling Services in Mumbai & Thane',
+    h1: 'POP Ceiling & False Ceiling Services in Thane & Mumbai',
     intro:
       'Supplybase designs and installs POP and gypsum false ceilings for a whole home or a single room, along with POP design work, TV walls and repairs to old or cracked ceilings. Choose the ceiling type for each room while you book, and our team confirms the design and measurements on site.',
     includesTitle: 'POP and false ceiling work we do',
@@ -102,7 +102,7 @@ export const serviceSeoContent = {
     path: '/services/interior-design',
     name: 'Interior Design',
     serviceType: 'Residential interior design',
-    h1: 'Interior Design for Homes in Mumbai & Thane',
+    h1: 'Interior Design for Homes in Thane & Mumbai',
     intro:
       'Supplybase designs and builds complete home interiors for 1 BHK, 2 BHK and 3 BHK flats and villas. Pick a package and a design style, customise it, and book a consultation; one team then handles design, materials and execution through to handover.',
     includesTitle: 'What our interior projects cover',
@@ -132,7 +132,7 @@ export const serviceSeoContent = {
     path: '/services/waterproofing',
     name: 'Waterproofing Services',
     serviceType: 'Waterproofing',
-    h1: 'Waterproofing Services in Mumbai & Thane',
+    h1: 'Waterproofing Services in Thane & Mumbai',
     intro:
       'Supplybase waterproofs terraces, bathrooms, interior and exterior walls, basements and water tanks to stop leaks and dampness. Choose the area while you book, and our team inspects the source of the leak before recommending a treatment.',
     includesTitle: 'Waterproofing we do',

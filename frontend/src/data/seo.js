@@ -16,9 +16,9 @@ export const SITE_NAME = 'Supplybase';
 const areas = 'Mumbai, Navi Mumbai, Thane, Kalyan, Panvel and Pune';
 
 export const homeMeta = {
-  title: 'Supplybase | Painting, POP Ceiling & Interiors in Mumbai & Thane',
+  title: 'Supplybase | Painting, POP Ceiling & Interiors in Thane & Mumbai',
   description:
-    'Painting, waterproofing, POP and false ceilings, and home interior design across Mumbai, Thane and Navi Mumbai. Book a site visit with one accountable team.',
+    'Painting, waterproofing, POP and false ceilings, and home interior design across Thane, Mumbai and Navi Mumbai. Book a site visit with one accountable team.',
 };
 
 /**
@@ -30,29 +30,29 @@ export const homeMeta = {
 export const indexable = {
   '/': homeMeta,
   '/services': {
-    title: 'Home Services in Mumbai & Thane | Supplybase',
+    title: 'Home Services in Thane & Mumbai | Supplybase',
     description: `Book a site visit for painting, waterproofing, POP ceilings and interior design in ${areas}.`,
   },
   '/services/painting': {
-    title: 'Painting Services in Mumbai & Thane | House Painters | Supplybase',
+    title: 'Painting Services in Thane & Mumbai | House Painters | Supplybase',
     description:
-      'House painting for full homes, single rooms and damaged walls in Mumbai and Thane. Choose your brand and colours, then book a home visit.',
+      'House painting for full homes, single rooms and damaged walls in Thane and Mumbai. Choose your brand and colours, then book a home visit.',
     image: '/assets/painting/hero/painter-roller.webp',
   },
   '/services/waterproofing': {
-    title: 'Waterproofing Services in Mumbai & Thane | Supplybase',
+    title: 'Waterproofing Services in Thane & Mumbai | Supplybase',
     description:
-      'Terrace, bathroom, wall, basement and water-tank waterproofing in Mumbai and Thane. We trace the leak first, then treat it. Book a site inspection.',
+      'Terrace, bathroom, wall, basement and water-tank waterproofing in Thane and Mumbai. We trace the leak first, then treat it. Book a site inspection.',
     image: '/assets/waterproofing/curated-v2/terrace-service-v3.webp',
   },
   '/services/pop-ceiling-design': {
-    title: 'POP & False Ceiling Contractor in Mumbai & Thane | Supplybase',
+    title: 'POP & False Ceiling Contractor in Thane & Mumbai | Supplybase',
     description:
-      'POP and gypsum false ceilings, cove lighting, POP design work, TV walls and ceiling repairs for a whole home or one room in Mumbai and Thane.',
+      'POP and gypsum false ceilings, cove lighting, POP design work, TV walls and ceiling repairs for a whole home or one room in Thane and Mumbai.',
     image: '/assets/pop-ceiling/hero/living-room-cove.webp',
   },
   '/services/interior-design': {
-    title: 'Interior Designers in Mumbai & Thane | Home Interiors | Supplybase',
+    title: 'Interior Designers in Thane & Mumbai | Home Interiors | Supplybase',
     description:
       'Complete home interiors for 1, 2 and 3 BHK flats and villas: modular kitchens, wardrobes, ceilings and finishes, designed and built by one team.',
     image: '/assets/projects/modern-interior.webp',
@@ -60,7 +60,7 @@ export const indexable = {
   '/interior-by-choice': {
     title: 'Interior by Choice | Ready-Made Interior Designs | Supplybase',
     description:
-      'Browse ready-made interior designs room by room, pick the one you like and book a home visit in Mumbai, Thane or Navi Mumbai.',
+      'Browse ready-made interior designs room by room, pick the one you like and book a home visit in Thane, Mumbai or Navi Mumbai.',
   },
   '/about': {
     title: 'About Us | Supplybase',

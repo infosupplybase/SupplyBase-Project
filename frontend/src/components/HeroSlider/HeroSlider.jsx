@@ -174,7 +174,7 @@ export default function HeroSlider() {
       </div>
 
       <h1 className="sr-only">
-        Home painting, waterproofing, POP ceiling and interior design services in Mumbai and Thane
+        Home painting, waterproofing, POP ceiling and interior design services in Thane and Mumbai
       </h1>
 
       <div
