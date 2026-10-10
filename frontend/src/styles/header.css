@@ -892,7 +892,7 @@
 
 /* ----------------------------------------------------- logout confirmation
    "Are you sure?" before the header's log-out button signs the user out.
-   A centred card on desktop, a bottom sheet on phones (Prince). */
+   A centred card on desktop, a bottom sheet on phones. */
 
 .confirm-logout-backdrop {
   position: fixed;
