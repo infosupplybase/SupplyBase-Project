@@ -22,6 +22,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
+
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,10 +54,13 @@ import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
 import in.supplybase.backend.config.AppProperties;
 
+import in.supplybase.backend.notification.Notification;
+import in.supplybase.backend.notification.NotificationRepository;
+
 @Service
 public class BookingService {
-
-    private static final Logger log = LoggerFactory.getLogger(BookingService.class);
+	
+	private static final Logger log = LoggerFactory.getLogger(BookingService.class);
 
     /**
      * A real person does not book six visits for one service in an hour; a
@@ -103,7 +107,8 @@ public class BookingService {
 
     @org.springframework.beans.factory.annotation.Autowired
     private in.supplybase.backend.catalogue.PopCeilingPricingService popCeilingPricing;
-
+    
+    private final NotificationRepository notifications;
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
     private final UserRepository users;
@@ -116,24 +121,27 @@ public class BookingService {
     private final BookingFileRepository files;
     private final FileStorageService storage;
 
-    public BookingService(BookingRepository bookings, BookingAnswerRepository answers,
-                          UserRepository users, CatalogueService catalogue,
-                          ServiceOptionRepository options, AppointmentService appointments,
-                          BookingNumbers bookingNumbers, AppProperties props,
-                          ObjectProvider<JavaMailSender> mailSender,
-                          BookingFileRepository files, FileStorageService storage) {
-        this.bookings = bookings;
-        this.answers = answers;
-        this.users = users;
-        this.catalogue = catalogue;
-        this.options = options;
-        this.appointments = appointments;
-        this.bookingNumbers = bookingNumbers;
-        this.props = props;
-        this.mailSender = mailSender;
-        this.files = files;
-        this.storage = storage;
-    }
+
+public BookingService(BookingRepository bookings, BookingAnswerRepository answers,
+        UserRepository users, CatalogueService catalogue,
+        ServiceOptionRepository options, AppointmentService appointments,
+        BookingNumbers bookingNumbers, AppProperties props,
+        ObjectProvider<JavaMailSender> mailSender,
+        BookingFileRepository files, FileStorageService storage,
+        NotificationRepository notifications) {
+    this.bookings = bookings;
+    this.answers = answers;
+    this.users = users;
+    this.catalogue = catalogue;
+    this.options = options;
+    this.appointments = appointments;
+    this.bookingNumbers = bookingNumbers;
+    this.props = props;
+    this.mailSender = mailSender;
+    this.files = files;
+    this.storage = storage;
+    this.notifications = notifications;
+}
 
     /**
      * Creates a booking in PAYMENT_PENDING and takes the appointment seat.
@@ -212,6 +220,19 @@ public class BookingService {
         }
 
         BookingReceipt receipt = BookingReceipt.from(saved);
+        
+
+        if (saved.getUser() != null) {
+            createBookingNotification(
+            saved.getUser(),
+            "Booking received successfully",
+            "Your " + saved.getServiceLabel()
+                    + " booking has been received. Complete payment to proceed.",
+            "BOOKING_RECEIVED",
+            saved.getId()
+    );
+}
+
         // After commit: SMTP is slow and can stall, and it must neither hold
         // this transaction (and the appointment seat's row lock) open nor
         // email about a booking that then rolls back.
@@ -226,6 +247,30 @@ public class BookingService {
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
     }
 
+
+private void createBookingNotification(
+        User recipient,
+        String title,
+        String message,
+        String notificationType,
+        Long bookingId) {
+
+    if (recipient == null) {
+        return;
+    }
+
+    Notification notification = new Notification();
+    notification.setRecipient(recipient);
+    notification.setTitle(title);
+    notification.setMessage(message);
+    notification.setNotificationType(notificationType);
+    notification.setRelatedBookingId(bookingId);
+    notification.setRead(false);
+
+    notifications.save(notification);
+}
+
+    
     /**
      * Stores the form answers, checking each against the catalogue first.
      *
@@ -705,9 +750,23 @@ public class BookingService {
                 && !booking.getAssignedProfessional().getId().equals(professional.getId())) {
             booking.setPartnerPayoutPaise(null);
         }
-        booking.setAssignedProfessional(professional);
-        booking.setStatus(BookingStatus.PROFESSIONAL_ASSIGNED);
-        return BookingResponse.from(bookings.save(booking));
+
+booking.setAssignedProfessional(professional);
+booking.setStatus(BookingStatus.PROFESSIONAL_ASSIGNED);
+
+Booking saved = bookings.save(booking);
+
+createBookingNotification(
+        professional,
+        "New service booking assigned to you",
+        "You have been assigned a "
+                + saved.getServiceLabel() + " booking.",
+        "BOOKING_ASSIGNED",
+        saved.getId()
+);
+
+return BookingResponse.from(saved);
+
     }
 
     /* ------------------------------------------------------- professional */
