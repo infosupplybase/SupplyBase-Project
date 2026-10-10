@@ -44,7 +44,8 @@ public class ChatbotController {
         ChatbotService.ChatResult result =
                 chatbotService.chat(
                         request.message(),
-                        request.conversationToken()
+                        request.conversationToken(),
+                        request.page()
                 );
 
         return ResponseEntity.ok(result);
