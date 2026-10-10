@@ -1,3 +1,8 @@
+import PopCeilingCardAnimation from './PopCeilingCardAnimation';
+import WaterproofingCardAnimation from './WaterproofingCardAnimation';
+import InteriorChoiceCardAnimation from './InteriorChoiceCardAnimation';
+import InteriorDesignCardAnimation from './InteriorDesignCardAnimation';
+import PaintingCardAnimation from './PaintingCardAnimation';
 import Icon from '../ui/Icon';
 import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import optimizedImage from '../../lib/optimizedImage';
@@ -32,13 +37,26 @@ const LABEL_OVERRIDES = {
 const displayName = (category) =>
   LABEL_OVERRIDES[category.slug] || category.name;
 
+// Services whose tile plays a short looping video instead of a photo.
+const CARD_VIDEOS = {
+  painting: PaintingCardAnimation,
+  'interior-design': InteriorDesignCardAnimation,
+  'interior-by-choice': InteriorChoiceCardAnimation,
+  waterproofing: WaterproofingCardAnimation,
+  'pop-ceiling-design': PopCeilingCardAnimation,
+};
+
 function ServicePhoto({ category, index }) {
   const heroImage =
     HOME_IMAGE_OVERRIDES[category.slug] || category.heroImage;
 
+  const CardVideo = CARD_VIDEOS[category.slug];
+
   return (
     <span className="service-tile-photo">
-      {category.slug === 'ac-services' || heroImage ? (
+      {CardVideo ? (
+        <CardVideo />
+      ) : category.slug === 'ac-services' || heroImage ? (
         <img
           src={
             category.slug === 'ac-services'
