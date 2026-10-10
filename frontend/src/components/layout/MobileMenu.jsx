@@ -71,7 +71,11 @@ export default function MobileMenu({ open, onClose, onRequestLogout }) {
                   <NavLink to="/services" onClick={onClose}>
                     All Services
                   </NavLink>
-                  {services.map((service) => (
+                  {services
+                    .filter((service) =>
+                      !['plumbing', 'electrical', 'ac-services'].includes(service.slug)
+                    )
+                    .map((service) => (
                     <NavLink key={service.slug} to={serviceRoute(service.slug)} onClick={onClose}>
                       {service.name}
                     </NavLink>

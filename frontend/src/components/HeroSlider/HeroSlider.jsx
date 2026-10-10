@@ -1,205 +1,210 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import HomeHero from '../home/HomeHero';
+import Icon from '../ui/Icon';
 import './HeroSlider.css';
 
 const slides = [
+  '/assets/home-slider/supplybase-carousel.mp4',
+  '/assets/home-slider/supplybase-interior-carousel.mp4',
+  '/assets/home-slider/supplybase-pop-carousel.mp4',
+];
+
+const slideText = [
   {
-    src: '/assets/home-slider/1.webp',
-    mobileSrc: '/assets/home-slider/4.webp',
-    mobileWidth: 1455,
-    mobileHeight: 1081,
-    width: 2048,
-    height: 684,
-    alt: 'SupplyBase painting services: Fresh Walls, Brighter Spaces. Get 5% off.',
+    title: 'Beautiful Walls.',
+    highlight: 'Fresh Beginnings.',
+    description: 'Give your home a fresh look with professional painting.',
   },
   {
-    src: '/assets/home-slider/2.webp',
-    mobileSrc: '/assets/home-slider/5.webp',
-    mobileWidth: 1454,
-    mobileHeight: 1082,
-    width: 2170,
-    height: 725,
-    alt: 'SupplyBase POP and ceiling designs: Stylish Ceilings for Modern Homes. Get 5% off.',
+    title: 'Inspired Interiors.',
+    highlight: 'Made for You.',
+    description: 'Beautiful interiors designed for your home.',
   },
   {
-    src: '/assets/home-slider/3.webp',
-    mobileSrc: '/assets/home-slider/6.webp',
-    mobileWidth: 1455,
-    mobileHeight: 1081,
-    width: 2048,
-    height: 684,
-    alt: 'SupplyBase waterproofing services: Keep Your Home Safe from Water Damage. Get 5% off.',
+    title: 'Stylish Ceilings.',
+    highlight: 'Beautiful Homes.',
+    description: 'Give your home a new look with POP ceiling designs.',
   },
 ];
 
 export default function HeroSlider() {
+  const sectionRef = useRef(null);
+  const videoRefs = useRef([]);
+  const readyRefs = useRef([]);
   const [active, setActive] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [interacting, setInteracting] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
-  const startTouch = useRef(null);
+  const [previous, setPrevious] = useState(null);
+  const [canPlay, setCanPlay] = useState(false);
 
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReducedMotion(media.matches);
-    update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
-  }, []);
-
-  useEffect(() => {
-    if (reducedMotion || interacting || searchFocused) return undefined;
-
-    const timer = window.setInterval(() => {
-      if (!document.hidden) {
-        setActive((current) => (current + 1) % slides.length);
-      }
-    }, 4000);
-
-    return () => window.clearInterval(timer);
-  }, [active, reducedMotion, interacting, searchFocused]);
-
-  // Keep the full artwork below the site header.
   useLayoutEffect(() => {
-    const banner = document.querySelector('.sb-final-banner');
+    const banner = sectionRef.current;
     const header = document.querySelector('header');
-
     if (!banner || !header) return undefined;
 
-    const alignBanner = () => {
+    const align = () => {
       banner.style.setProperty('margin-top', '0px', 'important');
-
-      // Page coordinates, so the result is the same however far the
-      // visitor has scrolled (the header is fixed, the banner is not).
       const headerBottom = header.getBoundingClientRect().bottom;
       const bannerTop = banner.getBoundingClientRect().top + window.scrollY;
-      const overlap = Math.max(0, headerBottom - bannerTop);
 
       banner.style.setProperty(
         'margin-top',
-        `${Math.ceil(overlap)}px`,
+        `${Math.ceil(Math.max(0, headerBottom - bannerTop))}px`,
         'important'
       );
     };
 
-    alignBanner();
-
-    const observer = new ResizeObserver(alignBanner);
+    align();
+    const observer = new ResizeObserver(align);
     observer.observe(header);
-    window.addEventListener('resize', alignBanner);
+    window.addEventListener('resize', align);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('resize', alignBanner);
+      window.removeEventListener('resize', align);
       banner.style.removeProperty('margin-top');
     };
   }, []);
 
-  const current = slides[active];
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return undefined;
+
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let visible = true;
+
+    const update = () => {
+      const allowed = visible && !document.hidden && !media.matches;
+      if (!allowed) {
+        videoRefs.current.forEach((video) => video?.pause());
+      }
+      setCanPlay(allowed);
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      update();
+    }, { threshold: 0.1 });
+
+    observer.observe(section);
+    media.addEventListener('change', update);
+    document.addEventListener('visibilitychange', update);
+    update();
+
+    return () => {
+      observer.disconnect();
+      media.removeEventListener('change', update);
+      document.removeEventListener('visibilitychange', update);
+      videoRefs.current.forEach((video) => video?.pause());
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoRefs.current[active];
+    if (video) video.currentTime = 0;
+  }, [active]);
+
+  useEffect(() => {
+    const current = videoRefs.current[active];
+    let fadeTimer;
+
+    if (canPlay) {
+      current?.play().catch(() => {});
+      fadeTimer = window.setTimeout(() => {
+        videoRefs.current.forEach((video, index) => {
+          if (index !== active) video?.pause();
+        });
+      }, 700);
+    } else {
+      videoRefs.current.forEach((video) => video?.pause());
+    }
+
+    return () => window.clearTimeout(fadeTimer);
+  }, [active, canPlay]);
+
+  const advance = (index) => {
+    if (index !== active || !canPlay) return;
+
+    const next = (index + 1) % slides.length;
+    if (readyRefs.current[next]) {
+      setPrevious(index);
+      setActive(next);
+    } else {
+      const video = videoRefs.current[index];
+      if (video) {
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      }
+    }
+  };
 
   return (
     <section
-      className="sb-home-banner sb-final-banner"
-      aria-label="SupplyBase service offers"
-      style={{
-        '--banner-ratio': `${current.width} / ${current.height}`,
-        '--mobile-banner-ratio': `${current.mobileWidth} / ${current.mobileHeight}`,
-      }}
+      ref={sectionRef}
+      className="sb-home-banner sb-final-banner sb-video-hero"
+      aria-label="SupplyBase home services"
     >
-      <div
-        className="sb-final-banner__images"
-        onTouchStart={(event) => {
-          const touch = event.touches[0];
-          if (touch) {
-            startTouch.current = { x: touch.clientX, y: touch.clientY };
-          }
-          setInteracting(true);
-        }}
-        onTouchEnd={(event) => {
-          const start = startTouch.current;
-          const touch = event.changedTouches[0];
-
-          if (start && touch) {
-            const dx = touch.clientX - start.x;
-            const dy = touch.clientY - start.y;
-
-            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-              setActive((index) =>
-                (index + (dx < 0 ? 1 : -1) + slides.length) % slides.length
-              );
-            }
-          }
-
-          startTouch.current = null;
-          setInteracting(false);
-        }}
-        onTouchCancel={() => {
-          startTouch.current = null;
-          setInteracting(false);
-        }}
-      >
-        <div
-          className="sb-final-banner__track"
-          style={{ transform: `translateX(-${active * 100}%)` }}
-        >
-        {slides.map((slide, index) => (
-          <picture
-            key={slide.src}
-            className={`sb-final-banner__image ${
-              active === index ? 'is-active' : ''
-            }`}
-            aria-hidden={active !== index}
+      <div className="sb-video-hero__background" aria-hidden="true">
+        {slides.map((src, index) => (
+          <video
+            key={src}
+            ref={(video) => { videoRefs.current[index] = video; }}
+            className={`sb-carousel-video ${index === active ? 'is-active' : ''}`}
+            style={{
+              transform: index === active
+                ? 'translateX(0)'
+                : index === previous
+                  ? 'translateX(-100%)'
+                  : 'translateX(100%)',
+              visibility: index === active || index === previous
+                ? 'visible'
+                : 'hidden',
+            }}
+            muted
+            playsInline
+            preload="auto"
+            onCanPlay={() => {
+              readyRefs.current[index] = true;
+              if (index === active && canPlay) {
+                videoRefs.current[index]?.play().catch(() => {});
+              }
+            }}
+            onEnded={() => advance(index)}
           >
-            <source
-              media="(max-width: 767px)"
-              srcSet={slide.mobileSrc}
-              width={slide.mobileWidth}
-              height={slide.mobileHeight}
-            />
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width={slide.width}
-              height={slide.height}
-              // Only the first banner is on screen at load (and is preloaded
-              // in the home page's HTML); the others wait until needed.
-              loading={index === 0 ? 'eager' : 'lazy'}
-              fetchPriority={index === 0 ? 'high' : 'low'}
-              decoding="async"
-              draggable={false}
-            />
-          </picture>
+            <source src={src} type="video/mp4" />
+          </video>
         ))}
-        </div>
       </div>
+
+      <div className="sb-video-hero__shade" aria-hidden="true" />
 
       <h1 className="sr-only">
         Home painting, waterproofing, POP ceiling and interior design services in Thane and Mumbai
       </h1>
 
-      <div
-        className="sb-final-banner__search"
-        onFocusCapture={() => setSearchFocused(true)}
-        onBlurCapture={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) {
-            setSearchFocused(false);
-          }
-        }}
-      >
-        <HomeHero />
-      </div>
-
-      <div className="sb-final-banner__dots" style={{ '--image-height': `${current.height / current.width * 100}vw` }} aria-label="Choose banner">
-        {slides.map((slide, index) => (
-          <button
-            key={slide.src}
-            type="button"
-            className={active === index ? 'is-active' : ''}
-            aria-label={`Show banner ${index + 1}`}
-            aria-current={active === index ? 'true' : undefined}
-            onClick={() => setActive(index)}
+      <div className="container sb-video-hero__inner">
+        <div className="sb-video-hero__content">
+          <img
+            className="sb-video-hero__logo"
+            src="/assets/brand/hero-logo-20261011.webp"
+            alt="SupplyBase — One Partner. Complete Project."
           />
-        ))}
+
+          <h2>
+            {slideText[active].title}<br />
+            <span>{slideText[active].highlight}</span>
+          </h2>
+
+          <p>{slideText[active].description}</p>
+
+          <div className="sb-video-hero__search">
+            <HomeHero />
+          </div>
+
+          <Link className="sb-video-hero__book" to="/services">
+            BOOK NOW
+            <Icon name="arrow-right" size={18} />
+          </Link>
+        </div>
       </div>
     </section>
   );
