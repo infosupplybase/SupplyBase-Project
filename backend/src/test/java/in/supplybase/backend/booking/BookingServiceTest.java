@@ -1,15 +1,16 @@
 package in.supplybase.backend.booking;
 
+import in.supplybase.backend.notification.NotificationRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+//import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+//import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -77,6 +78,7 @@ class BookingServiceTest {
     @Mock private ObjectProvider<JavaMailSender> mailSender;
     @Mock private BookingFileRepository files;
     @Mock private FileStorageService storage;
+    @Mock private NotificationRepository notificationRepository;
 
     private BookingService service;
 
@@ -87,7 +89,7 @@ class BookingServiceTest {
                 new AppProperties.Notifications(null), // email disabled: no recipient configured
                 null, null, new AppProperties.Booking(24), null);
         service = new BookingService(bookings, answers, users, catalogue, options, appointments,
-                bookingNumbers, props, mailSender, files, storage);
+                bookingNumbers, props, mailSender, files, storage,notificationRepository);
     }
 
     private static ServiceCategory plumbingCategory() {
@@ -1176,7 +1178,7 @@ class BookingServiceTest {
                     new AppProperties.Notifications("staff@example.com"),
                     "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
             emailingService = new BookingService(bookings, answers, users, catalogue, options, appointments,
-                    bookingNumbers, props, mailSender, files, storage);
+                    bookingNumbers, props, mailSender, files, storage,notificationRepository);
             when(mailSender.getIfAvailable()).thenReturn(sender);
 
             ServiceCategory category = plumbingCategory();
@@ -1243,7 +1245,7 @@ class BookingServiceTest {
                     new AppProperties.Notifications(null, true),
                     "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
             BookingService noStaffInbox = new BookingService(bookings, answers, users, catalogue, options,
-                    appointments, bookingNumbers, props, mailSender, files, storage);
+                    appointments, bookingNumbers, props, mailSender, files, storage,notificationRepository);
 
             noStaffInbox.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 
@@ -1260,7 +1262,7 @@ class BookingServiceTest {
                     new AppProperties.Notifications("staff@example.com", false),
                     "https://www.supplybase.co.in", null, new AppProperties.Booking(24), null);
             BookingService staffOnly = new BookingService(bookings, answers, users, catalogue, options,
-                    appointments, bookingNumbers, props, mailSender, files, storage);
+                    appointments, bookingNumbers, props, mailSender, files, storage,notificationRepository);
 
             staffOnly.create(requestFor(VISIT, LocalTime.of(10, 0), List.of()), null);
 
