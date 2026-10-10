@@ -88,16 +88,17 @@ export const interiorFeatures = {
 
 /* =========================================================
    STUDY — all 22 pages of Study_table.pdf
-   Images live in public/assets/interior-design/ (15 unique sets, numbered 1-15).
+   Images: 15 unique sets, named by the PDF page of first use.
    Repeated pages reuse the same set.
    ========================================================= */
 
-const STUDY_DIR = '/assets/interior-design';
+const STUDY_DIR = '/assets/projects/interior-by-choice/study';
+const pad = (n) => String(n).padStart(2, '0');
 
 const studyViews = (n) => ({
-  front: `${STUDY_DIR}/${n}.webp`,
-  side: `${STUDY_DIR}/${n}-side.webp`,
-  detail: `${STUDY_DIR}/${n}-detail.webp`,
+  front: `${STUDY_DIR}/${pad(n)}-front.webp`,
+  side: `${STUDY_DIR}/${pad(n)}-side.webp`,
+  detail: `${STUDY_DIR}/${pad(n)}-detail.webp`,
 });
 
 // rows = [title, description, icon]; the photo is the n-th crop of that page
@@ -106,7 +107,7 @@ const studyIncluded = (n, rows) =>
     title,
     desc,
     icon,
-    image: `${STUDY_DIR}/included/${n}-${i + 1}.webp`,
+    image: `${STUDY_DIR}/included/${pad(n)}-${i + 1}.webp`,
   }));
 
 const STUDY_TAGLINE = 'A perfect blend of functionality and modern aesthetics.';
@@ -288,7 +289,7 @@ const studyDesignsById = {
       R_INSTALL,
     ],
   },
-  14: {
+  15: {
     name: 'Modern Study Table',
     price: '₹28,000 – ₹48,000',
     description: 'This study table features a sleek wall-mounted design with overhead storage cabinets, an open display niche and a premium laminate finish — creating a stylish and organised workspace for your home.',
@@ -301,7 +302,7 @@ const studyDesignsById = {
       R_INSTALL,
     ],
   },
-  15: {
+  16: {
     name: 'Modern Study Table',
     price: '₹32,000 – ₹58,000',
     description: 'This study table features a sleek wall-mounted design with overhead storage cabinets, an open display shelf and a premium laminate finish — creating a stylish and organised workspace for your home.',
@@ -317,7 +318,7 @@ const studyDesignsById = {
 };
 
 // The 22 PDF pages, in order. Repeats reuse the same data and images.
-const studyPageOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 13, 14, 15, 6, 5, 4, 3, 2, 1];
+const studyPageOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 13, 15, 16, 6, 5, 4, 3, 2, 1];
 
 export const studyCatalog = studyPageOrder.map((id) => {
   const d = studyDesignsById[id];

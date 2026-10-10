@@ -14,7 +14,6 @@ import {
   livingRoomDescriptions,
   livingRoomFeatures,
   livingRoomGalleryImages,
-  studyGalleryImages,
   mandirImages,
   mandirDescriptions,
   mandirGroups,
@@ -66,10 +65,18 @@ const includedIconPaths = {
   finish: (<><path d="M9 4l1.6 4.4L15 10l-4.4 1.6L9 16l-1.6-4.4L3 10l4.4-1.6z" /><path d="M18 13l.9 2.1L21 16l-2.1.9L18 19l-.9-2.1L15 16l2.1-.9z" /></>),
   consult: (<><circle cx="12" cy="8" r="3.5" /><path d="M5 20c0-4 3-6 7-6s7 2 7 6" /></>),
   fire: <path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z" />,
+
+  // Study designs
+  desk: <path d="M3 9h18M5 9v11M19 9v11M9 9v6h6V9" />,
+  shelves: (<><path d="M5 3v18M19 3v18" /><path d="M5 8h14M5 13h14M5 18h14" /></>),
+  bulb: (<><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></>),
+  door: (<><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M12 3v18M9 12v2M15 12v2" /></>),
+  glass: (<><rect x="6" y="3" width="12" height="18" rx="1.5" /><path d="M10 7l4-2M10 12l4-4" /></>),
 };
 
 /* Photo for each "What's Included" item, keyed by the item's icon name.
-   Put these files in  public/assets/included/  */
+   Put these files in  public/assets/included/
+   (A design that supplies its own photo, like the Study designs, uses that instead.) */
 const includedImages = {
   slat: '/assets/included/slat.webp',
   marble: '/assets/included/marble.webp',
@@ -105,7 +112,7 @@ function IncludedIcon({ name }) {
    on the right. The photo is hidden if its file fails to load. */
 function IncludedCard({ item }) {
   const [showImage, setShowImage] = useState(true);
-  const imageSrc = includedImages[item.icon] || item.image;
+  const imageSrc = item.customImage || includedImages[item.icon] || item.image;
 
   return (
     <div className="flex items-center gap-3 rounded-xl bg-[#faf7f3] p-3">
@@ -463,34 +470,53 @@ onStepChange={
                     // Side and detail photos sit next to the main photo:
                     //   tv-wall/1.webp  ->  1-side.webp, 1-detail.webp
                     // A missing file falls back to the front photo.
-                    const isTvWall = design.spaceSlug === 'tv-wall';
+                    
+const isTvWall = design.spaceSlug === 'tv-wall';
+const isStudy = design.spaceSlug === 'study';
 
-                    const designViews = isTvWall
-                      ? [
-                          {
-                            label: 'Front View',
-                            src: design.image,
-                          },
-                          {
-                            label: 'Side View',
-                            src: design.image.replace(
-                              /\.webp$/,
-                              '-side.webp'
-                            ),
-                          },
-                          {
-                            label: 'Detail View',
-                            src: design.image.replace(
-                              /\.webp$/,
-                              '-detail.webp'
-                            ),
-                          },
-                        ]
-                      : [];
+const details = isStudy
+  ? design.studyDetails
+  : isTvWall
+    ? design.tvDetails
+    : null;
 
-                    const includedItems = isTvWall
-                      ? getIncludedItems(design.tvDetails?.included || [])
-                      : [];
+const studyGallery = design.galleryImages || {};
+
+const designViews = isStudy
+  ? [
+      {
+        label: 'Front View',
+        src: studyGallery.front || design.image,
+      },
+      {
+        label: 'Side View',
+        src: studyGallery.side || design.image,
+      },
+      {
+        label: 'Detail View',
+        src: studyGallery.detail || design.image,
+      },
+    ]
+  : isTvWall
+    ? [
+        {
+          label: 'Front View',
+          src: design.image,
+        },
+        {
+          label: 'Side View',
+          src: design.image.replace(/\.webp$/, '-side.webp'),
+        },
+        {
+          label: 'Detail View',
+          src: design.image.replace(/\.webp$/, '-detail.webp'),
+        },
+      ]
+    : [];
+
+const includedItems = getIncludedItems(
+  details?.included || []
+);
 
                     return (
                       <>
@@ -542,7 +568,9 @@ onStepChange={
                           {/* ============ LEFT COLUMN ============ */}
                           <div className="flex flex-col">
                             <div
-                              className={`ibc-modal-design-media overflow-hidden rounded-2xl bg-gray-100 shadow-sm md:min-h-[360px] md:flex-1 ${
+                              className={`ibc-modal-design-media overflow-hidden rounded-2xl bg-gray-100 shadow-sm ${
+                                isStudy ? '' : 'md:min-h-[360px] md:flex-1'
+                              } ${
                                 design.spaceSlug === 'entrance'
                                   ? 'ibc-modal-design-media--entrance'
                                   : ''
@@ -553,7 +581,11 @@ onStepChange={
                                 decoding="async"
                                 src={design.image}
                                 alt={design.name}
-                                className={`block h-[300px] w-full sm:h-[360px] md:h-full! ${
+                                className={`block w-full ${
+                                  isStudy
+                                    ? 'h-auto!'
+                                    : 'h-[300px] sm:h-[360px] md:h-full!'
+                                } ${
                                   design.spaceSlug === 'entrance'
                                     ? 'object-contain'
                                     : 'object-cover'
@@ -721,7 +753,8 @@ onStepChange={
                                   scrollModalToTop();
                                 }}
                               >
-                                CUSTOMISE THIS DESIGN
+
+{isStudy ? 'BOOK NOW' : 'CUSTOMISE THIS DESIGN'}
                               </button>
                             </div>
                           </div>
@@ -747,14 +780,16 @@ onStepChange={
                               ))}
                             </div>
 
-                            {design.tvDetails?.exclusions && (
-                              <p className="mt-4 border-t border-gray-100 pt-3 text-xs leading-5 text-gray-500">
-                                <span className="font-semibold text-gray-700">
-                                  Not included:{' '}
-                                </span>
-                                {design.tvDetails.exclusions}
-                              </p>
-                            )}
+                            
+{details?.exclusions && (
+  <p className="mt-4 border-t border-gray-100 pt-3 text-xs leading-5 text-gray-500">
+    <span className="font-semibold text-gray-700">
+      Not included:{' '}
+    </span>
+    {details.exclusions}
+  </p>
+)}
+
                           </div>
                         )}
 
@@ -2136,183 +2171,84 @@ onClick={() => {
     </button>
 
   </div>
-  ) : selectedInteriorSpace === 'study' ? (
+  
+) : selectedInteriorSpace === 'study' ? (
 
-  <div className="space-y-8">
+  <div className="pb-4">
+    <div className="mb-5">
+      <h2 className="text-2xl font-bold text-gray-950">
+        Study Room Designs
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-gray-600">
+        Choose a design to view its photos, estimated price,
+        and included features.
+      </p>
+    </div>
 
-    {getDesignsBySpace('study').map((design) => {
-      const gallery = design.galleryImages || {};
-
-      const views = [
-        { label: 'Front View',  src: gallery.front  || design.image },
-        { label: 'Side View',   src: gallery.side   || design.image },
-        { label: 'Detail View', src: gallery.detail || design.image },
-      ];
-
-      const openViewer = (index) =>
-        setStudyViewer({
-          name: design.name,
-          fallback: design.image,
-          views,
-          index,
-        });
-
-      return (
-        <div
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {getDesignsBySpace('study').map((design) => (
+        <button
           key={design.slug}
-          className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+          type="button"
+          className="group overflow-hidden rounded-2xl border border-gray-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:border-[#9A5B2D] hover:shadow-lg"
+          onClick={() => {
+            setSelectedInteriorDesign(design.slug);
+            scrollModalToTop();
+          }}
         >
-          {/* DESIGN NAME */}
-          <div className="px-5 pt-5">
-            <h3 className="text-xl font-bold text-gray-950">{design.name}</h3>
+          <div className="relative h-56 overflow-hidden bg-gray-100">
+            <img
+              src={design.image}
+              alt={design.name}
+              className="h-full! w-full object-cover transition duration-300 group-hover:scale-105"
+              loading="lazy"
+              decoding="async"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                if (design.fallbackImage) {
+                  event.currentTarget.src = design.fallbackImage;
+                }
+              }}
+            />
+
+            <span className="absolute bottom-3 right-3 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-sm">
+              View Details →
+            </span>
           </div>
 
-          {/* MAIN IMAGE → opens Front View */}
-          <button
-            type="button"
-            className="mt-4 block w-full border-0 bg-transparent p-0"
-            onClick={() => openViewer(0)}
-            aria-label={`Open ${design.name}`}
-          >
-            <div className="px-4">
-              <div className="h-[370px] overflow-hidden rounded-xl bg-gray-100">
-                <img
-                  src={design.image}
-                  alt={design.name}
-                  className="!block !h-[370px] !min-h-0 w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
-            </div>
-          </button>
+          <div className="p-4">
+            <h3 className="text-lg font-bold text-gray-950">
+              {design.name}
+            </h3>
 
-          {/* FRONT / SIDE / DETAIL — click one to open it */}
-          <div className="grid grid-cols-3 gap-3 px-4 pt-4">
-            {views.map((view, index) => (
-              <button
-                key={view.label}
-                type="button"
-                onClick={() => openViewer(index)}
-                aria-label={`Open ${view.label}`}
-                className="overflow-hidden rounded-xl border border-gray-200 bg-white text-center shadow-sm transition hover:border-[#9A5B2D]"
-              >
-                <img
-                  src={view.src}
-                  alt={`${design.name} ${view.label}`}
-                  className="block h-24 w-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                  onError={(event) => {
-                    event.currentTarget.onerror = null;
-                    event.currentTarget.src = design.image;
-                  }}
-                />
-                <span className="block px-2 py-2 text-xs font-semibold text-gray-700">
-                  {view.label}
+            {design.description && (
+              <p className="mt-2 line-clamp-2 text-sm leading-5 text-gray-600">
+                {design.description}
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
+              <div>
+                <span className="block text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                  Estimated Price
                 </span>
-              </button>
-            ))}
-          </div>
+                <span className="mt-1 block text-sm font-bold text-[#9A5B2D]">
+                  {design.estimatedPrice ||
+                    design.priceRange ||
+                    'Price after consultation'}
+                </span>
+              </div>
 
-          {/* PRICE */}
-          <div className="px-5 pb-5 pt-5">
-            <div className="rounded-xl bg-[#faf7f3] px-4 py-3">
-              <span className="block text-[11px] font-semibold uppercase tracking-wide text-gray-500">
-                Estimated Price
-              </span>
-              <span className="mt-1 block text-lg font-bold text-gray-950">
-                {design.estimatedPrice}
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition group-hover:border-[#9A5B2D] group-hover:bg-[#9A5B2D] group-hover:text-white">
+                →
               </span>
             </div>
           </div>
-        </div>
-      );
-    })}
-
-    {/* FULL-SCREEN VIEWER (Study) */}
-    {studyViewer && (
-      <div
-        className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/90 p-4"
-        onClick={() => setStudyViewer(null)}
-      >
-        {/* Close */}
-        <button
-          type="button"
-          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl text-gray-900"
-          aria-label="Close view"
-          onClick={() => setStudyViewer(null)}
-        >
-          ✕
         </button>
-
-        {/* Previous */}
-        <button
-          type="button"
-          className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900"
-          aria-label="Previous view"
-          onClick={(event) => {
-            event.stopPropagation();
-            setStudyViewer((v) => ({
-              ...v,
-              index: (v.index + v.views.length - 1) % v.views.length,
-            }));
-          }}
-        >
-          <Icon name="arrow-left" size={20} />
-        </button>
-
-        {/* Image + label */}
-        <div
-          className="flex max-h-full max-w-full flex-col items-center"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <img
-            src={studyViewer.views[studyViewer.index].src}
-            alt={`${studyViewer.name} ${studyViewer.views[studyViewer.index].label}`}
-            className="max-h-[80vh] max-w-full rounded-xl object-contain"
-            onError={(event) => {
-              event.currentTarget.onerror = null;
-              event.currentTarget.src = studyViewer.fallback;
-            }}
-          />
-
-          <p className="mt-3 text-sm font-semibold text-white">
-            {studyViewer.name} — {studyViewer.views[studyViewer.index].label}
-          </p>
-
-          {/* dots */}
-          <div className="mt-2 flex gap-2">
-            {studyViewer.views.map((_, i) => (
-              <span
-                key={i}
-                className={`h-2 w-2 rounded-full ${
-                  i === studyViewer.index ? 'bg-white' : 'bg-white/40'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Next */}
-        <button
-          type="button"
-          className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-900"
-          aria-label="Next view"
-          onClick={(event) => {
-            event.stopPropagation();
-            setStudyViewer((v) => ({
-              ...v,
-              index: (v.index + 1) % v.views.length,
-            }));
-          }}
-        >
-          <Icon name="arrow-right" size={20} />
-        </button>
-      </div>
-    )}
-
+      ))}
+    </div>
   </div>
+
 ) : (
 
 
