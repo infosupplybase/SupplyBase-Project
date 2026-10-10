@@ -194,9 +194,19 @@ export default function PaintingFlow({
       });
   }, [flow, configSteps, answers, optionsFor, productsByTier, coloursByTab]);
 
+  const hasRenovationPackagePrice =
+    flowSlug === 'full-home' &&
+    answers.full_home_painting_type === 'renovation-painting' &&
+    resolved.some((row) =>
+      row.label === 'Product' &&
+      row.priceRupees != null &&
+      row.priceRupees > 0
+    );
+
   const requiresPaintingSiteQuote =
     (flowSlug === 'full-home' &&
-      (answers.full_home_painting_type === 'renovation-painting' ||
+      ((answers.full_home_painting_type === 'renovation-painting' &&
+        !hasRenovationPackagePrice) ||
         (answers.home_type === 'independent-house' &&
           answers.full_home_painting_type === 'unfurnished-home'))) ||
     flowSlug === 'renovation' ||
@@ -751,7 +761,11 @@ if (modal) {
 <ProductPicker
               showAllProducts={step.questionKey === 'few_walls_product'}
               productsByTier={productsByTier(step.questionKey, answers)}
-              hidePrices={requiresPaintingSiteQuote}
+              hidePrices={
+                requiresPaintingSiteQuote ||
+                (flowSlug === 'full-home' &&
+                  answers.full_home_painting_type === 'renovation-painting')
+              }
               brand={answers.paint_brand}
               value={answers[step.questionKey]}
               onSelect={setAnswer(step.questionKey)}
