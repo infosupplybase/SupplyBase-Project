@@ -5,8 +5,9 @@
  * crawlers and previews that do not run JavaScript.
  *
  * Only the pages listed in `indexable` are meant to appear in search results
- * (they are also in public/sitemap.xml - keep the two in step). Booking
- * steps, carts, the account area and unknown addresses are marked noindex.
+ * (the build writes them into dist/sitemap.xml and gives each one its own
+ * HTML file with these tags - see vite.config.js). Booking steps, carts, the
+ * account area, coming-soon services and unknown addresses are noindex.
  */
 
 export const SITE_URL = 'https://www.supplybase.co.in';
@@ -15,62 +16,56 @@ export const SITE_NAME = 'Supplybase';
 const areas = 'Mumbai, Navi Mumbai, Thane, Kalyan, Panvel and Pune';
 
 export const homeMeta = {
-  title: 'Supplybase | One Partner. Complete Project.',
+  title: 'Supplybase | Painting, POP Ceiling & Interiors in Mumbai & Thane',
   description:
-    'Supplybase - painting, waterproofing, plumbing, electrical, POP ceiling and interior design. Book a site visit and deal with one accountable team from first look to finish.',
+    'Painting, waterproofing, POP and false ceilings, and home interior design across Mumbai, Thane and Navi Mumbai. Book a site visit with one accountable team.',
 };
 
-/** path -> { title, description } for every page that should be found in search. */
+/**
+ * path -> { title, description, image? } for every page that should be
+ * found in search. `image` is the page's link-preview picture (defaults to
+ * the logo). Titles lead with the service and the area, and stay near 60
+ * characters so search results show them whole.
+ */
 export const indexable = {
   '/': homeMeta,
   '/services': {
-    title: 'Home Services | Supplybase',
-    description: `Book a site visit for painting, waterproofing, plumbing, electrical work, POP ceilings and interior design in ${areas}.`,
+    title: 'Home Services in Mumbai & Thane | Supplybase',
+    description: `Book a site visit for painting, waterproofing, POP ceilings and interior design in ${areas}.`,
   },
   '/services/painting': {
-    title: 'Painting Services | Supplybase',
+    title: 'Painting Services in Mumbai & Thane | House Painters | Supplybase',
     description:
-      'Certified painters, premium paint brands and transparent pricing for full-home and room painting. Book a home visit.',
+      'House painting for full homes, single rooms and damaged walls in Mumbai and Thane. Choose your brand and colours, then book a home visit.',
+    image: '/assets/painting/hero/painter-roller.webp',
   },
   '/services/waterproofing': {
-    title: 'Waterproofing Services | Supplybase',
+    title: 'Waterproofing Services in Mumbai & Thane | Supplybase',
     description:
-      'Terrace, bathroom, wall, basement and water-tank waterproofing for leak-free spaces. Book a site inspection.',
-  },
-  '/services/plumbing': {
-    title: 'Plumbing Services | Supplybase',
-    description:
-      'Plumbers for installations, repairs and fittings at your home. Pick the work you need and book a visit.',
-  },
-  '/services/electrical': {
-    title: 'Electrician Services | Supplybase',
-    description:
-      'Electricians for wiring, fittings, appliances and repairs. Choose your services and book one visit.',
+      'Terrace, bathroom, wall, basement and water-tank waterproofing in Mumbai and Thane. We trace the leak first, then treat it. Book a site inspection.',
+    image: '/assets/waterproofing/curated-v2/terrace-service-v3.webp',
   },
   '/services/pop-ceiling-design': {
-    title: 'POP Ceiling & Design | Supplybase',
+    title: 'POP & False Ceiling Contractor in Mumbai & Thane | Supplybase',
     description:
-      'Flat, double-layer, floating, border, non-drop and recessed POP ceilings for your whole home or a single room.',
+      'POP and gypsum false ceilings, cove lighting, POP design work, TV walls and ceiling repairs for a whole home or one room in Mumbai and Thane.',
+    image: '/assets/pop-ceiling/hero/living-room-cove.webp',
   },
   '/services/interior-design': {
-    title: 'Interior Design | Supplybase',
+    title: 'Interior Designers in Mumbai & Thane | Home Interiors | Supplybase',
     description:
-      'Interiors designed, built and installed - pick a package for your 1, 2, 3 BHK or villa, or describe what you want.',
-  },
-  '/services/ac-services': {
-    title: 'AC Services | Supplybase',
-    description:
-      'AC servicing, repair, installation, uninstallation, gas charging and annual maintenance for split, window, inverter and other AC types.',
+      'Complete home interiors for 1, 2 and 3 BHK flats and villas: modular kitchens, wardrobes, ceilings and finishes, designed and built by one team.',
+    image: '/assets/projects/modern-interior.webp',
   },
   '/interior-by-choice': {
-    title: 'Interior by Choice | Supplybase',
+    title: 'Interior by Choice | Ready-Made Interior Designs | Supplybase',
     description:
-      'Browse ready-made interior designs room by room, pick the one you like and book a home visit.',
+      'Browse ready-made interior designs room by room, pick the one you like and book a home visit in Mumbai, Thane or Navi Mumbai.',
   },
   '/about': {
     title: 'About Us | Supplybase',
     description:
-      'Supplybase brings painting, waterproofing, plumbing, electrical, POP ceiling and interior design work under one accountable team - one partner from the first visit to handover.',
+      'Supplybase brings painting, waterproofing, POP ceiling and interior design work under one accountable team - one partner from the first visit to handover.',
   },
   '/contact': {
     title: 'Contact Us | Supplybase',
@@ -87,6 +82,26 @@ export const indexable = {
   '/terms': {
     title: 'Terms & Conditions | Supplybase',
     description: 'The terms that apply to enquiries, quotations and work booked through Supplybase.',
+  },
+};
+
+/**
+ * Services the site shows as "Coming Soon" (Services.jsx, the home page and
+ * search). Their pages still open, but they stay out of search results and
+ * the sitemap until bookings open: move an entry back into `indexable` then.
+ */
+export const comingSoon = {
+  '/services/plumbing': {
+    title: 'Plumbing Services | Supplybase',
+    description: 'Plumbers for installations, repairs and fittings at your home. Coming soon to Supplybase.',
+  },
+  '/services/electrical': {
+    title: 'Electrician Services | Supplybase',
+    description: 'Electricians for wiring, fittings, appliances and repairs. Coming soon to Supplybase.',
+  },
+  '/services/ac-services': {
+    title: 'AC Services | Supplybase',
+    description: 'AC servicing, repair, installation and gas charging. Coming soon to Supplybase.',
   },
 };
 
@@ -107,6 +122,10 @@ export function resolveMeta(rawPath) {
 
   if (indexable[path]) {
     return { ...indexable[path], canonical: SITE_URL + (path === '/' ? '/' : path), noindex: false };
+  }
+
+  if (comingSoon[path]) {
+    return { ...comingSoon[path], canonical: SITE_URL + path, noindex: true };
   }
 
   if (privateSections.some((p) => path === p || path.startsWith(p + '/'))) {
@@ -133,8 +152,8 @@ export function resolveMeta(rawPath) {
     // own page is its canonical address, and the step itself stays out of search.
     const parts = path.split('/').filter(Boolean);
     const candidate = section.parentOf(parts);
-    const parentPath = indexable[candidate] ? candidate : '/services';
-    const parent = indexable[parentPath];
+    const parentPath = indexable[candidate] || comingSoon[candidate] ? candidate : '/services';
+    const parent = indexable[parentPath] || comingSoon[parentPath];
     return {
       title: parent.title.replace(' | ', ' - Book | '),
       description: parent.description,

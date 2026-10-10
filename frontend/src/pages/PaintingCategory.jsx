@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ServiceSeoContent from '../components/services/ServiceSeoContent';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
 import {
@@ -147,6 +148,7 @@ export default function PaintingCategory({
           </div>
         </div>
       </section>
+      {!modal && <ServiceSeoContent slug="painting" />}
     </>
   );
 }

@@ -29,4 +29,19 @@
   };
   window.gtag('js', new Date());
   window.gtag('config', MEASUREMENT_ID);
+
+  // Contact taps anywhere on the site: call, WhatsApp and email links.
+  // Only the kind of link and the page are sent, never the number or text.
+  // (The quote form and paid bookings send their own events from the app.)
+  document.addEventListener('click', function (event) {
+    var link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+    if (!link) return;
+    var href = link.getAttribute('href') || '';
+    var method = /^tel:/i.test(href) ? 'phone'
+      : /^https:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(href) ? 'whatsapp'
+      : /^mailto:/i.test(href) ? 'email'
+      : null;
+    if (!method) return;
+    window.gtag('event', 'contact_click', { method: method, page_path: window.location.pathname });
+  }, true);
 })();

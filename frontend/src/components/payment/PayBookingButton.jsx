@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Icon from '../ui/Icon';
 import { friendlyError } from '../../lib/api';
 import { onlinePaymentsEnabled, payForBooking, PaymentCancelledError } from '../../lib/razorpay';
+import { trackEvent } from '../../lib/analytics';
 
 /**
  * "Pay ₹99 to confirm" for a booking that has just been made, or one still
@@ -36,6 +37,9 @@ export default function PayBookingButton({ bookingNumber, amountDisplay, onPaid,
     try {
       const payment = await payForBooking(bookingNumber);
       setState('paid');
+      // The visiting fee is what confirms a booking, so this is the
+      // booking conversion in GA4.
+      trackEvent('booking_confirmed', { payment: 'online' });
       onPaid?.(payment);
     } catch (err) {
       setState('idle');

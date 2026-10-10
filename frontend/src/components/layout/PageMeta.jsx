@@ -46,6 +46,9 @@ export default function PageMeta() {
     setMeta('property', 'og:url', meta.canonical || SITE_URL + '/');
     setMeta('name', 'twitter:title', meta.title);
     setMeta('name', 'twitter:description', meta.description);
+    const image = SITE_URL + (meta.image || '/assets/brand/logo-full.jpg');
+    setMeta('property', 'og:image', image);
+    setMeta('name', 'twitter:image', image);
 
     const robots = document.head.querySelector('meta[name="robots"]');
     if (meta.noindex) {

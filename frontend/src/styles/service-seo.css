@@ -1,0 +1,128 @@
+/* ServiceSeoContent — the "about this service" section under a service's
+   booking cards. Plain reading layout; reuses the site's type, gold rule and
+   .faq-item accordion styles. */
+.svc-seo {
+  padding: 8px 0 56px;
+  color: var(--text-dark);
+}
+
+.svc-seo h2 {
+  margin: 36px 0 12px;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3.4vw, 1.7rem);
+  line-height: 1.25;
+  color: var(--black);
+}
+
+.svc-seo h2:first-child {
+  margin-top: 16px;
+}
+
+.svc-seo h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.svc-seo p {
+  margin: 0;
+  color: var(--grey-600);
+  line-height: 1.65;
+}
+
+.svc-seo a {
+  color: var(--gold-deep);
+  font-weight: 600;
+}
+
+.svc-seo-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.svc-seo-type {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.svc-seo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.svc-seo-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.svc-seo-list svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--gold-dark);
+}
+
+.svc-seo-steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: svc-step;
+}
+
+.svc-seo-steps li {
+  position: relative;
+  padding-left: 44px;
+  counter-increment: svc-step;
+}
+
+.svc-seo-steps li::before {
+  content: counter(svc-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gold-a12);
+  color: var(--gold-deep);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.svc-seo .faq-item {
+  margin-bottom: 10px;
+}
+
+.svc-seo-related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.svc-seo-related a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
