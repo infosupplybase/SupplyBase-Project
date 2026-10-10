@@ -138,9 +138,9 @@ app:
     admin-email: ${BOOTSTRAP_ADMIN_EMAIL:}
     admin-password: ${BOOTSTRAP_ADMIN_PASSWORD:}
   booking:
-    # How long a PAYMENT_PENDING or BOOKING_REQUESTED booking is held before
-    # BookingExpiryJob auto-cancels it and releases its appointment seat.
-    expiry-hours: ${BOOKING_EXPIRY_HOURS:24}
+    # How long a new booking waits for its ₹99 visiting fee to be paid online
+    # before BookingExpiryJob cancels it and releases its appointment seat.
+    payment-window-minutes: ${BOOKING_PAYMENT_WINDOW_MINUTES:30}
   # Local-disk root for uploaded project documents and booking files. Fine for
   # local/current use, but this does NOT survive a redeploy on Render/Railway's
   # ephemeral filesystem — swap FileStorageService for S3-compatible storage

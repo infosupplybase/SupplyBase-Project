@@ -238,8 +238,8 @@ export default function InteriorDesignFlow({
         {heading}
         <div className="wizard-card">
           <Icon name="check" size={32} />
-          <h2>Consultation Request Received</h2>
-          <p>Our team will contact you to confirm your appointment.</p>
+          <h2>{receipt.paidOnline ? 'Consultation Confirmed!' : 'Pay to Confirm Your Consultation'}</h2>
+          <p>Our team will contact you before your appointment.</p>
           {summaryRow('Booking number', receipt.bookingNumber)}
           {summaryRow('Home', category.name)}
           {summaryRow('Package', selectedPackage?.name || tier)}

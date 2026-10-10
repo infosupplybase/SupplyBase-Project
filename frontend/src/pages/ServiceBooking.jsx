@@ -1258,14 +1258,15 @@ function Confirmation({
             </div>
 
             <h2>
-              Your Site Visit is Booked!
+              {receipt.paidOnline
+                ? 'Your Site Visit is Confirmed!'
+                : 'Pay to Confirm Your Site Visit'}
             </h2>
 
             <p>
-              We have received your request.
-              Our team will contact you on
-              WhatsApp or phone to confirm the
-              appointment.
+              {receipt.paidOnline
+                ? 'Our team will contact you on WhatsApp or phone before the visit.'
+                : receipt.message}
             </p>
 
             <dl className="confirmed-panel">

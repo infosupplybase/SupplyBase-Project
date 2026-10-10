@@ -11,9 +11,9 @@ import in.supplybase.backend.booking.Booking;
 import in.supplybase.backend.booking.BookingStatus;
 
 /**
- * The message a customer reads after booking. There is no online payment on
- * the website, so it must never ask them to pay now to confirm; the visit fee
- * goes to the team on the day of the visit.
+ * The message a customer reads after booking. Every booking must pay its
+ * visiting fee online to be confirmed, so the receipt asks for it; the email
+ * sent once it is paid says it is confirmed.
  */
 class BookingReceiptTest {
 
@@ -23,40 +23,35 @@ class BookingReceiptTest {
     }
 
     @Test
-    @DisplayName("a plain site visit: the visit fee is paid to the team on the day")
+    @DisplayName("a plain site visit: pay the visiting fee now to confirm")
     void plainVisit() {
         BookingReceipt r = BookingReceipt.from(booking().visitFeePaise(9900L).build());
 
-        assertThat(r.message())
-                .contains("contact you to confirm")
-                .contains("₹99.00 home visit fee is paid to our team on the day of the visit")
-                .contains("adjusted into your final bill")
-                .doesNotContain("Pay the")
-                .doesNotContain("fee to confirm");
-    }
-
-    @Test
-    @DisplayName("priced items within the threshold: the services are paid for on the day")
-    void itemisedWithinThreshold() {
-        BookingReceipt r = BookingReceipt.from(booking().visitFeePaise(250000L).itemsTotalPaise(250000L).build());
-
-        assertThat(r.homeVisitFeeOnly()).isFalse();
-        assertThat(r.message())
-                .contains("pay for your selected services to our team on the day of the visit")
-                .doesNotContain("Pay for your")
-                .doesNotContain("services to confirm");
-    }
-
-    @Test
-    @DisplayName("priced items above the threshold: the flat visit fee is paid on the day, the estimate follows inspection")
-    void itemisedAboveThreshold() {
-        BookingReceipt r = BookingReceipt.from(booking().visitFeePaise(9900L).itemsTotalPaise(1119960L).build());
-
         assertThat(r.homeVisitFeeOnly()).isTrue();
         assertThat(r.message())
-                .contains("₹99.00 home visit fee is paid to our team on the day of the visit")
-                .contains("estimate will be confirmed after inspection")
-                .doesNotContain("Pay the")
-                .doesNotContain("fee to confirm");
+                .contains("Pay the ₹99.00 visiting fee now to confirm your booking")
+                .contains("adjusted into your final bill")
+                .doesNotContain("on the day of the visit")
+                .doesNotContain("estimate");
+    }
+
+    @Test
+    @DisplayName("priced items: the fee is paid now, the estimate is settled after the visit")
+    void itemised() {
+        BookingReceipt r = BookingReceipt.from(booking().visitFeePaise(9900L).itemsTotalPaise(250000L).build());
+
+        assertThat(r.homeVisitFeeOnly()).isTrue();
+        assertThat(r.visitFeeDisplay()).isEqualTo("₹99.00");
+        assertThat(r.message())
+                .contains("Pay the ₹99.00 visiting fee now")
+                .contains("₹2,500.00 estimate is confirmed after the visit");
+    }
+
+    @Test
+    @DisplayName("once paid, the email message says the booking is confirmed")
+    void paid() {
+        assertThat(BookingReceipt.paidMessage(booking().visitFeePaise(9900L).build()))
+                .contains("₹99.00 visiting fee is paid and your booking is confirmed")
+                .doesNotContain("Pay the");
     }
 }

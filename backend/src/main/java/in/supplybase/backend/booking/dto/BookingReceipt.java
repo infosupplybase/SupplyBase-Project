@@ -26,51 +26,42 @@ public record BookingReceipt(
         BigDecimal itemsTotal,
         String itemsTotalDisplay,
         /**
-         * True when visitFee is the flat ₹99 home-visit/assessment fee rather
-         * than the real items total — i.e. the cart total exceeded ₹5,000, or
-         * this was a pure consultation booking with no priced items.
+         * True when visitFee is the flat visiting fee rather than the items
+         * total. Always true now that every booking pays the same ₹99 upfront;
+         * kept so older pages reading it still label the amount correctly.
          */
         boolean homeVisitFeeOnly,
         String message) {
 
+    /** The receipt the booking form gets back: the booking waits for its visiting fee. */
     public static BookingReceipt from(Booking b) {
         String feeDisplay = "₹" + Money.formatRupees(b.getVisitFeePaise());
-        String message;
-        if (b.getItemsTotalPaise() == null) {
-            // No priced items at all (a plain site-visit booking, or a
-            // consultation-only plumbing booking) — nothing to itemise.
-            message = "Your booking is reserved and our team will contact you to confirm it. The " + feeDisplay
-                    + " home visit fee is paid to our team on the day of the visit — it will be adjusted into your"
-                    + " final bill if you proceed.";
-        } else if (!isHomeVisitFeeOnly(b)) {
-            // visitFeePaise IS the itemised total (plumbing's actual-pricing
-            // case, itemsTotalPaise <= the ₹5,000 threshold) — the fee being
-            // paid already equals the real charge, nothing more to add.
-            message = "Your booking is reserved and our team will contact you to confirm it. You pay for your"
-                    + " selected services to our team on the day of the visit.";
-        } else {
-            // visitFeePaise is a flat fee SEPARATE from the itemised total —
-            // plumbing over the ₹5,000 threshold, or any category (painting)
-            // whose visit fee is never tied to its items total by design.
-            String itemsDisplay = "₹" + Money.formatRupees(b.getItemsTotalPaise());
-            message = "Your booking is reserved and our team will contact you to confirm it. The " + feeDisplay
-                    + " home visit fee is paid to our team on the day of the visit; your " + itemsDisplay
-                    + " estimate will be confirmed after inspection, and the fee will be adjusted into your final"
-                    + " bill if you proceed.";
-        }
+        String message = "Pay the " + feeDisplay + " visiting fee now to confirm your booking. Your time slot is"
+                + " held while you pay, and the booking is cancelled if it is not paid. The " + feeDisplay
+                + " is adjusted into your final bill" + estimateNote(b) + ".";
         return new BookingReceipt(
                 b.getBookingNumber(), b.getStatus(),
                 b.getServiceLabel(), b.getPreferredDate(),
                 b.getAppointmentSlot() == null ? null : b.getAppointmentSlot().getSlotTime(),
                 Money.paiseToRupees(b.getVisitFeePaise()),
-                "₹" + Money.formatRupees(b.getVisitFeePaise()),
+                feeDisplay,
                 b.getItemsTotalPaise() == null ? null : Money.paiseToRupees(b.getItemsTotalPaise()),
                 b.getItemsTotalPaise() == null ? null : "₹" + Money.formatRupees(b.getItemsTotalPaise()),
-                isHomeVisitFeeOnly(b),
+                true,
                 message);
     }
 
-    private static boolean isHomeVisitFeeOnly(Booking b) {
-        return b.getItemsTotalPaise() == null || b.getVisitFeePaise() != b.getItemsTotalPaise();
+    /** What the confirmation email says once the visiting fee is paid. */
+    public static String paidMessage(Booking b) {
+        String feeDisplay = "₹" + Money.formatRupees(b.getVisitFeePaise());
+        return "Your " + feeDisplay + " visiting fee is paid and your booking is confirmed. Our team will contact"
+                + " you before the visit. The " + feeDisplay + " is adjusted into your final bill"
+                + estimateNote(b) + ".";
+    }
+
+    private static String estimateNote(Booking b) {
+        return b.getItemsTotalPaise() == null ? ""
+                : "; your ₹" + Money.formatRupees(b.getItemsTotalPaise())
+                        + " estimate is confirmed after the visit and paid to our team";
     }
 }
