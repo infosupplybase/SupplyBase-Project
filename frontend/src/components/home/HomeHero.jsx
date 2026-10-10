@@ -56,6 +56,42 @@ export default function HomeHero() {
   const [active, setActive] = useState(-1);
 
   const boxRef = useRef(null);
+  const [heroSearchFocused, setHeroSearchFocused] = useState(false);
+  const [heroPlaceholderIndex, setHeroPlaceholderIndex] = useState(0);
+
+  const heroServiceNames = [
+    'Painting',
+    'Interior Design',
+    'Interior by Choice',
+    'Waterproofing',
+    'POP Ceiling & Design',
+  ];
+
+  useEffect(() => {
+    if (heroSearchFocused || query) return undefined;
+
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let timer;
+
+    const update = () => {
+      window.clearInterval(timer);
+      if (!media.matches) {
+        timer = window.setInterval(() => {
+          if (!document.hidden) {
+            setHeroPlaceholderIndex((index) => (index + 1) % 5);
+          }
+        }, 2600);
+      }
+    };
+
+    update();
+    media.addEventListener('change', update);
+
+    return () => {
+      window.clearInterval(timer);
+      media.removeEventListener('change', update);
+    };
+  }, [heroSearchFocused, query]);
 
   /* Search */
   useEffect(() => {
@@ -185,9 +221,13 @@ export default function HomeHero() {
               setQuery(e.target.value);
               setOpen(true);
             }}
-            onFocus={() => setOpen(true)}
+            onFocus={() => {
+              setOpen(true);
+              setHeroSearchFocused(true);
+            }}
+            onBlur={() => setHeroSearchFocused(false)}
             onKeyDown={onKeyDown}
-            placeholder="Search for a service (e.g. painting, waterproofing)"
+            placeholder={heroSearchFocused ? 'Search for a service' : ''}
             aria-label="Search for a service"
             role="combobox"
             aria-autocomplete="list"
@@ -195,6 +235,18 @@ export default function HomeHero() {
             aria-expanded={!!showing}
             aria-activedescendant={showing && active >= 0 ? `home-search-opt-${active}` : undefined}
           />
+
+          {!query && !heroSearchFocused && (
+            <span className="sb-hero-search-placeholder" aria-hidden="true">
+              <span>Search for</span>
+              <span
+                key={heroPlaceholderIndex}
+                className="sb-hero-search-word"
+              >
+                {heroServiceNames[heroPlaceholderIndex]}
+              </span>
+            </span>
+          )}
 
           {/* Search results */}
           {open && query.trim() && (

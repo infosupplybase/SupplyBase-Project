@@ -3904,3 +3904,36 @@ button[aria-label="Close booking modal"] {
   line-height: 1.4;
 }
 /* End Search Coming Soon services */
+
+/* Mobile spacing after carousel */
+@media (max-width: 767px) {
+  .page-home .popular-services {
+    margin-top: 0 !important;
+    padding-top: 28px !important;
+  }
+
+  .page-home .popular-services-head {
+    margin-bottom: 18px;
+  }
+}
+/* End mobile spacing after carousel */
+
+
+
+/* Desktop spacing below carousel */
+@media (min-width: 768px) {
+  .page-home .popular-services {
+    margin-top: 0 !important;
+    padding-top: 28px !important;
+  }
+
+  .page-home .popular-services-head {
+    margin-top: 0 !important;
+    margin-bottom: 20px;
+  }
+
+  .page-home .popular-services-title {
+    margin-top: 0 !important;
+  }
+}
+/* End desktop spacing below carousel */
