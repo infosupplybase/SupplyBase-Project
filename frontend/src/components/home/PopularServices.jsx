@@ -4,9 +4,8 @@ import optimizedImage from '../../lib/optimizedImage';
 import { useServiceBookingModal } from '../services/useServiceBookingModal';
 import LazyServiceBookingModal, { useWarmBookingModal } from '../services/LazyServiceBookingModal';
 
-/** Backend `icon` values are free-text labels, not guaranteed to match a
-    key in components/ui/Icon.jsx — used only as a placeholder if a category
-    has no hero image at all. */
+const COMING_SOON = new Set(['plumbing', 'electrical', 'ac-services']);
+
 const ICON_BY_SLUG = {
   'interior-design': 'sofa',
   'interior-by-choice': 'layers',
@@ -22,32 +21,67 @@ const HOME_IMAGE_OVERRIDES = {
   waterproofing: '/assets/waterproofing/hero/Preventive-waterproofing.webp',
 };
 
-/** Soft-hyphen (­, invisible unless the browser actually breaks the
-    line there) insertion points for the two labels that are a single long
-    word with no space to wrap at. Deliberately explicit rather than relying
-    on CSS hyphens:auto — its dictionary-based guess is inconsistent across
-    browsers and, on some phones, breaks at an ugly point ("Waterproof-ing"
-    instead of "Water-proofing"). Every other label wraps fine at its own
-    word boundary and needs no override. */
 const LABEL_OVERRIDES = {
-  waterproofing: 'Water­proofing',
-  electrical: 'Electri­cian',
+  waterproofing: 'Waterproofing',
+  plumbing: 'Plumber',
+  electrical: 'Electrician',
 };
 
-const displayName = (category) => LABEL_OVERRIDES[category.slug] || category.name;
+const displayName = (category) =>
+  LABEL_OVERRIDES[category.slug] || category.name;
+
+function ServicePhoto({ category, index }) {
+  const heroImage =
+    HOME_IMAGE_OVERRIDES[category.slug] || category.heroImage;
+
+  return (
+    <span className="service-tile-photo">
+      {category.slug === 'ac-services' || heroImage ? (
+        <img
+          src={
+            category.slug === 'ac-services'
+              ? '/assets/ac-services/ac-unit.webp'
+              : optimizedImage(heroImage)
+          }
+          alt=""
+          width={200}
+          height={200}
+          loading={index < 4 ? 'eager' : 'lazy'}
+          decoding="async"
+        />
+      ) : (
+        <span className="service-tile-placeholder">
+          <Icon
+            name={ICON_BY_SLUG[category.slug] || category.icon}
+            size={34}
+          />
+        </span>
+      )}
+    </span>
+  );
+}
 
 export default function PopularServices() {
   const { services: categories, error } = useServiceCatalogue();
-
   const booking = useServiceBookingModal();
   useWarmBookingModal();
 
+  const available = (categories || []).filter(
+    (category) => !COMING_SOON.has(category.slug)
+  );
+
+  const upcoming = (categories || []).filter(
+    (category) => COMING_SOON.has(category.slug)
+  );
+
   return (
-    <section className="popular-services">
+    <section className="popular-services popular-services-grouped">
       <div className="container">
         <div className="popular-services-head">
           <h2 className="popular-services-title">Popular Services</h2>
-          <p className="popular-services-hint">Tap a service to see its options and book a visit.</p>
+          <p className="popular-services-hint">
+            Tap a service to see its options and book a visit.
+          </p>
         </div>
 
         {error && (
@@ -58,52 +92,56 @@ export default function PopularServices() {
         )}
 
         {!error && !categories && (
-          <div className="service-tile-grid" aria-hidden="true">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="service-tile service-tile-skeleton" />
+          <div className="service-tile-grid ps-active-grid" aria-hidden="true">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <div
+                key={index}
+                className="service-tile service-tile-skeleton"
+              />
             ))}
           </div>
         )}
 
         {!error && categories && (
-          <div className="service-tile-grid">
-            {categories.map((category, index) => {
-              const heroImage =
-                HOME_IMAGE_OVERRIDES[category.slug] || category.heroImage;
-
-              return (
+          <>
+            <div className="service-tile-grid ps-active-grid">
+              {available.map((category, index) => (
                 <button
                   key={category.slug}
                   type="button"
                   className="service-tile"
                   onClick={() => booking.open(category)}
                 >
-                  <span className="service-tile-photo">
-                    {(category.slug === 'ac-services' || heroImage) ? (
-                      <img
-                        src={
-                          category.slug === 'ac-services'
-                            ? '/assets/ac-services/ac-unit.webp'
-                            : optimizedImage(heroImage)
-                        }
-                        alt=""
-                        width={200}
-                        height={200}
-                        /* The first row is on screen straight away; the rest can wait. */
-                        loading={index < 4 ? 'eager' : 'lazy'}
-                        decoding="async"
-                      />
-                    ) : (
-                      <span className="service-tile-placeholder">
-                        <Icon name={ICON_BY_SLUG[category.slug] || category.icon} size={34} />
-                      </span>
-                    )}
+                  <ServicePhoto category={category} index={index} />
+                  <span className="service-tile-name">
+                    {displayName(category)}
                   </span>
-                  <span className="service-tile-name">{displayName(category)}</span>
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+
+            {upcoming.length > 0 && (
+              <div className="ps-upcoming">
+                <div className="popular-services-head">
+                  <h2 className="popular-services-title">Coming Soon</h2>
+                </div>
+
+                <div className="service-tile-grid ps-upcoming-grid">
+                  {upcoming.map((category, index) => (
+                    <div
+                      key={category.slug}
+                      className="service-tile ps-upcoming-tile"
+                    >
+                      <ServicePhoto category={category} index={index + 5} />
+                      <span className="service-tile-name">
+                        {displayName(category)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
