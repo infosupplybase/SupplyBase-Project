@@ -29,8 +29,7 @@ class BookingReceiptTest {
 
         assertThat(r.homeVisitFeeOnly()).isTrue();
         assertThat(r.message())
-                .contains("Pay the ₹99.00 visiting fee now to confirm your booking")
-                .contains("adjusted into your final bill")
+                .contains("Pay the ₹99.00 visiting fee to confirm your booking")
                 .doesNotContain("on the day of the visit")
                 .doesNotContain("estimate");
     }
@@ -43,7 +42,7 @@ class BookingReceiptTest {
         assertThat(r.homeVisitFeeOnly()).isTrue();
         assertThat(r.visitFeeDisplay()).isEqualTo("₹99.00");
         assertThat(r.message())
-                .contains("Pay the ₹99.00 visiting fee now")
+                .contains("Pay the ₹99.00 visiting fee to confirm")
                 .contains("₹2,500.00 estimate is confirmed after the visit");
     }
 

@@ -36,9 +36,10 @@ public record BookingReceipt(
     /** The receipt the booking form gets back: the booking waits for its visiting fee. */
     public static BookingReceipt from(Booking b) {
         String feeDisplay = "₹" + Money.formatRupees(b.getVisitFeePaise());
-        String message = "Pay the " + feeDisplay + " visiting fee now to confirm your booking. Your time slot is"
-                + " held while you pay, and the booking is cancelled if it is not paid. The " + feeDisplay
-                + " is adjusted into your final bill" + estimateNote(b) + ".";
+        // Short: the pay card under it already shows the fee, that it is
+        // adjusted into the final bill, and the cancellation rule.
+        String message = "Pay the " + feeDisplay + " visiting fee to confirm your booking. Your time slot is"
+                + " held while you pay" + estimateNote(b) + ".";
         return new BookingReceipt(
                 b.getBookingNumber(), b.getStatus(),
                 b.getServiceLabel(), b.getPreferredDate(),
@@ -61,7 +62,7 @@ public record BookingReceipt(
 
     private static String estimateNote(Booking b) {
         return b.getItemsTotalPaise() == null ? ""
-                : "; your ₹" + Money.formatRupees(b.getItemsTotalPaise())
+                : ". Your ₹" + Money.formatRupees(b.getItemsTotalPaise())
                         + " estimate is confirmed after the visit and paid to our team";
     }
 }
