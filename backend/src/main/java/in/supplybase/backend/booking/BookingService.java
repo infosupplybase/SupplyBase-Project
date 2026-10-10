@@ -371,9 +371,25 @@ public class BookingService {
             throw ApiException.badRequest("Choose Plain Ceiling or Design Ceiling.");
         }
 
+        boolean hasRenovationPackagePrice = paintingBooking
+                && "renovation-painting".equals(
+                        paintingSelections.get("full_home_painting_type"))
+                && paintingSelections.containsKey("full_home_product")
+                && paintingPrices
+                        .findByFlowKeyAndPaintingTypeAndBrandAndHomeTypeAndProductValue(
+                                "full_home_product",
+                                "renovation-painting",
+                                paintingSelections.get("paint_brand"),
+                                paintingSelections.get("home_type"),
+                                paintingSelections.get("full_home_product"))
+                        .map(price -> price.getPricePaise() != null
+                                && price.getPricePaise() > 0)
+                        .orElse(false);
+
         boolean renovationSiteQuote = paintingBooking
-                && ("renovation-painting".equals(
+                && (("renovation-painting".equals(
                             paintingSelections.get("full_home_painting_type"))
+                        && !hasRenovationPackagePrice)
                     || submitted.stream().anyMatch(
                             input -> "renovation_area".equals(input.key())));
 

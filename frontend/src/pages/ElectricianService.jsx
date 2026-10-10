@@ -686,7 +686,7 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState, 
               </div>
               <div>
                 <dt>Address</dt>
-                <dd>{details.address}, {details.city}</dd>
+                <dd>{composeAddress(details, pickedLocation)}, {details.city}</dd>
               </div>
             </dl>
 

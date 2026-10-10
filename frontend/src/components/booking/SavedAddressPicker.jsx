@@ -260,25 +260,20 @@ export default function SavedAddressPicker({ selected, onUse, idPrefix = 'bk' })
   const unsavedPin = selected && !addresses.some((a) => samePlace(a, selected)) ? selected : null;
 
   const takeDraft = (place, suggestedLabel = '') => {
-  const location = {
-    address: place.address,
-    latitude: place.latitude,
-    longitude: place.longitude,
-    city: place.city || '',
-    pincode: place.pincode || '',
+    const location = {
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      city: place.city || '',
+      pincode: place.pincode || '',
+    };
+    setDraft(location);
+    // Use the picked spot for this booking straight away, saved or not
+    // (editing another saved address still leaves the booking alone).
+    if (!editingId) onUse(location);
+    if (!labelTyped.current) setLabel((current) => suggestedLabel || current);
+    setError('');
   };
-
-  setDraft(location);
-
-  // Immediately show the selected location as the pinned location
-  onUse(location);
-
-  if (!labelTyped.current) {
-    setLabel((current) => suggestedLabel || current);
-  }
-
-  setError('');
-};
 
   const openForm = (entry = null) => {
     setEditingId(entry?.id || null);

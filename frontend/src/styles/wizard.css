@@ -894,6 +894,8 @@ body:has(.wizard-shell) .floating-actions {
 .review-list dd {
   margin: 0;
 
+  overflow-wrap: anywhere;
+
   font-size: 14px;
 
   font-weight: 500;
