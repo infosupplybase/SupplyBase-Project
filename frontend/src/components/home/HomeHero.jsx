@@ -30,6 +30,21 @@ function routeFor(result) {
 /**
  * Homepage hero section.
  */
+function isComingSoon(result) {
+  const blocked = new Set(['plumbing', 'electrical', 'ac-services']);
+
+  if (blocked.has(result.slug) || blocked.has(result.parentSlug)) {
+    return true;
+  }
+
+  if (String(result.slug || '').startsWith('plumbing-item-')) {
+    return true;
+  }
+
+  return /^\/services\/(plumbing|electrical|ac-services)(?:\/|[?#]|$)/
+    .test(routeFor(result));
+}
+
 export default function HomeHero() {
   const navigate = useNavigate();
 
@@ -68,7 +83,15 @@ export default function HomeHero() {
           if (!cancelled) {
             // Both lists are substring matches, so rank them together:
             // "ac" puts AC Services above Interior Design.
-            setResults(rankResults([...services, ...jobs], q));
+            setResults(
+              rankResults([...services, ...jobs], q)
+                .map((result) => ({
+                  ...result,
+                  comingSoon: isComingSoon(result),
+                }))
+                .sort((a, b) => Number(a.comingSoon) - Number(b.comingSoon))
+            );
+            setSearchError('');
             setActive(-1);
           }
         })
@@ -111,6 +134,7 @@ export default function HomeHero() {
   }, [open]);
 
   const goTo = (result) => {
+    if (!result || result.comingSoon || isComingSoon(result)) return;
     setOpen(false);
     setQuery('');
     navigate(routeFor(result));
@@ -163,7 +187,7 @@ export default function HomeHero() {
             }}
             onFocus={() => setOpen(true)}
             onKeyDown={onKeyDown}
-            placeholder="Search for a service (e.g. painting, electrician)"
+            placeholder="Search for a service (e.g. painting, waterproofing)"
             aria-label="Search for a service"
             role="combobox"
             aria-autocomplete="list"
@@ -199,7 +223,7 @@ export default function HomeHero() {
                   <p className="home-search-status">
                     No services found for &ldquo;
                     {query.trim()}
-                    &rdquo;. Try painting, plumbing or electrician.
+                    &rdquo;. Try painting, waterproofing or POP ceiling.
                   </p>
                 )}
 
@@ -214,7 +238,9 @@ export default function HomeHero() {
                     role="option"
                     aria-selected={i === active}
                     tabIndex={-1}
-                    className={`home-search-result ${i === active ? 'is-active' : ''}`}
+                    className={`home-search-result ${i === active ? 'is-active' : ''} ${r.comingSoon ? 'home-search-result--soon' : ''}`}
+                    disabled={r.comingSoon}
+                    aria-disabled={r.comingSoon}
                     onMouseEnter={() => setActive(i)}
                     onClick={() => goTo(r)}
                   >
@@ -226,8 +252,12 @@ export default function HomeHero() {
                     <span>
                       <strong>{r.name}</strong>
 
-                      {r.tagline && (
-                        <small>{r.tagline}</small>
+                      {r.comingSoon ? (
+                        <small className="home-search-coming-soon">
+                          Coming Soon
+                        </small>
+                      ) : (
+                        r.tagline && <small>{r.tagline}</small>
                       )}
                     </span>
                   </button>
