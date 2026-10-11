@@ -93,8 +93,23 @@ export function validateDetails(details, pickedLocation = null, { typedAddressOn
   else if (!/^[1-9][0-9]{5}$/.test(text(details.pincode))) {
     next.pincode = 'Enter a 6-digit pincode';
   }
+
+    // Room No. — Required
+  if (!text(details.roomNo)) {
+    next.roomNo = 'Please enter the room number';
+  } else if (text(details.roomNo).length > MAX_LENGTH.roomNo) {
+    next.roomNo = `Please keep the room number under ${MAX_LENGTH.roomNo} characters`;
+  }
+
+  // Floor — Required
+  if (!text(details.floorNo)) {
+    next.floorNo = 'Please enter the floor';
+  } else if (text(details.floorNo).length > MAX_LENGTH.floorNo) {
+    next.floorNo = `Please keep the floor under ${MAX_LENGTH.floorNo} characters`;
+  }
   return next;
 }
+
 
 /** The address a booking is sent with: building, room, floor, the map pin,
     then anything typed. Without a pin it is just the typed address. */

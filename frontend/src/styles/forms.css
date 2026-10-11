@@ -103,6 +103,12 @@ textarea.input {
   gap: var(--space-4);
 }
 
+.form-grid .full-width {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+}
+
 /* ---------------------------------------------------------- form section */
 
 .form-section {

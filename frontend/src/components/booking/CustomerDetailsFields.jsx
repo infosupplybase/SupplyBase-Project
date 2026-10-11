@@ -96,108 +96,82 @@ export function AddressFields({
           />
 
           {/* Building / Room / Floor */}
-          <div className="booking-address-inputs">
-            <div className="field booking-building-field">
-              <label htmlFor={`${idPrefix}-building`}>
-                Building Name <span className="req">*</span>
-              </label>
+<div className="booking-address-inputs">
+  {/* Building Name */}
+  <div className="field booking-building-field">
+    <label htmlFor={`${idPrefix}-building`}>
+      Building Name <span className="req">*</span>
+    </label>
 
-              <input
-                id={`${idPrefix}-building`}
-                type="text"
-                value={details.buildingName || ''}
-                onChange={setDetail('buildingName')}
-                maxLength={MAX_LENGTH.buildingName}
-                placeholder="Enter building name"
-              />
+    <input
+      id={`${idPrefix}-building`}
+      type="text"
+      value={details.buildingName || ''}
+      onChange={setDetail('buildingName')}
+      maxLength={MAX_LENGTH.buildingName}
+      placeholder="Enter building name"
+      required
+    />
 
-              {errors.buildingName && (
-                <span className="field-error">
-                  {errors.buildingName}
-                </span>
-              )}
-            </div>
+    {errors.buildingName && (
+      <span className="field-error">
+        {errors.buildingName}
+      </span>
+    )}
+  </div>
 
-            <div className="booking-small-fields">
-              {/* Room */}
-              <div className="field">
-                <label htmlFor={`${idPrefix}-room`}>
-                  Room No.
-                </label>
+  <div className="booking-small-fields">
+    {/* Room No. — Compulsory */}
+    <div className="field">
+      <label htmlFor={`${idPrefix}-room`}>
+        Room No. <span className="req">*</span>
+      </label>
 
-                <input
-                  id={`${idPrefix}-room`}
-                  type="text"
-                  value={details.roomNo || ''}
-                  onChange={setDetail('roomNo')}
-                  maxLength={MAX_LENGTH.roomNo}
-                  placeholder="Room no."
-                />
-              </div>
+      <input
+        id={`${idPrefix}-room`}
+        type="text"
+        value={details.roomNo || ''}
+        onChange={setDetail('roomNo')}
+        maxLength={MAX_LENGTH.roomNo}
+        placeholder="Enter room no."
+        required
+      />
 
-              {/* Floor */}
-              <div className="field">
-                <label htmlFor={`${idPrefix}-floor`}>
-                  Floor
-                </label>
+      {errors.roomNo && (
+        <span className="field-error">
+          {errors.roomNo}
+        </span>
+      )}
+    </div>
 
-                <input
-                  id={`${idPrefix}-floor`}
-                  type="text"
-                  value={details.floorNo || ''}
-                  onChange={setDetail('floorNo')}
-                  maxLength={MAX_LENGTH.floorNo}
-                  placeholder="Floor"
-                />
-              </div>
-            </div>
-          </div>
+    {/* Floor — Compulsory */}
+    <div className="field">
+      <label htmlFor={`${idPrefix}-floor`}>
+        Floor <span className="req">*</span>
+      </label>
+
+      <input
+        id={`${idPrefix}-floor`}
+        type="text"
+        value={details.floorNo || ''}
+        onChange={setDetail('floorNo')}
+        maxLength={MAX_LENGTH.floorNo}
+        placeholder="Enter floor"
+        required
+      />
+
+      {errors.floorNo && (
+        <span className="field-error">
+          {errors.floorNo}
+        </span>
+      )}
+    </div>
+  </div>
+</div>
         </div>
       )}
 
-      {/* =====================================================
-          PROJECT ADDRESS
-          ===================================================== */}
-
-      <div
-        className="field"
-        style={{ marginTop: 16 }}
-      >
-        <label htmlFor={`${idPrefix}-address`}>
-          {pickedLocation
-            ? 'Address details (optional)'
-            : 'Project Address'}
-
-          {!pickedLocation && (
-            <>
-              {' '}
-              <span className="req">*</span>
-            </>
-          )}
-        </label>
-
-        <textarea
-          id={`${idPrefix}-address`}
-          rows={3}
-          value={details.address || ''}
-          onChange={setDetail('address')}
-          maxLength={MAX_LENGTH.address}
-          placeholder={
-            pickedLocation
-              ? 'Landmark or directions for our team'
-              : hasGoogleMaps
-                ? 'Or type your complete address'
-                : 'Enter complete address'
-          }
-        />
-
-        {errors.address && (
-          <span className="field-error">
-            {errors.address}
-          </span>
-        )}
-      </div>
-
+      
     </>
   );
 }
@@ -360,166 +334,78 @@ export default function CustomerDetailsFields({
           autoComplete="tel"
         />
 
-        {/* WhatsApp */}
-        <Field
-          id={`${idPrefix}-whatsapp`}
-          label="WhatsApp Number (Optional)"
-          type="tel"
-          inputMode="numeric"
-          value={value('whatsapp')}
-          onChange={setDetail('whatsapp')}
-          error={errors.whatsapp}
-          placeholder="Enter WhatsApp number"
-          hint="Leave blank if it is the same as your mobile."
-        />
+       
 
-        {/* Email */}
-        <Field
-          id={`${idPrefix}-email`}
-          label="Email Address (Optional)"
-          type="email"
-          value={value('email')}
-          onChange={setDetail('email')}
-          maxLength={MAX_LENGTH.email}
-          error={errors.email}
-          placeholder="Enter email address"
-          autoComplete="email"
-        />
+       {/* Email — Full Width */}
+<div className="field full-width">
+  <label htmlFor={`${idPrefix}-email`}>
+    Email Address (Optional)
+  </label>
+
+  <input
+    id={`${idPrefix}-email`}
+    type="email"
+    value={value('email')}
+    onChange={setDetail('email')}
+    maxLength={MAX_LENGTH.email}
+    className={errors.email ? 'error' : ''}
+    placeholder="Enter email address"
+    autoComplete="email"
+  />
+
+  {errors.email && (
+    <span className="field-error">
+      {errors.email}
+    </span>
+  )}
+</div>
       </div>
 
-      {/* =====================================================
-          ADDRESS
-          ===================================================== */}
+     {/* =====================================================
+    ADDRESS
+    ===================================================== */}
 
-      <AddressFields
-        details={details}
-        setDetail={setDetail}
-        errors={errors}
-        idPrefix={idPrefix}
-      />
+<AddressFields
+  details={details}
+  setDetail={setDetail}
+  errors={errors}
+  idPrefix={idPrefix}
+/>
 
-      {/* =====================================================
-          IMAGE UPLOAD
-          ===================================================== */}
+{/* =====================================================
+    CITY / PINCODE
+    ===================================================== */}
 
-      <div className="booking-image-upload">
-        <label className="booking-image-upload-label">
-          Upload Images{' '}
-          <span className="booking-image-upload-optional">
-            (Optional)
-          </span>
-        </label>
+<div
+  className="form-grid"
+  style={{ marginTop: 16 }}
+>
+  {/* City */}
+  <Field
+    id={`${idPrefix}-city`}
+    label="City"
+    required
+    value={value('city')}
+    onChange={setDetail('city')}
+    maxLength={MAX_LENGTH.city}
+    error={errors.city}
+    placeholder="Mumbai"
+    autoComplete="address-level2"
+  />
 
-        <p className="booking-image-upload-hint">
-          Upload photos of your project or work area.
-          Maximum 5 images.
-        </p>
-
-        <div className="booking-image-upload-container">
-
-          {/* -------------------------------------------------
-              SELECTED IMAGE PREVIEWS
-              ------------------------------------------------- */}
-
-          {images.map((file, index) => (
-            <div
-              className="booking-image-preview"
-              key={`${file.name}-${file.lastModified}-${index}`}
-            >
-              <img
-                src={imagePreviews[index]}
-                alt={`Project image ${index + 1}`}
-              />
-
-              <button
-                type="button"
-                className="booking-image-remove"
-                onClick={() => removeImage(index)}
-                aria-label={`Remove ${file.name}`}
-                title="Remove image"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-
-          {/* -------------------------------------------------
-              UPLOAD BUTTON
-              ------------------------------------------------- */}
-
-          {images.length < MAX_BOOKING_PHOTOS && (
-            <label
-              htmlFor={`${idPrefix}-project-images`}
-              className="booking-image-add"
-            >
-              <span className="booking-image-add-icon">
-                +
-              </span>
-
-              <span className="booking-image-add-text">
-                Upload Photos
-              </span>
-            </label>
-          )}
-
-          {/* Hidden file input */}
-          <input
-            id={`${idPrefix}-project-images`}
-            type="file"
-            accept={BOOKING_PHOTO_TYPES.join(',')}
-            multiple
-            onChange={handleImageChange}
-            style={{ display: 'none' }}
-          />
-        </div>
-
-        {/* File information */}
-        <span className="booking-image-upload-info">
-          JPG, PNG or WebP • Maximum 5 images
-        </span>
-
-        {/* Selected count */}
-        {images.length > 0 && (
-          <span className="booking-image-count">
-            {images.length} / 5 images selected
-          </span>
-        )}
-      </div>
-
-      {/* =====================================================
-          CITY / PINCODE
-          ===================================================== */}
-
-      <div
-        className="form-grid"
-        style={{ marginTop: 16 }}
-      >
-        {/* City */}
-        <Field
-          id={`${idPrefix}-city`}
-          label="City"
-          required
-          value={value('city')}
-          onChange={setDetail('city')}
-          maxLength={MAX_LENGTH.city}
-          error={errors.city}
-          placeholder="Mumbai"
-          autoComplete="address-level2"
-        />
-
-        {/* Pincode */}
-        <Field
-          id={`${idPrefix}-pincode`}
-          label="Pincode"
-          required
-          value={value('pincode')}
-          inputMode="numeric"
-          onChange={setDetail('pincode')}
-          error={errors.pincode}
-          placeholder="400001"
-          autoComplete="postal-code"
-        />
-      </div>
-    </>
+  {/* Pincode */}
+  <Field
+    id={`${idPrefix}-pincode`}
+    label="Pincode"
+    required
+    value={value('pincode')}
+    inputMode="numeric"
+    onChange={setDetail('pincode')}
+    error={errors.pincode}
+    placeholder="400001"
+    autoComplete="postal-code"
+  />
+</div>
+</>
   );
 }
