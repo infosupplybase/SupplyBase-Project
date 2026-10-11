@@ -78,6 +78,8 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-}
+      WHATSAPP_WEBHOOK_VERIFY_TOKEN: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
       STORAGE_ROOT_DIR: /data/uploads
     volumes:
       # Uploaded project documents / booking files survive a container

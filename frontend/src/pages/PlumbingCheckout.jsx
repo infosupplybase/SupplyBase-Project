@@ -383,26 +383,16 @@ export default function PlumbingCheckout({
 }
 
 function CartSummary({ items, subtotalPaise, date, time, address, showsFees }) {
-  const overThreshold = subtotalPaise / 100 > 5000;
   const feePanel = showsFees ? (
     <div className="fee-panel">
       <div className="fee-panel-top">
-        <strong>{overThreshold ? 'Home Visit Fee' : 'Services Total'}</strong>
-        <span className="fee-panel-amount">{overThreshold ? '₹99' : formatRupees(subtotalPaise / 100)}</span>
+        <strong>Visiting Fee (pay now)</strong>
+        <span className="fee-panel-amount">₹99</span>
       </div>
       <p className="fee-small">
-        {overThreshold ? (
-          <>
-            Your selected services total <strong>{formatRupees(subtotalPaise / 100)}</strong>, which is above ₹5,000.
-            The <strong>₹99 home visit fee</strong> is paid to our team on the day of the visit — it will be adjusted
-            into your final bill of {formatRupees(subtotalPaise / 100)} if you proceed with the work.
-          </>
-        ) : (
-          <>
-            This is actual, transparent pricing for your selected services — no hidden charges, no home visit fee for
-            this total.
-          </>
-        )}
+        Your selected services total <strong>{formatRupees(subtotalPaise / 100)}</strong>, paid to our team after the
+        visit. The <strong>₹99 visiting fee</strong> is paid online to confirm your booking and is adjusted into your
+        final bill.
       </p>
     </div>
   ) : (
@@ -411,7 +401,10 @@ function CartSummary({ items, subtotalPaise, date, time, address, showsFees }) {
         <strong>Estimated Total</strong>
         <span className="fee-panel-amount">{formatRupees(subtotalPaise / 100)}</span>
       </div>
-      <p className="fee-small">Listed prices for your selected services. Our electrician confirms the final amount at the visit.</p>
+      <p className="fee-small">
+        Listed prices for your selected services. Our electrician confirms the final amount at the visit. A ₹99 visiting
+        fee is paid online to confirm your booking and is adjusted into your final bill.
+      </p>
     </div>
   );
 
@@ -480,16 +473,17 @@ function CheckoutConfirmation({
             </div>
             {config.showsFees ? (
               <>
-                <h2>Your Booking is Reserved!</h2>
+                <h2>{receipt.paidOnline ? 'Booking Confirmed!' : 'Pay to Confirm Your Booking'}</h2>
                 {!receipt.paidOnline && <p>{receipt.message}</p>}
               </>
             ) : (
               // Like the electrician journeys: no fee amounts on this screen.
               <>
-                <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
+                <h2>{receipt.paidOnline ? 'Booking Confirmed!' : 'Pay to Confirm Your Booking'}</h2>
                 <p>
-                  We have received your request. Our team will contact you on WhatsApp or phone to confirm the
-                  appointment.
+                  {receipt.paidOnline
+                    ? 'Our team will contact you on WhatsApp or phone before the visit.'
+                    : 'Pay the ₹99 visiting fee to confirm your booking. It is adjusted into your final bill.'}
                 </p>
               </>
             )}
@@ -511,7 +505,7 @@ function CheckoutConfirmation({
               )}
               {config.showsFees ? (
                 <div>
-                  <dt>{receipt.homeVisitFeeOnly ? 'Home Visit Fee' : 'Amount Due'}</dt>
+                  <dt>Visiting Fee</dt>
                   <dd>{receipt.visitFeeDisplay}</dd>
                 </div>
               ) : (

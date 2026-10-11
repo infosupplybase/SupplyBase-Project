@@ -438,6 +438,104 @@ textarea.input {
   margin-bottom: 0;
 }
 
+/* The "pay to confirm" card under a new booking: what is owed, one clear
+   button, and a quiet trust line. */
+.pay-booking-card {
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--gold-a40);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.pay-booking-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pay-booking-label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.pay-booking-label small {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+.pay-booking-amount {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* Wraps instead of spilling out of a narrow phone card. */
+.pay-booking .pay-booking-btn {
+  width: 100%;
+  min-height: 48px;
+  white-space: normal;
+  text-align: center;
+}
+
+.pay-booking-hint {
+  line-height: 1.45;
+}
+
+.pay-booking-hint svg {
+  display: inline-block;
+  margin-right: 4px;
+  vertical-align: -2px;
+}
+
+/* Checkout closed without paying: a nudge, not an error. */
+.pay-booking-pending {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-size: 13px;
+}
+
+.pay-booking-pending svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Until it is paid, paying is the one main action: the dashboard link after
+   it steps back to an outline button, and the success tick turns to gold. */
+.pay-booking-card ~ .btn-primary {
+  background: transparent;
+  background-image: none;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  margin-bottom: var(--space-3);
+}
+
+.pay-booking-card ~ .btn-primary:hover {
+  background: var(--gold-a08);
+  border-color: var(--gold);
+  box-shadow: none;
+}
+
+.confirmed:has(.pay-booking-card) .confirmed-tick {
+  background: var(--gold-tile);
+  color: var(--on-gold);
+  box-shadow: var(--depth-inset-top), 0 0 0 10px var(--gold-a24), var(--shadow-sm);
+}
+
 @media (max-width: 767px) {
   .form-grid {
     grid-template-columns: 1fr;

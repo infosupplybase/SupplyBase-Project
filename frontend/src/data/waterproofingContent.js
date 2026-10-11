@@ -167,7 +167,7 @@ export const wpFlows = {
   },
   'bathroom-floor': {
     slug: 'bathroom-floor',
-    title: 'Floor Waterproofing',
+    title: 'Bathroom Waterproofing',
     heroTagline: 'Keep Your Bathroom Dry. Stop Leaks Before They Start.',
     intro: {
       image: '/assets/waterproofing/curated-v2/bathroom-service-v3.webp',

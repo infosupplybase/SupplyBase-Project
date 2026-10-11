@@ -80,7 +80,7 @@ public class WebSecurityTestConfig {
                 new AppProperties.Notifications(null),
                 null,
                 null,
-                new AppProperties.Booking(24),
+                new AppProperties.Booking(30),
                 null);
     }
 

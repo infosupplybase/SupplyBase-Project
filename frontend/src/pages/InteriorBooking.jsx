@@ -330,7 +330,7 @@ if (modal) {
               </button>
               <p className="ibc-secure-note">
                 <Icon name="lock" size={14} />
-                No advance payment — pay the visit fee to our team on the day
+                Pay the ₹{HOME_VISIT_FEE} visiting fee securely online to confirm. It is adjusted into your final bill.
               </p>
             </div>
           )}
@@ -340,7 +340,7 @@ if (modal) {
               <span className="ibc-confirm-icon">
                 <Icon name="check" size={30} />
               </span>
-              <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
+              <h2>{receipt.paidOnline ? 'Booking Confirmed!' : 'Pay to Confirm Your Booking'}</h2>
               <p>Our expert will visit your home.</p>
 
               <div className="ibc-confirm-details">

@@ -4,6 +4,7 @@ import { activeServices } from '../../data/services';
 import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import { projectTypes, budgetRanges, contact } from '../../data/siteConfig';
 import { buildEnquiryMessage, whatsappHref, mailtoWith, telHref } from '../../lib/contact';
+import { trackEvent } from '../../lib/analytics';
 import api from '../../lib/api';
 
 /**
@@ -115,6 +116,7 @@ export default function QuoteForm({ defaultService = '', compact = false, source
       window.open(whatsappHref(message), '_blank', 'noopener');
     }
     submitToBackend(form, source);
+    trackEvent('generate_lead', { lead_source: 'quote_form', method: channel, service: form.service || 'none' });
     setSent(channel);
   };
 

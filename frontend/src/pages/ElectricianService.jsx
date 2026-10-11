@@ -665,7 +665,7 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState, 
               <Icon name="check" size={38} strokeWidth={3} />
             </div>
 
-            <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
+            <h2>{receipt.paidOnline ? 'Booking Confirmed!' : 'Pay to Confirm Your Booking'}</h2>
             <p>
               We have received your request. Our team will contact you on WhatsApp or phone to confirm the
               appointment.

@@ -1,5 +1,6 @@
 import { waterproofingImages } from '../data/waterproofingImages';
 import { Link } from 'react-router-dom';
+import ServiceSeoContent from '../components/services/ServiceSeoContent';
 import Icon from '../components/ui/Icon';
 import PaintingHero from '../components/painting/PaintingHero';
 import { wpOverviewIntro, wpCategories, wpTrustPoints, WP_HERO_IMAGE } from '../data/waterproofingContent';
@@ -57,6 +58,7 @@ export default function WaterproofingCategory() {
           </div>
         </div>
       </section>
+      <ServiceSeoContent slug="waterproofing" />
     </>
   );
 }

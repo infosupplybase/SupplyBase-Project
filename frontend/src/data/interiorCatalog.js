@@ -86,6 +86,253 @@ export const interiorFeatures = {
   },
 };
 
+/* =========================================================
+   STUDY — the 15 designs in Study_table.pdf
+   Images live in public/assets/interior-design/ (15 unique sets, numbered 1-15).
+   Repeated pages reuse the same set.
+   ========================================================= */
+
+const STUDY_DIR = '/assets/interior-design';
+
+const studyViews = (n) => ({
+  front: `${STUDY_DIR}/${n}.webp`,
+  side: `${STUDY_DIR}/${n}-side.webp`,
+  detail: `${STUDY_DIR}/${n}-detail.webp`,
+});
+
+// rows = [title, description, icon]; the photo is the n-th crop of that page
+const studyIncluded = (n, rows) =>
+  rows.map(([title, desc, icon], i) => ({
+    title,
+    desc,
+    icon,
+    image: `${STUDY_DIR}/included/${n}-${i + 1}.webp`,
+  }));
+
+const STUDY_TAGLINE = 'A perfect blend of functionality and modern aesthetics.';
+const STUDY_EXCL = 'Chair, laptop, accessories, décor items, electrical points and wiring (if required).';
+const STUDY_EXCL_NO_LAPTOP = 'Chair, accessories, décor items, electrical points and wiring (if required).';
+
+const R_DESK = ['Study Desk & Worktop', 'Spacious and durable work surface with premium finish', 'desk'];
+const R_TABLE = ['Study Table & Worktop', 'Spacious and durable work surface with premium finish', 'desk'];
+const R_DRAWERS = ['Storage Drawers', 'Smooth glide drawers for organised storage', 'cabinet'];
+const R_LED = ['LED Profile Lighting', 'Warm lighting to enhance the look and functionality', 'bulb'];
+const R_INSTALL = ['Installation & Finishing', 'Professional installation with neat finishing', 'install'];
+const R_OVERHEAD = ['Overhead Storage Cabinets', 'Closed cabinets to keep your space organised', 'door'];
+const R_DISPLAY = ['Open Display Shelves', 'Stylish open shelves for books and décor items', 'shelves'];
+const R_MATERIALS = ['Premium Materials', 'High-quality laminate/MDF with wood finish', 'finish'];
+
+const studyDesignsById = {
+  1: {
+    name: 'Modern Study Workstation',
+    price: '₹18,000 – ₹35,000',
+    description: 'This study workstation features a spacious desk with integrated storage drawers, elegant wall shelves, warm LED lighting and a stylish wall panel backdrop, creating a comfortable and space-efficient workspace for your home.',
+    rows: [
+      R_DESK,
+      ['Storage Drawers', 'Integrated drawers for organized storage', 'cabinet'],
+      ['Wall Shelves', 'Open shelves to keep essentials within reach', 'shelves'],
+      R_LED,
+      ['Wall Panel / Backdrop', 'Stylish panel design for a premium modern look', 'slat'],
+      R_INSTALL,
+    ],
+  },
+  2: {
+    name: 'Modern Study Table',
+    price: '₹12,000 – ₹28,000',
+    description: 'This study table features a spacious work surface, integrated storage shelves, a utility drawer and a cabinet, with warm LED lighting — creating a stylish and organised workspace for your home.',
+    exclusions: STUDY_EXCL_NO_LAPTOP,
+    rows: [
+      R_TABLE,
+      ['Storage Drawer', 'Smooth glide drawer for organized storage', 'cabinet'],
+      ['Wall Shelves', 'Multiple open shelves to keep essentials within reach', 'shelves'],
+      R_LED,
+      ['Storage Cabinet', 'Closed cabinet with internal shelves for extra storage', 'door'],
+      R_INSTALL,
+    ],
+  },
+  3: {
+    name: 'Minimalist Study Desk',
+    price: '₹12,000 – ₹28,000',
+    description: 'This study desk features a compact yet spacious work surface with open shelves, storage drawers and a clean minimal design, creating a cosy and organised workspace for your home.',
+    exclusions: STUDY_EXCL_NO_LAPTOP,
+    rows: [
+      R_DESK,
+      ['Storage Drawers', 'Smooth glide drawers for organised storage', 'cabinet'],
+      ['Wall Shelves', 'Open shelves to keep essentials within reach', 'shelves'],
+      R_LED,
+      R_MATERIALS,
+      R_INSTALL,
+    ],
+  },
+  4: {
+    name: 'Modern Wooden Study Table',
+    tagline: 'A warm blend of functionality and timeless aesthetics.',
+    price: '₹15,000 – ₹30,000',
+    description: 'This study table features a spacious worktop, integrated bookshelf with open storage, convenient drawer storage and a beautiful wood finish, along with warm task lighting — creating a stylish and organised workspace for your home.',
+    rows: [
+      R_DESK,
+      ['Open Bookshelves', 'Multiple open shelves to keep books and essentials within reach', 'shelves'],
+      R_DRAWERS,
+      ['LED/Task Lighting', 'Warm lighting to enhance the look and functionality', 'bulb'],
+      ['Wood Finish & Panels', 'High-quality laminate/MDF with wood finish', 'slat'],
+      R_INSTALL,
+    ],
+  },
+  5: {
+    name: 'Modern Study Desk',
+    price: '₹18,000 – ₹35,000',
+    description: 'This study desk features a spacious worktop with integrated storage drawers, open shelves and a side cabinet, along with warm LED lighting — creating a comfortable and organised workspace for your home.',
+    rows: [
+      R_DESK,
+      R_DRAWERS,
+      ['Open Bookshelves', 'Multiple open shelves to keep books and essentials within reach', 'shelves'],
+      R_LED,
+      ['Side Cabinet', 'Closed storage with internal shelves for extra space', 'door'],
+      R_INSTALL,
+    ],
+  },
+  6: {
+    name: 'Modern Study Table',
+    price: '₹18,000 – ₹35,000',
+    description: 'This study table features a spacious worktop with overhead storage cabinets, open display shelves and a tall glass unit with LED lighting — creating a stylish and organised workspace for your home.',
+    rows: [
+      R_TABLE,
+      ['Overhead Storage', 'Closed cabinets to keep your space clutter-free', 'door'],
+      R_DISPLAY,
+      R_LED,
+      ['Storage Drawers & Cabinet', 'Drawer and closed cabinet for extra storage', 'cabinet'],
+      R_INSTALL,
+    ],
+  },
+  7: {
+    name: 'Modern Study Table',
+    price: '₹20,000 – ₹38,000',
+    description: 'This study table features a spacious worktop with overhead storage cabinets, open shelves and a tall display unit with LED lighting — creating a clean and stylish workspace for your home.',
+    rows: [
+      R_TABLE,
+      ['Storage Cabinets', 'Closed cabinets to keep your space organised', 'door'],
+      ['Open Shelves', 'Multiple open shelves for books and essentials within reach', 'shelves'],
+      R_LED,
+      ['Display Unit with Glass', 'Elegant glass unit with LED lighting for décor items', 'glass'],
+      R_INSTALL,
+    ],
+  },
+  8: {
+    name: 'Modern Study Table',
+    price: '₹18,000 – ₹32,000',
+    description: 'This study table features a sleek wall-mounted design with overhead storage cabinets, open shelves and warm LED lighting — creating a stylish and space-efficient workspace for your home.',
+    rows: [
+      R_TABLE,
+      R_OVERHEAD,
+      ['Open Shelves', 'Stylish open shelves for books and décor items', 'shelves'],
+      R_LED,
+      ['Wall Panel Detailing', 'Modern vertical panel design for a premium look', 'slat'],
+      R_INSTALL,
+    ],
+  },
+  9: {
+    name: 'Modern Study Table',
+    price: '₹18,000 – ₹32,000',
+    description: 'This wall-mounted study table features a sleek worktop with overhead storage cabinets, a spacious drawer unit and a modern wood finish — creating a stylish and space-efficient workspace for your home.',
+    rows: [R_TABLE, R_OVERHEAD, R_DRAWERS, R_LED, R_MATERIALS, R_INSTALL],
+  },
+  10: {
+    name: 'Modern Study Table',
+    price: '₹18,000 – ₹34,000',
+    description: 'This wall-mounted study table features a spacious worktop with floating drawers, overhead storage cabinets and open shelves — creating a stylish and organised workspace for your home.',
+    rows: [
+      R_TABLE,
+      R_OVERHEAD,
+      ['Open Display Shelves', 'Multiple open shelves for books and décor items', 'shelves'],
+      ['Floating Drawers', 'Smooth glide drawers for organised storage', 'cabinet'],
+      R_LED,
+      R_INSTALL,
+    ],
+  },
+  11: {
+    name: 'Modern Study Table',
+    price: '₹35,000 – ₹60,000',
+    description: 'This study table features a spacious worktop with open shelves, storage cabinets and a wardrobe unit — creating a stylish and organised workspace for your home.',
+    rows: [
+      R_TABLE,
+      ['Open Display Shelves', 'Multiple open shelves for books and décor items', 'shelves'],
+      ['Storage Cabinets', 'Closed cabinets to keep your space organised', 'door'],
+      R_LED,
+      ['Drawers', 'Smooth glide drawers for organised storage', 'cabinet'],
+      R_INSTALL,
+    ],
+  },
+  12: {
+    name: 'Modern Study Table',
+    price: '₹32,000 – ₹55,000',
+    description: 'This study table features a sleek wall-mounted design with overhead storage cabinets, open shelves and a modern laminate finish — creating a stylish and space-efficient workspace for your home.',
+    rows: [
+      R_TABLE,
+      R_OVERHEAD,
+      R_DISPLAY,
+      ['Premium Back Panel', 'Modern marble/laminate back panel for a premium look', 'marble'],
+      ['Drawers', 'Smooth glide drawers for organised storage', 'cabinet'],
+      R_LED,
+    ],
+  },
+  13: {
+    name: 'Modern Study Table',
+    price: '₹38,000 – ₹65,000',
+    description: 'This study table features a sleek wall-mounted design with overhead storage cabinets, open display shelves and a modern laminate finish — creating a stylish and organised workspace for your home.',
+    rows: [
+      R_TABLE,
+      R_OVERHEAD,
+      R_DISPLAY,
+      ['Glass Display Unit', 'Premium glass shutters with LED lighting', 'glass'],
+      R_LED,
+      R_INSTALL,
+    ],
+  },
+  14: {
+    name: 'Modern Study Table',
+    price: '₹28,000 – ₹48,000',
+    description: 'This study table features a sleek wall-mounted design with overhead storage cabinets, an open display niche and a premium laminate finish — creating a stylish and organised workspace for your home.',
+    rows: [
+      R_TABLE,
+      R_OVERHEAD,
+      ['Open Display Shelf', 'Stylish open shelf for décor items and books', 'shelves'],
+      ['Premium Laminate Finish', 'Modern finish with elegant edge design', 'finish'],
+      R_LED,
+      R_INSTALL,
+    ],
+  },
+  15: {
+    name: 'Modern Study Table',
+    price: '₹32,000 – ₹58,000',
+    description: 'This study table features a sleek wall-mounted design with overhead storage cabinets, an open display shelf and a premium laminate finish — creating a stylish and organised workspace for your home.',
+    rows: [
+      R_TABLE,
+      R_OVERHEAD,
+      ['Open Display Shelf', 'Stylish open shelf for décor items and books', 'shelves'],
+      ['Premium Laminate Finish', 'Modern finish with elegant curved edge design', 'finish'],
+      R_LED,
+      R_INSTALL,
+    ],
+  },
+};
+
+// The PDF repeats some pages; each of the 15 designs is listed once.
+const studyPageOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+export const studyCatalog = studyPageOrder.map((id) => {
+  const d = studyDesignsById[id];
+  return {
+    id,
+    name: d.name,
+    tagline: d.tagline || STUDY_TAGLINE,
+    price: d.price,
+    description: d.description,
+    images: studyViews(id),
+    included: studyIncluded(id, d.rows),
+    exclusions: d.exclusions || STUDY_EXCL,
+  };
+});
+
 const subDesignNames = {
   'tv-wall': [
     'Marble Frame TV Unit',
@@ -170,13 +417,7 @@ const subDesignNames = {
     'Premium Fluted Wooden Entrance Door',
   ],
 
-'study': [
-  'Modern Study Workstation',
-  'Modern Study Table',
-  'Minimalist Study Desk',
-  'Modern Wooden Study Table',
-  'Modern Study Desk',
-],
+  study: studyCatalog.map((d) => d.name),
 
  'mandir': [
   'Wall Mounted Mandir',
@@ -190,53 +431,6 @@ const subDesignNames = {
 ],
 };
 
-
-export const studyGalleryImages = {
-  'Modern Study Workstation': {
-    front :
-      '/assets/projects/interior-by-choice/study/modern-study-workstation-front.webp',
-    side:
-      '/assets/projects/interior-by-choice/study/modern-study-workstation-side.webp',
-    detail:
-      '/assets/projects/interior-by-choice/study/modern-study-workstation-detail.webp',
-  },
-
-  'Modern Study Table': {
-    front:
-      '/assets/projects/interior-by-choice/study/modern-study-table-front.webp',
-    side:
-      '/assets/projects/interior-by-choice/study/modern-study-table-side.webp',
-    detail:
-      '/assets/projects/interior-by-choice/study/modern-study-table-detail.webp',
-  },
-
-  'Minimalist Study Desk': {
-    front:
-      '/assets/projects/interior-by-choice/study/minimalist-study-desk-front.webp',
-    side:
-      '/assets/projects/interior-by-choice/study/minimalist-study-desk-side.webp',
-    detail:
-      '/assets/projects/interior-by-choice/study/minimalist-study-desk-detail.webp',
-  },
-
-  'Modern Wooden Study Table': {
-    front:
-      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-front.webp',
-    side:
-      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-side.webp',
-    detail:
-      '/assets/projects/interior-by-choice/study/modern-wooden-study-table-detail.webp',
-  },
-
-  'Modern Study Desk': {
-    front:
-      '/assets/projects/interior-by-choice/study/modern-study-desk-front.webp',
-    side:
-      '/assets/projects/interior-by-choice/study/modern-study-desk-side.webp',
-    detail:
-      '/assets/projects/interior-by-choice/study/modern-study-desk-detail.webp',
-  },
-};
 /* =========================================================
    LIVING ROOM SUB OPTIONS
    ========================================================= */
@@ -786,15 +980,6 @@ const tvEstimatedPrices = [
   '₹40,000 – ₹70,000',
 ];
 
-
-    const studyEstimatedPrices = [
-  '₹18,000 – ₹35,000', // Modern Study Workstation
-  '₹12,000 – ₹28,000', // Modern Study Table
-  '₹12,000 – ₹28,000', // Minimalist Study Desk
-  '₹15,000 – ₹30,000', // Modern Wooden Study Table
-  '₹18,000 – ₹35,000', // Modern Study Desk
-];
-
 const mandirEstimatedPrices = [
   '₹8,000 – ₹18,000',   // Wall Mounted Mandir
   '₹8,000 – ₹18,000',   // Floor Standing Mandir
@@ -1041,14 +1226,6 @@ const bedBackWallDetails = [
     priceRange: '₹70,000 – ₹1,20,000',
     description: 'Soft upholstered panels and blush-toned accents create a plush, luxurious headboard wall.',
   },
-];
-
-const studyDescriptions = [
-  'A practical study setup with dedicated workspace, storage and a clean modern finish.',
-  'A compact study table design designed for everyday work, study and comfortable use.',
-  'A simple and minimal desk setup that keeps the workspace clean and organised.',
-  'A warm wooden study table design with a comfortable work surface and practical storage.',
-  'A modern study desk designed for a neat, functional and comfortable workspace.',
 ];
 
 /* =========================================================
@@ -1588,6 +1765,8 @@ export const getIncludedItems = (list = []) =>
       icon: base.icon || rule.icon,
       desc: base.desc || rule.desc,
       image: base.image || `${INCLUDED_IMG_DIR}/${rule.key}.webp`,
+      // Set only when a design supplies its own photo (e.g. the Study designs).
+      customImage: base.image || null,
     };
   });
 
@@ -1619,15 +1798,17 @@ export const interiorDesigns =
 
 
 const dedicatedImage =
-  space.slug === 'tv-wall'
-    ? tvWallImageMap[index]
-    : space.slug === 'living-room'
-      ? livingRoomImages[name]
-      : space.slug === 'mandir'
-        ? mandirImages[name]
-        : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
-            name
-          )}.webp`;
+  space.slug === 'study'
+    ? studyCatalog[index].images.front
+    : space.slug === 'tv-wall'
+      ? tvWallImageMap[index]
+      : space.slug === 'living-room'
+        ? livingRoomImages[name]
+        : space.slug === 'mandir'
+          ? mandirImages[name]
+          : `/assets/projects/interior-by-choice/${space.slug}/${slugify(
+              name
+            )}.webp`;
 
 
         const entranceDetails =
@@ -1640,8 +1821,9 @@ const dedicatedImage =
             : null;
 
         return {
+  // TV wall and Study have repeated names, so their slugs carry the index.
   slug:
-    space.slug === 'tv-wall'
+    space.slug === 'tv-wall' || space.slug === 'study'
       ? `${slugify(name)}-${index + 1}`
       : slugify(name),
 
@@ -1651,13 +1833,15 @@ const dedicatedImage =
 
   tagline:
     entranceDetails?.tagline ||
-    taglines[space.slug],
+    (space.slug === 'study'
+      ? studyCatalog[index].tagline
+      : taglines[space.slug]),
 
   pricePerSqft,
 
   estimatedPrice:
     space.slug === 'study'
-      ? studyEstimatedPrices[index]
+      ? studyCatalog[index].price
       : space.slug === 'tv-wall'
         ? tvEstimatedPrices[index]
         : space.slug === 'mandir'
@@ -1670,7 +1854,7 @@ const dedicatedImage =
             entranceDetails?.priceRange ||
             bedBackWallDetail?.priceRange ||
             (space.slug === 'study'
-              ? studyEstimatedPrices[index]
+              ? studyCatalog[index].price
               : space.slug === 'tv-wall'
                 ? tvEstimatedPrices[index]
                 : space.slug === 'mandir'
@@ -1681,14 +1865,22 @@ const dedicatedImage =
     space.slug === 'tv-wall'
       ? tvWallDetails[index]?.description
       : space.slug === 'study'
-        ? studyDescriptions[index]
+        ? studyCatalog[index].description
         : entranceDetails?.description ||
           bedBackWallDetail?.description,
 
   tvDetails:
-    space.slug === 'tv-wall'
-      ? tvWallDetails[index]
-      : null,
+  space.slug === 'tv-wall'
+    ? tvWallDetails[index]
+    : null,
+
+studyDetails:
+  space.slug === 'study'
+    ? {
+        included: studyCatalog[index].included,
+        exclusions: studyCatalog[index].exclusions,
+      }
+    : null,
 
   image: entranceDetails
     ? `/assets/projects/interior-by-choice/entrance/door-${String(
@@ -1702,7 +1894,7 @@ const dedicatedImage =
 
   galleryImages:
     space.slug === 'study'
-      ? studyGalleryImages[name]
+      ? studyCatalog[index].images
       : null,
 
   fallbackImage:

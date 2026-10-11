@@ -1,22 +1,15 @@
-import { copyFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from "@tailwindcss/vite";
+import { prerenderPages } from './scripts/prerender-pages.mjs';
 
-// Vercel serves dist/404.html, with a 404 status, for any path that matches
-// no file and no rewrite in vercel.json. A copy of the app there means an
-// unknown address still shows the site's own "Page not found" screen.
-const notFoundPage = {
-  name: 'not-found-page',
-  apply: 'build',
-  writeBundle(options) {
-    copyFileSync(join(options.dir, 'index.html'), join(options.dir, '404.html'));
-  },
-};
-
+// prerenderPages writes one HTML file per public page (its own title,
+// description, canonical link and structured data), dist/sitemap.xml, and
+// dist/404.html: Vercel serves that file, with a 404 status, for any path
+// that matches no file and no rewrite in vercel.json, so an unknown address
+// still shows the site's own "Page not found" screen.
 export default defineConfig({
-  plugins: [react(), tailwindcss(), notFoundPage],
+  plugins: [react(), tailwindcss(), prerenderPages()],
   server: {
     port: 5173,
     open: true,

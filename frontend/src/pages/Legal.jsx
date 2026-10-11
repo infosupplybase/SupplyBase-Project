@@ -139,8 +139,9 @@ export function Terms() {
             <li>A booking is a request for a visit on the date and time you choose; our team contacts you to confirm it.</li>
             <li>Someone must be able to give our team access to the site at the booked time.</li>
             <li>
-              Where a home visit fee applies, it is shown when you book. It is paid to our team on the day of the
-              visit and is adjusted into your final bill if you go ahead with the work.
+              Every booking needs a ₹99 visiting fee, paid online when you book. A booking is confirmed only once it is
+              paid, and an unpaid booking is cancelled. The fee is adjusted into your final bill if you go ahead with
+              the work.
             </li>
             <li>To change or cancel a visit, contact us using the details below.</li>
           </ul>

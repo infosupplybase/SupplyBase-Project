@@ -432,7 +432,7 @@ export default function PopCeilingFlow({ modal = false, flowSlug: propFlowSlug, 
               <div className="confirmed-tick">
                 <Icon name="check" size={38} strokeWidth={3} />
               </div>
-              <h2>{receipt.status === 'CONFIRMED' ? 'Booking Confirmed!' : 'Booking Request Received'}</h2>
+              <h2>{receipt.paidOnline ? 'Booking Confirmed!' : 'Pay to Confirm Your Booking'}</h2>
               <p>Our expert will visit your home, measure your space and provide a detailed quotation.</p>
 
               <dl className="confirmed-panel">

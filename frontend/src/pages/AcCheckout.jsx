@@ -289,8 +289,12 @@ export default function AcCheckout({
             <Icon name="check" size={28} />
           </span>
 
-          <h2>Booking request received</h2>
-          <p>Our team will contact you to confirm your AC service.</p>
+          <h2>{receipt.paidOnline ? 'Booking confirmed' : 'Pay to confirm your booking'}</h2>
+          <p>
+            {receipt.paidOnline
+              ? 'Our team will contact you before your AC service.'
+              : `Pay the ${receipt.visitFeeDisplay} visiting fee to confirm your booking. It is adjusted into your final bill.`}
+          </p>
 
           <div className="ac-booking-number">
             <span>Booking number</span>

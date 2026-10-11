@@ -393,7 +393,7 @@ function ConsultationConfirmation({
             <div className="confirmed-tick">
               <Icon name="check" size={38} strokeWidth={3} />
             </div>
-            <h2>Your Consultation is Reserved!</h2>
+            <h2>{receipt.paidOnline ? 'Your Consultation is Confirmed!' : 'Pay to Confirm Your Consultation'}</h2>
             {!receipt.paidOnline && <p>{receipt.message}</p>}
 
             <dl className="confirmed-panel">
@@ -406,7 +406,7 @@ function ConsultationConfirmation({
                 <dd>{formatVisit(receipt.date, receipt.time)}</dd>
               </div>
               <div>
-                <dt>Home Visit Fee</dt>
+                <dt>Visiting Fee</dt>
                 <dd>{receipt.visitFeeDisplay}</dd>
               </div>
               <div>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ServiceSeoContent from '../components/services/ServiceSeoContent';
 import PageHero from '../components/ui/PageHero';
 import Icon from '../components/ui/Icon';
 import { popFlows, POP_HERO_IMAGE } from '../data/popCeilingContent';
@@ -97,6 +98,7 @@ export default function PopCeilingCategory({
           </div>
         </div>
       </section>
+      {!modal && <ServiceSeoContent slug="pop-ceiling-design" />}
     </>
   );
 }

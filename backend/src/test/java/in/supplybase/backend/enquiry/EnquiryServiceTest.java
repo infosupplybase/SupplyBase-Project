@@ -36,7 +36,7 @@ class EnquiryServiceTest {
         AppProperties props = new AppProperties(
                 List.of("*"), null, null, null,
                 new AppProperties.Notifications(null), // email disabled
-                null, null, new AppProperties.Booking(24), null);
+                null, null, new AppProperties.Booking(30), null);
         service = new EnquiryService(enquiries, props, mailSender, new InMemoryRateLimiter());
         lenient().when(enquiries.save(any())).thenAnswer(inv -> inv.getArgument(0));
     }

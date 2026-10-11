@@ -269,7 +269,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
               <div className="confirmed-tick">
                 <Icon name="check" size={38} strokeWidth={3} />
               </div>
-              <h2>Your Site Visit is Confirmed!</h2>
+              <h2>{receipt.paidOnline ? 'Your Site Visit is Confirmed!' : 'Pay to Confirm Your Site Visit'}</h2>
               <p>Our expert will visit your location, inspect the site and provide a detailed quotation.</p>
 
               <dl className="confirmed-panel">

@@ -16,6 +16,7 @@ import in.supplybase.backend.auth.User;
 import in.supplybase.backend.auth.UserRepository;
 import in.supplybase.backend.booking.Booking;
 import in.supplybase.backend.booking.BookingRepository;
+import in.supplybase.backend.booking.BookingService;
 import in.supplybase.backend.booking.BookingStatus;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.Money;
@@ -39,11 +40,12 @@ public class PaymentService {
     private final RazorpayService razorpay;
     private final InvoiceService invoices;
     private final BookingRepository bookings;
+    private final BookingService bookingService;
 
     public PaymentService(PaymentRepository payments, PaymentEventRepository events,
                           UserRepository users, ProjectRepository projects,
                           RazorpayService razorpay, InvoiceService invoices,
-                          BookingRepository bookings) {
+                          BookingRepository bookings, BookingService bookingService) {
         this.payments = payments;
         this.events = events;
         this.users = users;
@@ -51,6 +53,7 @@ public class PaymentService {
         this.razorpay = razorpay;
         this.invoices = invoices;
         this.bookings = bookings;
+        this.bookingService = bookingService;
     }
 
     /* ------------------------------------------------------------ reads */
@@ -181,8 +184,9 @@ public class PaymentService {
             throw ApiException.badRequest("There is nothing to pay on this booking.");
         }
 
-        // The customer chose to pay online: from now on BookingExpiryJob may
-        // cancel the booking if the payment is never finished.
+        // Bookings made since the visiting fee became compulsory carry this
+        // from creation; an older pay-at-visit booking gets it here, and from
+        // now on BookingExpiryJob may cancel it if the payment is never finished.
         if (booking.getOnlineCheckoutAt() == null) {
             booking.setOnlineCheckoutAt(Instant.now());
             bookings.save(booking);
@@ -412,9 +416,11 @@ public class PaymentService {
 
     /**
      * A verified booking payment stamps the booking paid and, if it was still
-     * waiting on that payment, confirms it (RULE 7 in BookingStatus). A
-     * booking that moved on, or was cancelled meanwhile, keeps its status:
-     * staff see the paid stamp and can refund a cancelled one.
+     * waiting on that payment, confirms it (RULE 7 in BookingStatus) and lets
+     * BookingService send the confirmation emails. A booking cancelled
+     * meanwhile (usually expired before a late payment landed) stays
+     * cancelled and is flagged for a refund. One staff already moved on keeps
+     * its status.
      */
     private void markBookingPaid(Payment payment) {
         Booking booking = payment.getBooking();
@@ -422,11 +428,15 @@ public class PaymentService {
             return;
         }
         booking.setPaidAt(payment.getPaidAt());
-        if (booking.getStatus() == BookingStatus.PAYMENT_PENDING
-                || booking.getStatus() == BookingStatus.BOOKING_REQUESTED) {
+        boolean waiting = booking.getStatus() == BookingStatus.PAYMENT_PENDING
+                || booking.getStatus() == BookingStatus.BOOKING_REQUESTED;
+        if (waiting) {
             booking.setStatus(BookingStatus.CONFIRMED);
         }
         bookings.save(booking);
+        if (waiting || booking.getStatus() == BookingStatus.CANCELLED) {
+            bookingService.onBookingPaid(booking);
+        }
     }
 
     private static String truncateDescription(String value) {

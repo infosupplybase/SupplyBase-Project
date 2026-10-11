@@ -95,6 +95,11 @@ public class SecurityConfig {
                 // Only says whether online payment is on, so the site can hide
                 // its Pay buttons; nothing about any payment.
                 .requestMatchers(HttpMethod.GET, "/api/payments/status").permitAll()
+                // Meta's WhatsApp webhook: the GET handshake checks our verify
+                // token and each POST is HMAC-signed with the app secret
+                // (WhatsAppWebhookController), not sent with our JWT.
+                .requestMatchers(HttpMethod.GET, "/api/whatsapp/webhook").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/whatsapp/webhook").permitAll()
                 .requestMatchers("/actuator/health", "/error").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 

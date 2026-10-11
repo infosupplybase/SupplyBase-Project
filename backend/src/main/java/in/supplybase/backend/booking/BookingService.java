@@ -52,6 +52,9 @@ import in.supplybase.backend.common.PhotoUploads;
 import in.supplybase.backend.common.PhoneNumbers;
 import in.supplybase.backend.common.Reference;
 import in.supplybase.backend.config.AppProperties;
+import in.supplybase.backend.notification.Notification;
+import in.supplybase.backend.notification.NotificationRepository;
+import in.supplybase.backend.payment.RazorpayService;
 
 @Service
 public class BookingService {
@@ -66,18 +69,13 @@ public class BookingService {
     private static final int MAX_PER_PHONE_PER_SERVICE_PER_HOUR = 5;
 
     /**
-     * The plumbing cart's pricing rule (from the approved rate card): actual
-     * itemised pricing up to ₹5,000, a flat ₹99 home-visit/assessment fee
-     * above that (adjusted into the final bill if the customer proceeds).
-     * Scoped narrowly to the 'plumbing' category slug (checked in create()
-     * below) and its 'cart_item'/'consultation_type' question keys (see
-     * V14) — every other category's pricing, including painting's own
-     * itemised total and the electrician add-ons' priced options, is
-     * untouched by this.
+     * The visiting fee every booking pays online before it is confirmed,
+     * whatever the service or cart (Kaif, 2026-10-10: no unpaid bookings).
+     * The rest of the price is settled with our team after the visit, and
+     * the fee is adjusted into that final bill.
      */
-    private static final String PLUMBING_SLUG = "plumbing";
-    private static final long ACTUAL_PRICING_THRESHOLD_PAISE = 500_000L; // ₹5,000
-    private static final long HOME_VISIT_FEE_PAISE = 9_900L; // ₹99
+    public static final long VISITING_FEE_PAISE = 9_900L; // ₹99
+
     // Joins a question key and an option value into one lookup key. Both the
     // map that is built and every lookup into it must use this same constant.
     private static final String OPTION_KEY_SEPARATOR = "\u0000";
@@ -85,10 +83,8 @@ public class BookingService {
     /**
      * Painting's itemised answer keys (see V15) — priced the same way
      * plumbing's 'cart_item' is (matched catalogue price × quantity, summed
-     * into itemsTotalPaise), but WITHOUT plumbing's ₹5,000/₹99 threshold
-     * override: painting's visitFeePaise stays exactly the category's own
-     * configured fee (see V15's pricing-conflict notes — the reference's
-     * ₹99 is not applied here pending confirmation). 'paint_brand' and every
+     * into itemsTotalPaise, the estimate settled after the visit; what is
+     * paid upfront is always VISITING_FEE_PAISE. 'paint_brand' and every
      * *_area/*_colour key are deliberately excluded — they carry no price in
      * the reference, they are recorded as plain answers only.
      */
@@ -104,6 +100,7 @@ public class BookingService {
     @org.springframework.beans.factory.annotation.Autowired
     private in.supplybase.backend.catalogue.PopCeilingPricingService popCeilingPricing;
 
+    private final NotificationRepository notifications;
     private final BookingRepository bookings;
     private final BookingAnswerRepository answers;
     private final UserRepository users;
@@ -115,13 +112,15 @@ public class BookingService {
     private final ObjectProvider<JavaMailSender> mailSender;
     private final BookingFileRepository files;
     private final FileStorageService storage;
+    private final RazorpayService razorpay;
 
     public BookingService(BookingRepository bookings, BookingAnswerRepository answers,
                           UserRepository users, CatalogueService catalogue,
                           ServiceOptionRepository options, AppointmentService appointments,
                           BookingNumbers bookingNumbers, AppProperties props,
                           ObjectProvider<JavaMailSender> mailSender,
-                          BookingFileRepository files, FileStorageService storage) {
+                          BookingFileRepository files, FileStorageService storage,
+                          NotificationRepository notifications, RazorpayService razorpay) {
         this.bookings = bookings;
         this.answers = answers;
         this.users = users;
@@ -133,17 +132,31 @@ public class BookingService {
         this.mailSender = mailSender;
         this.files = files;
         this.storage = storage;
+        this.notifications = notifications;
+        this.razorpay = razorpay;
     }
 
     /**
      * Creates a booking in PAYMENT_PENDING and takes the appointment seat.
      *
+     * Every booking must pay the ₹99 visiting fee online before it counts:
+     * the website opens Razorpay straight away, a verified payment confirms
+     * the booking (PaymentService), and BookingExpiryJob cancels one left
+     * unpaid past the payment window. Staff and the customer are only emailed
+     * once it is paid (onBookingPaid).
+     *
      * The seat is taken now, not after payment. Holding it means a customer
-     * who has committed to a time is not beaten to it while typing their card
-     * details — and an unpaid booking that expires releases it again.
+     * who has committed to a time is not beaten to it while paying, and an
+     * unpaid booking that expires releases it again.
      */
     @Transactional
     public BookingReceipt create(CreateBookingRequest request, Long signedInUserId) {
+        // No online payment means no way to confirm a booking, so take none
+        // rather than hold seats that can only expire.
+        if (!razorpay.isConfigured()) {
+            throw ApiException.badRequest("Online booking is not available right now."
+                    + " Please call or WhatsApp us on +91 91373 06446 to book.");
+        }
         ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
         String phone = PhoneNumbers.normalise(request.phone());
 
@@ -179,9 +192,12 @@ public class BookingService {
                 .city(request.city().trim())
                 .pincode(blankToNull(request.pincode()))
                 .location(request.city().trim())
-                .visitFeePaise(category.getVisitFeePaise())
+                .visitFeePaise(VISITING_FEE_PAISE)
                 // RULE 7: nothing is confirmed until the fee is verified.
                 .status(BookingStatus.PAYMENT_PENDING)
+                // The payment window starts now: BookingExpiryJob cancels the
+                // booking if the fee is not paid within it.
+                .onlineCheckoutAt(Instant.now())
                 .build();
 
         if (signedInUserId != null) {
@@ -191,39 +207,66 @@ public class BookingService {
         Booking saved = bookings.save(booking);
         CartPricing pricing = storeAnswers(saved, category, request.answers());
 
-        // Cart/consultation pricing rule — scoped to the 'cart_item' and
-        // 'consultation_type' answer keys only (see the constants' Javadoc).
-        // Every other booking keeps the category's flat visitFeePaise exactly
-        // as before.
+        // The cart's items total is kept as the estimate settled after the
+        // visit. What is paid now is always the flat visiting fee set above,
+        // for plumbing carts too (their old pay-the-items-total rule is gone).
         if (pricing.itemsTotalPaise() > 0) {
             saved.setItemsTotalPaise(pricing.itemsTotalPaise());
-            // Plumbing's ₹5,000/₹99 threshold is plumbing-only — painting
-            // (and anything else with a non-zero itemsTotalPaise) keeps the
-            // category's own flat visitFeePaise, already set above.
-            if (PLUMBING_SLUG.equals(category.getSlug())) {
-                saved.setVisitFeePaise(pricing.itemsTotalPaise() <= ACTUAL_PRICING_THRESHOLD_PAISE
-                        ? pricing.itemsTotalPaise()
-                        : HOME_VISIT_FEE_PAISE);
-            }
-            saved = bookings.save(saved);
-        } else if (pricing.hasConsultationAnswer()) {
-            saved.setVisitFeePaise(HOME_VISIT_FEE_PAISE);
             saved = bookings.save(saved);
         }
 
         BookingReceipt receipt = BookingReceipt.from(saved);
-        // After commit: SMTP is slow and can stall, and it must neither hold
-        // this transaction (and the appointment seat's row lock) open nor
-        // email about a booking that then rolls back.
-        Booking booked = saved;
-        afterCommit(() -> {
-            notifyStaff(booked);
-            emailCustomer(booked, receipt);
-        });
+        createBookingNotification(saved.getUser(), "Booking received",
+                "Your " + saved.getServiceLabel() + " booking is waiting for the "
+                        + receipt.visitFeeDisplay() + " visiting fee. Pay it to confirm the booking.",
+                "BOOKING_RECEIVED", saved.getId());
         return receipt;
     }
 
+    /**
+     * Called by PaymentService once a booking's visiting fee is verified,
+     * inside the same transaction. A booking it confirmed gets the staff and
+     * customer emails (only now: an unpaid booking is not a booking). One
+     * that was cancelled meanwhile, usually by BookingExpiryJob because the
+     * payment landed late, is flagged so the office refunds it.
+     */
+    public void onBookingPaid(Booking booking) {
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            String note = "REFUND DUE: %s was paid online on %s after this booking was cancelled. Refund it from Payments."
+                    .formatted("₹" + Money.formatRupees(booking.getVisitFeePaise()), LocalDate.now());
+            booking.setAdminNotes(booking.getAdminNotes() == null || booking.getAdminNotes().isBlank()
+                    ? note : note + "\n\n" + booking.getAdminNotes());
+            bookings.save(booking);
+            afterCommit(() -> notifyStaffOfLatePayment(booking));
+            return;
+        }
+        createBookingNotification(booking.getUser(), "Booking confirmed",
+                "Your " + booking.getServiceLabel() + " booking " + booking.getBookingNumber()
+                        + " is confirmed. Our team will contact you before the visit.",
+                "BOOKING_CONFIRMED", booking.getId());
+        // After commit: SMTP is slow and can stall, and it must neither hold
+        // this transaction open nor email about a payment that rolls back.
+        BookingReceipt receipt = BookingReceipt.from(booking);
+        afterCommit(() -> {
+            notifyStaff(booking);
+            emailCustomer(booking, receipt);
+        });
+    }
+
     private record CartPricing(long itemsTotalPaise, boolean hasConsultationAnswer) {
+    }
+
+    /** Adds an entry to the recipient's notification bell; skipped when there is no account. */
+    private void createBookingNotification(User recipient, String title, String message,
+                                           String notificationType, Long bookingId) {
+        if (recipient == null) return;
+        Notification notification = new Notification();
+        notification.setRecipient(recipient);
+        notification.setTitle(title);
+        notification.setMessage(message);
+        notification.setNotificationType(notificationType);
+        notification.setRelatedBookingId(bookingId);
+        notifications.save(notification);
     }
 
     /**
@@ -723,7 +766,11 @@ public class BookingService {
         }
         booking.setAssignedProfessional(professional);
         booking.setStatus(BookingStatus.PROFESSIONAL_ASSIGNED);
-        return BookingResponse.from(bookings.save(booking));
+        Booking saved = bookings.save(booking);
+        createBookingNotification(professional, "New booking assigned",
+                "You have been assigned a " + saved.getServiceLabel() + " booking.",
+                "BOOKING_ASSIGNED", saved.getId());
+        return BookingResponse.from(saved);
     }
 
     /* ------------------------------------------------------- professional */
@@ -970,11 +1017,12 @@ public class BookingService {
                     + "Name:      %s\n"
                     + "Mobile:    %s\n"
                     + "Address:   %s, %s %s\n"
-                    + "Status:    %s (fee not yet paid)\n").formatted(
+                    + "Status:    %s (visiting fee %s paid online)\n").formatted(
                     booking.getBookingNumber(), booking.getServiceLabel(),
                     booking.getPreferredDate(), booking.getName(), booking.getPhone(),
                     orDash(booking.getAddress()), orDash(booking.getCity()),
-                    orDash(booking.getPincode()), booking.getStatus()));
+                    orDash(booking.getPincode()), booking.getStatus(),
+                    "₹" + Money.formatRupees(booking.getVisitFeePaise())));
             sender.send(message);
         } catch (Exception ex) {
             log.warn("Could not email booking {} — it is saved regardless",
@@ -1017,19 +1065,53 @@ public class BookingService {
                     + "Service:   %s\n"
                     + "Visit:     %s\n"
                     + "Address:   %s, %s %s\n"
-                    + "Visit fee: %s\n\n"
+                    + "Visiting fee: %s (paid)\n\n"
                     + "%s\n\n"
                     + "%s"
                     + "Need to change something? Just reply to this email.\n").formatted(
                     booking.getName(), booking.getBookingNumber(), booking.getServiceLabel(), when,
                     orDash(booking.getAddress()), orDash(booking.getCity()), orDash(booking.getPincode()),
-                    receipt.visitFeeDisplay(), receipt.message(),
+                    receipt.visitFeeDisplay(), BookingReceipt.paidMessage(booking),
                     booking.getUser() == null ? ""
                             : "See your booking any time: " + props.frontendUrl() + "/dashboard/bookings\n\n"));
             sender.send(message);
         } catch (Exception ex) {
             log.warn("Could not email booking {} to the customer — it is saved regardless",
                     booking.getBookingNumber(), ex);
+        }
+    }
+
+    /** Tells the office a visiting fee was paid on a booking that had already been cancelled. */
+    private void notifyStaffOfLatePayment(Booking booking) {
+        if (!props.notifications().emailEnabled()) {
+            return;
+        }
+        JavaMailSender sender = mailSender.getIfAvailable();
+        if (sender == null) {
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(props.notifications().enquiryRecipient());
+            message.setSubject("[REFUND DUE] Booking %s was paid after it was cancelled — %s (%s)".formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel(), booking.getName()));
+            message.setText((
+                    "A visiting fee was paid online for a booking that is already cancelled.\n\n"
+                    + "Booking:   %s\n"
+                    + "Service:   %s\n"
+                    + "Date:      %s\n"
+                    + "Name:      %s\n"
+                    + "Mobile:    %s\n"
+                    + "Reason:    %s\n\n"
+                    + "Call the customer: either rebook them, or refund the %s from Payments"
+                    + " in the admin panel.\n").formatted(
+                    booking.getBookingNumber(), booking.getServiceLabel(),
+                    booking.getPreferredDate(), booking.getName(), booking.getPhone(),
+                    orDash(booking.getCancelledReason()),
+                    "₹" + Money.formatRupees(booking.getVisitFeePaise())));
+            sender.send(message);
+        } catch (Exception ex) {
+            log.warn("Could not email the late payment on booking {}", booking.getBookingNumber(), ex);
         }
     }
 

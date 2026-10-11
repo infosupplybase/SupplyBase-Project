@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ServiceSeoContent from '../components/services/ServiceSeoContent';
 import PaintingHero from '../components/painting/PaintingHero';
 import {
   idOverviewIntro,
@@ -152,6 +153,7 @@ export default function InteriorDesignCategory({
           </div>
         </div>
       </section>
+      {!modal && <ServiceSeoContent slug="interior-design" />}
     </>
   );
 }

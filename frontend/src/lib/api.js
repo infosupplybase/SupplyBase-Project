@@ -275,6 +275,15 @@ updateProfile: (profile) =>
 
   myBookings: () => request('/api/bookings/mine'),
 
+  /* ---------------------------------------------------- notifications */
+
+  getNotifications: () => request('/api/notifications'),
+
+  getUnreadNotificationCount: () => request('/api/notifications/unread-count'),
+
+  markNotificationAsRead: (id) =>
+    request(`/api/notifications/${id}/read`, { method: 'PATCH' }),
+
   /* --------------------------------------------------------- payments */
 
   /** Opens (or reuses) the Razorpay order for a booking's fee. The amount is the server's, never ours. */

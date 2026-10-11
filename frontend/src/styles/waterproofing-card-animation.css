@@ -1,0 +1,66 @@
+/* Centre the waterproofed surface inside the card */
+.service-tile-photo .waterproofing-card-video {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #e5e5e1;
+  pointer-events: none;
+}
+
+.service-tile-photo .waterproofing-card-video video {
+  position: absolute !important;
+  inset: auto !important;
+  left: 50% !important;
+  top: 50% !important;
+  display: block;
+  width: 112% !important;
+  height: 112% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0;
+  border: 0;
+  object-fit: cover !important;
+  object-position: 100% 50% !important;
+  transform: translate(-50%, -55%) !important;
+}
+
+
+
+
+
+
+
+/* Mobile service video framing */
+@media (max-width: 560px) {
+  .popular-services .service-tile-photo .waterproofing-card-video {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    border-radius: inherit !important;
+    background: #eeeae4 !important;
+  }
+
+  .popular-services .service-tile-photo .waterproofing-card-video video {
+    position: absolute !important;
+    inset: auto !important;
+    left: 50% !important;
+    top: 50% !important;
+    display: block !important;
+    width: 112% !important;
+    height: 112% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    object-fit: cover !important;
+    object-position: 66% 50% !important;
+    transform: translate(-50%, -54%) !important;
+    transform-origin: center !important;
+  }
+}
+/* End mobile service video framing */
