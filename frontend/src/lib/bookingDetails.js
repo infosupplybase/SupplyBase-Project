@@ -64,6 +64,8 @@ export function validateDetails(details, pickedLocation = null, { typedAddressOn
   }
   if (pickedLocation) {
     if (!text(details.buildingName)) next.buildingName = 'Please enter the building name';
+    if (!text(details.roomNo)) next.roomNo = 'Please enter the room number';
+    if (!text(details.floorNo)) next.floorNo = 'Please enter the floor';
   } else if (!text(details.address)) {
     next.address = hasGoogleMaps && !typedAddressOnly
       ? 'Add your address above, or type it here'
