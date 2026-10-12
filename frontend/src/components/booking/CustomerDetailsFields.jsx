@@ -37,7 +37,7 @@ export function Field({ id, label, required, hint, error, ...rest }) {
  * With a Google Maps key the customer types an address (or uses their current
  * location, or taps the map), checks what it resolved to, labels it and adds
  * it to their saved addresses (SavedAddressPicker). Once a location is
- * selected the building name is requested; room and floor are optional.
+ * selected the building name, room and floor are requested.
  *
  * Without Google Maps the customer types the address.
  */
@@ -122,7 +122,7 @@ export function AddressFields({
               {/* Room */}
               <div className="field">
                 <label htmlFor={`${idPrefix}-room`}>
-                  Room No.
+                  Room No. <span className="req">*</span>
                 </label>
 
                 <input
@@ -133,12 +133,18 @@ export function AddressFields({
                   maxLength={MAX_LENGTH.roomNo}
                   placeholder="Room no."
                 />
+
+                {errors.roomNo && (
+                  <span className="field-error">
+                    {errors.roomNo}
+                  </span>
+                )}
               </div>
 
               {/* Floor */}
               <div className="field">
                 <label htmlFor={`${idPrefix}-floor`}>
-                  Floor
+                  Floor <span className="req">*</span>
                 </label>
 
                 <input
@@ -149,6 +155,12 @@ export function AddressFields({
                   maxLength={MAX_LENGTH.floorNo}
                   placeholder="Floor"
                 />
+
+                {errors.floorNo && (
+                  <span className="field-error">
+                    {errors.floorNo}
+                  </span>
+                )}
               </div>
             </div>
           </div>
