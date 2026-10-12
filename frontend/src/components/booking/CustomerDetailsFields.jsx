@@ -1,16 +1,9 @@
-import { useEffect, useState } from 'react';
 import { hasGoogleMaps } from '../layout/GoogleLocationPicker';
 import SavedAddressPicker from './SavedAddressPicker';
 import {
   useLocationContext,
   usePickedLocation,
 } from '../../context/LocationContext';
-import {
-  getBookingPhotos,
-  setBookingPhotos,
-  MAX_BOOKING_PHOTOS,
-  BOOKING_PHOTO_TYPES,
-} from '../../lib/bookingPhotos';
 import { MAX_LENGTH } from '../../lib/bookingDetails';
 
 export function Field({ id, label, required, hint, error, ...rest }) {
@@ -34,10 +27,10 @@ export function Field({ id, label, required, hint, error, ...rest }) {
 /**
  * The visit address.
  *
- * With a Google Maps key the customer types an address (or uses their current
- * location, or taps the map), checks what it resolved to, labels it and adds
- * it to their saved addresses (SavedAddressPicker). Once a location is
- * selected the building name, room and floor are requested.
+ * With a Google Maps key the customer picks the location (search, current
+ * location or a tap on the map), checks what it resolved to, labels it and
+ * adds it to their saved addresses (SavedAddressPicker), then gives the
+ * building name, room and floor. There is no typed address box then.
  *
  * Without Google Maps the customer types the address.
  */
@@ -95,6 +88,12 @@ export function AddressFields({
             idPrefix={idPrefix}
           />
 
+          {errors.address && (
+            <span className="field-error">
+              {errors.address}
+            </span>
+          )}
+
           {/* Building / Room / Floor */}
           <div className="booking-address-inputs">
             <div className="field booking-building-field">
@@ -131,7 +130,7 @@ export function AddressFields({
                   value={details.roomNo || ''}
                   onChange={setDetail('roomNo')}
                   maxLength={MAX_LENGTH.roomNo}
-                  placeholder="Room no."
+                  placeholder="Enter room no."
                 />
 
                 {errors.roomNo && (
@@ -153,7 +152,7 @@ export function AddressFields({
                   value={details.floorNo || ''}
                   onChange={setDetail('floorNo')}
                   maxLength={MAX_LENGTH.floorNo}
-                  placeholder="Floor"
+                  placeholder="Enter floor"
                 />
 
                 {errors.floorNo && (
@@ -167,176 +166,47 @@ export function AddressFields({
         </div>
       )}
 
-      {/* =====================================================
-          PROJECT ADDRESS
-          ===================================================== */}
+      {/* Without Google Maps the address is typed. */}
+      {!hasGoogleMaps && (
+        <div
+          className="field"
+          style={{ marginTop: 16 }}
+        >
+          <label htmlFor={`${idPrefix}-address`}>
+            Project Address <span className="req">*</span>
+          </label>
 
-      <div
-        className="field"
-        style={{ marginTop: 16 }}
-      >
-        <label htmlFor={`${idPrefix}-address`}>
-          {pickedLocation
-            ? 'Address details (optional)'
-            : 'Project Address'}
+          <textarea
+            id={`${idPrefix}-address`}
+            rows={3}
+            value={details.address || ''}
+            onChange={setDetail('address')}
+            maxLength={MAX_LENGTH.address}
+            placeholder="Enter complete address"
+          />
 
-          {!pickedLocation && (
-            <>
-              {' '}
-              <span className="req">*</span>
-            </>
+          {errors.address && (
+            <span className="field-error">
+              {errors.address}
+            </span>
           )}
-        </label>
-
-        <textarea
-          id={`${idPrefix}-address`}
-          rows={3}
-          value={details.address || ''}
-          onChange={setDetail('address')}
-          maxLength={MAX_LENGTH.address}
-          placeholder={
-            pickedLocation
-              ? 'Landmark or directions for our team'
-              : hasGoogleMaps
-                ? 'Or type your complete address'
-                : 'Enter complete address'
-          }
-        />
-
-        {errors.address && (
-          <span className="field-error">
-            {errors.address}
-          </span>
-        )}
-      </div>
-
+        </div>
+      )}
     </>
   );
 }
 
 /**
- * Customer details fields used by every booking flow.
- *
- * Includes:
- * - Full Name
- * - Mobile Number
- * - WhatsApp Number
- * - Email Address
- * - Project Location
- * - Project Address
- * - Upload Images
- * - City
- * - Pincode
- *
- * Image upload:
- * - Maximum 5 images
- * - Image files only
- * - Image previews
- * - Remove individual images
- *
- * The selected files are kept in lib/bookingPhotos (per idPrefix), so they
- * survive the customer moving on to the next step and back; the booking
- * flow uploads them with uploadBookingPhotos() once the booking exists.
- * The optional onImagesChange callback also receives them.
+ * Customer details fields used by every booking flow: full name, mobile,
+ * email, the visit address (AddressFields), city and pincode.
  */
 export default function CustomerDetailsFields({
   details,
   setDetail,
   errors,
   idPrefix = 'bk',
-  onImagesChange,
 }) {
   const value = (key) => details[key] || '';
-
-  /* =========================================================
-     IMAGE STATE
-     ========================================================= */
-
-  // Starts with any photos already picked in this form (coming Back to it).
-  const [images, setImages] = useState(() => getBookingPhotos(idPrefix));
-  const [imagePreviews, setImagePreviews] = useState([]);
-
-  /* =========================================================
-     CREATE IMAGE PREVIEWS
-     ========================================================= */
-
-  useEffect(() => {
-    const previews = images.map((file) =>
-      URL.createObjectURL(file)
-    );
-
-    setImagePreviews(previews);
-
-    return () => {
-      previews.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
-    };
-  }, [images]);
-
-  /* =========================================================
-     SEND SELECTED FILES TO PARENT
-     ========================================================= */
-
-  useEffect(() => {
-    // Kept for the booking flow to upload once the booking is made.
-    setBookingPhotos(idPrefix, images);
-    if (typeof onImagesChange === 'function') {
-      onImagesChange(images);
-    }
-  }, [images, idPrefix, onImagesChange]);
-
-  /* =========================================================
-     IMAGE SELECT
-     ========================================================= */
-
-  const handleImageChange = (event) => {
-    const selectedFiles = Array.from(
-      event.target.files || []
-    );
-
-    if (!selectedFiles.length) {
-      return;
-    }
-
-    // Only the photo types the server accepts (JPG, PNG, WebP).
-    const validImages = selectedFiles.filter((file) =>
-      BOOKING_PHOTO_TYPES.includes(file.type)
-    );
-
-    // Maximum 5 images.
-    const availableSlots = MAX_BOOKING_PHOTOS - images.length;
-
-    const filesToAdd = validImages.slice(
-      0,
-      availableSlots
-    );
-
-    if (filesToAdd.length > 0) {
-      setImages((previousImages) => [
-        ...previousImages,
-        ...filesToAdd,
-      ]);
-    }
-
-    // Reset the input.
-    //
-    // This allows the customer to select the same
-    // image again if they remove it and want to re-add it.
-    event.target.value = '';
-  };
-
-  /* =========================================================
-     REMOVE IMAGE
-     ========================================================= */
-
-  const removeImage = (indexToRemove) => {
-    setImages((previousImages) =>
-      previousImages.filter(
-        (_, index) => index !== indexToRemove
-      )
-    );
-  };
 
   return (
     <>
@@ -372,31 +242,20 @@ export default function CustomerDetailsFields({
           autoComplete="tel"
         />
 
-        {/* WhatsApp */}
-        <Field
-          id={`${idPrefix}-whatsapp`}
-          label="WhatsApp Number (Optional)"
-          type="tel"
-          inputMode="numeric"
-          value={value('whatsapp')}
-          onChange={setDetail('whatsapp')}
-          error={errors.whatsapp}
-          placeholder="Enter WhatsApp number"
-          hint="Leave blank if it is the same as your mobile."
-        />
-
-        {/* Email */}
-        <Field
-          id={`${idPrefix}-email`}
-          label="Email Address (Optional)"
-          type="email"
-          value={value('email')}
-          onChange={setDetail('email')}
-          maxLength={MAX_LENGTH.email}
-          error={errors.email}
-          placeholder="Enter email address"
-          autoComplete="email"
-        />
+        {/* Email, full width */}
+        <div className={`field full-width ${errors.email ? 'error' : ''}`}>
+          <label htmlFor={`${idPrefix}-email`}>Email Address (Optional)</label>
+          <input
+            id={`${idPrefix}-email`}
+            type="email"
+            value={value('email')}
+            onChange={setDetail('email')}
+            maxLength={MAX_LENGTH.email}
+            placeholder="Enter email address"
+            autoComplete="email"
+          />
+          {errors.email && <span className="field-error">{errors.email}</span>}
+        </div>
       </div>
 
       {/* =====================================================
@@ -409,94 +268,6 @@ export default function CustomerDetailsFields({
         errors={errors}
         idPrefix={idPrefix}
       />
-
-      {/* =====================================================
-          IMAGE UPLOAD
-          ===================================================== */}
-
-      <div className="booking-image-upload">
-        <label className="booking-image-upload-label">
-          Upload Images{' '}
-          <span className="booking-image-upload-optional">
-            (Optional)
-          </span>
-        </label>
-
-        <p className="booking-image-upload-hint">
-          Upload photos of your project or work area.
-          Maximum 5 images.
-        </p>
-
-        <div className="booking-image-upload-container">
-
-          {/* -------------------------------------------------
-              SELECTED IMAGE PREVIEWS
-              ------------------------------------------------- */}
-
-          {images.map((file, index) => (
-            <div
-              className="booking-image-preview"
-              key={`${file.name}-${file.lastModified}-${index}`}
-            >
-              <img
-                src={imagePreviews[index]}
-                alt={`Project image ${index + 1}`}
-              />
-
-              <button
-                type="button"
-                className="booking-image-remove"
-                onClick={() => removeImage(index)}
-                aria-label={`Remove ${file.name}`}
-                title="Remove image"
-              >
-                ×
-              </button>
-            </div>
-          ))}
-
-          {/* -------------------------------------------------
-              UPLOAD BUTTON
-              ------------------------------------------------- */}
-
-          {images.length < MAX_BOOKING_PHOTOS && (
-            <label
-              htmlFor={`${idPrefix}-project-images`}
-              className="booking-image-add"
-            >
-              <span className="booking-image-add-icon">
-                +
-              </span>
-
-              <span className="booking-image-add-text">
-                Upload Photos
-              </span>
-            </label>
-          )}
-
-          {/* Hidden file input */}
-          <input
-            id={`${idPrefix}-project-images`}
-            type="file"
-            accept={BOOKING_PHOTO_TYPES.join(',')}
-            multiple
-            onChange={handleImageChange}
-            style={{ display: 'none' }}
-          />
-        </div>
-
-        {/* File information */}
-        <span className="booking-image-upload-info">
-          JPG, PNG or WebP • Maximum 5 images
-        </span>
-
-        {/* Selected count */}
-        {images.length > 0 && (
-          <span className="booking-image-count">
-            {images.length} / 5 images selected
-          </span>
-        )}
-      </div>
 
       {/* =====================================================
           CITY / PINCODE
