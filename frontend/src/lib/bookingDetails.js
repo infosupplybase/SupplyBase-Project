@@ -48,8 +48,9 @@ export const isValidPhone = (v) => {
 
 /**
  * `pickedLocation` is the customer's map pin (usePickedLocation), or null.
- * With a pin the building name is required and the typed address is an
- * optional extra; without one the typed address is required, as before.
+ * With a pin the building name, room and floor are required. Without one,
+ * the booking forms ask for the pin when Google Maps is on, and for the
+ * typed address otherwise (or when `typedAddressOnly`, as when editing).
  */
 export function validateDetails(details, pickedLocation = null, { typedAddressOnly = false } = {}) {
   const next = {};
@@ -66,10 +67,11 @@ export function validateDetails(details, pickedLocation = null, { typedAddressOn
     if (!text(details.buildingName)) next.buildingName = 'Please enter the building name';
     if (!text(details.roomNo)) next.roomNo = 'Please enter the room number';
     if (!text(details.floorNo)) next.floorNo = 'Please enter the floor';
+  } else if (hasGoogleMaps && !typedAddressOnly) {
+    // The booking forms have no typed address box with Google Maps.
+    next.address = 'Please choose your location above';
   } else if (!text(details.address)) {
-    next.address = hasGoogleMaps && !typedAddressOnly
-      ? 'Add your address above, or type it here'
-      : 'Please enter your address';
+    next.address = 'Please enter your address';
   }
   if (!next.name && text(details.name).length > MAX_LENGTH.name) {
     next.name = `Please keep the name under ${MAX_LENGTH.name} characters`;

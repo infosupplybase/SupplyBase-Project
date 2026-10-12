@@ -355,17 +355,6 @@ export default function BookingDetail() {
                             {fieldErrors.phone && <span className="field-error">{fieldErrors.phone}</span>}
                           </div>
 
-                          <div className={`field ${fieldErrors.whatsapp ? 'error' : ''}`}>
-                            <label htmlFor="bkd-whatsapp">WhatsApp (if different)</label>
-                            <input
-                              id="bkd-whatsapp"
-                              type="tel"
-                              value={form.whatsapp}
-                              onChange={updateField('whatsapp')}
-                            />
-                            {fieldErrors.whatsapp && <span className="field-error">{fieldErrors.whatsapp}</span>}
-                          </div>
-
                           <div className={`field ${fieldErrors.email ? 'error' : ''}`}>
                             <label htmlFor="bkd-email">Email</label>
                             <input id="bkd-email" type="email" value={form.email} onChange={updateField('email')} />
