@@ -194,6 +194,61 @@ Customers book online from the service's page on the website.
 4. Get Expert
 5. Work Completed
 
+How booking works on the website:
+- Open the service page, answer the few questions about the work (home type,
+  area, brand, product and so on), pick an available visit date and time,
+  and enter contact details and address. The booking is reviewed before it
+  is confirmed.
+- Plumbing, Electrician and AC Services work like a cart: add the items you
+  need, then go to checkout and pick a time.
+- Painting, Waterproofing and POP Ceiling show starting prices or rates for
+  the choices made. Interior Design and bigger jobs are priced after a home
+  visit.
+- The site asks the customer to sign in or create an account at the last
+  step so they can follow the booking later.
+- Bigger or custom projects can ask for a free quote:
+  https://supplybase.co.in/quote
+
+After booking:
+- The team confirms the booking, a professional is assigned, and the visit
+  happens at the chosen time. For inspection-based work the team confirms
+  the scope and final price during the visit and sends a quotation; work is
+  scheduled once the customer approves it.
+- Customers see every booking, its status and its details under My Bookings
+  after logging in: https://supplybase.co.in/dashboard/bookings
+- To change the visit time, contact the team with the booking number and the
+  preferred time.
+
+PAYMENT
+- Pay online securely by UPI, card or net banking through Razorpay, or pay
+  the team on the day of the visit.
+- If a customer starts online payment and does not finish it within 24
+  hours, that booking is cancelled automatically to free the time slot.
+- Any visit or consultation fee is shown in the booking flow before the
+  customer confirms. The ₹99 home visit fee is adjusted in the final bill if
+  the customer goes ahead with the work.
+- For larger projects, payments are linked to completed stages of work,
+  agreed in writing before the project starts.
+
+CANCELLING A BOOKING
+- Customers can cancel a booking themselves from My Bookings
+  (https://supplybase.co.in/dashboard/bookings) until the work is scheduled.
+- Once the work is scheduled, the team may already have bought material or
+  booked labour, so the customer needs to call +91 91373 06446 to cancel.
+- If the customer paid online and cancels, the online payment is refunded to
+  the original payment method.
+
+ACCOUNT AND LOGIN
+- Sign in or create an account at https://supplybase.co.in/login with email
+  or phone number and password, or with Google.
+- Forgot password: type the email or phone number on the login page and tap
+  "Forgot password"; a reset link is sent to the account's email.
+- Profile and saved details: https://supplybase.co.in/dashboard/profile
+
+PARTNERS
+- Skilled professionals and contractors who want to work with SupplyBase can
+  join at https://partners.supplybase.co.in
+
 COMPANY TRUST POINTS
 One Partner For Everything
 Quality You Can Trust
@@ -220,10 +275,3 @@ Plumbing: Astral, Supreme, Finolex, Ashirvad
 POP/False Ceiling: Gyproc, Birla White, USG Boral
 Furniture/Interior: Century Ply, Greenlam, Merino, Hettich
 Sanitary: Jaquar, Hindware, Cera, Parryware
-
-STRICT RULE:
-Only answer questions using the information in this SupplyBase knowledge.
-Do not use general world knowledge.
-Do not invent prices, services, locations, policies, availability or guarantees.
-If the answer is not present in this knowledge, reply:
-"I can only provide information available about SupplyBase. I don't have that information."
