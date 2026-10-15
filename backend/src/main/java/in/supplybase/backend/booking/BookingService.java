@@ -155,7 +155,7 @@ public class BookingService {
         // rather than hold seats that can only expire.
         if (!razorpay.isConfigured()) {
             throw ApiException.badRequest("Online booking is not available right now."
-                    + " Please call or WhatsApp us on +91 91373 06446 to book.");
+                    + " Please call us on +91 91373 06446 or WhatsApp us on +91 83569 28520 to book.");
         }
         ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
         String phone = PhoneNumbers.normalise(request.phone());

@@ -269,7 +269,7 @@ export default function PlumbingCheckout({
           )}
           <h1 className="wizard-title">Checkout</h1>
           <a
-            href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(config.help)}`}
+            href={`https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(config.help)}`}
             target="_blank" rel="noopener noreferrer" className="wizard-help"
           >
             Need help?
@@ -545,7 +545,7 @@ function CheckoutConfirmation({
               }
             >
               <a
-                href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+                href={`https://wa.me/${contact.whatsappRaw}?text=${message}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={

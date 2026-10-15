@@ -411,7 +411,7 @@ export default function ElectricianService() {
           </button>
           <h1 className="wizard-title">{category.name}</h1>
           <a
-            href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+            href={`https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(
               `Hello Supplybase, I need help booking ${category.name}.`
             )}`}
             target="_blank"
@@ -716,7 +716,7 @@ function ElectricianConfirmation({ receipt, details, pendingFiles, uploadState, 
             </Link>
 
             <div className="btn-row" style={{ marginTop: 12 }}>
-              <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+              <a href={`https://wa.me/${contact.whatsappRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
                 <Icon name="whatsapp" size={17} />
                 CHAT ON WHATSAPP
               </a>

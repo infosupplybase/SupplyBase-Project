@@ -22,7 +22,9 @@ export const company = {
  */
 export const contact = {
   phoneDisplay: '+91 91373 06446',
-  phoneRaw: '919137306446', // country code + number, digits only (used for tel: and WhatsApp)
+  phoneRaw: '919137306446', // country code + number, digits only (used for tel: links)
+  whatsappDisplay: '+91 83569 28520',
+  whatsappRaw: '918356928520', // country code + number, digits only (used for wa.me WhatsApp links)
   email: 'info.supplybase@gmail.com',
   addressLines: ['Kalyan, Thane, Maharashtra 421306', 'India'], // town and PIN of the GST-registered place of business
   serviceAreas: ['Mumbai', 'Navi Mumbai', 'Thane', 'Kalyan', 'Panvel', 'Pune'],
