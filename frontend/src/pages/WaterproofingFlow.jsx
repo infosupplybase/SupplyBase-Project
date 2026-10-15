@@ -299,7 +299,7 @@ export default function WaterproofingFlow({ flowSlug: flowSlugProp, modal = fals
 
               <Link to="/dashboard" className="btn btn-primary btn-block">GO TO DASHBOARD</Link>
               <div className="btn-row" style={{ marginTop: 12 }}>
-                <a href={`https://wa.me/${contact.phoneRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
+                <a href={`https://wa.me/${contact.whatsappRaw}?text=${message}`} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp">
                   <Icon name="whatsapp" size={17} /> CHAT ON WHATSAPP
                 </a>
                 <Link to="/services/waterproofing" className="btn btn-ghost btn-back">BACK TO WATERPROOFING</Link>
@@ -545,7 +545,7 @@ function FlowTopBar({ flow, onBack, plain }) {
       </button>
       <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.title}</h1>
       <a
-        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.title}.`)}`}
+        href={`https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.title}.`)}`}
         target="_blank"
         rel="noopener noreferrer"
         className={plain ? 'pnt-help' : 'wizard-help'}

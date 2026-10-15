@@ -235,7 +235,7 @@ if (receipt) {
 )}
           <h1 className="wizard-title">{type.label}</h1>
           <a
-            href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking a ${type.label}.`)}`}
+            href={`https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking a ${type.label}.`)}`}
             target="_blank" rel="noopener noreferrer" className="wizard-help"
           >
             Need help?
@@ -435,7 +435,7 @@ function ConsultationConfirmation({
   }
 >
   <a
-    href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+    href={`https://wa.me/${contact.whatsappRaw}?text=${message}`}
     target="_blank"
     rel="noopener noreferrer"
     className={

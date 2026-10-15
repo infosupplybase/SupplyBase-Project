@@ -27,7 +27,7 @@ const QUICK_REPLIES = [
 // it and passes the chat to the team in the admin Chatbot inbox.
 const HUMAN_REQUEST = "I'd like to talk to your team, please.";
 
-const WHATSAPP_URL = `https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+const WHATSAPP_URL = `https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(
   "Hi SupplyBase, I have a question."
 )}`;
 

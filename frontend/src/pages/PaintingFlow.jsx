@@ -510,7 +510,7 @@ if (modal) {
   }
 >
   <a
-    href={`https://wa.me/${contact.phoneRaw}?text=${message}`}
+    href={`https://wa.me/${contact.whatsappRaw}?text=${message}`}
     target="_blank"
     rel="noopener noreferrer"
     className={
@@ -938,7 +938,7 @@ function FlowTopBar({ flow, onBack, plain }) {
       </button>
       <h1 className={plain ? 'pnt-top-title' : 'wizard-title'}>{flow.name}</h1>
       <a
-        href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.name}.`)}`}
+        href={`https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(`Hello Supplybase, I need help booking ${flow.name}.`)}`}
         target="_blank"
         rel="noopener noreferrer"
         className={plain ? 'pnt-help' : 'wizard-help'}

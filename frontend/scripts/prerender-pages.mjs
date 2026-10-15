@@ -24,6 +24,8 @@ import { serviceSeoContent, relatedServiceLinks, SERVICE_AREAS } from '../src/da
 const LOGO = '/assets/brand/logo-full.jpg';
 const PHONE_DISPLAY = '+91 91373 06446';
 const PHONE_TEL = '+919137306446';
+const WHATSAPP_DISPLAY = '+91 83569 28520';
+const WHATSAPP_URL = 'https://wa.me/918356928520';
 const EMAIL = 'info.supplybase@gmail.com';
 
 /** Breadcrumb trail names, by path. */
@@ -114,7 +116,7 @@ function noscriptBody(path, meta) {
   parts.push(
     `<p>We serve ${esc(SERVICE_AREAS.join(', '))}, every day from 9:00 AM to 9:00 PM. ` +
       `This website needs JavaScript to book a visit. Please turn it on, or reach us directly: ` +
-      `call or WhatsApp <a href="tel:${PHONE_TEL}">${PHONE_DISPLAY}</a> or write to ` +
+      `call <a href="tel:${PHONE_TEL}">${PHONE_DISPLAY}</a>, WhatsApp <a href="${WHATSAPP_URL}">${WHATSAPP_DISPLAY}</a> or write to ` +
       `<a href="mailto:${EMAIL}">${EMAIL}</a>.</p>`
   );
   parts.push(`<p>Our services: ${services}</p>`);

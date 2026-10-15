@@ -13,7 +13,7 @@ export const whatsappHref = (message) => {
   const text =
     message ||
     `Hello ${company.name}, I would like to discuss a project.`;
-  return `https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(text)}`;
+  return `https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(text)}`;
 };
 
 /** mailto: link with a subject and body pre-filled. */

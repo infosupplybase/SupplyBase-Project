@@ -243,7 +243,7 @@ export default function AcServiceFlow({
 
         <a
           className="ac-pop-help"
-          href={`https://wa.me/${contact.phoneRaw}?text=${encodeURIComponent(
+          href={`https://wa.me/${contact.whatsappRaw}?text=${encodeURIComponent(
             `Hello Supplybase, I need help booking ${category.label}.`
           )}`}
           target="_blank"
