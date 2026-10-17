@@ -65,10 +65,10 @@ export default function ServiceSeoContent({ slug }) {
         <h2>Areas we serve</h2>
         <p>
           We take {content.name.toLowerCase()} bookings in {SERVICE_AREAS.slice(0, -1).join(', ')} and{' '}
-          {SERVICE_AREAS[SERVICE_AREAS.length - 1]}. Questions before you book? Call or WhatsApp us on{' '}
-          <a href={telHref}>{contact.phoneDisplay}</a>, or{' '}
+          {SERVICE_AREAS[SERVICE_AREAS.length - 1]}. Questions before you book? Call us on{' '}
+          <a href={telHref}>{contact.phoneDisplay}</a>, or WhatsApp us on{' '}
           <a href={whatsappHref(`Hi Supplybase, I have a question about ${content.name.toLowerCase()}.`)} target="_blank" rel="noopener noreferrer">
-            message us on WhatsApp
+            {contact.whatsappDisplay}
           </a>
           . You can also <Link to={`/quote?service=${slug}`}>request a written quotation</Link>.
         </p>
