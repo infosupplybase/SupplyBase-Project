@@ -762,8 +762,8 @@ if (modal) {
               showAllProducts={step.questionKey === 'few_walls_product'}
               productsByTier={productsByTier(step.questionKey, answers)}
               hidePrices={
-                requiresPaintingSiteQuote ||
-                (flowSlug === 'full-home' &&
+                requiresPaintingSiteQuote &&
+                !(flowSlug === 'full-home' &&
                   answers.full_home_painting_type === 'renovation-painting')
               }
               brand={answers.paint_brand}
