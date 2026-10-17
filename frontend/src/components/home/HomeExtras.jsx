@@ -70,14 +70,15 @@ export function HomeWhyChoose() {
   return (
     <section className="sbx-section sbx-why-choose" aria-label="Why choose SupplyBase">
       <div className="container">
-        <div className="popular-services-head">
-          <h2 className="popular-services-title">Why choose SupplyBase?</h2>
-          <p className="sbx-why-sub">Painting, waterproofing, plumbing, electrical, AC, POP ceiling and interiors, handled by one team.</p>
+        <div className="sbx-why-head">
+          <span className="sbx-why-eyebrow">Why SupplyBase</span>
+          <h2>Why choose <span>SupplyBase?</span></h2>
+          <p>Painting, waterproofing, plumbing, electrical, AC, POP ceiling and interiors, handled by one team.</p>
         </div>
         <div className="sbx-benefits">
           {benefits.map((item) => (
             <article className="sbx-benefit" key={item.title}>
-              <span className="sbx-icon"><Icon name={item.icon} size={25} /></span>
+              <span className="sbx-icon"><Icon name={item.icon} size={30} strokeWidth={1.6} /></span>
               <div><h3>{item.title}</h3><p>{item.text}</p></div>
               {item.link && (
                 <Link className="sbx-benefit-link" to={item.link.to}>

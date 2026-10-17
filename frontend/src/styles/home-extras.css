@@ -162,7 +162,6 @@
 }
 /* End homepage location availability */
 
-
 /* Before and after service options */
 .page-home .sbx-transformation-services {
   display: grid;
@@ -377,233 +376,6 @@
 }
 /* End before and after separate popup */
 
-
-
-
-
-
-
-
-
-
-
-
-
-/* Why choose balanced cards */
-.page-home .home-how {
-  margin-bottom: 0;
-  padding-bottom: 24px;
-}
-
-.page-home .sbx-why-choose {
-  margin: 0;
-  padding: 12px 0 28px;
-  background: #fff;
-}
-
-.page-home .sbx-why-choose .popular-services-head {
-  margin: 0 0 22px;
-}
-
-.page-home .sbx-why-choose .sbx-benefits {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 16px;
-  margin: 0;
-  padding: 0;
-}
-
-.page-home .sbx-why-choose .sbx-benefit {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 14px;
-  min-width: 0;
-  min-height: 190px;
-  margin: 0;
-  padding: 24px 20px;
-  overflow: hidden;
-  border: 1px solid #eae5db;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #fff, #fffcf6);
-  box-shadow: 0 4px 16px rgba(45, 35, 15, .04);
-  text-align: center;
-}
-
-.page-home .sbx-why-choose .sbx-benefit::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 35%;
-  right: 35%;
-  height: 3px;
-  border-radius: 0 0 4px 4px;
-  background: #c9a047;
-}
-
-.page-home .sbx-why-choose .sbx-benefit > .sbx-icon {
-  display: grid;
-  place-items: center;
-  flex: 0 0 48px;
-  width: 48px;
-  height: 48px;
-  margin: 0;
-  border: 1px solid #efdfb8;
-  border-radius: 14px;
-  background: #fbf2dc;
-  color: #a47716;
-}
-
-.page-home .sbx-why-choose .sbx-benefit > div {
-  width: 100%;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  text-align: center;
-}
-
-.page-home .sbx-why-choose .sbx-benefit h3 {
-  margin: 0 0 8px;
-  padding: 0;
-  color: #222;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.page-home .sbx-why-choose .sbx-benefit p {
-  max-width: 28ch;
-  margin: 0 auto;
-  padding: 0;
-  color: #687078;
-  font-size: 13px;
-  line-height: 1.65;
-}
-
-@media (max-width: 900px) {
-  .page-home .sbx-why-choose .sbx-benefits {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .page-home .home-how {
-    padding-bottom: 18px;
-  }
-
-  .page-home .sbx-why-choose {
-    padding: 10px 0 24px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefits {
-    gap: 12px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefit {
-    min-height: 0;
-    padding: 20px 12px;
-    gap: 12px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefit h3 {
-    font-size: 14px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefit p {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 340px) {
-  .page-home .sbx-why-choose .sbx-benefits {
-    grid-template-columns: 1fr;
-  }
-}
-/* End why choose balanced cards */
-
-/* Why choose black and gold panel */
-.page-home .sbx-why-choose {
-  padding-top: 20px;
-  padding-bottom: 28px;
-  background: #fff;
-}
-
-.page-home .sbx-why-choose > .container {
-  position: relative;
-}
-
-/* The panel stays inside the existing shared container. */
-.page-home .sbx-why-choose .popular-services-head {
-  margin: 0;
-  padding: 24px 24px 20px;
-  border: 1px solid #30291a;
-  border-bottom: 0;
-  border-radius: 20px 20px 0 0;
-  background: #14120d;
-}
-
-.page-home .sbx-why-choose .popular-services-title {
-  margin: 0;
-  color: #fff8e8;
-}
-
-.page-home .sbx-why-choose .sbx-benefits {
-  gap: 16px;
-  padding: 0 24px 24px;
-  border: 1px solid #30291a;
-  border-top: 0;
-  border-radius: 0 0 20px 20px;
-  background: #14120d;
-}
-
-.page-home .sbx-why-choose .sbx-benefit {
-  min-height: 176px;
-  padding: 22px 16px;
-  border: 1px solid #443922;
-  border-radius: 14px;
-  background: #1e1b14;
-  box-shadow: none;
-}
-
-.page-home .sbx-why-choose .sbx-benefit::before {
-  background: #d4ab48;
-}
-
-.page-home .sbx-why-choose .sbx-benefit > .sbx-icon {
-  border-color: #685124;
-  background: #332a16;
-  color: #f0cb70;
-}
-
-.page-home .sbx-why-choose .sbx-benefit h3 {
-  color: #fff8e8;
-}
-
-.page-home .sbx-why-choose .sbx-benefit p {
-  color: #d0c9b9;
-}
-
-@media (max-width: 600px) {
-  .page-home .sbx-why-choose .popular-services-head {
-    padding: 20px 16px 18px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefits {
-    gap: 12px;
-    padding: 0 16px 20px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefit {
-    min-height: 0;
-    padding: 18px 12px;
-  }
-}
-/* End why choose black and gold panel */
-
 /* Booking to consultation spacing */
 .page-home .home-how {
   margin-bottom: 0 !important;
@@ -652,137 +424,6 @@
 }
 /* End why choose to project section spacing */
 
-/* Refined why choose panel */
-.page-home .sbx-why-choose .popular-services-head {
-  padding: 28px 28px 22px;
-  border-color: #393021;
-  background: #15130e;
-}
-
-.page-home .sbx-why-choose .popular-services-title {
-  color: #fff8e8;
-  line-height: 1.25;
-}
-
-.page-home .sbx-why-choose .sbx-benefits {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: stretch;
-  gap: 18px;
-  padding: 0 28px 28px;
-  border-color: #393021;
-  background: #15130e;
-}
-
-.page-home .sbx-why-choose .sbx-benefit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 16px;
-  min-width: 0;
-  min-height: 200px;
-  padding: 24px 18px;
-  border: 1px solid #443a25;
-  border-radius: 16px;
-  background: linear-gradient(145deg, #252116, #1c1912);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
-  text-align: center;
-  transition: transform .2s ease, border-color .2s ease,
-              box-shadow .2s ease;
-}
-
-.page-home .sbx-why-choose .sbx-benefit::before {
-  content: none;
-}
-
-.page-home .sbx-why-choose .sbx-benefit .sbx-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 52px;
-  width: 52px;
-  height: 52px;
-  margin: 0;
-  border: 1px solid #715925;
-  border-radius: 14px;
-  background: #352b16;
-  color: #f2ca64;
-}
-
-.page-home .sbx-why-choose .sbx-benefit > div {
-  width: 100%;
-  min-width: 0;
-}
-
-.page-home .sbx-why-choose .sbx-benefit h3 {
-  margin: 0 0 9px;
-  color: #fff8e8;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.page-home .sbx-why-choose .sbx-benefit p {
-  max-width: 28ch;
-  margin: 0 auto;
-  color: #d2c9b7;
-  font-size: 13px;
-  line-height: 1.65;
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .page-home .sbx-why-choose .sbx-benefit:hover {
-    transform: translateY(-4px);
-    border-color: #ac8431;
-    box-shadow: 0 10px 22px rgba(0, 0, 0, .2);
-  }
-}
-
-@media (max-width: 900px) {
-  .page-home .sbx-why-choose .sbx-benefits {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .page-home .sbx-why-choose .popular-services-head {
-    padding: 22px 16px 18px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefits {
-    gap: 12px;
-    padding: 0 16px 20px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefit {
-    min-height: 0;
-    gap: 14px;
-    padding: 20px 12px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefit h3 {
-    font-size: 14px;
-  }
-
-  .page-home .sbx-why-choose .sbx-benefit p {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 360px) {
-  .page-home .sbx-why-choose .sbx-benefits {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .page-home .sbx-why-choose .sbx-benefit {
-    transition: none;
-  }
-}
-/* End refined why choose panel */
-
 /* Service availability top spacing */
 .page-home .sbx-section:has(.sbx-availability) {
   padding-top: 56px !important;
@@ -795,28 +436,100 @@
 }
 /* End service availability top spacing */
 
-/* Why choose subtitle and card links */
-.page-home .sbx-why-choose .popular-services-head {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
+
+/* Why choose: light cards matching the stats and reviews sections */
+.page-home .sbx-why-choose {
+  background: #fff;
 }
 
-.page-home .sbx-why-choose .sbx-why-sub {
-  max-width: 62ch;
+.page-home .sbx-why-choose .sbx-why-head {
+  max-width: 720px;
+  margin: 0 auto 36px;
+  text-align: center;
+}
+
+.page-home .sbx-why-choose .sbx-why-eyebrow {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: #b08d57;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.page-home .sbx-why-choose .sbx-why-head h2 {
   margin: 0;
-  color: #cfc5af;
-  font-size: 14px;
-  line-height: 1.6;
+  color: #171717;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 3.4vw, 44px);
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.page-home .sbx-why-choose .sbx-why-head h2 span {
+  color: #b08d57;
+}
+
+.page-home .sbx-why-choose .sbx-why-head p {
+  max-width: 620px;
+  margin: 16px auto 0;
+  color: #686868;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.page-home .sbx-why-choose .sbx-benefits {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 20px;
+}
+
+.page-home .sbx-why-choose .sbx-benefit {
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 30px 22px 26px;
+  border: 1px solid #e8e8e8;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff 0%, #fbfaf8 100%);
+  box-shadow: var(--depth-inset-top), var(--shadow-sm);
+  text-align: center;
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+
+.page-home .sbx-why-choose .sbx-benefit .sbx-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 68px;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fffdf6 0%, #fbeecb 55%, #f2dda3 100%);
+  box-shadow: var(--depth-inset-top), inset 0 -6px 10px rgba(180, 130, 20, .16), var(--shadow-sm);
+  color: var(--gold-deep);
+}
+
+.page-home .sbx-why-choose .sbx-benefit > div {
+  width: 100%;
 }
 
 .page-home .sbx-why-choose .sbx-benefit h3 {
-  font-size: 16px;
+  margin: 0 0 10px;
+  color: #171717;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .page-home .sbx-why-choose .sbx-benefit p {
-  max-width: 32ch;
+  max-width: 30ch;
+  margin: 0 auto;
+  color: #686868;
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .page-home .sbx-why-choose .sbx-benefit-link {
@@ -824,35 +537,75 @@
   align-items: center;
   gap: 6px;
   margin-top: auto;
-  padding: 4px 2px;
-  color: #f2ca64;
+  color: var(--gold-deep);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: .5px;
   text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .page-home .sbx-why-choose .sbx-benefit-link:hover,
 .page-home .sbx-why-choose .sbx-benefit-link:focus-visible {
-  color: #ffe19a;
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .page-home .sbx-why-choose .sbx-benefit:hover {
+    transform: translateY(-6px);
+    border-color: var(--gold);
+    box-shadow: var(--depth-inset-top), var(--shadow-lg);
+  }
+}
+
+@media (max-width: 900px) {
+  .page-home .sbx-why-choose .sbx-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 600px) {
-  .page-home .sbx-why-choose .sbx-why-sub {
-    font-size: 13px;
+  .page-home .sbx-why-choose .sbx-why-head {
+    margin-bottom: 24px;
   }
 
-  .page-home .sbx-why-choose .sbx-benefit h3 {
+  .page-home .sbx-why-choose .sbx-why-head p {
     font-size: 14px;
   }
 
+  .page-home .sbx-why-choose .sbx-benefits {
+    gap: 12px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit {
+    gap: 14px;
+    padding: 22px 12px 20px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit .sbx-icon {
+    flex-basis: 56px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit h3 {
+    font-size: 15px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit p {
+    font-size: 12.5px;
+  }
+
   .page-home .sbx-why-choose .sbx-benefit-link {
-    font-size: 12px;
+    font-size: 11.5px;
   }
 }
-/* End why choose subtitle and card links */
 
-.page-home .sbx-why-choose .sbx-benefit-link {
-  white-space: nowrap;
+@media (max-width: 360px) {
+  .page-home .sbx-why-choose .sbx-benefits {
+    grid-template-columns: 1fr;
+  }
 }
+/* End why choose light cards */
