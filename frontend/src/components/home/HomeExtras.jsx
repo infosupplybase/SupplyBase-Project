@@ -4,13 +4,33 @@ import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { homeTransformations } from '../../data/homeTransformations';
+import { whatsappHref } from '../../lib/contact';
 import '../../styles/home-extras.css';
 
 const benefits = [
-  { icon: 'helmet', title: 'Skilled professionals', text: 'Find help for painting, repairs and home improvement.' },
-  { icon: 'rupee', title: 'Clear estimates', text: 'Understand the proposed scope and price before work begins.' },
-  { icon: 'calendar', title: 'Convenient booking', text: 'Choose your service and an available visit time.' },
-  { icon: 'chat', title: 'Customer support', text: 'Get help choosing a service and planning your visit.' },
+  {
+    icon: 'partners',
+    title: 'One team, start to finish',
+    text: 'We bring the labour, the materials and the supervision, so you deal with one partner from the first visit to handover.',
+  },
+  {
+    icon: 'rupee',
+    title: 'Price agreed before work starts',
+    text: 'See starting prices as you book. For bigger jobs we inspect on site and confirm the scope and final price first.',
+  },
+  {
+    icon: 'calendar',
+    title: 'Book online in minutes',
+    text: 'Pick a service and an open visit slot, then review every detail before you confirm.',
+    link: { to: '/services', label: 'Browse services' },
+  },
+  {
+    icon: 'whatsapp',
+    title: 'Talk to a real person',
+    text: 'Call or WhatsApp our team any day of the week, from 9\u00a0AM to 9\u00a0PM.',
+    href: whatsappHref(),
+    linkLabel: 'WhatsApp us',
+  },
 ];
 
 const faqs = [
@@ -50,14 +70,26 @@ export function HomeWhyChoose() {
   return (
     <section className="sbx-section sbx-why-choose" aria-label="Why choose SupplyBase">
       <div className="container">
-        <div className="popular-services-head">
-          <h2 className="popular-services-title">Why choose SupplyBase?</h2>
+        <div className="sbx-why-head">
+          <span className="sbx-why-eyebrow">Why SupplyBase</span>
+          <h2>Why choose <span>SupplyBase?</span></h2>
+          <p>Painting, waterproofing, plumbing, electrical, AC, POP ceiling and interiors, handled by one team.</p>
         </div>
         <div className="sbx-benefits">
           {benefits.map((item) => (
             <article className="sbx-benefit" key={item.title}>
-              <span className="sbx-icon"><Icon name={item.icon} size={25} /></span>
+              <span className="sbx-icon"><Icon name={item.icon} size={30} strokeWidth={1.6} /></span>
               <div><h3>{item.title}</h3><p>{item.text}</p></div>
+              {item.link && (
+                <Link className="sbx-benefit-link" to={item.link.to}>
+                  {item.link.label} <Icon name="arrow-right" size={14} />
+                </Link>
+              )}
+              {item.href && (
+                <a className="sbx-benefit-link" href={item.href} target="_blank" rel="noopener noreferrer">
+                  {item.linkLabel} <Icon name="arrow-right" size={14} />
+                </a>
+              )}
             </article>
           ))}
         </div>
