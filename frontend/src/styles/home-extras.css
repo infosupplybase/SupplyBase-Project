@@ -794,3 +794,65 @@
   }
 }
 /* End service availability top spacing */
+
+/* Why choose subtitle and card links */
+.page-home .sbx-why-choose .popular-services-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.page-home .sbx-why-choose .sbx-why-sub {
+  max-width: 62ch;
+  margin: 0;
+  color: #cfc5af;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.page-home .sbx-why-choose .sbx-benefit h3 {
+  font-size: 16px;
+}
+
+.page-home .sbx-why-choose .sbx-benefit p {
+  max-width: 32ch;
+}
+
+.page-home .sbx-why-choose .sbx-benefit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding: 4px 2px;
+  color: #f2ca64;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.page-home .sbx-why-choose .sbx-benefit-link:hover,
+.page-home .sbx-why-choose .sbx-benefit-link:focus-visible {
+  color: #ffe19a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .page-home .sbx-why-choose .sbx-why-sub {
+    font-size: 13px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit h3 {
+    font-size: 14px;
+  }
+
+  .page-home .sbx-why-choose .sbx-benefit-link {
+    font-size: 12px;
+  }
+}
+/* End why choose subtitle and card links */
+
+.page-home .sbx-why-choose .sbx-benefit-link {
+  white-space: nowrap;
+}
