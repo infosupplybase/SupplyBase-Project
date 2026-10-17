@@ -3,6 +3,7 @@ import Icon from '../ui/Icon';
 import { friendlyError } from '../../lib/api';
 import { onlinePaymentsEnabled, payForBooking, PaymentCancelledError } from '../../lib/razorpay';
 import { trackEvent } from '../../lib/analytics';
+import { contact } from '../../data/siteConfig';
 
 /**
  * "Pay ₹99 to confirm" for a booking that has just been made, or one still
@@ -80,8 +81,8 @@ export default function PayBookingButton({ bookingNumber, amountDisplay, onPaid,
     return (
       <div className={`pay-booking ${className}`}>
         <p className="pay-booking-hint">
-          Online payment is not available right now, so this booking cannot be confirmed online. Please call or
-          WhatsApp us on +91 91373 06446.
+          Online payment is not available right now, so this booking cannot be confirmed online. Please call us on
+          {contact.phoneDisplay} or WhatsApp us on {contact.whatsappDisplay}.
         </p>
       </div>
     );

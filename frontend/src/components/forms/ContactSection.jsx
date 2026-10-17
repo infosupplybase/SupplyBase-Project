@@ -37,7 +37,7 @@ export default function ContactSection() {
         </span>
         <span>
           <h4>WhatsApp</h4>
-          <p>Message us — we usually reply the same day</p>
+          <p>{contact.whatsappDisplay}</p>
         </span>
       </a>
 
