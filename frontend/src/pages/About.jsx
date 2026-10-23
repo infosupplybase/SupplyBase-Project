@@ -6,7 +6,6 @@ import SectionHeading from '../components/ui/SectionHeading';
 import Reveal from '../components/ui/Reveal';
 import CtaBand from '../components/ui/CtaBand';
 import Icon from '../components/ui/Icon';
-import StatsSection from '../components/home/StatsSection';
 import ProcessSection from '../components/home/ProcessSection';
 
 import { company, whyUsPoints } from '../data/siteConfig';
@@ -258,13 +257,6 @@ export default function About() {
       <div className="mt-0">
         <ProcessSection />
       </div>
-
-      {/* ================= STATS ================= */}
-      {/*
-      <div className="mt-0">
-        <StatsSection showHeading={false} />
-      </div>
-      */}
 
       {/* ================= CTA ================= */}
       <div className="mt-1 mb-1 w-full px-0 py-10">
