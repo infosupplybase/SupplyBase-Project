@@ -104,6 +104,18 @@ const customerReviews = [
     ],
   },
   {
+    id: 'g12',
+    name: 'Khan Umme sumaiya',
+    rating: 5,
+    review:
+      'Excellent coordination and daily updates\nCommunication was super clear throughout the project. Our site supervisor kept us updated with regular photo and video progress reports, so we always knew what was happening. Every small detail we discussed was executed exactly as planned. Very happy',
+    source: 'google',
+    photos: [
+      'https://lh3.googleusercontent.com/grass-cs/AABkmLch8-BbntGDPV2SuDi1W3eN6t1Xd1SvtTa8Zx0lucbxZeDanJfqxeE-e9rZWgzSJZi7e3pRwkJBx0_zRLazKVWMJz-tepXZWCJ55qPpbCcph625h4IPVTXrXsdwsCsSnzS3_eIxWPs8LN_i=w800',
+      'https://lh3.googleusercontent.com/grass-cs/AABkmLfBWBrukwtH287yrLJ9xqMpfAltFLvz5amLd2XJpwoT3OU0pwOABtuo0_TV0YsUoyEEkGTQlr-lB9FvP30vDgxkEZqY9i4vPHKLO-qnorB-5-e9csReS9RCcaXFvwFQjSVk5Z-UO1KAzCge=w800',
+    ],
+  },
+  {
     id: 'g8',
     name: 'Naseem Khan',
     rating: 5,
