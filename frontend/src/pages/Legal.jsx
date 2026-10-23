@@ -55,6 +55,12 @@ export function PrivacyPolicy() {
             and does not identify you: it records the page, the website you came from, your country, and your device
             and browser type, and visits cannot be linked across days or other websites.
           </p>
+          <p>
+            We also use Google Analytics to see which pages and services people look at and whether they call us,
+            send a quote request or make a booking. It sets cookies to recognise a returning browser. It never
+            receives your name, phone number, email, address or messages. You can block it with your browser's
+            privacy or ad-blocking settings, and the website works the same without it.
+          </p>
 
           <h2>Your location</h2>
           <p>

@@ -18,6 +18,17 @@
   // starting GA here keeps those tokens out of Google Analytics.
   if (/^\/(reset-password|verify-email)\/?$/.test(window.location.pathname)) return;
 
+  // Our own visits: open the site once with ?notrack=1 on each of your
+  // devices and this browser stops counting in GA4 (?notrack=0 undoes it).
+  try {
+    var optOut = new URLSearchParams(window.location.search).get('notrack');
+    if (optOut === '1') window.localStorage.setItem('sb.notrack', '1');
+    if (optOut === '0') window.localStorage.removeItem('sb.notrack');
+    if (window.localStorage.getItem('sb.notrack') === '1') return;
+  } catch (e) {
+    // Storage blocked: just count the visit.
+  }
+
   var loader = document.createElement('script');
   loader.async = true;
   loader.src = 'https://www.googletagmanager.com/gtag/js?id=' + MEASUREMENT_ID;

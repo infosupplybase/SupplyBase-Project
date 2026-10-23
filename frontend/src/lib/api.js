@@ -14,6 +14,8 @@
  * nothing above this file has to think about expiry.
  */
 
+import { trackEvent } from './analytics';
+
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080').replace(/\/$/, '');
 
 const ACCESS_KEY = 'sb.accessToken';
@@ -263,7 +265,13 @@ updateProfile: (profile) =>
    * auth is left ON deliberately. The endpoint is public, but sending the
    * token when there is one lets the API attach the booking to that account.
    */
-  createBooking: (payload) => request('/api/bookings', { method: 'POST', body: payload }),
+  createBooking: async (payload) => {
+    const result = await request('/api/bookings', { method: 'POST', body: payload });
+    // Every booking flow comes through here, so this is the one place that
+    // counts a booking made (paid or not). Paying is booking_confirmed.
+    trackEvent('booking_created', { service: payload?.serviceSlug || 'unknown' });
+    return result;
+  },
 
   /** One photo, attached to a booking that was just created in this session. */
   uploadBookingFile: (bookingNumber, phone, file, kind = 'PHOTO') => {
