@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import customerReviews from "../../data/customerReviews";
+import { contact } from "../../data/siteConfig";
+
+const hasPhotos = (item) => Array.isArray(item.photos) && item.photos.length > 0;
 
 function Stars({ rating }) {
   return (
@@ -32,8 +35,14 @@ export default function CustomerReviews() {
       );
     }
 
-    // Highest rating first.
+    // Reviews with photos first, then highest rating.
     result.sort((a, b) => {
+      const photoDifference = Number(hasPhotos(b)) - Number(hasPhotos(a));
+
+      if (photoDifference !== 0) {
+        return photoDifference;
+      }
+
       const ratingDifference = Number(b.rating) - Number(a.rating);
 
       if (ratingDifference !== 0) {
@@ -148,6 +157,20 @@ export default function CustomerReviews() {
                   <article className="review-card" key={item.id}>
                     <span className="quote-mark">“</span>
 
+                    {hasPhotos(item) && (
+                      <div className="review-photos">
+                        {item.photos.slice(0, 3).map((photo, index) => (
+                          <img
+                            key={photo}
+                            src={photo}
+                            alt={`Photo ${index + 1} from ${item.name}'s review`}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ))}
+                      </div>
+                    )}
+
                     <Stars rating={Number(item.rating)} />
 
                     <p className="review-text">{item.review}</p>
@@ -196,6 +219,18 @@ export default function CustomerReviews() {
                 />
               ))}
             </div>
+
+            {contact.googleBusinessUrl && (
+              <p className="reviews-google-link">
+                <a
+                  href={contact.googleBusinessUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  See all our reviews on Google
+                </a>
+              </p>
+            )}
           </>
         ) : (
           <div className="reviews-empty">

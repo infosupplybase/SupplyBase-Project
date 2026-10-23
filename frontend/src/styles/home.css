@@ -1084,6 +1084,36 @@
 }
 
 
+/* Customer photos from a Google review: one large, up to two small */
+.review-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: -6px 0 16px;
+}
+
+.review-photos img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+.review-photos img:first-child {
+  grid-column: 1 / -1;
+}
+
+.reviews-google-link {
+  margin: 18px 0 0;
+  text-align: center;
+}
+
+.reviews-google-link a {
+  color: #b08d57;
+  font-weight: 600;
+}
+
 /* Client Stories before any reviews are added */
 .customer-reviews .reviews-empty {
   max-width: 560px;
