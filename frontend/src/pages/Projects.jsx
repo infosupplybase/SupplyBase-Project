@@ -2,7 +2,6 @@ import { useState } from 'react';
 import PageHero from '../components/ui/PageHero';
 import ProjectFilter from '../components/projects/ProjectFilter';
 import ProjectGrid from '../components/projects/ProjectGrid';
-import StatsSection from '../components/home/StatsSection';
 import CtaBand from '../components/ui/CtaBand';
 import { getProjectsByCategory } from '../data/projects';
 
@@ -27,7 +26,6 @@ export default function Projects() {
         </div>
       </section>
 
-      <StatsSection />
       <CtaBand
         title="WANT A PROJECT LIKE THIS?"
         text="Send us your requirement and we will prepare a quotation for your site."
