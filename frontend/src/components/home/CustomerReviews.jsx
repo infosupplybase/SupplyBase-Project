@@ -1,9 +1,42 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import customerReviews from "../../data/customerReviews";
 import { contact } from "../../data/siteConfig";
 
 const hasPhotos = (item) => Array.isArray(item.photos) && item.photos.length > 0;
+
+// Longer reviews start collapsed to a few lines, with a "Read more" toggle.
+const LONG_REVIEW = 160;
+
+const PHONE_QUERY = "(max-width: 768px)";
+
+/** 3 reviews per page on desktop, 1 on a phone. */
+function useReviewsPerSlide() {
+  const getCount = () =>
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia(PHONE_QUERY).matches
+      ? 1
+      : 3;
+
+  const [count, setCount] = useState(getCount);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) {
+      return undefined;
+    }
+
+    const mq = window.matchMedia(PHONE_QUERY);
+    const sync = () => setCount(getCount());
+
+    mq.addEventListener("change", sync);
+    sync();
+
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  return count;
+}
 
 function Stars({ rating }) {
   return (
@@ -25,6 +58,11 @@ export default function CustomerReviews() {
   const reviews = customerReviews;
   const [selectedRating, setSelectedRating] = useState("all");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [expanded, setExpanded] = useState({});
+  const REVIEWS_PER_SLIDE = useReviewsPerSlide();
+
+  const toggleExpanded = (id) =>
+    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const filteredReviews = useMemo(() => {
     let result = [...reviews];
@@ -55,8 +93,6 @@ export default function CustomerReviews() {
 
     return result;
   }, [reviews, selectedRating]);
-
-  const REVIEWS_PER_SLIDE = 5;
 
   const totalSlides = Math.max(
     1,
@@ -174,7 +210,26 @@ export default function CustomerReviews() {
 
                     <Stars rating={Number(item.rating)} />
 
-                    <p className="review-text">{item.review}</p>
+                    <p
+                      className={`review-text${
+                        item.review.length > LONG_REVIEW && !expanded[item.id]
+                          ? " review-text--clamped"
+                          : ""
+                      }`}
+                    >
+                      {item.review}
+                    </p>
+
+                    {item.review.length > LONG_REVIEW && (
+                      <button
+                        type="button"
+                        className="review-more"
+                        onClick={() => toggleExpanded(item.id)}
+                        aria-expanded={Boolean(expanded[item.id])}
+                      >
+                        {expanded[item.id] ? "Show less" : "Read more"}
+                      </button>
+                    )}
 
                     <div className="review-client">
                       <div className="client-avatar">

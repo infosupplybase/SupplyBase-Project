@@ -723,16 +723,15 @@
 .review-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
 }
 
 /* CARD */
 
 .review-card {
   position: relative;
-  min-height: 315px;
-  padding: 30px 24px;
+  padding: 24px 22px;
   background: #fff;
   border: 1px solid #e5ded2;
   border-radius: 18px;
@@ -780,15 +779,15 @@
   color: #555;
   font-size: 14px;
   line-height: 1.75;
-  flex: 1;
   white-space: pre-line;
+  margin-bottom: 20px;
 }
 
 .review-client {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 25px;
+  margin-top: auto;
   padding-top: 18px;
   border-top: 1px solid #eee8df;
 }
@@ -1015,12 +1014,6 @@
    RESPONSIVE
 ========================= */
 
-@media (max-width: 1200px) {
-  .review-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 768px) {
   .customer-reviews {
     padding: 70px 0;
@@ -1036,10 +1029,6 @@
 
   .review-grid {
     grid-template-columns: 1fr;
-  }
-
-  .review-card {
-    min-height: 280px;
   }
 
   .review-arrow {
@@ -1085,25 +1074,64 @@
 }
 
 
-/* Customer photos from a Google review: one large, up to two small */
+/* Customer photos from a Google review: one large on the left, up to two
+   stacked on the right, in a fixed-height strip so cards stay short. */
 .review-photos {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 6px;
-  margin: -6px 0 16px;
+  height: 190px;
+  margin: 0 0 14px;
 }
 
 .review-photos img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 100%;
+  min-height: 0;
   object-fit: cover;
   border-radius: 10px;
   display: block;
 }
 
 .review-photos img:first-child {
+  grid-row: 1 / -1;
+}
+
+.review-photos img:only-child {
   grid-column: 1 / -1;
 }
+
+.review-photos img:nth-child(2):last-child {
+  grid-row: 1 / -1;
+}
+
+@media (max-width: 480px) {
+  .review-photos {
+    height: 170px;
+  }
+}
+
+/* Long reviews: about five lines until "Read more" */
+.review-text--clamped {
+  max-height: calc(1.75em * 5);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent);
+  mask-image: linear-gradient(to bottom, #000 60%, transparent);
+}
+
+.review-more {
+  align-self: flex-start;
+  margin: -12px 0 20px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #b08d57;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 
 .reviews-google-link {
   margin: 18px 0 0;
@@ -1136,4 +1164,9 @@
   color: #fff;
   font-weight: 600;
   text-decoration: none;
+}
+
+/* The big quote mark would sit on top of the photos */
+.review-card:has(.review-photos) .quote-mark {
+  display: none;
 }
