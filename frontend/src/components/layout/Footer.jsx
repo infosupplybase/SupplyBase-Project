@@ -310,6 +310,27 @@ export default function Footer() {
               </li>
 
 
+              {/* Google Business Profile — directions and reviews */}
+              {contact.googleBusinessUrl && (
+                <li>
+
+                  <Icon
+                    name="google"
+                    size={19}
+                  />
+
+                  <a
+                    href={contact.googleBusinessUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Find us &amp; review us on Google
+                  </a>
+
+                </li>
+              )}
+
+
              
 
             </ul>

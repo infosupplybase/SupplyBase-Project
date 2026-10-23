@@ -3,7 +3,7 @@ import { contact } from '../../data/siteConfig';
 import { telHref, mailtoHref, whatsappHref } from '../../lib/contact';
 
 /**
- * ContactSection — the phone / email / WhatsApp / location cards.
+ * ContactSection — the phone / email / WhatsApp / location / Google cards.
  * Every detail comes from siteConfig.js.
  */
 export default function ContactSection() {
@@ -93,6 +93,24 @@ export default function ContactSection() {
           <p>{contact.workingHours}</p>
         </span>
       </div>
+
+      {contact.googleBusinessUrl && (
+        <a className="
+  contact-card
+  !bg-white/15
+  backdrop-blur-xl
+  !border-white/25
+  !shadow-[0_8px_24px_rgba(0,0,0,0.08)]
+" href={contact.googleBusinessUrl} target="_blank" rel="noopener noreferrer">
+          <span className="contact-card-icon">
+            <Icon name="google" size={22} />
+          </span>
+          <span>
+            <h4>Google Business</h4>
+            <p>Find us on Google Maps and leave a review</p>
+          </span>
+        </a>
+      )}
     </div>
   );
 }
