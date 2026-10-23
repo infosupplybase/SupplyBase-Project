@@ -49,7 +49,8 @@ export default function CustomerReviews() {
         return ratingDifference;
       }
 
-      return String(a.id).localeCompare(String(b.id));
+      // Otherwise keep the order of the list in customerReviews.js.
+      return reviews.indexOf(a) - reviews.indexOf(b);
     });
 
     return result;

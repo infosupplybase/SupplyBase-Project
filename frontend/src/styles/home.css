@@ -781,6 +781,7 @@
   font-size: 14px;
   line-height: 1.75;
   flex: 1;
+  white-space: pre-line;
 }
 
 .review-client {
