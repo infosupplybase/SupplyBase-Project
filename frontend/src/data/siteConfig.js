@@ -30,6 +30,8 @@ export const contact = {
   serviceAreas: ['Mumbai', 'Navi Mumbai', 'Thane', 'Kalyan', 'Panvel', 'Pune'],
   workingHours: 'Every day, 9:00 AM – 9:00 PM',
   gstin: '27LPZPK7707M1ZL', // GST registration, shown in the footer
+  // Google Business Profile — where visitors find us on Maps and leave reviews.
+  googleBusinessUrl: 'https://share.google/MhPODKYVUSzWRiMns',
 };
 
 /**
@@ -46,6 +48,7 @@ export const partnersUrl = (import.meta.env.VITE_PARTNERS_URL || '').replace(/\/
  */
 export const social = [
   { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/supplybase_official/?hl=en' },
+  { id: 'google', label: 'Google Business', url: contact.googleBusinessUrl },
   { id: 'facebook', label: 'Facebook', url: '' },
   { id: 'linkedin', label: 'LinkedIn', url: '' },
   { id: 'youtube', label: 'YouTube', url: '' },
