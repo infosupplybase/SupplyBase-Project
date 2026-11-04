@@ -451,8 +451,23 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public Page<UserResponse> listUsers(Role role, String q, Pageable pageable) {
+        return listUsers(role, q, null, pageable);
+    }
+
+    /**
+     * The admin user list. {@code sort} is "newest", "latest-login" or
+     * "oldest-login"; anything else keeps account-number order.
+     */
+    @Transactional(readOnly = true)
+    public Page<UserResponse> listUsers(Role role, String q, String sort, Pageable pageable) {
         String query = (q == null || q.isBlank()) ? null : q.trim();
-        return users.search(role, query, pageable).map(UserResponse::from);
+        Page<User> page = switch (sort == null ? "" : sort) {
+            case "newest" -> users.searchNewestFirst(role, query, pageable);
+            case "latest-login" -> users.searchLatestLoginFirst(role, query, pageable);
+            case "oldest-login" -> users.searchOldestLoginFirst(role, query, pageable);
+            default -> users.search(role, query, pageable);
+        };
+        return page.map(UserResponse::from);
     }
 
     /** Account and sign-in counts for the admin dashboard, in India time. */

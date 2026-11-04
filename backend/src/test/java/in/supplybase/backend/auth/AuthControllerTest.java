@@ -368,7 +368,7 @@ class AuthControllerTest {
         @DisplayName("200s an admin")
         @WithMockUser(roles = "ADMIN")
         void adminIsAllowed() throws Exception {
-            when(authService.listUsers(any(), any(), any()))
+            when(authService.listUsers(any(), any(), any(), any()))
                     .thenReturn(new PageImpl<>(List.of(sampleUser())));
 
             mockMvc.perform(get("/api/admin/users"))

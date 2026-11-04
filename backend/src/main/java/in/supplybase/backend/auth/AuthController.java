@@ -121,9 +121,10 @@ public class AuthController {
     @GetMapping("/api/admin/users")
     public Page<UserResponse> listUsers(@RequestParam(required = false) Role role,
                                         @RequestParam(required = false) String q,
+                                        @RequestParam(required = false) String sort,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "20") int size) {
-        return authService.listUsers(role, q, PageRequest.of(page, Math.min(size, 100)));
+        return authService.listUsers(role, q, sort, PageRequest.of(page, Math.min(size, 100)));
     }
 
     @GetMapping("/api/admin/users/stats")

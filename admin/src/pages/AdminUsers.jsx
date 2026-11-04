@@ -20,6 +20,13 @@ const ROLES = [
   { value: 'ADMIN', text: 'Admins', help: 'Full access to this console.' },
 ];
 
+const SORTS = [
+  { value: '', text: 'Sort: account number' },
+  { value: 'newest', text: 'Sort: newest accounts' },
+  { value: 'latest-login', text: 'Sort: latest login' },
+  { value: 'oldest-login', text: 'Sort: oldest login' },
+];
+
 const toneForRole = (role) => {
   if (role === 'ADMIN') return 'warning';
   if (role === 'PROFESSIONAL') return 'accent';
@@ -37,6 +44,7 @@ export default function AdminUsers() {
 
   const [roleFilter, setRoleFilter] = useQueryParam('role');
   const [q, setQ] = useQueryParam('q');
+  const [sort, setSort] = useQueryParam('sort');
   const [page, setPage] = usePageParam();
   const [qInput, setQInput] = useState(q);
 
@@ -62,11 +70,11 @@ export default function AdminUsers() {
     setLoading(true);
     setError('');
     api.admin.users
-      .list({ role: roleFilter, q, page })
+      .list({ role: roleFilter, q, sort, page })
       .then(setData)
       .catch((err) => setError(friendlyError(err)))
       .finally(() => setLoading(false));
-  }, [roleFilter, q, page]);
+  }, [roleFilter, q, sort, page]);
 
   useEffect(() => {
     load();
@@ -147,6 +155,13 @@ export default function AdminUsers() {
           ))}
         </div>
         <span className="admin-toolbar-spacer" />
+        <select className="admin-filter" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort by">
+          {SORTS.map((o) => (
+            <option key={o.value || 'default'} value={o.value}>
+              {o.text}
+            </option>
+          ))}
+        </select>
         <div className="admin-search-input">
           <Icon name="search" size={17} />
           <input
