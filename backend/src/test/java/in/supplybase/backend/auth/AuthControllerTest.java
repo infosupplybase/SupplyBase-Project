@@ -101,7 +101,9 @@ class AuthControllerTest {
             null,
             true,
             true,
-            true);
+            true,
+            null,
+            null);
 }
 
     private AuthResponse sampleAuthResponse() {

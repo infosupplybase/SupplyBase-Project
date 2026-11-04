@@ -89,6 +89,10 @@ public class User {
     @Builder.Default
     private boolean enabled = true;
 
+    /** When this person last signed in (password, Google or sign-up). Null if never since tracking began. */
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
+
     @Generated(event = EventType.INSERT)
     @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;

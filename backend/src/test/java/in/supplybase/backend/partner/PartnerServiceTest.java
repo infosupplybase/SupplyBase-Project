@@ -107,7 +107,7 @@ class PartnerServiceTest {
 
     private static AuthResponse authFor(long userId) {
         UserResponse u = new UserResponse(userId, "Ravi Kumar", "ravi@example.com", "9820011223",
-                null, null, null, null, null, null, Role.CUSTOMER, null, true, true, false);
+                null, null, null, null, null, null, Role.CUSTOMER, null, true, true, false, null, null);
         return AuthResponse.of("access", "refresh", 900, u);
     }
 

@@ -49,11 +49,19 @@ export default function AdminOverview() {
   const [today, setToday] = useState(null);
   const [recentEnquiries, setRecentEnquiries] = useState(null);
   const [totals, setTotals] = useState(null);
+  const [userStats, setUserStats] = useState(null);
+  const [userStatsFailed, setUserStatsFailed] = useState(false);
   const [error, setError] = useState('');
 
   const load = useCallback(() => {
     setError('');
     refresh();
+    // Loaded on its own so the rest of the dashboard still works if this one call fails.
+    setUserStatsFailed(false);
+    api.admin.users
+      .stats()
+      .then(setUserStats)
+      .catch(() => setUserStatsFailed(true));
     Promise.all([
       api.admin.bookings.forDate(todayIso()),
       api.admin.enquiries.list({ size: 5 }),
@@ -226,6 +234,39 @@ export default function AdminOverview() {
           )}
         </section>
       </div>
+
+      <section className="admin-section" aria-labelledby="accounts-title">
+        <div className="admin-section-head">
+          <h2 id="accounts-title">Website sign-ups and logins</h2>
+          <span>{userStatsFailed ? 'Could not load these numbers' : 'Today starts at midnight India time'}</span>
+        </div>
+        <div className="admin-kpi-grid">
+          {[
+            { key: 'users', label: 'Total accounts', icon: 'users', to: '/users', value: userStats?.totalUsers },
+            { key: 'customers', label: 'Customers', icon: 'user', to: '/users?role=CUSTOMER', value: userStats?.customers },
+            { key: 'signupsToday', label: 'New sign-ups today', icon: 'plus', to: '/users', value: userStats?.signupsToday },
+            { key: 'signups7', label: 'New sign-ups, last 7 days', icon: 'calendar', to: '/users', value: userStats?.signups7Days },
+            { key: 'loginsToday', label: 'People who logged in today', icon: 'check-circle', to: '/users', value: userStats?.peopleToday },
+            { key: 'logins7', label: 'People who logged in, last 7 days', icon: 'check-circle', to: '/users', value: userStats?.people7Days },
+          ].map((k) => (
+            <Link key={k.key} to={k.to} className="admin-kpi">
+              <span className="admin-kpi-icon" aria-hidden="true">
+                <Icon name={k.icon} size={20} />
+              </span>
+              <span className="admin-kpi-value">{k.value == null ? '—' : k.value}</span>
+              <span className="admin-kpi-label">{k.label}</span>
+            </Link>
+          ))}
+        </div>
+        {userStats && (
+          <p className="admin-form-hint" style={{ marginTop: 10 }}>
+            {userStats.loginsToday} login{userStats.loginsToday === 1 ? '' : 's'} today, {userStats.logins7Days} in the last 7 days
+            and {userStats.logins30Days} in the last 30 days ({userStats.people30Days} different people). A login is counted
+            when someone signs in or signs up; people who stay signed in are not counted again. Logins are counted from the
+            day this was switched on.
+          </p>
+        )}
+      </section>
 
       <section className="admin-section" aria-labelledby="glance-title">
         <div className="admin-section-head">
