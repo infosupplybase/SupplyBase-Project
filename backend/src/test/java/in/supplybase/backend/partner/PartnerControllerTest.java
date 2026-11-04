@@ -111,7 +111,7 @@ class PartnerControllerTest {
         @DisplayName("201s with tokens, without being signed in")
         void worksAnonymously() throws Exception {
             var user = new UserResponse(7L, "Ravi Kumar", "ravi@example.com", "9820011223", null, null, null,
-                    null, null, null, Role.CUSTOMER, null, true, true, false);
+                    null, null, null, Role.CUSTOMER, null, true, true, false, null, null);
             when(service.apply(any(), any(), any())).thenReturn(AuthResponse.of("access", "refresh", 900, user));
 
             mockMvc.perform(apply(APPLY_JSON, ALL_DOCUMENTS))

@@ -1,5 +1,7 @@
 package in.supplybase.backend.auth.dto;
 
+import java.time.Instant;
+
 import in.supplybase.backend.auth.Role;
 import in.supplybase.backend.auth.User;
 
@@ -18,7 +20,9 @@ public record UserResponse(
         String pictureUrl,
         boolean hasPassword,
         boolean enabled,
-        boolean emailVerified) {
+        boolean emailVerified,
+        Instant createdAt,
+        Instant lastLoginAt) {
 
     public static UserResponse from(User user) {
         return new UserResponse(
@@ -36,6 +40,8 @@ public record UserResponse(
                 user.getPictureUrl(),
                 user.hasPassword(),
                 user.isEnabled(),
-                user.isEmailVerified());
+                user.isEmailVerified(),
+                user.getCreatedAt(),
+                user.getLastLoginAt());
     }
 }

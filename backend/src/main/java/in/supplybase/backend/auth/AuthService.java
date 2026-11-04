@@ -2,6 +2,8 @@ package in.supplybase.backend.auth;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -20,8 +22,10 @@ import in.supplybase.backend.auth.dto.LoginRequest;
 import in.supplybase.backend.auth.dto.RegisterRequest;
 import in.supplybase.backend.auth.dto.UpdateProfileRequest;
 import in.supplybase.backend.auth.dto.UserResponse;
+import in.supplybase.backend.auth.dto.UserStatsResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 
+import in.supplybase.backend.BackendApplication;
 import in.supplybase.backend.common.ApiException;
 import in.supplybase.backend.common.InMemoryRateLimiter;
 import in.supplybase.backend.common.PhoneNumbers;
@@ -54,6 +58,7 @@ public class AuthService {
 
     private final UserRepository users;
     private final RefreshTokenRepository refreshTokens;
+    private final LoginEventRepository loginEvents;
     private final PasswordResetTokenRepository passwordResetTokens;
     private final EmailVerificationTokenRepository emailVerificationTokens;
     private final PasswordEncoder passwordEncoder;
@@ -65,6 +70,7 @@ public class AuthService {
 
     public AuthService(UserRepository users,
                        RefreshTokenRepository refreshTokens,
+                       LoginEventRepository loginEvents,
                        PasswordResetTokenRepository passwordResetTokens,
                        EmailVerificationTokenRepository emailVerificationTokens,
                        PasswordEncoder passwordEncoder,
@@ -75,6 +81,7 @@ public class AuthService {
                        ObjectProvider<JavaMailSender> mailSender) {
         this.users = users;
         this.refreshTokens = refreshTokens;
+        this.loginEvents = loginEvents;
         this.passwordResetTokens = passwordResetTokens;
         this.emailVerificationTokens = emailVerificationTokens;
         this.passwordEncoder = passwordEncoder;
@@ -119,10 +126,12 @@ public class AuthService {
                 .enabled(true)
                 .build();
 
+        user.setLastLoginAt(Instant.now());
         User saved = users.save(user);
         // Password sign-ups start unverified; Google sign-ups arrive already
         // verified (see loginWithGoogle) and must not get this email too.
         sendVerificationEmail(saved.getId());
+        logLogin(saved, LoginEvent.Method.SIGNUP);
         return issueTokens(saved);
     }
 
@@ -165,6 +174,9 @@ public class AuthService {
         // Only failed attempts count: a person who signs in often must not
         // lock themselves out.
         rateLimiter.reset(loginKey);
+        // A managed entity inside this transaction, so the new time is saved on commit.
+        user.setLastLoginAt(Instant.now());
+        logLogin(user, LoginEvent.Method.PASSWORD);
         return issueTokens(user);
     }
 
@@ -238,7 +250,10 @@ public class AuthService {
         if (!user.isEnabled()) {
             throw ApiException.forbidden("This account has been switched off. Please contact us.");
         }
-        return issueTokens(users.save(user));
+        user.setLastLoginAt(Instant.now());
+        User saved = users.save(user);
+        logLogin(saved, LoginEvent.Method.GOOGLE);
+        return issueTokens(saved);
     }
 
     @Transactional
@@ -440,6 +455,30 @@ public class AuthService {
         return users.search(role, query, pageable).map(UserResponse::from);
     }
 
+    /** Account and sign-in counts for the admin dashboard, in India time. */
+    @Transactional(readOnly = true)
+    public UserStatsResponse userStats() {
+        ZoneId zone = ZoneId.of(BackendApplication.BUSINESS_TIME_ZONE);
+        LocalDate today = LocalDate.now(zone);
+        Instant startToday = today.atStartOfDay(zone).toInstant();
+        Instant start7 = today.minusDays(6).atStartOfDay(zone).toInstant();
+        Instant start30 = today.minusDays(29).atStartOfDay(zone).toInstant();
+        return new UserStatsResponse(
+                users.count(),
+                users.countByRole(Role.CUSTOMER),
+                users.countByRole(Role.PROFESSIONAL),
+                users.countByRole(Role.ADMIN),
+                users.countByCreatedAtGreaterThanEqual(startToday),
+                users.countByCreatedAtGreaterThanEqual(start7),
+                users.countByCreatedAtGreaterThanEqual(start30),
+                loginEvents.countByCreatedAtGreaterThanEqual(startToday),
+                loginEvents.countByCreatedAtGreaterThanEqual(start7),
+                loginEvents.countByCreatedAtGreaterThanEqual(start30),
+                loginEvents.countDistinctUsersSince(startToday),
+                loginEvents.countDistinctUsersSince(start7),
+                loginEvents.countDistinctUsersSince(start30));
+    }
+
     @Transactional
     public UserResponse updateRole(Long targetId, Role newRole, Long callerId) {
         if (targetId.equals(callerId)) {
@@ -460,6 +499,18 @@ public class AuthService {
                 .orElseThrow(() -> ApiException.notFound("That account"));
         user.setEnabled(enabled);
         return UserResponse.from(users.save(user));
+    }
+
+    /** One login_events row per successful sign-in, for the admin's daily counts. */
+    private void logLogin(User user, LoginEvent.Method method) {
+        if (user == null || user.getId() == null) {
+            return;
+        }
+        loginEvents.save(LoginEvent.builder()
+                .userId(user.getId())
+                .method(method)
+                .createdAt(Instant.now())
+                .build());
     }
 
     private AuthResponse issueTokens(User user) {

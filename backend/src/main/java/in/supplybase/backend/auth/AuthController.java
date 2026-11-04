@@ -26,6 +26,7 @@ import in.supplybase.backend.auth.dto.UpdateProfileRequest;
 import in.supplybase.backend.auth.dto.UpdateUserRoleRequest;
 import in.supplybase.backend.auth.dto.UpdateUserStatusRequest;
 import in.supplybase.backend.auth.dto.UserResponse;
+import in.supplybase.backend.auth.dto.UserStatsResponse;
 import in.supplybase.backend.auth.dto.VerifyEmailRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -123,6 +124,11 @@ public class AuthController {
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "20") int size) {
         return authService.listUsers(role, q, PageRequest.of(page, Math.min(size, 100)));
+    }
+
+    @GetMapping("/api/admin/users/stats")
+    public UserStatsResponse userStats() {
+        return authService.userStats();
     }
 
     @PatchMapping("/api/admin/users/{id}/role")

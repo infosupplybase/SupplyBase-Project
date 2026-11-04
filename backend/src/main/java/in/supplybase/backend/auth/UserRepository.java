@@ -1,5 +1,6 @@
 package in.supplybase.backend.auth;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -21,6 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmailIgnoreCase(String email);
 
     long countByRole(Role role);
+
+    long countByCreatedAtGreaterThanEqual(Instant since);
 
     /** One flexible query for the admin user list rather than several narrow ones. */
     @Query("SELECT u FROM User u WHERE (:role IS NULL OR u.role = :role) "

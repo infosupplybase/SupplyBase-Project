@@ -12,7 +12,7 @@ import { useToast } from '../components/admin/Toast';
 import { useAuth } from '../context/AuthContext';
 import useQueryParam, { usePageParam } from '../hooks/useQueryParam';
 import api, { friendlyError } from '../lib/api';
-import { label } from '../lib/format';
+import { formatDate, label, timeAgo } from '../lib/format';
 
 const ROLES = [
   { value: 'CUSTOMER', text: 'Customers', help: 'Books services and follows their own bookings.' },
@@ -168,12 +168,13 @@ export default function AdminUsers() {
               <th>Contact</th>
               <th>City</th>
               <th>Role</th>
+              <th>Last login</th>
               <th>Account</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <TableLoading columns={5} />
+              <TableLoading columns={6} />
             ) : data && data.content.length ? (
               data.content.map((row) => (
                 <tr key={row.id} {...rowProps(() => openRow(row), `Open account ${row.fullName || row.email}`)}>
@@ -193,12 +194,16 @@ export default function AdminUsers() {
                     <StatusBadge tone={toneForRole(row.role)}>{row.role === 'PROFESSIONAL' ? 'Partner' : label(row.role)}</StatusBadge>
                   </td>
                   <td>
+                    {row.lastLoginAt ? timeAgo(row.lastLoginAt) : '—'}
+                    <span className="admin-table-sub">Joined {formatDate(row.createdAt)}</span>
+                  </td>
+                  <td>
                     <StatusBadge tone={row.enabled ? 'success' : 'danger'}>{row.enabled ? 'Active' : 'Disabled'}</StatusBadge>
                   </td>
                 </tr>
               ))
             ) : (
-              <TableEmpty columns={5} icon="users" title="No accounts match">
+              <TableEmpty columns={6} icon="users" title="No accounts match">
                 {q || roleFilter ? 'Try a different search or role.' : 'Accounts appear here as people sign up.'}
               </TableEmpty>
             )}
@@ -241,6 +246,14 @@ export default function AdminUsers() {
               <div>
                 <dt>Sign-in</dt>
                 <dd>{selected.hasPassword ? 'Password' : 'Google / phone only'}</dd>
+              </div>
+              <div>
+                <dt>Joined</dt>
+                <dd>{formatDate(selected.createdAt)}</dd>
+              </div>
+              <div>
+                <dt>Last login</dt>
+                <dd>{selected.lastLoginAt ? timeAgo(selected.lastLoginAt) : 'Not since login tracking began'}</dd>
               </div>
             </dl>
 

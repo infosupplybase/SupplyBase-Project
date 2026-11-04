@@ -59,6 +59,8 @@ class AuthServiceTest {
     @Mock
     private RefreshTokenRepository refreshTokens;
     @Mock
+    private LoginEventRepository loginEvents;
+    @Mock
     private PasswordResetTokenRepository passwordResetTokens;
     @Mock
     private EmailVerificationTokenRepository emailVerificationTokens;
@@ -80,7 +82,7 @@ class AuthServiceTest {
     void setUp() {
         props = new AppProperties(List.of(), null, null, null, null,
                 "https://supplybase.example", null, null, null);
-        service = new AuthService(users, refreshTokens, passwordResetTokens, emailVerificationTokens,
+        service = new AuthService(users, refreshTokens, loginEvents, passwordResetTokens, emailVerificationTokens,
                 passwordEncoder, jwtService, googleVerifier, rateLimiter, props, mailSender);
 
         when(rateLimiter.tryAcquire(anyString(), anyInt(), any(Duration.class))).thenReturn(true);
@@ -196,6 +198,35 @@ class AuthServiceTest {
 
             assertThat(response.user().email()).isEqualTo("existing@example.com");
             verify(refreshTokens).save(any(RefreshToken.class));
+        }
+
+        @Test
+        @DisplayName("records the sign-in for the admin's login counts")
+        void recordsTheSignIn() {
+            User user = customer(1L);
+            when(users.findByEmailIgnoreCase("existing@example.com")).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches("password123", "bcrypt-hash")).thenReturn(true);
+
+            service.login(new LoginRequest("existing@example.com", "password123"));
+
+            assertThat(user.getLastLoginAt()).isNotNull();
+            org.mockito.ArgumentCaptor<LoginEvent> event = org.mockito.ArgumentCaptor.forClass(LoginEvent.class);
+            verify(loginEvents).save(event.capture());
+            assertThat(event.getValue().getUserId()).isEqualTo(1L);
+            assertThat(event.getValue().getMethod()).isEqualTo(LoginEvent.Method.PASSWORD);
+        }
+
+        @Test
+        @DisplayName("records nothing when the password is wrong")
+        void wrongPasswordRecordsNothing() {
+            User user = customer(1L);
+            when(users.findByEmailIgnoreCase("existing@example.com")).thenReturn(Optional.of(user));
+            when(passwordEncoder.matches("wrong", "bcrypt-hash")).thenReturn(false);
+
+            assertThatThrownBy(() -> service.login(new LoginRequest("existing@example.com", "wrong")))
+                    .isInstanceOf(ApiException.class);
+            assertThat(user.getLastLoginAt()).isNull();
+            verify(loginEvents, org.mockito.Mockito.never()).save(any());
         }
 
         @Test
@@ -480,7 +511,7 @@ class AuthServiceTest {
         void resetLinkFollowsTheApp() {
             props = new AppProperties(List.of(), null, null, null, null,
                     "https://supplybase.example", null, null, null, "https://partners.supplybase.example");
-            service = new AuthService(users, refreshTokens, passwordResetTokens, emailVerificationTokens,
+            service = new AuthService(users, refreshTokens, loginEvents, passwordResetTokens, emailVerificationTokens,
                     passwordEncoder, jwtService, googleVerifier, rateLimiter, props, mailSender);
             JavaMailSender sender = org.mockito.Mockito.mock(JavaMailSender.class);
             when(mailSender.getIfAvailable()).thenReturn(sender);
