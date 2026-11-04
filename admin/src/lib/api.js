@@ -212,8 +212,8 @@ export const api = {
     },
 
     users: {
-      list: ({ role, q, page = 0, size = 20 } = {}) =>
-        request(`/api/admin/users${qs({ role, q, page, size })}`),
+      list: ({ role, q, sort, page = 0, size = 20 } = {}) =>
+        request(`/api/admin/users${qs({ role, q, sort, page, size })}`),
       stats: () => request('/api/admin/users/stats'),
       updateRole: (id, role) =>
         request(`/api/admin/users/${id}/role`, { method: 'PATCH', body: { role } }),

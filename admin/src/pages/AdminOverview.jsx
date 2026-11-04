@@ -246,8 +246,8 @@ export default function AdminOverview() {
             { key: 'customers', label: 'Customers', icon: 'user', to: '/users?role=CUSTOMER', value: userStats?.customers },
             { key: 'signupsToday', label: 'New sign-ups today', icon: 'plus', to: '/users', value: userStats?.signupsToday },
             { key: 'signups7', label: 'New sign-ups, last 7 days', icon: 'calendar', to: '/users', value: userStats?.signups7Days },
-            { key: 'loginsToday', label: 'People who logged in today', icon: 'check-circle', to: '/users', value: userStats?.peopleToday },
-            { key: 'logins7', label: 'People who logged in, last 7 days', icon: 'check-circle', to: '/users', value: userStats?.people7Days },
+            { key: 'loginsToday', label: 'People who logged in today', icon: 'check-circle', to: '/users?sort=latest-login', value: userStats?.peopleToday },
+            { key: 'logins7', label: 'People who logged in, last 7 days', icon: 'check-circle', to: '/users?sort=latest-login', value: userStats?.people7Days },
           ].map((k) => (
             <Link key={k.key} to={k.to} className="admin-kpi">
               <span className="admin-kpi-icon" aria-hidden="true">

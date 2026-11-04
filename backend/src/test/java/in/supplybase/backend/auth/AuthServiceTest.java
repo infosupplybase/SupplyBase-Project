@@ -739,6 +739,18 @@ class AuthServiceTest {
         assertThat(result.getContent().get(0).email()).isEqualTo("existing@example.com");
     }
 
+    @Test
+    @DisplayName("listUsers sorts by latest or oldest login when asked")
+    void listUsersSortsByLogin() {
+        Page<User> page = new org.springframework.data.domain.PageImpl<>(List.of(customer(1L)));
+        when(users.searchLatestLoginFirst(null, null, PageRequest.of(0, 20))).thenReturn(page);
+        when(users.searchOldestLoginFirst(null, null, PageRequest.of(0, 20))).thenReturn(page);
+
+        assertThat(service.listUsers(null, " ", "latest-login", PageRequest.of(0, 20)).getContent()).hasSize(1);
+        assertThat(service.listUsers(null, null, "oldest-login", PageRequest.of(0, 20)).getContent()).hasSize(1);
+        verify(users, org.mockito.Mockito.never()).search(any(), any(), any());
+    }
+
     @Nested
     @DisplayName("updateRole")
     class UpdateRole {
