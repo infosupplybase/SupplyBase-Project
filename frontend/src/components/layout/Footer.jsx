@@ -18,6 +18,7 @@ import {
   whatsappHref,
 } from '../../lib/contact';
 import { useLoginGate } from '../auth/LoginGate';
+import { useAuth } from '../../context/AuthContext';
 
 const WHATSAPP_MESSAGE =
   'Hello Supplybase, I would like to discuss my project.';
@@ -110,6 +111,7 @@ function FooterColumn({
 export default function Footer() {
   const year = new Date().getFullYear();
   const { openLogin } = useLoginGate();
+  const { user } = useAuth();
 
   /*
    * Services come from the live catalogue, the same source as the home
@@ -188,7 +190,10 @@ export default function Footer() {
                 {quickLinks.map((link) => (
                   <li key={link.path}>
 
-                    {link.path === '/login' ? (
+                    {link.path === '/login' && user ? (
+                      // Signed in already: the account, not a second sign-in.
+                      <Link to="/dashboard">My Account</Link>
+                    ) : link.path === '/login' ? (
                       <button type="button" className="ft-link-btn" onClick={openLogin}>
                         {link.label}
                       </button>
