@@ -139,6 +139,13 @@ public class AppointmentService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public AppointmentSlot reserve(Long categoryId, LocalDate date, LocalTime time) {
+        // The listed days only run two weeks ahead and a chosen date up to
+        // CUSTOM_BOOKABLE_DAYS, but forDay() lists slots for any date, so a
+        // request could otherwise book a visit a year or more away.
+        if (date != null && date.isAfter(LocalDate.now(BUSINESS_ZONE).plusDays(CUSTOM_BOOKABLE_DAYS))) {
+            throw ApiException.badRequest("Please choose a date within the next "
+                    + CUSTOM_BOOKABLE_DAYS + " days.");
+        }
         DayAvailabilityResponse day = forDay(categoryId, date);
         boolean offered = day.slots().stream()
                 .anyMatch(s -> s.time().equals(time) && s.available());

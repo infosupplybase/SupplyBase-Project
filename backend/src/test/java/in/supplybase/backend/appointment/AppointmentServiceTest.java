@@ -235,6 +235,17 @@ class AppointmentServiceTest {
         }
 
         @Test
+        @DisplayName("refuses a listed time more than the bookable window ahead")
+        void tooFarAhead() {
+            LocalDate date = LocalDate.now().plusDays(AppointmentService.CUSTOM_BOOKABLE_DAYS + 30);
+
+            assertThatThrownBy(() -> service.reserve(CATEGORY_ID, date, LocalTime.of(10, 0)))
+                    .isInstanceOf(ApiException.class)
+                    .extracting("status").isEqualTo(HttpStatus.BAD_REQUEST);
+            verify(slots, never()).save(any());
+        }
+
+        @Test
         @DisplayName("refuses when the slot fills up between the availability check and the reservation")
         void slotFullsDuringRace() {
             LocalDate date = farFutureDateOn(DayOfWeek.MONDAY);
