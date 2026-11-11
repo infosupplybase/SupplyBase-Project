@@ -179,7 +179,7 @@ export default function PlumbingTab({
     type="button"
     className="plb-visit-pill"
     onClick={() => onOpenConsultation?.()}
-    title="Home visit ₹99 (for projects above ₹5,000)"
+    title="Home visit ₹99 (adjusted in your final bill)"
   >
     <Icon name="calendar" size={15} />
     <span>Book a home visit</span>
@@ -189,7 +189,7 @@ export default function PlumbingTab({
   <Link
     to="/services/plumbing/consultation"
     className="plb-visit-pill"
-    title="Home visit ₹99 (for projects above ₹5,000)"
+    title="Home visit ₹99 (adjusted in your final bill)"
   >
     <Icon name="calendar" size={15} />
     <span>Book a home visit</span>

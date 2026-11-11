@@ -81,7 +81,7 @@ export default function PayBookingButton({ bookingNumber, amountDisplay, onPaid,
     return (
       <div className={`pay-booking ${className}`}>
         <p className="pay-booking-hint">
-          Online payment is not available right now, so this booking cannot be confirmed online. Please call us on
+          Online payment is not available right now, so this booking cannot be confirmed online. Please call us on{' '}
           {contact.phoneDisplay} or WhatsApp us on {contact.whatsappDisplay}.
         </p>
       </div>

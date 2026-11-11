@@ -11,11 +11,11 @@ export default function PricingBanner({ compact = false }) {
       <div>
         {!compact && <h3>Transparent Pricing</h3>}
         <p>
-          Actual pricing for services up to ₹5,000.
+          Actual pricing for every listed service.
           <br />
-          For projects above ₹5,000, pay only ₹99 home visit fee
+          A ₹99 visiting fee, paid online when you book, confirms your visit
         </p>
-        <span className="plb-pricing-note">(₹99 will be adjusted in your final bill if you proceed).</span>
+        <span className="plb-pricing-note">(₹99 is adjusted in your final bill if you proceed).</span>
       </div>
     </div>
   );
