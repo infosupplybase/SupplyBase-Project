@@ -266,6 +266,21 @@ class PaymentServiceTest {
         }
 
         @Test
+        @DisplayName("refuses a pending fee whose booking has been cancelled")
+        void rejectsFeeOfCancelledBooking() {
+            User owner = user(1L, Role.CUSTOMER);
+            Booking cancelled = Booking.builder().id(7L).bookingNumber("SB-20261111-000003")
+                    .user(owner).status(BookingStatus.CANCELLED).visitFeePaise(9_900L).build();
+            Payment payment = aPayment(owner).booking(cancelled).paymentType(PaymentType.BOOKING).build();
+            when(payments.findById(1L)).thenReturn(Optional.of(payment));
+
+            assertThatThrownBy(() -> service.startCheckout(1L, callerFor(owner)))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessageContaining("cancelled");
+            verify(razorpay, never()).createOrder(anyLong(), anyString(), anyString());
+        }
+
+        @Test
         @DisplayName("a customer cannot open checkout on someone else's payment")
         void rejectsNonOwner() {
             User owner = user(1L, Role.CUSTOMER);
