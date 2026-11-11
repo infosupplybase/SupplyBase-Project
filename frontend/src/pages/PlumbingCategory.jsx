@@ -155,7 +155,7 @@ export default function PlumbingCategory({
                   </span>
 
                   <span className="plb-overview-price-note">
-                    For projects above ₹5,000 (adjusted in final bill)
+                    Adjusted in your final bill
                   </span>
                 </button>
               ) : (
@@ -183,7 +183,7 @@ export default function PlumbingCategory({
                   </span>
 
                   <span className="plb-overview-price-note">
-                    For projects above ₹5,000 (adjusted in final bill)
+                    Adjusted in your final bill
                   </span>
                 </Link>
               )}

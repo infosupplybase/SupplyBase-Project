@@ -99,7 +99,7 @@ const WP_CATALOGUE_SERVICE = {
 /** The service_needed value a booking from this flow is stored under. */
 export const wpCatalogueService = (slug, name) => WP_CATALOGUE_SERVICE[slug] || name;
 
-const FEE_NOTE = 'Rates are indicative and may vary based on site condition, area and material selection. For projects above ₹5,000, a ₹99 home visit fee applies — adjusted in your final bill if you proceed.';
+const FEE_NOTE = 'Rates are indicative and may vary based on site condition, area and material selection. A ₹99 visiting fee, paid online when you book, confirms the site visit and is adjusted in your final bill if you proceed.';
 
 /**
  * One config object per detailed flow, consumed by WaterproofingFlow.jsx.

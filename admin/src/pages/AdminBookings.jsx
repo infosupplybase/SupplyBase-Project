@@ -515,8 +515,8 @@ export default function AdminBookings() {
                   </div>
                 ) : (
                   <div>
-                    <dt>To pay at the visit</dt>
-                    <dd>{formatRupees(selected.visitFeePaise)}</dd>
+                    <dt>Visiting fee</dt>
+                    <dd>{formatRupees(selected.visitFeePaise)}, not paid yet</dd>
                   </div>
                 )}
                 {selected.propertyType && (
