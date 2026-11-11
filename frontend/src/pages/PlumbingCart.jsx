@@ -129,9 +129,8 @@ export default function PlumbingCart({
             <strong>{formatRupees(subtotalPaise / 100)}</strong>
           </div>
           <p className="plb-cart-summary-note">
-            {subtotalPaise / 100 > 5000
-              ? 'This is above ₹5,000 — a ₹99 home visit fee applies and is adjusted into your final bill.'
-              : 'Actual pricing — no separate visit fee for this total.'}
+            Actual pricing, paid to our team after the visit. A ₹99 visiting fee is paid online to confirm
+            your booking and is adjusted in your final bill.
           </p>
           <button
             type="button"

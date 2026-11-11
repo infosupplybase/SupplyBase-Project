@@ -2996,6 +2996,7 @@ button[aria-label="Close booking modal"] {
   box-sizing: border-box;
 }
 
+.id-flow-topbar h1,
 .id-flow-topbar h2 {
   margin: 0;
   font-family: var(--font-display);
@@ -3162,6 +3163,7 @@ button[aria-label="Close booking modal"] {
 }
 
 @media (max-width: 420px) {
+  .id-flow-topbar h1,
   .id-flow-topbar h2 { font-size: 18px; }
   .id-estimate-price { gap: 10px; padding: 12px; }
   .id-estimate-price > span { flex-basis: 85px; font-size: 12px; }

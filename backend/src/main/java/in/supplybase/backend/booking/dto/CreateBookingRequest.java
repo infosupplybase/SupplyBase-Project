@@ -38,6 +38,8 @@ public record CreateBookingRequest(
         @Pattern(regexp = "^[1-9][0-9]{5}$", message = "Enter a 6-digit pincode")
         String pincode,
 
+        @jakarta.validation.constraints.Min(value = 1, message = "Enter the area in square feet")
+        @jakarta.validation.constraints.Max(value = 1_000_000, message = "Enter the area in square feet")
         Integer areaSqft) {
 
     public record AnswerInput(

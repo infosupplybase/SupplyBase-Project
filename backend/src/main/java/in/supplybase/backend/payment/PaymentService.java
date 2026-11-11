@@ -134,6 +134,12 @@ public class PaymentService {
         if (payment.getStatus() == PaymentStatus.CANCELLED) {
             throw ApiException.badRequest("That payment was cancelled.");
         }
+        // A booking's fee row stays PENDING after the booking is cancelled
+        // (by the customer or after the payment window), so the booking
+        // decides, as it does in startBookingCheckout.
+        if (payment.getBooking() != null && payment.getBooking().getStatus() == BookingStatus.CANCELLED) {
+            throw ApiException.badRequest("This booking was cancelled, so it cannot be paid.");
+        }
         return openCheckout(payment);
     }
 
