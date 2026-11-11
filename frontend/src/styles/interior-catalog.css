@@ -1624,3 +1624,11 @@
   .tvd-price > div { border-right: 0; padding-right: 0; }
   .tvd-actions { grid-template-columns: 1fr; }
 }
+/* Study designs add a one-line description under each included item. */
+.ibc-tv-included-desc {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 400;
+}

@@ -198,7 +198,8 @@ export default function InteriorDesignFlow({
           <Icon name="arrow-left" size={18} />
         </Link>
       )}
-      <h2>{category.name}</h2>
+      {/* The page's title; inside the Services pop-up the page behind has its own h1. */}
+      {modal ? <h2>{category.name}</h2> : <h1>{category.name}</h1>}
     </div>
   );
 
