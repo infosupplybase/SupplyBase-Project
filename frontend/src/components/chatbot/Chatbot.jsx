@@ -434,9 +434,13 @@ export default function Chatbot() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(
+        const err = new Error(
           data?.message || data?.error || "Something went wrong"
         );
+        // A refusal the server explained (too long, too many messages) is
+        // shown as is; anything else gets the connection message below.
+        err.fromServer = response.status === 400 || response.status === 429;
+        throw err;
       }
 
       if (data.conversationToken) {
@@ -487,7 +491,9 @@ export default function Chatbot() {
         {
           id: "error-" + Date.now(),
           sender: "bot",
-          text: `Sorry, I couldn't send that. Please check your connection and try again, or call us on ${contact.phoneDisplay}.`,
+          text: error?.fromServer
+            ? error.message
+            : `Sorry, I couldn't send that. Please check your connection and try again, or call us on ${contact.phoneDisplay}.`,
           time: time(),
         },
       ]);
