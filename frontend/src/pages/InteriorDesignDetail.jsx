@@ -228,15 +228,24 @@ export default function InteriorDesignDetail() {
               <h3>What's Included</h3>
 
               <div className="ibc-tv-included-grid">
-                {details.included.map((item) => (
-                  <div
-                    key={item}
-                    className="ibc-tv-included-card"
-                  >
-                    <span className="ibc-tv-check">✓</span>
-                    <span>{item}</span>
-                  </div>
-                ))}
+                {details.included.map((item) => {
+                  // TV wall designs list plain strings; study designs list
+                  // { title, desc } rows.
+                  const title = typeof item === 'string' ? item : item.title;
+                  const desc = typeof item === 'string' ? '' : item.desc;
+                  return (
+                    <div
+                      key={title}
+                      className="ibc-tv-included-card"
+                    >
+                      <span className="ibc-tv-check">✓</span>
+                      <span>
+                        {title}
+                        {desc && <small className="ibc-tv-included-desc">{desc}</small>}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           )}
