@@ -5,6 +5,12 @@ import { contact } from "../../data/siteConfig";
 
 const hasPhotos = (item) => Array.isArray(item.photos) && item.photos.length > 0;
 
+// Photos are hot-linked from Google and those links can stop working. A photo
+// that fails to load is dropped, so the card never shows a broken image.
+function usableReviewPhotos(item, broken) {
+  return hasPhotos(item) ? item.photos.filter((photo) => !broken.has(photo)) : [];
+}
+
 // Longer reviews start collapsed to a few lines, with a "Read more" toggle.
 const LONG_REVIEW = 160;
 
@@ -59,6 +65,9 @@ export default function CustomerReviews() {
   const [selectedRating, setSelectedRating] = useState("all");
   const [currentSlide, setCurrentSlide] = useState(0);
   const [expanded, setExpanded] = useState({});
+  const [brokenPhotos, setBrokenPhotos] = useState(() => new Set());
+  const markPhotoBroken = (photo) =>
+    setBrokenPhotos((current) => (current.has(photo) ? current : new Set(current).add(photo)));
   const REVIEWS_PER_SLIDE = useReviewsPerSlide();
 
   const toggleExpanded = (id) =>
@@ -194,15 +203,17 @@ export default function CustomerReviews() {
                   <article className="review-card" key={item.id}>
                     <span className="quote-mark">“</span>
 
-                    {hasPhotos(item) && (
+                    {usableReviewPhotos(item, brokenPhotos).length > 0 && (
                       <div className="review-photos">
-                        {item.photos.slice(0, 3).map((photo, index) => (
+                        {usableReviewPhotos(item, brokenPhotos).slice(0, 3).map((photo, index) => (
                           <img
                             key={photo}
                             src={photo}
                             alt={`Photo ${index + 1} from ${item.name}'s review`}
                             loading="lazy"
                             decoding="async"
+                            referrerPolicy="no-referrer"
+                            onError={() => markPhotoBroken(photo)}
                           />
                         ))}
                       </div>
