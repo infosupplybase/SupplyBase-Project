@@ -28,6 +28,7 @@ class BookingExpiryJobTest {
 
     @Mock private BookingRepository bookings;
     @Mock private AppointmentService appointments;
+    @Mock private BookingService bookingService;
 
     private BookingExpiryJob job;
 
@@ -36,7 +37,7 @@ class BookingExpiryJobTest {
         AppProperties props = new AppProperties(
                 List.of("*"), null, null, null, null, null, null,
                 new AppProperties.Booking(30), null);
-        job = new BookingExpiryJob(bookings, appointments, props);
+        job = new BookingExpiryJob(bookings, appointments, props, bookingService);
     }
 
     @Test
@@ -59,6 +60,10 @@ class BookingExpiryJobTest {
         verify(appointments, times(1)).release(any());
         verify(appointments).release(slot);
         verify(bookings).saveAll(List.of(withSlot, withoutSlot));
+        verify(bookingService).notifyCancelled(org.mockito.ArgumentMatchers.eq(withSlot),
+                org.mockito.ArgumentMatchers.contains("not paid within 30 minutes"));
+        verify(bookingService).notifyCancelled(org.mockito.ArgumentMatchers.eq(withoutSlot),
+                org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
