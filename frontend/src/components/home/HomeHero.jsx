@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import api, { friendlyError } from '../../lib/api';
 import { rankResults, searchSubServices } from '../../lib/serviceSearch';
+import { comingSoonServiceForPath, isComingSoonService } from '../../lib/comingSoon';
 
 /** Where a search hit actually lives. */
 function routeFor(result) {
@@ -31,18 +32,15 @@ function routeFor(result) {
  * Homepage hero section.
  */
 function isComingSoon(result) {
-  const blocked = new Set(['plumbing', 'electrical', 'ac-services']);
-
-  if (blocked.has(result.slug) || blocked.has(result.parentSlug)) {
+  if (isComingSoonService(result.slug) || isComingSoonService(result.parentSlug)) {
     return true;
   }
 
-  if (String(result.slug || '').startsWith('plumbing-item-')) {
+  if (String(result.slug || '').startsWith('plumbing-item-') && isComingSoonService('plumbing')) {
     return true;
   }
 
-  return /^\/services\/(plumbing|electrical|ac-services)(?:\/|[?#]|$)/
-    .test(routeFor(result));
+  return comingSoonServiceForPath(routeFor(result)) !== null;
 }
 
 export default function HomeHero() {

@@ -6,6 +6,7 @@ import useServiceCatalogue from '../hooks/useServiceCatalogue';
 import { useServiceBookingModal } from '../components/services/useServiceBookingModal';
 import LazyServiceBookingModal, { useWarmBookingModal } from '../components/services/LazyServiceBookingModal';
 import optimizedImage from '../lib/optimizedImage';
+import { isComingSoonService } from '../lib/comingSoon';
 
 /**
  * Every service we offer.
@@ -14,7 +15,7 @@ import optimizedImage from '../lib/optimizedImage';
  * the same catalogue (see useServiceCatalogue), so they cannot drift apart.
  */
 
-const isComingSoon = (slug) => ['plumbing', 'electrical', 'ac-services'].includes(slug);
+const isComingSoon = isComingSoonService;
 
 const serviceImages = {
   'interior-design': '/assets/services/interior-design.webp',

@@ -8,8 +8,9 @@ import useServiceCatalogue from '../../hooks/useServiceCatalogue';
 import optimizedImage from '../../lib/optimizedImage';
 import { useServiceBookingModal } from '../services/useServiceBookingModal';
 import LazyServiceBookingModal, { useWarmBookingModal } from '../services/LazyServiceBookingModal';
+import { COMING_SOON_SERVICES } from '../../lib/comingSoon';
 
-const COMING_SOON = new Set(['plumbing', 'electrical', 'ac-services']);
+const COMING_SOON = new Set(COMING_SOON_SERVICES);
 
 const ICON_BY_SLUG = {
   'interior-design': 'sofa',

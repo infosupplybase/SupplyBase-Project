@@ -18,6 +18,7 @@ import {
   whatsappHref,
 } from '../../lib/contact';
 import { useLoginGate } from '../auth/LoginGate';
+import { isComingSoonService } from '../../lib/comingSoon';
 
 const WHATSAPP_MESSAGE =
   'Hello Supplybase, I would like to discuss my project.';
@@ -219,7 +220,7 @@ export default function Footer() {
 
             <ul className="ft-list ft-list-services">
 
-              {catalogue.filter((service) => !['plumbing', 'electrical', 'ac-services'].includes(service.slug)).map((service) => (
+              {catalogue.filter((service) => !isComingSoonService(service.slug)).map((service) => (
                 <li key={service.slug}>
 
                   <Link to={serviceRoute(service.slug)}>

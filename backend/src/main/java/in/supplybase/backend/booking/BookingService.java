@@ -158,6 +158,10 @@ public class BookingService {
                     + " Please call us on +91 91373 06446 or WhatsApp us on +91 83569 28520 to book.");
         }
         ServiceCategory category = catalogue.requireCategory(request.serviceSlug());
+        if (props.booking() != null && props.booking().isComingSoon(category.getSlug())) {
+            throw ApiException.badRequest(category.getName() + " is coming soon to Supplybase and can't be"
+                    + " booked online yet. Please call us on +91 91373 06446 or WhatsApp us on +91 83569 28520.");
+        }
         String phone = PhoneNumbers.normalise(request.phone());
 
         long recent = bookings.countByPhoneAndCategoryAndCreatedAtAfter(

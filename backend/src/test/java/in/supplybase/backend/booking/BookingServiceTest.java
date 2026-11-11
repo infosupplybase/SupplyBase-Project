@@ -191,6 +191,25 @@ class BookingServiceTest {
         }
 
         @Test
+        @DisplayName("takes no booking for a service that is still coming soon")
+        void refusesComingSoonService() {
+            AppProperties props = new AppProperties(
+                    List.of("*"), null, null, null,
+                    new AppProperties.Notifications(null),
+                    null, null, new AppProperties.Booking(30, List.of(" plumbing ", "ac-services")), null);
+            BookingService gated = new BookingService(bookings, answers, users, catalogue, options, appointments,
+                    bookingNumbers, props, mailSender, files, storage, notifications, razorpay);
+            when(catalogue.requireCategory("plumbing")).thenReturn(plumbingCategory());
+
+            assertThatThrownBy(() -> gated.create(
+                    requestFor(LocalDate.now().plusDays(3), LocalTime.of(10, 0), List.of()), null))
+                    .isInstanceOf(ApiException.class)
+                    .hasMessageContaining("Plumbing is coming soon");
+            verifyNoInteractions(appointments);
+            verify(bookings, never()).save(any());
+        }
+
+        @Test
         @DisplayName("keeps the waterproofing service alongside the brand")
         void waterproofingKeepsService() {
             ServiceCategory category = ServiceCategory.builder()

@@ -10,6 +10,7 @@ import Home from './pages/Home';
 // import Materials from './pages/Materials';
 // import ProjectDetail from './pages/ProjectDetail';
 import NotFound from './pages/NotFound';
+import ComingSoonGate from './components/services/ComingSoonGate';
 import PageMeta from './components/layout/PageMeta';
 import Chatbot from './components/chatbot/Chatbot';
 
@@ -125,6 +126,9 @@ export default function App() {
       <Route path="/partner/*" element={<PartnerRedirect />} />
 
       <Route element={<Layout />}>
+        {/* Coming-soon services (lib/comingSoon.js) show a "Coming soon" page
+            on every one of their URLs instead of a booking flow. */}
+        <Route element={<ComingSoonGate />}>
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
         <Route path="cart" element={<Cart />} />
@@ -284,6 +288,7 @@ export default function App() {
         <Route path="privacy-policy" element={<PrivacyPolicy />} />
         <Route path="terms" element={<Terms />} />
         <Route path="*" element={<NotFound />} />
+        </Route>
       </Route>
     </Routes>
     </Suspense>

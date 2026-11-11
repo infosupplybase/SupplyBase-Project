@@ -141,6 +141,10 @@ app:
     # How long a new booking waits for its ₹99 visiting fee to be paid online
     # before BookingExpiryJob cancels it and releases its appointment seat.
     payment-window-minutes: ${BOOKING_PAYMENT_WINDOW_MINUTES:30}
+    # Services shown as "Coming Soon" on the website take no bookings. Remove
+    # a slug here (or set COMING_SOON_SERVICES) when that service launches,
+    # together with the website's list in frontend/src/lib/comingSoon.js.
+    coming-soon-services: ${COMING_SOON_SERVICES:plumbing,electrical,home-electrical-services,fan-installation,switch-socket-installation,wiring-rewiring-services,electrical-repair-services,mcb-db-installation,appliance-installation-services,ac-services}
   # Local-disk root for uploaded project documents and booking files. Fine for
   # local/current use, but this does NOT survive a redeploy on Render/Railway's
   # ephemeral filesystem — swap FileStorageService for S3-compatible storage
