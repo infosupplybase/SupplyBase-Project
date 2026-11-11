@@ -7,6 +7,7 @@ import useServiceCatalogue, { serviceRoute } from '../../hooks/useServiceCatalog
 import { telHref, mailtoHref } from '../../lib/contact';
 import { useAuth } from '../../context/AuthContext';
 import { useLoginGate } from '../auth/LoginGate';
+import { isComingSoonService } from '../../lib/comingSoon';
 
 /**
  * MobileMenu — slide-in navigation drawer for tablet and phone.
@@ -73,7 +74,7 @@ export default function MobileMenu({ open, onClose, onRequestLogout }) {
                   </NavLink>
                   {services
                     .filter((service) =>
-                      !['plumbing', 'electrical', 'ac-services'].includes(service.slug)
+                      !isComingSoonService(service.slug)
                     )
                     .map((service) => (
                     <NavLink key={service.slug} to={serviceRoute(service.slug)} onClick={onClose}>

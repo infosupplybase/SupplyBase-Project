@@ -99,7 +99,24 @@ public record AppProperties(
         }
     }
 
-    /** How long a booking waits for its visiting fee before it is cancelled. */
-    public record Booking(int paymentWindowMinutes) {
+    /**
+     * How long a booking waits for its visiting fee before it is cancelled,
+     * and the services shown as "Coming Soon" (category slugs), which take
+     * no bookings until they launch.
+     */
+    public record Booking(int paymentWindowMinutes, java.util.List<String> comingSoonServices) {
+        @org.springframework.boot.context.properties.bind.ConstructorBinding
+        public Booking {
+            comingSoonServices = comingSoonServices == null ? java.util.List.of()
+                    : comingSoonServices.stream().map(String::trim).filter(s -> !s.isEmpty()).toList();
+        }
+
+        public Booking(int paymentWindowMinutes) {
+            this(paymentWindowMinutes, java.util.List.of());
+        }
+
+        public boolean isComingSoon(String categorySlug) {
+            return categorySlug != null && comingSoonServices.contains(categorySlug);
+        }
     }
 }

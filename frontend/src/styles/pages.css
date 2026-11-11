@@ -1751,3 +1751,17 @@
 .service-card:hover .service-card-bg {
   transform: scale(1.05);
 }
+
+/* "Coming soon" page shown on the pages of services not yet bookable
+   (components/services/ComingSoonGate.jsx). */
+.coming-soon-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--grey-100, #f1f1f1);
+  color: var(--grey-700, #444);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
