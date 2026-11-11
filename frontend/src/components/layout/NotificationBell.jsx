@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import api from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +13,7 @@ const UNREAD_POLL_MS = 60_000;
  */
 export default function NotificationBell() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -81,6 +83,16 @@ export default function NotificationBell() {
     };
   }, [open, user]);
 
+  // A customer's booking update opens that booking. (A partner's "New
+  // booking assigned" is not on their customer bookings page.)
+  const openNotification = (notification) => {
+    markRead(notification);
+    if (notification.relatedBookingId && notification.notificationType !== 'BOOKING_ASSIGNED') {
+      setOpen(false);
+      navigate(`/dashboard/bookings/${notification.relatedBookingId}`);
+    }
+  };
+
   const markRead = async (notification) => {
     if (notification.read) return;
     try {
@@ -129,7 +141,7 @@ export default function NotificationBell() {
                   type="button"
                   key={notification.id}
                   className={`notif-item ${notification.read ? 'is-read' : 'is-unread'}`}
-                  onClick={() => markRead(notification)}
+                  onClick={() => openNotification(notification)}
                 >
                   <span className="notif-item-title">{notification.title}</span>
                   <span className="notif-item-message">{notification.message}</span>
