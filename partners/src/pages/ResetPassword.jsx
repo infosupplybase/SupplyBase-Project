@@ -49,7 +49,7 @@ export default function ResetPassword() {
 
         <div className="partner-reset-logo">
   <img
-    src="/assets/brand/logo.webp"
+    src="/assets/brand/logo.png"
     alt="SupplyBase logo"
   />
 </div>
