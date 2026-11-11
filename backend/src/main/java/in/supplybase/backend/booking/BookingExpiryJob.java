@@ -37,12 +37,14 @@ public class BookingExpiryJob {
     private final BookingRepository bookings;
     private final AppointmentService appointments;
     private final AppProperties props;
+    private final BookingService bookingService;
 
     public BookingExpiryJob(BookingRepository bookings, AppointmentService appointments,
-                            AppProperties props) {
+                            AppProperties props, BookingService bookingService) {
         this.bookings = bookings;
         this.appointments = appointments;
         this.props = props;
+        this.bookingService = bookingService;
     }
 
     @Scheduled(fixedDelayString = "${app.booking.expiry-check-interval-ms:300000}") // 5 min default
@@ -63,6 +65,11 @@ public class BookingExpiryJob {
             }
         }
         bookings.saveAll(stale);
+        for (Booking booking : stale) {
+            bookingService.notifyCancelled(booking,
+                    "The visiting fee was not paid within " + props.booking().paymentWindowMinutes()
+                            + " minutes. You can book again any time.");
+        }
         log.info("Expired {} booking(s) with the visiting fee unpaid after {} minute(s)",
                 stale.size(), props.booking().paymentWindowMinutes());
     }

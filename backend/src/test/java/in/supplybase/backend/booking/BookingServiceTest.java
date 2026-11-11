@@ -465,7 +465,9 @@ class BookingServiceTest {
 
         @Test
         void assignsFromConfirmed() {
-            Booking booking = Booking.builder().id(1L).status(BookingStatus.CONFIRMED).build();
+            User customer = User.builder().id(7L).role(Role.CUSTOMER).build();
+            Booking booking = Booking.builder().id(1L).status(BookingStatus.CONFIRMED)
+                    .bookingNumber("SB-1").user(customer).build();
             User professional = User.builder().id(5L).role(Role.PROFESSIONAL).fullName("Pro").build();
             when(bookings.findById(1L)).thenReturn(Optional.of(booking));
             when(users.findById(5L)).thenReturn(Optional.of(professional));
@@ -475,6 +477,11 @@ class BookingServiceTest {
 
             assertThat(response.status()).isEqualTo(BookingStatus.PROFESSIONAL_ASSIGNED);
             assertThat(booking.getAssignedProfessional()).isSameAs(professional);
+            org.mockito.ArgumentCaptor<in.supplybase.backend.notification.Notification> saved =
+                    org.mockito.ArgumentCaptor.forClass(in.supplybase.backend.notification.Notification.class);
+            verify(notifications, org.mockito.Mockito.times(2)).save(saved.capture());
+            assertThat(saved.getAllValues()).extracting(n -> n.getRecipient().getId()).containsExactly(5L, 7L);
+            assertThat(saved.getAllValues().get(1).getMessage()).startsWith("Pro will handle your");
         }
 
         @Test
@@ -1064,6 +1071,13 @@ class BookingServiceTest {
             assertThat(response.cancelledReason()).isEqualTo("Cancelled by the customer: Plans changed");
             assertThat(booking.getAdminNotes()).isNull();
             verify(appointments).release(slot);
+            verify(notifications).markPaymentPromptRead(1L);
+            org.mockito.ArgumentCaptor<in.supplybase.backend.notification.Notification> saved =
+                    org.mockito.ArgumentCaptor.forClass(in.supplybase.backend.notification.Notification.class);
+            verify(notifications).save(saved.capture());
+            assertThat(saved.getValue().getTitle()).isEqualTo("Booking cancelled");
+            assertThat(saved.getValue().getNotificationType()).isEqualTo("BOOKING_CANCELLED");
+            assertThat(saved.getValue().getRecipient().getId()).isEqualTo(7L);
         }
 
         @Test

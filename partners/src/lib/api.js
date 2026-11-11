@@ -323,6 +323,14 @@ export const api = {
   /** Move one of the professional's own jobs to its next status. */
   advanceJob: (id, status) =>
     request(`/api/professional/bookings/${id}/status`, { method: 'PATCH', body: { status } }),
+
+  /** The signed-in account's notifications, newest first. */
+  notifications: () => request('/api/notifications'),
+
+  /** { count } of unread notifications. */
+  unreadNotificationCount: () => request('/api/notifications/unread-count'),
+
+  markNotificationRead: (id) => request(`/api/notifications/${id}/read`, { method: 'PATCH' }),
 };
 
 export default api;

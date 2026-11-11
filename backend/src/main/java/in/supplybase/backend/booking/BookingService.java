@@ -244,6 +244,7 @@ public class BookingService {
             afterCommit(() -> notifyStaffOfLatePayment(booking));
             return;
         }
+        notifications.markPaymentPromptRead(booking.getId());
         createBookingNotification(booking.getUser(), "Booking confirmed",
                 "Your " + booking.getServiceLabel() + " booking " + booking.getBookingNumber()
                         + " is confirmed. Our team will contact you before the visit.",
@@ -271,6 +272,23 @@ public class BookingService {
         notification.setNotificationType(notificationType);
         notification.setRelatedBookingId(bookingId);
         notifications.save(notification);
+    }
+
+    /**
+     * Tells the customer (and the assigned partner, if any) that a booking
+     * was cancelled, and retires its "pay the visiting fee" prompt so the bell
+     * no longer asks for a payment. {@code why} ends the customer's message.
+     */
+    void notifyCancelled(Booking booking, String why) {
+        notifications.markPaymentPromptRead(booking.getId());
+        createBookingNotification(booking.getUser(), "Booking cancelled",
+                "Your " + booking.getServiceLabel() + " booking " + booking.getBookingNumber()
+                        + " was cancelled. " + why,
+                "BOOKING_CANCELLED", booking.getId());
+        createBookingNotification(booking.getAssignedProfessional(), "Booking cancelled",
+                "The " + booking.getServiceLabel() + " booking " + booking.getBookingNumber()
+                        + " assigned to you was cancelled. You don't need to visit.",
+                "BOOKING_CANCELLED", booking.getId());
     }
 
     /**
@@ -705,6 +723,9 @@ public class BookingService {
         }
 
         Booking saved = bookings.save(booking);
+        notifyCancelled(saved, booking.getPaidAt() != null
+                ? "Your visiting fee will be refunded."
+                : "You can book again any time.");
         afterCommit(() -> {
             notifyStaffOfCancellation(saved);
             emailCustomerCancellation(saved);
@@ -729,11 +750,16 @@ public class BookingService {
         if (request.status() == BookingStatus.CANCELLED && booking.getAppointmentSlot() != null) {
             appointments.release(booking.getAppointmentSlot());
         }
+        boolean cancelling = request.status() == BookingStatus.CANCELLED;
         booking.setStatus(request.status());
         if (request.adminNotes() != null) {
             booking.setAdminNotes(request.adminNotes());
         }
-        return BookingResponse.from(bookings.save(booking));
+        Booking saved = bookings.save(booking);
+        if (cancelling) {
+            notifyCancelled(saved, "Please call us if you have any questions.");
+        }
+        return BookingResponse.from(saved);
     }
 
     /* ----------------------------------------------------------- staff */
@@ -774,6 +800,10 @@ public class BookingService {
         createBookingNotification(professional, "New booking assigned",
                 "You have been assigned a " + saved.getServiceLabel() + " booking.",
                 "BOOKING_ASSIGNED", saved.getId());
+        createBookingNotification(saved.getUser(), "Partner assigned",
+                professional.getFullName() + " will handle your " + saved.getServiceLabel()
+                        + " booking " + saved.getBookingNumber() + ".",
+                "PARTNER_ASSIGNED", saved.getId());
         return BookingResponse.from(saved);
     }
 

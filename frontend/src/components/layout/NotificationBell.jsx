@@ -83,11 +83,13 @@ export default function NotificationBell() {
     };
   }, [open, user]);
 
-  // A customer's booking update opens that booking. (A partner's "New
-  // booking assigned" is not on their customer bookings page.)
+  // A customer's booking update opens that booking. (A partner's job
+  // updates are not on the customer bookings page; they live in the
+  // partner portal.)
   const openNotification = (notification) => {
     markRead(notification);
-    if (notification.relatedBookingId && notification.notificationType !== 'BOOKING_ASSIGNED') {
+    if (notification.relatedBookingId && notification.notificationType !== 'BOOKING_ASSIGNED'
+        && user?.role !== 'PROFESSIONAL') {
       setOpen(false);
       navigate(`/dashboard/bookings/${notification.relatedBookingId}`);
     }

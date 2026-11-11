@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import Icon from './ui/Icon';
+import NotificationBell from './NotificationBell';
 import { useAuth } from '../context/AuthContext';
 import { COMPANY_NAME, SITE_URL } from '../config';
 
@@ -80,6 +81,7 @@ export default function PartnerLayout() {
                   {roleLabel}
                 </small>
               </span>
+              {verified && <NotificationBell />}
               <button type="button" className="pp-signout" onClick={handleSignOut}>
                 <Icon name="logout" size={18} />
                 <span>Sign out</span>
