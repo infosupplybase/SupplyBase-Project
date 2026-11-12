@@ -855,7 +855,20 @@ class AuthServiceTest {
         }
 
         @Test
-        @DisplayName("new number without name and email asks for them (null), creates nothing")
+        @DisplayName("new number with only a name creates an account with no email")
+        void nameOnly() {
+            when(users.findByPhone("9820011223")).thenReturn(Optional.empty());
+
+            AuthResponse response = service.loginWithVerifiedPhone("9820011223", "Ravi Patil", null);
+
+            assertThat(response.accessToken()).isEqualTo("access-token");
+            assertThat(lastSavedUser.getEmail()).isNull();
+            assertThat(lastSavedUser.getFullName()).isEqualTo("Ravi Patil");
+            verify(users, never()).existsByEmailIgnoreCase(any());
+        }
+
+        @Test
+        @DisplayName("new number without a name asks for it (null), creates nothing")
         void needsDetails() {
             when(users.findByPhone("9820011223")).thenReturn(Optional.empty());
 

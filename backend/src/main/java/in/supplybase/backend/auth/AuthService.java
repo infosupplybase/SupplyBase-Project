@@ -259,10 +259,11 @@ public class AuthService {
     /**
      * Signs in a person whose phone number was just proven with an SMS code.
      *
-     * An account with that number -> signed in. No account -> null when name
-     * and email are missing (the site then asks for them), otherwise a new
-     * CUSTOMER account is created. An email that already belongs to another
-     * account is refused: owning a phone does not prove owning that inbox.
+     * An account with that number -> signed in (the name typed is ignored, so
+     * a typo cannot rename an account). No account -> a new CUSTOMER account
+     * from the name (null when no name was given; the site then asks for it).
+     * Email is optional. One that already belongs to another account is
+     * refused: owning a phone does not prove owning that inbox.
      */
     @Transactional
     public AuthResponse loginWithVerifiedPhone(String phone, String fullName, String email) {
@@ -278,14 +279,16 @@ public class AuthService {
         }
 
         String name = blankToNull(fullName);
-        String mail = blankToNull(email);
-        if (name == null || mail == null) {
+        if (name == null) {
             return null;
         }
-        mail = normalise(mail);
-        if (users.existsByEmailIgnoreCase(mail)) {
-            throw ApiException.conflict("An account already uses that email. Sign in with it, "
-                    + "then add this mobile number on your profile.");
+        String mail = blankToNull(email);
+        if (mail != null) {
+            mail = normalise(mail);
+            if (users.existsByEmailIgnoreCase(mail)) {
+                throw ApiException.conflict("An account already uses that email. Sign in with it, "
+                        + "then add this mobile number on your profile.");
+            }
         }
         User saved = users.save(User.builder()
                 .email(mail)
@@ -450,7 +453,7 @@ public class AuthService {
     public void sendVerificationEmail(Long userId) {
         User user = users.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("That account"));
-        if (user.isEmailVerified()) {
+        if (user.isEmailVerified() || user.getEmail() == null) {
             return;
         }
 
@@ -605,7 +608,7 @@ public class AuthService {
     /** Best-effort, like BookingService.notifyStaff: never lets an email failure fail the request. */
     private void sendBestEffort(String to, String subject, String body) {
         JavaMailSender sender = mailSender.getIfAvailable();
-        if (sender == null) {
+        if (sender == null || to == null || to.isBlank()) {
             return;
         }
         try {

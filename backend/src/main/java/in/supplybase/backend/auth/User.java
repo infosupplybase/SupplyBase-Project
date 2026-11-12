@@ -32,7 +32,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 190)
+    /** Null for an account made with Login with OTP (name + mobile only). */
+    @Column(unique = true, length = 190)
     private String email;
 
     /**

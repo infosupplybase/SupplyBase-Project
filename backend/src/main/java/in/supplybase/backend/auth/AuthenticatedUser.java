@@ -10,7 +10,8 @@ public record AuthenticatedUser(Long id, String email, Role role) implements Pri
 
     @Override
     public String getName() {
-        return email;
+        // An OTP-only account has no email.
+        return email != null ? email : "user-" + id;
     }
 
     /** See User.isStaff — PROFESSIONAL is intentionally excluded. */

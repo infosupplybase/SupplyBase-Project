@@ -8,15 +8,33 @@ import { useAuth, friendlyError } from '../../context/AuthContext';
 import { isValidPhone } from '../../lib/bookingDetails';
 import api from '../../lib/api';
 
-/** Asked once per page load: is Login with OTP switched on on the server? */
+/**
+ * Asked once per page load: is Login with OTP switched on on the server?
+ * The last answer is kept for the tab, so the form does not jump on later visits.
+ */
+const OTP_KEY = 'supplybase:otp-enabled';
 let otpStatusPromise = null;
 function useOtpEnabled() {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(() => {
+    try {
+      return sessionStorage.getItem(OTP_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
   useEffect(() => {
     if (!otpStatusPromise) {
       otpStatusPromise = api
         .otpStatus()
-        .then((r) => Boolean(r && r.enabled))
+        .then((r) => {
+          const on = Boolean(r && r.enabled);
+          try {
+            sessionStorage.setItem(OTP_KEY, on ? '1' : '0');
+          } catch {
+            /* private mode */
+          }
+          return on;
+        })
         .catch(() => {
           otpStatusPromise = null;
           return false;
@@ -57,7 +75,11 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
   const { login, register, loginWithGoogle, googleEnabled } = useAuth();
   const isRegister = mode === 'register';
   const otpEnabled = useOtpEnabled();
-  const [useOtp, setUseOtp] = useState(false);
+  // Name + mobile + OTP is the main way in; password sign-in is one tap away.
+  // On the Sign Up tab the email form stays first, with OTP as a button.
+  const [otpChoice, setOtpChoice] = useState(null);
+  const useOtp = otpEnabled && (otpChoice ?? !isRegister);
+  const setUseOtp = setOtpChoice;
 
   const [form, setForm] = useState(() => ({
     name: prefill?.name || '',
@@ -78,6 +100,7 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
 
   // messages from one tab must not linger on the other
   useEffect(() => {
+    setOtpChoice(null);
     setErrors({});
     setError('');
     setNotice('');
@@ -216,11 +239,28 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
 
       {useOtp ? (
         <OtpLogin
+          prefillName={prefill?.name || ''}
           prefillPhone={prefill?.phone || ''}
           onDone={onDone}
           onBack={() => setUseOtp(false)}
         />
-      ) : (
+      ) : null}
+      {useOtp && googleEnabled && (
+        <div className="auth-form" style={{ marginTop: 12 }}>
+          {error && (
+            <div role="alert" className="alert alert-error">
+              <Icon name="info" size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+          <GoogleButton
+            onCredential={handleGoogle}
+            text="signin_with"
+            onError={() => setError('Google sign-in did not complete. Please try again.')}
+          />
+        </div>
+      )}
+      {useOtp ? null : (
       <form onSubmit={handleSubmit} noValidate className="auth-form">
         {isRegister && (
           <div className={`field auth-field ${errors.name ? 'error' : ''}`}>
@@ -436,7 +476,7 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
         {otpEnabled && (
           <button type="button" className="auth-otp-btn" onClick={() => setUseOtp(true)} disabled={busy}>
             <Icon name="phone" size={17} />
-            {isRegister ? 'Sign up with mobile OTP' : 'Login with OTP'}
+            {isRegister ? 'Sign up with mobile OTP' : 'Login with mobile OTP'}
           </button>
         )}
 

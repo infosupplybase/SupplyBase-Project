@@ -1036,10 +1036,24 @@
   cursor: default;
 }
 
-.auth-otp-sent {
+.auth-otp-terms {
   margin: 0;
-  font-size: 0.88rem;
-  color: var(--auth-text-soft);
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--auth-text-mute);
+}
+
+/* "Change" inside the locked mobile box, once the OTP is sent. */
+.auth-otp-change {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+}
+
+.auth-otp input[readonly] {
+  opacity: 0.75;
 }
 
 /* ------------------------------------------------- google sign-in */

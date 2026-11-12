@@ -8,22 +8,23 @@ import api from '../../lib/api';
 const RESEND_SECONDS = 30;
 
 /**
- * Login with OTP: mobile number -> 6-digit code by SMS (2Factor) -> signed in.
+ * Login with OTP: Name + Mobile -> Send OTP -> 6-digit code by SMS (2Factor)
+ * -> Verify OTP -> signed in.
  *
- * A number with no account yet gets one more step, name and email, and the
- * same code then creates the account. `onDone(user)` runs once signed in;
- * `onBack` returns to the password form.
+ * The same form logs in and signs up: a number that already has an account
+ * signs into it (the name typed is not used), a new number gets an account
+ * with that name. No email or password needed.
+ * `onDone(user)` runs once signed in; `onBack` opens the password form.
  */
-export default function OtpLogin({ prefillPhone = '', onDone, onBack }) {
+export default function OtpLogin({ prefillName = '', prefillPhone = '', onDone, onBack }) {
   const { loginWithOtp } = useAuth();
-  const [step, setStep] = useState('phone'); // phone | code | details
+  const [step, setStep] = useState('phone'); // phone | code
+  const [name, setName] = useState(prefillName);
   const [phone, setPhone] = useState(prefillPhone);
   const [code, setCode] = useState('');
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [accepted, setAccepted] = useState(false);
   const [wait, setWait] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const codeRef = useRef(null);
@@ -38,20 +39,26 @@ export default function OtpLogin({ prefillPhone = '', onDone, onBack }) {
     if (step === 'code') codeRef.current?.focus();
   }, [step]);
 
-  const sendCode = async () => {
+  const clearMessages = () => {
     setError('');
     setNotice('');
-    if (!isValidPhone(phone)) {
-      setError('Enter a 10-digit mobile number.');
-      return;
-    }
+  };
+
+  const sendCode = async () => {
+    clearMessages();
+    const next = {};
+    if (!name.trim()) next.name = 'Please enter your name';
+    if (!isValidPhone(phone)) next.phone = 'Enter a 10-digit mobile number';
+    setErrors(next);
+    if (Object.keys(next).length) return;
+
     setBusy(true);
     try {
       await api.sendOtp(phone);
       setStep('code');
       setCode('');
       setWait(RESEND_SECONDS);
-      setNotice('We have sent a 6-digit code by SMS. It is valid for 5 minutes.');
+      setNotice('OTP sent by SMS. It is valid for 5 minutes.');
     } catch (err) {
       setError(friendlyError(err));
     } finally {
@@ -59,22 +66,27 @@ export default function OtpLogin({ prefillPhone = '', onDone, onBack }) {
     }
   };
 
-  const verify = async (details) => {
-    setError('');
-    setNotice('');
+  const verify = async () => {
+    clearMessages();
+    if (!/^\d{6}$/.test(code)) {
+      setErrors({ code: 'Enter the 6-digit OTP from the SMS' });
+      return;
+    }
     setBusy(true);
     try {
-      const result = await loginWithOtp(phone, code, details?.name, details?.email);
+      const result = await loginWithOtp(phone, code, name.trim());
       if (result && result.needsDetails) {
-        setStep('details');
+        // Only if the name went missing on the way; ask again.
+        setStep('phone');
+        setErrors({ name: 'Please enter your name' });
         return;
       }
       onDone?.(result);
     } catch (err) {
-      setError(friendlyError(err));
-      // An expired or used-up code cannot be retried; go back to asking for one.
-      if (/expired|ask for a new one/i.test(friendlyError(err))) {
-        setStep('code');
+      const message = friendlyError(err);
+      setError(message);
+      // An expired or used-up code cannot be retried; let them ask for a new one.
+      if (/expired|ask for a new one/i.test(message)) {
         setCode('');
         setWait(0);
       }
@@ -87,67 +99,78 @@ export default function OtpLogin({ prefillPhone = '', onDone, onBack }) {
     e.preventDefault();
     // Shown over a booking form; must not submit that one too.
     e.stopPropagation();
-    if (step === 'phone') {
-      sendCode();
-    } else if (step === 'code') {
-      if (!/^\d{6}$/.test(code)) {
-        setError('Enter the 6-digit code from the SMS.');
-        return;
-      }
-      verify();
-    } else {
-      if (!name.trim()) return setError('Please enter your name.');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-        return setError('Please enter a valid email address.');
-      if (!accepted) return setError('Please accept the terms and privacy policy to continue.');
-      verify({ name: name.trim(), email: email.trim() });
-    }
+    if (step === 'phone') sendCode();
+    else verify();
   };
+
+  const locked = step === 'code';
 
   return (
     <form onSubmit={handleSubmit} noValidate className="auth-form auth-otp">
-      {step === 'phone' && (
-        <div className="field auth-field">
-          <label htmlFor="otp-phone">Mobile Number</label>
-          <div className="auth-input-wrap">
-            <Icon name="phone" size={17} className="auth-input-icon" />
-            <input
-              id="otp-phone"
-              type="tel"
-              inputMode="numeric"
-              autoComplete="tel"
-              placeholder="98765 43210"
-              value={phone}
-              onChange={(e) => {
-                setPhone(e.target.value);
-                setError('');
-              }}
-              autoFocus
-            />
-          </div>
-        </div>
-      )}
-
-      {step !== 'phone' && (
-        <p className="auth-otp-sent">
-          Code sent to <strong>{phone}</strong>{' '}
-          <button
-            type="button"
-            className="auth-inline-link"
-            onClick={() => {
-              setStep('phone');
-              setError('');
-              setNotice('');
+      <div className={`field auth-field ${errors.name ? 'error' : ''}`}>
+        <label htmlFor="otp-name">
+          Name <span className="req">*</span>
+        </label>
+        <div className="auth-input-wrap">
+          <Icon name="user" size={17} className="auth-input-icon" />
+          <input
+            id="otp-name"
+            type="text"
+            autoComplete="name"
+            placeholder="Your full name"
+            maxLength={120}
+            value={name}
+            readOnly={locked}
+            onChange={(e) => {
+              setName(e.target.value);
+              setErrors((x) => ({ ...x, name: undefined }));
             }}
-          >
-            Change
-          </button>
-        </p>
-      )}
+          />
+        </div>
+        {errors.name && <span className="field-error">{errors.name}</span>}
+      </div>
 
-      {step === 'code' && (
-        <div className="field auth-field">
-          <label htmlFor="otp-code">Enter OTP</label>
+      <div className={`field auth-field ${errors.phone ? 'error' : ''}`}>
+        <label htmlFor="otp-phone">
+          Mobile Number <span className="req">*</span>
+        </label>
+        <div className="auth-input-wrap">
+          <Icon name="phone" size={17} className="auth-input-icon" />
+          <input
+            id="otp-phone"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel"
+            placeholder="98765 43210"
+            value={phone}
+            readOnly={locked}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              setErrors((x) => ({ ...x, phone: undefined }));
+            }}
+          />
+          {locked && (
+            <button
+              type="button"
+              className="auth-inline-link auth-otp-change"
+              onClick={() => {
+                setStep('phone');
+                setCode('');
+                clearMessages();
+              }}
+            >
+              Change
+            </button>
+          )}
+        </div>
+        {errors.phone && <span className="field-error">{errors.phone}</span>}
+      </div>
+
+      {locked && (
+        <div className={`field auth-field ${errors.code ? 'error' : ''}`}>
+          <label htmlFor="otp-code">
+            Enter OTP <span className="req">*</span>
+          </label>
           <div className="auth-input-wrap">
             <Icon name="lock" size={17} className="auth-input-icon" />
             <input
@@ -157,14 +180,15 @@ export default function OtpLogin({ prefillPhone = '', onDone, onBack }) {
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}
-              placeholder="6-digit code"
+              placeholder="6-digit OTP"
               value={code}
               onChange={(e) => {
                 setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
-                setError('');
+                setErrors((x) => ({ ...x, code: undefined }));
               }}
             />
           </div>
+          {errors.code && <span className="field-error">{errors.code}</span>}
           <div className="login-meta">
             <span />
             <button
@@ -173,62 +197,10 @@ export default function OtpLogin({ prefillPhone = '', onDone, onBack }) {
               onClick={sendCode}
               disabled={busy || wait > 0}
             >
-              {wait > 0 ? `Resend code in ${wait}s` : 'Resend code'}
+              {wait > 0 ? `Resend OTP in ${wait}s` : 'Resend OTP'}
             </button>
           </div>
         </div>
-      )}
-
-      {step === 'details' && (
-        <>
-          <p className="auth-otp-sent">Number verified. Tell us a little about you to create your account.</p>
-          <div className="field auth-field">
-            <label htmlFor="otp-name">
-              Full Name <span className="req">*</span>
-            </label>
-            <div className="auth-input-wrap">
-              <Icon name="user" size={17} className="auth-input-icon" />
-              <input
-                id="otp-name"
-                type="text"
-                autoComplete="name"
-                placeholder="Alex Johnson"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
-              />
-            </div>
-          </div>
-          <div className="field auth-field">
-            <label htmlFor="otp-email">
-              Email Address <span className="req">*</span>
-            </label>
-            <div className="auth-input-wrap">
-              <Icon name="mail" size={17} className="auth-input-icon" />
-              <input
-                id="otp-email"
-                type="email"
-                autoComplete="email"
-                placeholder="name@domain.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-          </div>
-          <label className="checkbox-row">
-            <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
-            <span>
-              I agree to the{' '}
-              <Link to="/terms" className="auth-inline-link" target="_blank">
-                Terms
-              </Link>{' '}
-              &amp;{' '}
-              <Link to="/privacy-policy" className="auth-inline-link" target="_blank">
-                Privacy Policy
-              </Link>
-            </span>
-          </label>
-        </>
       )}
 
       {error && (
@@ -245,19 +217,29 @@ export default function OtpLogin({ prefillPhone = '', onDone, onBack }) {
       )}
 
       <button type="submit" className="auth-submit" disabled={busy}>
-        {busy
-          ? 'Please wait…'
-          : step === 'phone'
-            ? 'Send OTP'
-            : step === 'code'
-              ? 'Verify & Sign In'
-              : 'Create Account'}
+        {busy ? 'Please wait…' : locked ? 'Verify OTP & Login' : 'Send OTP'}
         {!busy && <Icon name="arrow-right" size={18} />}
       </button>
 
+      <p className="auth-otp-terms">
+        By continuing you agree to our{' '}
+        <Link to="/terms" className="auth-inline-link" target="_blank">
+          Terms
+        </Link>{' '}
+        &amp;{' '}
+        <Link to="/privacy-policy" className="auth-inline-link" target="_blank">
+          Privacy Policy
+        </Link>
+        .
+      </p>
+
+      <div className="auth-divider">
+        <span>or</span>
+      </div>
+
       <button type="button" className="auth-otp-btn" onClick={onBack} disabled={busy}>
-        <Icon name="lock" size={17} />
-        Use password instead
+        <Icon name="mail" size={17} />
+        Login with email &amp; password
       </button>
     </form>
   );

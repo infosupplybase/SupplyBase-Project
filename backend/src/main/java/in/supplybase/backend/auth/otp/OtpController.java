@@ -23,7 +23,7 @@ import jakarta.validation.constraints.Size;
  *   POST /api/auth/otp/send    {phone}                      -> 204, code sent
  *   POST /api/auth/otp/verify  {phone, code}                -> AuthResponse, or
  *                              {"needsDetails": true} when no account has this number
- *   POST /api/auth/otp/verify  {phone, code, fullName, email} -> creates the account, AuthResponse
+ *   POST /api/auth/otp/verify  {phone, code, fullName[, email]} -> creates the account, AuthResponse
  */
 @RestController
 public class OtpController {
