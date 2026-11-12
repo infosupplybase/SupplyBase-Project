@@ -256,6 +256,51 @@ public class AuthService {
         return issueTokens(saved);
     }
 
+    /**
+     * Signs in a person whose phone number was just proven with an SMS code.
+     *
+     * An account with that number -> signed in. No account -> null when name
+     * and email are missing (the site then asks for them), otherwise a new
+     * CUSTOMER account is created. An email that already belongs to another
+     * account is refused: owning a phone does not prove owning that inbox.
+     */
+    @Transactional
+    public AuthResponse loginWithVerifiedPhone(String phone, String fullName, String email) {
+        Optional<User> existing = users.findByPhone(phone);
+        if (existing.isPresent()) {
+            User user = existing.get();
+            if (!user.isEnabled()) {
+                throw ApiException.forbidden("This account has been switched off. Please contact us.");
+            }
+            user.setLastLoginAt(Instant.now());
+            logLogin(user, LoginEvent.Method.OTP);
+            return issueTokens(user);
+        }
+
+        String name = blankToNull(fullName);
+        String mail = blankToNull(email);
+        if (name == null || mail == null) {
+            return null;
+        }
+        mail = normalise(mail);
+        if (users.existsByEmailIgnoreCase(mail)) {
+            throw ApiException.conflict("An account already uses that email. Sign in with it, "
+                    + "then add this mobile number on your profile.");
+        }
+        User saved = users.save(User.builder()
+                .email(mail)
+                .passwordHash(null)
+                .fullName(name)
+                .phone(phone)
+                .role(Role.CUSTOMER)
+                .enabled(true)
+                .lastLoginAt(Instant.now())
+                .build());
+        sendVerificationEmail(saved.getId());
+        logLogin(saved, LoginEvent.Method.SIGNUP);
+        return issueTokens(saved);
+    }
+
     @Transactional
     public AuthResponse refresh(String presentedToken) {
         if (!rateLimiter.tryAcquire("refresh:" + presentedToken, REFRESH_MAX, REFRESH_WINDOW)) {

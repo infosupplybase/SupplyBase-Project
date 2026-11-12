@@ -26,7 +26,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LoginEvent {
 
-    public enum Method { PASSWORD, GOOGLE, SIGNUP }
+    public enum Method { PASSWORD, GOOGLE, SIGNUP, OTP }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

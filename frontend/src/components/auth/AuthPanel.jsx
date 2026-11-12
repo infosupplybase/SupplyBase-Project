@@ -2,10 +2,34 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import GoogleButton from './GoogleButton';
+import OtpLogin from './OtpLogin';
 import { contact } from '../../data/siteConfig';
 import { useAuth, friendlyError } from '../../context/AuthContext';
 import { isValidPhone } from '../../lib/bookingDetails';
 import api from '../../lib/api';
+
+/** Asked once per page load: is Login with OTP switched on on the server? */
+let otpStatusPromise = null;
+function useOtpEnabled() {
+  const [enabled, setEnabled] = useState(false);
+  useEffect(() => {
+    if (!otpStatusPromise) {
+      otpStatusPromise = api
+        .otpStatus()
+        .then((r) => Boolean(r && r.enabled))
+        .catch(() => {
+          otpStatusPromise = null;
+          return false;
+        });
+    }
+    let live = true;
+    otpStatusPromise.then((on) => live && setEnabled(on));
+    return () => {
+      live = false;
+    };
+  }, []);
+  return enabled;
+}
 
 /**
  * Sign in / create account — the form itself, shared by the account page
@@ -32,6 +56,8 @@ import api from '../../lib/api';
 export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading, intro, compact = false }) {
   const { login, register, loginWithGoogle, googleEnabled } = useAuth();
   const isRegister = mode === 'register';
+  const otpEnabled = useOtpEnabled();
+  const [useOtp, setUseOtp] = useState(false);
 
   const [form, setForm] = useState(() => ({
     name: prefill?.name || '',
@@ -188,6 +214,13 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
         </p>
       )}
 
+      {useOtp ? (
+        <OtpLogin
+          prefillPhone={prefill?.phone || ''}
+          onDone={onDone}
+          onBack={() => setUseOtp(false)}
+        />
+      ) : (
       <form onSubmit={handleSubmit} noValidate className="auth-form">
         {isRegister && (
           <div className={`field auth-field ${errors.name ? 'error' : ''}`}>
@@ -394,11 +427,21 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
           {!busy && <Icon name="arrow-right" size={18} />}
         </button>
 
+        {(googleEnabled || otpEnabled) && (
+          <div className="auth-divider">
+            <span>{isRegister ? 'or sign up with' : 'or continue with'}</span>
+          </div>
+        )}
+
+        {otpEnabled && (
+          <button type="button" className="auth-otp-btn" onClick={() => setUseOtp(true)} disabled={busy}>
+            <Icon name="phone" size={17} />
+            {isRegister ? 'Sign up with mobile OTP' : 'Login with OTP'}
+          </button>
+        )}
+
         {googleEnabled && (
           <>
-            <div className="auth-divider">
-              <span>{isRegister ? 'or sign up with' : 'or continue with'}</span>
-            </div>
             <GoogleButton
               onCredential={handleGoogle}
               text={isRegister ? 'signup_with' : 'signin_with'}
@@ -407,6 +450,7 @@ export default function AuthPanel({ mode, onModeChange, onDone, prefill, heading
           </>
         )}
       </form>
+      )}
 
       <p className="auth-switch">
         {isRegister ? 'Already have an account? ' : "Don't have an account? "}

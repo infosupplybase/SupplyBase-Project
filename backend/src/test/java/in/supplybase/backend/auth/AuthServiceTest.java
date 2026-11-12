@@ -821,4 +821,74 @@ class AuthServiceTest {
                     .extracting("status").isEqualTo(HttpStatus.NOT_FOUND);
         }
     }
+
+    @Nested
+    @DisplayName("loginWithVerifiedPhone (OTP)")
+    class OtpLogin {
+
+        @Test
+        @DisplayName("signs in the account that has this phone number")
+        void existingAccount() {
+            User user = customer(7L);
+            when(users.findByPhone("9820011223")).thenReturn(Optional.of(user));
+
+            AuthResponse response = service.loginWithVerifiedPhone("9820011223", null, null);
+
+            assertThat(response.accessToken()).isEqualTo("access-token");
+            assertThat(user.getLastLoginAt()).isNotNull();
+            ArgumentCaptor<LoginEvent> event = ArgumentCaptor.forClass(LoginEvent.class);
+            verify(loginEvents).save(event.capture());
+            assertThat(event.getValue().getMethod()).isEqualTo(LoginEvent.Method.OTP);
+        }
+
+        @Test
+        @DisplayName("refuses a switched-off account")
+        void disabled() {
+            User user = customer(7L);
+            user.setEnabled(false);
+            when(users.findByPhone("9820011223")).thenReturn(Optional.of(user));
+
+            assertThatThrownBy(() -> service.loginWithVerifiedPhone("9820011223", null, null))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+
+        @Test
+        @DisplayName("new number without name and email asks for them (null), creates nothing")
+        void needsDetails() {
+            when(users.findByPhone("9820011223")).thenReturn(Optional.empty());
+
+            assertThat(service.loginWithVerifiedPhone("9820011223", " ", null)).isNull();
+            verify(users, never()).save(any(User.class));
+        }
+
+        @Test
+        @DisplayName("new number with name and email creates a CUSTOMER without a password")
+        void createsAccount() {
+            when(users.findByPhone("9820011223")).thenReturn(Optional.empty());
+            when(users.existsByEmailIgnoreCase("new@example.com")).thenReturn(false);
+
+            AuthResponse response = service.loginWithVerifiedPhone("9820011223", " New Person ", "New@Example.com");
+
+            assertThat(response.accessToken()).isEqualTo("access-token");
+            assertThat(lastSavedUser.getEmail()).isEqualTo("new@example.com");
+            assertThat(lastSavedUser.getFullName()).isEqualTo("New Person");
+            assertThat(lastSavedUser.getPhone()).isEqualTo("9820011223");
+            assertThat(lastSavedUser.getRole()).isEqualTo(Role.CUSTOMER);
+            assertThat(lastSavedUser.hasPassword()).isFalse();
+        }
+
+        @Test
+        @DisplayName("refuses an email that belongs to another account")
+        void emailTaken() {
+            when(users.findByPhone("9820011223")).thenReturn(Optional.empty());
+            when(users.existsByEmailIgnoreCase("existing@example.com")).thenReturn(true);
+
+            assertThatThrownBy(() -> service.loginWithVerifiedPhone("9820011223", "X", "existing@example.com"))
+                    .isInstanceOf(ApiException.class)
+                    .extracting(ex -> ((ApiException) ex).getStatus())
+                    .isEqualTo(HttpStatus.CONFLICT);
+        }
+    }
 }

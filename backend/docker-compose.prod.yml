@@ -80,6 +80,8 @@ services:
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-}
       WHATSAPP_WEBHOOK_VERIFY_TOKEN: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:-}
       WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
+      TWOFACTOR_API_KEY: ${TWOFACTOR_API_KEY:-}
+      TWOFACTOR_OTP_TEMPLATE: ${TWOFACTOR_OTP_TEMPLATE:-}
       STORAGE_ROOT_DIR: /data/uploads
     volumes:
       # Uploaded project documents / booking files survive a container
