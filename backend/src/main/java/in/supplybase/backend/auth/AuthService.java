@@ -256,6 +256,54 @@ public class AuthService {
         return issueTokens(saved);
     }
 
+    /**
+     * Signs in a person whose phone number was just proven with an SMS code.
+     *
+     * An account with that number -> signed in (the name typed is ignored, so
+     * a typo cannot rename an account). No account -> a new CUSTOMER account
+     * from the name (null when no name was given; the site then asks for it).
+     * Email is optional. One that already belongs to another account is
+     * refused: owning a phone does not prove owning that inbox.
+     */
+    @Transactional
+    public AuthResponse loginWithVerifiedPhone(String phone, String fullName, String email) {
+        Optional<User> existing = users.findByPhone(phone);
+        if (existing.isPresent()) {
+            User user = existing.get();
+            if (!user.isEnabled()) {
+                throw ApiException.forbidden("This account has been switched off. Please contact us.");
+            }
+            user.setLastLoginAt(Instant.now());
+            logLogin(user, LoginEvent.Method.OTP);
+            return issueTokens(user);
+        }
+
+        String name = blankToNull(fullName);
+        if (name == null) {
+            return null;
+        }
+        String mail = blankToNull(email);
+        if (mail != null) {
+            mail = normalise(mail);
+            if (users.existsByEmailIgnoreCase(mail)) {
+                throw ApiException.conflict("An account already uses that email. Sign in with it, "
+                        + "then add this mobile number on your profile.");
+            }
+        }
+        User saved = users.save(User.builder()
+                .email(mail)
+                .passwordHash(null)
+                .fullName(name)
+                .phone(phone)
+                .role(Role.CUSTOMER)
+                .enabled(true)
+                .lastLoginAt(Instant.now())
+                .build());
+        sendVerificationEmail(saved.getId());
+        logLogin(saved, LoginEvent.Method.SIGNUP);
+        return issueTokens(saved);
+    }
+
     @Transactional
     public AuthResponse refresh(String presentedToken) {
         if (!rateLimiter.tryAcquire("refresh:" + presentedToken, REFRESH_MAX, REFRESH_WINDOW)) {
@@ -405,7 +453,7 @@ public class AuthService {
     public void sendVerificationEmail(Long userId) {
         User user = users.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("That account"));
-        if (user.isEmailVerified()) {
+        if (user.isEmailVerified() || user.getEmail() == null) {
             return;
         }
 
@@ -560,7 +608,7 @@ public class AuthService {
     /** Best-effort, like BookingService.notifyStaff: never lets an email failure fail the request. */
     private void sendBestEffort(String to, String subject, String body) {
         JavaMailSender sender = mailSender.getIfAvailable();
-        if (sender == null) {
+        if (sender == null || to == null || to.isBlank()) {
             return;
         }
         try {

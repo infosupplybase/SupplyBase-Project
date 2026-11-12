@@ -233,7 +233,7 @@ export default function Profile() {
 
                   <div className="field">
                     <label htmlFor="p-email">Email</label>
-                    <input id="p-email" type="email" value={user.email} disabled />
+                    <input id="p-email" type="email" value={user.email || 'Not added (signed up with mobile OTP)'} disabled />
                     <span className="field-hint">Email cannot be changed here — contact us if it needs to change.</span>
                   </div>
 
@@ -257,6 +257,7 @@ export default function Profile() {
               </Reveal>
 
               <Reveal delay={80}>
+                {user.email && (
                 <div className="acct-security-card">
                   <h4>Email Verification</h4>
                   {user.emailVerified ? (
@@ -278,6 +279,7 @@ export default function Profile() {
                     </>
                   )}
                 </div>
+                )}
 
                 {user.hasPassword && (
                   <div className="acct-security-card">

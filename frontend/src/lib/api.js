@@ -192,6 +192,22 @@ export const api = {
   loginWithGoogle: (credential) =>
     request('/api/auth/google', { method: 'POST', auth: false, body: { credential } }),
 
+  /** Login with a code sent by SMS (2Factor). `enabled` is false until the server has a key. */
+  otpStatus: () => request('/api/auth/otp/status', { auth: false }),
+
+  sendOtp: (phone) => request('/api/auth/otp/send', { method: 'POST', auth: false, body: { phone } }),
+
+  /**
+   * Answers with an auth payload, or `{ needsDetails: true }` when no account
+   * has this number yet; then call again with fullName and email to create one.
+   */
+  verifyOtp: (phone, code, fullName, email) =>
+    request('/api/auth/otp/verify', {
+      method: 'POST',
+      auth: false,
+      body: { phone, code, fullName, email },
+    }),
+
   logout: (refreshToken) =>
     request('/api/auth/logout', { method: 'POST', auth: false, body: { refreshToken } }),
 

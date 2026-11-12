@@ -1008,6 +1008,54 @@
   background: var(--auth-line);
 }
 
+/* "Login with OTP" / "Use password instead": an outlined twin of the gold button. */
+.auth-otp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(245, 208, 51, 0.55);
+  border-radius: 12px;
+  background: rgba(245, 208, 51, 0.06);
+  color: var(--auth-gold);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease);
+}
+
+.auth-otp-btn:hover:not(:disabled) {
+  background: rgba(245, 208, 51, 0.14);
+}
+
+.auth-otp-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.auth-otp-terms {
+  margin: 0;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--auth-text-mute);
+}
+
+/* "Change" inside the locked mobile box, once the OTP is sent. */
+.auth-otp-change {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+}
+
+.auth-otp input[readonly] {
+  opacity: 0.75;
+}
+
 /* ------------------------------------------------- google sign-in */
 
 /* Google's script draws its own button inside this box; we only give it a

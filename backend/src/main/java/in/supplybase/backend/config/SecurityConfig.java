@@ -76,6 +76,9 @@ public class SecurityConfig {
                                  "/api/auth/google", "/api/auth/refresh",
                                  "/api/auth/logout", "/api/auth/forgot-password",
                                  "/api/auth/reset-password", "/api/auth/verify-email").permitAll()
+                // Login with an SMS code (2Factor). Limits live in PhoneOtpService.
+                .requestMatchers(HttpMethod.POST, "/api/auth/otp/send", "/api/auth/otp/verify").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/auth/otp/status").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/enquiries").permitAll()
                 // Website chatbot: no sign-in needed. A chat is read back only
                 // with its random public token (a UUID the visitor's browser keeps).

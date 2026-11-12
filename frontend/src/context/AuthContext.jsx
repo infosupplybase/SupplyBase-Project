@@ -20,6 +20,7 @@ const AuthContext = createContext({
   googleEnabled: false,
   login: async () => {},
   loginWithGoogle: async () => {},
+  loginWithOtp: async () => {},
   register: async () => {},
   logout: async () => {},
   refreshUser: async () => {},
@@ -98,6 +99,11 @@ export function AuthProvider({ children }) {
       googleEnabled: Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID),
       login: async (identifier, password) => adopt(await api.login(identifier.trim(), password)),
       loginWithGoogle: async (credential) => adopt(await api.loginWithGoogle(credential)),
+      /** Resolves to the user, or `{ needsDetails: true }` for a number with no account yet. */
+      loginWithOtp: async (phone, code, fullName, email) => {
+        const result = await api.verifyOtp(phone, code, fullName, email);
+        return result && result.needsDetails ? result : adopt(result);
+      },
       register: async (name, email, password, phone) =>
         adopt(await api.register(name.trim(), email.trim(), password, phone)),
       logout,
